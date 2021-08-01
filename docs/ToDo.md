@@ -1,0 +1,35 @@
+# TODOs
+
+- [ ] Sign published candidates with XEdDSA signatures
+- [ ] Add peer discovery
+- [ ] Add libp2p backend
+- Separate code into multiple repos:
+  - [ ] XEdDSA
+- Contribute code into existing packages
+  - [ ] Watch for interfaces in wgctrl
+- [ ] Single socket per Wireguard interface / ICE Agent
+  - Pass traffic in-process between userspace Wireguard and ICE sockets
+  - Use Wireguard-go's conn.Bind interface
+- [ ] Single eBPF program per network NS to steer STUN traffic to ICE Agents
+  - https://ebpf.io/summit-2020-slides/eBPF_Summit_2020-Lightning-Jakub_Sitnicki-Steering_connections_to_sockets_with_BPF_socke_lookup_hook.pdf
+- [ ] Use in-process pipe for wireguard-go's UAPI
+- [ ] Update proxy instances instead of recreating them.
+  - Avoids possible packet loss during change of candidate pairs
+- [ ] Use pion/ice's udpmux for creating a RAW socket sharing
+  - Sharing the same port as Wireguard kernel interface
+  - Use BPF filters for filtering STUN-only traffic
+- [ ] Add better proxy implementations for OpenBSD, FreeBSD, Android and Windows
+- [ ] Test co-existance of multipe `wice` instances
+  - nft tables might collide
+- [ ] Use netlink multicast subscription for notification of Wireguard peer changes
+  - https://lore.kernel.org/patchwork/patch/1366219/
+- [ ] Use netlink multicast group RTMGRP_LINK to for notification of new Wireguard interfaces
+- [ ] Add links to code in README
+- [ ] Add `XEdDSA` and `VXEdDSA` signature schemes to [JOSE IANA alg registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms)
+- [ ] Add wicectl command for controlling `wice` deaemon:
+  - `wicectl show [[INTF] [PEER]]`
+  - `wicectl add INTF`
+  - `wicectl del INTF`
+  - `wicectl discover INTF GROUP`
+  - `wicectl sync [INTF]`
+  - `wicectl restart INTF PEER`
