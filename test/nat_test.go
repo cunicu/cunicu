@@ -1,4 +1,7 @@
-package main
+//go:build linux
+// +build linux
+
+package main_test
 
 import (
 	"net"

@@ -1,109 +1,117 @@
-package hornet_test
+//go:build linux
+// +build linux
+
+package main_test
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net"
-	"os/exec"
-	"syscall"
 	"testing"
-	"time"
 
 	log "github.com/sirupsen/logrus"
+	g "github.com/stv0g/gont/pkg"
+	gopt "github.com/stv0g/gont/pkg/options"
+	"riasc.eu/wice/internal/test"
 )
 
-func Killall(cmds ...*exec.Cmd) error {
-	for _, cmd := range cmds {
-		err := cmd.Process.Signal(syscall.SIGTERM)
-		if err != nil {
-			return err
-		}
+func TestSimple(t *testing.T) {
+	var (
+		n  *g.Network
+		sw *g.Switch
+		b  *test.Backend
+		r  *test.Relay
+		nl test.NodeList
 
-		err = cmd.Wait()
-		if err != nil {
-			return err
-		}
+		err error
+	)
+
+	if n, err = g.NewNetwork("", gopt.Persistent(true)); err != nil {
+		t.Fatalf("Failed to create network: %s", err)
 	}
-
-	return nil
-}
-
-func SlicePrefix(prefix string, stream *io.ReadCloser) {
-	scanner := bufio.NewScanner(*stream)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text()) // Println will add back the final '\n'
-	}
-	if err := scanner.Err(); err != nil {
-		log.WithError(err).Error("Reading stream")
-	}
-}
-
-func RunWice(h *gont.Host, args ...string) (*exec.Cmd, error) {
-	cmd := append([]string{"../../../cmd/wice/main.go"}, args...)
-	w, stdout, stderr, err := h.GoRunAsync(cmd...)
-	if err != nil {
-		return nil, err
-	}
-
-	go SlicePrefix("Wice "+h.Name+": ", stdout)
-	go SlicePrefix("Wice "+h.Name+": ", stderr)
-
-	return w, nil
-}
-
-func ConfigureWireguard(h *gont.Host) error {
-
-	return nil
-}
-
-func TestWice(t *testing.T) {
-	n := gont.NewNetwork("test")
 	defer n.Close()
 
-	sw, err := n.AddSwitch("sw")
-	if err != nil {
-		t.Fail()
+	if sw, err = n.AddSwitch("sw"); err != nil {
+		t.Fatalf("Failed to create switch: %s", err)
 	}
 
-	// h1, err := n.AddHost("h1", nil, &gont.Interface{"eth0", net.IPv4(10, 0, 0, 1), mask(), sw})
-	// if err != nil {
-	// 	t.Fail()
-	// }
+	if r, err = test.NewRelay(n, "relay"); err != nil {
+		t.Fatalf("Failed to start relay: %s", err)
+	}
+	defer r.Close()
 
-	// h2, err := n.AddHost("h2", nil, &gont.Interface{"eth0", net.IPv4(10, 0, 0, 2), mask(), sw})
-	// if err != nil {
-	// 	t.Fail()
-	// }
+	if b, err = test.NewBackend(n, "backend"); err != nil {
+		t.Fatalf("Failed to start backend: %s", err)
+	}
+	defer b.Close()
 
-	h3, err := n.AddHost("h3", nil, &gont.Interface{"eth0", net.IPv4(10, 0, 0, 3), mask(), sw})
-	if err != nil {
-		t.Fail()
+	if nl, err = test.AddNodes(n, b, 2); err != nil {
+		t.Fatalf("Failed to created nodes: %s", err)
 	}
 
-	b, stdout, stderr, err := h3.GoRunAsync("../../../cmd/wice-signal-http")
-	if err != nil {
-		t.Fail()
+	n1 := nl[0]
+	n2 := nl[1]
+
+	if err := n.AddLink(
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 1, 24), r.Host),
+		gopt.Interface("eth0-r", sw),
+	); err != nil {
+		t.Fatalf("Failed to add link: %s", err)
 	}
 
-	go SlicePrefix("Backend: ", stdout)
-	go SlicePrefix("Backend: ", stderr)
+	if err := n.AddLink(
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 2, 24), b.Host),
+		gopt.Interface("eth0-b", sw),
+	); err != nil {
+		t.Fatalf("Failed to add link: %s", err)
+	}
 
-	// w1, err := RunWice(h1)
-	// if err != nil {
-	// 	t.Fail()
-	// }
+	if err := n.AddLink(
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 100, 24), n1.Host),
+		gopt.Interface("eth0-n1", sw),
+	); err != nil {
+		t.Fatalf("Failed to add link: %s", err)
+	}
 
-	// w2, err := RunWice(h2)
-	// if err != nil {
-	// 	t.Fail()
-	// }
+	if err := n.AddLink(
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 101, 24), n2.Host),
+		gopt.Interface("eth0-n2", sw),
+	); err != nil {
+		t.Fatalf("Failed to add link: %s", err)
+	}
 
-	h3.Run("curl", "http://h3:8080/")
+	if err := r.Start(); err != nil {
+		t.Fatalf("Failed to start relay: %s", err)
+	}
 
-	time.Sleep(2 * time.Second)
+	if err := b.Start(); err != nil {
+		t.Fatalf("Failed to start backend: %s", err)
+	}
 
-	if err = Killall(b); err != nil {
-		t.Fail()
+	args := []interface{}{
+		"-ice-user", r.Username,
+		"-ice-pass", r.Password,
+
+		// Limititing ourself to IPv4 network types
+		"-ice-network-type", "tcp4",
+		"-ice-network-type", "udp4",
+	}
+	for _, u := range r.URLs() {
+		args = append(args, "-url", u)
+	}
+
+	if err := nl.StartAndWait(args...); err != nil {
+		t.Fatalf("Failed to start WICE: %s", err)
+	}
+	defer nl.Stop()
+
+	log.SetLevel(log.DebugLevel)
+
+	nl.ForEachPeer(func(n *test.Node) error {
+		n.Run("wg")
+		n.Run("ip", "a")
+
+		return nil
+	})
+
+	if err := nl.PingPeers(); err != nil {
+		t.Fatalf("Failed to ping peers: %s", err)
 	}
 }

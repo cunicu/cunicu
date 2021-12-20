@@ -10,23 +10,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/ice/v2"
 	log "github.com/sirupsen/logrus"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/args"
-	"riasc.eu/wice/pkg/backend"
 	"riasc.eu/wice/pkg/crypto"
-)
-
-const (
-	PeerModifiedEndpoint          = (1 << 0)
-	PeerModifiedKeepaliveInterval = (1 << 1)
-	PeerModifiedProtocolVersion   = (1 << 2)
-	PeerModifiedAllowedIPs        = (1 << 3)
-	PeerModifiedHandshakeTime     = (1 << 4)
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 )
 
 type BaseInterface struct {
@@ -36,12 +28,12 @@ type BaseInterface struct {
 
 	lastSync time.Time
 
-	logger *log.Entry
-
-	client  *wgctrl.Client
-	mux     ice.UDPMux
-	backend backend.Backend
+	backend signaling.Backend
 	args    *args.Args
+	client  *wgctrl.Client
+	server  *socket.Server
+
+	logger *log.Entry
 }
 
 func (i *BaseInterface) Name() string {
@@ -72,10 +64,10 @@ func (i *BaseInterface) Close() error {
 func (i *BaseInterface) DumpConfig(wr io.Writer) {
 	fmt.Fprintf(wr, "[Interface] # %s\n", i.Name())
 	if i.PublicKey().IsSet() {
-		fmt.Fprintf(wr, "PublicKey = %s\n", i.PublicKey)
+		fmt.Fprintf(wr, "PublicKey = %s\n", i.PublicKey())
 	}
 	if i.PrivateKey().IsSet() {
-		fmt.Fprintf(wr, "PrivateKey = %s\n", i.PrivateKey)
+		fmt.Fprintf(wr, "PrivateKey = %s\n", i.PrivateKey())
 	}
 	if i.ListenPort != 0 {
 		fmt.Fprintf(wr, "ListenPort = %d\n", i.ListenPort)
@@ -112,7 +104,7 @@ func (i *BaseInterface) DumpConfig(wr io.Writer) {
 }
 
 func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
-	modified := 0
+	var modified PeerModifier = PeerModifiedNone
 
 	// Compare peer properties
 	if util.CmpEndpoint(newPeer.Endpoint, oldPeer.Endpoint) != 0 {
@@ -160,8 +152,12 @@ func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
 	// 	}
 	// }
 
-	if modified != 0 {
-		i.logger.WithField("peer", oldPeer.PublicKey).WithField("modified", modified).Info("Peer modified")
+	if modified != PeerModifiedNone {
+		i.logger.WithFields(log.Fields{
+			"peer":     oldPeer.PublicKey,
+			"modified": modified.String(),
+		}).Info("Peer modified")
+
 		i.onPeerModified(oldPeer, newPeer, modified)
 	}
 
@@ -171,20 +167,36 @@ func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
 func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 	// Compare device properties
 	if newDev.Type != i.Type {
-		i.logger.WithField("old", i.Type).WithField("new", newDev.Type).Info("Type changed")
+		i.logger.WithFields(log.Fields{
+			"old": i.Type,
+			"new": newDev.Type,
+		}).Info("Type changed")
+
 		i.Device.Type = newDev.Type
 	}
 	if newDev.FirewallMark != i.FirewallMark {
-		i.logger.WithField("old", i.FirewallMark).WithField("new", newDev.FirewallMark).Info("FirewallMark changed")
+		i.logger.WithFields(log.Fields{
+			"old": i.FirewallMark,
+			"new": newDev.FirewallMark,
+		}).Info("FirewallMark changed")
+
 		i.Device.FirewallMark = newDev.FirewallMark
 	}
 	if newDev.PrivateKey != i.Device.PrivateKey {
-		i.logger.WithField("old", i.PrivateKey).WithField("new", newDev.PrivateKey).Info("PrivateKey changed")
+		i.logger.WithFields(log.Fields{
+			"old": i.PrivateKey,
+			"new": newDev.PrivateKey,
+		}).Info("PrivateKey changed")
+
 		i.Device.PrivateKey = newDev.PrivateKey
 		i.Device.PublicKey = newDev.PublicKey
 	}
 	if newDev.ListenPort != i.ListenPort {
-		i.logger.WithField("old", i.ListenPort).WithField("new", newDev.ListenPort).Info("ListenPort changed")
+		i.logger.WithFields(log.Fields{
+			"old": i.ListenPort,
+			"new": newDev.ListenPort,
+		}).Info("ListenPort changed")
+
 		i.Device.ListenPort = newDev.ListenPort
 	}
 
@@ -259,29 +271,49 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 	}
 
 	i.peers[peer.PublicKey()] = peer
+
+	i.server.BroadcastEvent(&socket.Event{
+		Type:      "peer",
+		State:     "added",
+		Interface: i.Name(),
+		Peer:      peer.PublicKey(),
+	})
 }
 
-func (i *BaseInterface) onPeerRemoved(peer *wgtypes.Peer) {
-	p, ok := i.peers[crypto.Key(peer.PublicKey)]
+func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
+	peer, ok := i.peers[crypto.Key(p.PublicKey)]
 	if !ok {
 		i.logger.WithField("peer", peer.PublicKey).Warn("Failed to find matching peer")
 	}
 
-	err := p.Close()
-	if err != nil {
+	if err := peer.Close(); err != nil {
 		i.logger.WithField("peer", peer.PublicKey).Warn("Failed to close peer")
 	}
 
-	delete(i.peers, crypto.Key(peer.PublicKey))
+	i.server.BroadcastEvent(&socket.Event{
+		Type:      "peer",
+		State:     "removed",
+		Interface: i.Name(),
+		Peer:      peer.PublicKey(),
+	})
+
+	delete(i.peers, peer.PublicKey())
 }
 
-func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified int) {
-	p, ok := i.peers[crypto.Key(new.PublicKey)]
+func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModifier) {
+	peer, ok := i.peers[crypto.Key(new.PublicKey)]
 	if ok {
-		p.OnModified(new, modified)
+		peer.OnModified(new, modified)
 	} else {
 		i.logger.Error("Failed to find modified peer")
 	}
+
+	i.server.BroadcastEvent(&socket.Event{
+		Type:      "peer",
+		State:     "modified",
+		Interface: i.Name(),
+		Peer:      peer.PublicKey(),
+	})
 }
 
 func (i *BaseInterface) AddPeer(pk wgtypes.Key) error {
@@ -309,11 +341,12 @@ func (i *BaseInterface) RemovePeer(pk wgtypes.Key) error {
 	return i.client.ConfigureDevice(i.Name(), cfg)
 }
 
-func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend backend.Backend, args *args.Args) (BaseInterface, error) {
+func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (BaseInterface, error) {
 	i := BaseInterface{
 		Device:  *dev,
 		client:  client,
 		backend: backend,
+		server:  server,
 		args:    args,
 		logger: log.WithFields(log.Fields{
 			"intf": dev.Name,
@@ -338,6 +371,12 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend backend.Ba
 	if err != nil {
 		return BaseInterface{}, fmt.Errorf("failed to fix interface configuration: %w", err)
 	}
+
+	server.BroadcastEvent(&socket.Event{
+		Type:      "interface",
+		State:     "added",
+		Interface: i.Name(),
+	})
 
 	// We remove all peers here so that they get added by the following sync
 	i.Peers = nil

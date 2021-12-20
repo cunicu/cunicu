@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"net"
 	"os"
-	"runtime"
 	"strings"
 	"time"
 
@@ -17,9 +16,10 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/args"
-	"riasc.eu/wice/pkg/backend"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/proxy"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 )
 
 type Peer struct {
@@ -30,9 +30,8 @@ type Peer struct {
 	ICEAgent *ice.Agent
 	ICEConn  *ice.Conn
 
-	localOffer        backend.Offer
-	lastRemoteOfferID int64
-	remoteOffers      chan backend.Offer
+	localOffer   signaling.Offer
+	remoteOffers chan signaling.Offer
 
 	selectedCandidatePairs chan *ice.CandidatePair
 
@@ -42,18 +41,16 @@ type Peer struct {
 
 	client  *wgctrl.Client
 	args    *args.Args
-	backend backend.Backend
+	backend signaling.Backend
+	server  *socket.Server
 }
 
 func (p *Peer) Close() error {
-	err := p.backend.WithdrawOffer(p.PublicKeyPair())
-	if err != nil {
+	if err := p.ICEAgent.Close(); err != nil {
 		return err
 	}
 
-	p.ICEAgent.Close()
-
-	p.logger.Info("Closing peer")
+	p.logger.Info("Closed peer")
 
 	return nil
 }
@@ -78,31 +75,6 @@ func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 	return p.client.ConfigureDevice(p.Interface.Name(), cfg)
 }
 
-func (p *Peer) colorizeConnectionState(state ice.ConnectionState) string {
-	if runtime.GOOS != "windows" {
-		var color int
-		switch state {
-		case ice.ConnectionStateNew:
-			fallthrough
-		case ice.ConnectionStateCompleted:
-			fallthrough
-		case ice.ConnectionStateClosed:
-			color = 37
-		case ice.ConnectionStateDisconnected:
-			fallthrough
-		case ice.ConnectionStateChecking:
-			color = 33
-		case ice.ConnectionStateFailed:
-			color = 31
-		case ice.ConnectionStateConnected:
-			color = 32
-		}
-		return fmt.Sprintf("\x1b[%d;1m%s\x1b[0m", color, state)
-	} else {
-		return state.String()
-	}
-}
-
 func (p *Peer) isControlling() bool {
 	var pkOur, pkTheir big.Int
 	pkOur.SetBytes(p.Interface.Device.PublicKey[:])
@@ -111,27 +83,32 @@ func (p *Peer) isControlling() bool {
 	return pkOur.Cmp(&pkTheir) == -1 // the smaller PK is controlling
 }
 
-func (p *Peer) OnModified(new *wgtypes.Peer, modified int) {
+func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 	if modified&PeerModifiedHandshakeTime > 0 {
 		p.LastHandshake = new.LastHandshakeTime
 		p.logger.WithField("time", new.LastHandshakeTime).Debug("New handshake")
 	}
+
+	p.server.BroadcastEvent(&socket.Event{
+		Type:      "handshake",
+		Time:      p.LastHandshakeTime,
+		Interface: p.Interface.Name(),
+		Peer:      p.PublicKey(),
+	})
 }
 
 func (p *Peer) onCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
-
-		p.localOffer.EndOfCandidates = true
 	} else {
 		p.logger.WithField("candidate", c).Info("Found new local candidate")
 
-		p.localOffer.Candidates = append(p.localOffer.Candidates, backend.Candidate{
+		p.localOffer.Candidates = append(p.localOffer.Candidates, signaling.Candidate{
 			Candidate: c,
 		})
 	}
 
-	p.localOffer.Version++
+	p.localOffer.Epoch++
 
 	if err := p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer); err != nil {
 		p.logger.WithError(err).Warn("Failed to publish offer")
@@ -140,8 +117,16 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 }
 
 func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
+	stateLower := strings.ToLower(state.String())
 
-	p.logger.WithField("state", strings.ToLower(state.String())).Infof("Connection state changed: %s", p.colorizeConnectionState(state))
+	p.logger.WithField("state", stateLower).Infof("Connection state changed")
+
+	p.server.BroadcastEvent(&socket.Event{
+		Type:      "state",
+		State:     stateLower,
+		Interface: p.Interface.Name(),
+		Peer:      p.PublicKey(),
+	})
 
 	if state == ice.ConnectionStateFailed {
 		go p.restartLocal()
@@ -159,8 +144,20 @@ func (p *Peer) onSelectedCandidatePairChange(a, b ice.Candidate) {
 	p.selectedCandidatePairs <- cp
 }
 
-func (p *Peer) onOffer(o backend.Offer) {
-	if p.lastRemoteOfferID > 0 && p.lastRemoteOfferID != o.ID { // && o.Version == 0 {
+func (p *Peer) isRestartingOffer(o signaling.Offer) bool {
+	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
+	if err != nil {
+		p.logger.WithError(err).Error("Failed to get local credentials")
+	}
+
+	credsChanged := ufrag != o.Ufrag || pwd != o.Pwd
+
+	return credsChanged
+}
+
+func (p *Peer) onOffer(o signaling.Offer) {
+
+	if p.isRestartingOffer(o) {
 		p.restartRemote(o)
 	}
 
@@ -171,31 +168,26 @@ func (p *Peer) onOffer(o backend.Offer) {
 		}
 		p.logger.WithField("candidate", c).Debug("Add remote candidate")
 	}
-
-	p.lastRemoteOfferID = o.ID
 }
 
 func (p *Peer) restartLocal() {
-	p.logger.WithField("id", p.localOffer.ID).Infof("Restarting session triggered locally in %s", p.args.RestartInterval)
+	p.logger.Infof("Restarting session triggered locally in %s", p.args.RestartInterval)
 
 	time.Sleep(p.args.RestartInterval)
 
-	p.localOffer = backend.NewOffer()
+	p.localOffer = signaling.NewOffer()
 
 	p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer)
 
 	offer := <-p.remoteOffers // wait for remote answer
-	p.lastRemoteOfferID = offer.ID
 
 	p.restart(offer)
 }
 
-func (p *Peer) restartRemote(offer backend.Offer) {
-	p.logger.WithField("id", p.localOffer.ID).Info("Restarting session triggered locally")
+func (p *Peer) restartRemote(offer signaling.Offer) {
+	p.logger.Info("Restarting session triggered locally")
 
-	id := p.localOffer.ID
-	p.localOffer = backend.NewOffer()
-	p.localOffer.ID = id // we keep our offer ID when restart is triggered by remote
+	p.localOffer = signaling.NewOffer()
 
 	p.restart(offer)
 }
@@ -205,21 +197,16 @@ func (p *Peer) restartRemote(offer backend.Offer) {
 // This restart can either be triggered by a failed
 // ICE connection state (Peer.onConnectionState())
 // or by a remote offer which indicates a restart (Peer.onOffer())
-func (p *Peer) restart(offer backend.Offer) {
+func (p *Peer) restart(offer signaling.Offer) {
 	var err error
-	var localUfrag, localPwd, remoteUfrag, remotePwd string
 
-	if remoteUfrag, remotePwd, err = p.RemoteCredentials(); err != nil {
-		p.logger.WithError(err).Error("Failed to get remote credentials")
-		return
-	}
-	if localUfrag, localPwd, err = p.LocalCreds(); err != nil {
-		p.logger.WithError(err).Error("Failed to get remote credentials")
-		return
-	}
-
-	if err := p.ICEAgent.Restart(localUfrag, localPwd); err != nil {
+	if err := p.ICEAgent.Restart("", ""); err != nil {
 		p.logger.WithError(err).Error("Failed to restart ICE session")
+		return
+	}
+
+	if err := p.ICEAgent.SetRemoteCredentials(offer.Ufrag, offer.Pwd); err != nil {
+		p.logger.WithError(err).Error("Failed to set remote creds")
 		return
 	}
 
@@ -234,17 +221,12 @@ func (p *Peer) restart(offer backend.Offer) {
 		p.logger.WithError(err).Error("Failed to gather candidates")
 		return
 	}
-
-	if err := p.ICEAgent.SetRemoteCredentials(remoteUfrag, remotePwd); err != nil {
-		p.logger.WithError(err).Error("Failed to set remote creds")
-		return
-	}
 }
 
-func (p *Peer) start(remoteUfrag, remotePwd string) {
+func (p *Peer) start() {
 	var err error
 
-	p.logger.WithField("id", p.localOffer.ID).Info("Starting new session")
+	p.logger.Info("Starting new session")
 
 	p.remoteOffers, err = p.backend.SubscribeOffer(p.PublicKeyPair())
 	if err != nil {
@@ -257,9 +239,9 @@ func (p *Peer) start(remoteUfrag, remotePwd string) {
 
 	// Start the ICE Agent. One side must be controlled, and the other must be controlling
 	if p.isControlling() {
-		p.ICEConn, err = p.ICEAgent.Dial(context.TODO(), remoteUfrag, remotePwd)
+		p.ICEConn, err = p.ICEAgent.Dial(context.TODO(), o.Ufrag, o.Pwd)
 	} else {
-		p.ICEConn, err = p.ICEAgent.Accept(context.TODO(), remoteUfrag, remotePwd)
+		p.ICEConn, err = p.ICEAgent.Accept(context.TODO(), o.Ufrag, o.Pwd)
 	}
 	if err != nil {
 		p.logger.WithError(err).Fatal("Failed to establish ICE connection")
@@ -282,10 +264,10 @@ func (p *Peer) start(remoteUfrag, remotePwd string) {
 
 			isTCPRelayCandidate := cp.Local.Type() == ice.CandidateTypeRelay
 			if isTCPRelayCandidate {
-				pt = proxy.ProxyTypeUser
+				pt = proxy.TypeUser
 			}
 
-			if currentProxy != nil && proxy.Type(currentProxy) == pt {
+			if currentProxy != nil && currentProxy.Type() == pt {
 				// Update endpoint of existing proxy
 				addr := p.ICEConn.RemoteAddr().(*net.UDPAddr)
 				currentProxy.UpdateEndpoint(addr)
@@ -326,12 +308,12 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		Peer:                   *wgp,
 		client:                 i.client,
 		backend:                i.backend,
-		lastRemoteOfferID:      -1,
-		localOffer:             backend.NewOffer(),
+		server:                 i.server,
+		localOffer:             signaling.NewOffer(),
 		args:                   i.args,
 		selectedCandidatePairs: make(chan *ice.CandidatePair),
 		logger: log.WithFields(log.Fields{
-			"intf": i.Name,
+			"intf": i.Name(),
 			"peer": wgp.PublicKey.String(),
 		}),
 	}
@@ -343,31 +325,25 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		return p.args.IceInterfaceRegex.Match([]byte(name)) && err != nil
 	}
 
-	var localUfrag, localPwd, remoteUfrag, remotePwd string
-	if localUfrag, localPwd, err = p.LocalCreds(); err != nil {
-		return Peer{}, fmt.Errorf("failed to get local credentials: %w", err)
-	}
-	if remoteUfrag, remotePwd, err = p.RemoteCredentials(); err != nil {
-		return Peer{}, fmt.Errorf("failed to get remote credentials: %w", err)
-	}
-
-	p.logger.WithFields(log.Fields{
-		"ufrag_local":  localUfrag,
-		"pwd_local":    localPwd,
-		"ufrag_remote": remoteUfrag,
-		"pwd_remote":   remotePwd,
-	}).Debug("Peer credentials")
-
-	agentConfig.LocalUfrag = localUfrag
-	agentConfig.LocalPwd = localPwd
-
-	if p.args.ProxyType == proxy.ProxyTypeEBPF {
-		proxy.SetupEBPFMux(&agentConfig, p.Interface.ListenPort)
+	if i.args.ProxyType == proxy.TypeEBPF {
+		if err := proxy.SetupEBPFProxy(&agentConfig, p.Interface.ListenPort); err != nil {
+			return Peer{}, fmt.Errorf("failed to setup proxy: %w", err)
+		}
 	}
 
 	if p.ICEAgent, err = ice.NewAgent(&agentConfig); err != nil {
 		return Peer{}, fmt.Errorf("failed to create ICE agent: %w", err)
 	}
+
+	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
+	if err != nil {
+		return Peer{}, fmt.Errorf("failed to get local credentials: %w", err)
+	}
+
+	p.logger.WithFields(log.Fields{
+		"ufrag": ufrag,
+		"pwd":   pwd,
+	}).Debug("Peer credentials")
 
 	// When we have gathered a new ICE Candidate send it to the remote peer
 	if err := p.ICEAgent.OnCandidate(p.onCandidate); err != nil {
@@ -389,7 +365,7 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		return Peer{}, fmt.Errorf("failed to gather candidates: %w", err)
 	}
 
-	go p.start(remoteUfrag, remotePwd)
+	go p.start()
 
 	return p, nil
 }

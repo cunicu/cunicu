@@ -6,7 +6,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"riasc.eu/wice/pkg/args"
-	be "riasc.eu/wice/pkg/backend"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 
 	"golang.zx2c4.com/wireguard/wgctrl"
 )
@@ -29,7 +30,7 @@ func (interfaces *Interfaces) CloseAll() {
 	}
 }
 
-func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend be.Backend, args *args.Args) error {
+func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) error {
 	devices, err := client.Devices()
 	if err != nil {
 		log.WithError(err).Fatal("Failed to list Wireguard interfaces")
@@ -48,7 +49,7 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend be.Backend,
 		if intf == nil { // new interface
 			log.WithField("intf", device.Name).Info("Adding new interface")
 
-			i, err := NewInterface(device, client, backend, args)
+			i, err := NewInterface(device, client, backend, server, args)
 			if err != nil {
 				log.WithField("intf", device.Name).WithError(err).Fatalf("Failed to create new interface")
 			}
@@ -60,7 +61,7 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend be.Backend,
 			log.WithField("intf", intf.Name()).Trace("Sync existing interface")
 			err := intf.Sync(device)
 			if err != nil {
-				log.WithError(err).Fatal("Failed to sync interface %s", intf.Name())
+				log.WithError(err).WithField("intf", intf.Name()).Fatal("Failed to sync interface")
 			}
 		}
 
@@ -71,20 +72,27 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend be.Backend,
 		i := syncedInterfaces.GetByName(intf.Name())
 		if i == nil {
 			log.WithField("intf", intf.Name()).Info("Removing vanished interface")
-			err := intf.Close()
-			if err != nil {
+
+			if err := intf.Close(); err != nil {
 				log.WithError(err).Fatal("Failed to close interface")
 			}
+
+			server.BroadcastEvent(&socket.Event{
+				Type:      "interface",
+				State:     "removed",
+				Interface: i.Name(),
+			})
 		} else {
 			keepInterfaces = append(keepInterfaces, intf)
 		}
 	}
+
 	*interfaces = keepInterfaces
 
 	return nil
 }
 
-func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend be.Backend, args *args.Args) error {
+func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) error {
 	var devs Devices
 	devs, err := client.Devices()
 	if err != nil {
@@ -100,9 +108,9 @@ func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend be.B
 
 		var intf Interface
 		if args.User {
-			intf, err = CreateUserInterface(i, client, backend, args)
+			intf, err = CreateUserInterface(i, client, backend, server, args)
 		} else {
-			intf, err = CreateKernelInterface(i, client, backend, args)
+			intf, err = CreateKernelInterface(i, client, backend, server, args)
 		}
 		if err != nil {
 			return fmt.Errorf("failed to create Wireguard device: %w", err)

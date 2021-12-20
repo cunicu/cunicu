@@ -13,12 +13,12 @@ import (
 	"k8s.io/klog/v2"
 
 	"riasc.eu/wice/pkg/args"
-	be "riasc.eu/wice/pkg/backend"
 	"riasc.eu/wice/pkg/intf"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 
-	_ "riasc.eu/wice/pkg/backend/http"
-	_ "riasc.eu/wice/pkg/backend/k8s"
-	_ "riasc.eu/wice/pkg/backend/p2p"
+	_ "riasc.eu/wice/pkg/signaling/k8s"
+	_ "riasc.eu/wice/pkg/signaling/p2p"
 )
 
 func setupLogging() {
@@ -28,8 +28,8 @@ func setupLogging() {
 	klog.SetLogger(klogr.WithName("k8s"))
 
 	log.SetFormatter(&log.TextFormatter{
-		ForceColors:  true,
-		DisableQuote: true,
+		// ForceColors:  true,
+		// DisableQuote: true,
 	})
 }
 
@@ -58,7 +58,7 @@ func main() {
 	}
 
 	// Create backend
-	backend, err := be.NewBackend(args.Backend, args.BackendOptions)
+	backend, err := signaling.NewBackend(args.Backend, args.BackendOptions)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to initialize backend")
 	}
@@ -79,16 +79,23 @@ func main() {
 	interfaces := &intf.Interfaces{}
 	defer interfaces.CloseAll()
 
-	interfaces.CreateFromArgs(client, backend, args)
+	interfaces.CreateFromArgs(client, backend, server, args)
 
-	events, errors, err := intf.WatchWireguardInterfaces()
-	if err != nil {
-		log.WithError(err).Error("Failed to watch interfaces")
+	events := make(chan intf.InterfaceEvent, 16)
+	errors := make(chan error, 16)
+
+	if err := intf.WatchWireguardUserspaceInterfaces(events, errors); err != nil {
+		log.WithError(err).Error("Failed to watch userspace interfaces")
+		return
+	}
+
+	if err := intf.WatchWireguardKernelInterfaces(events, errors); err != nil {
+		log.WithError(err).Error("Failed to watch kernel interfaces")
 		return
 	}
 
 	log.Debug("Starting initial interface sync")
-	interfaces.SyncAll(client, backend, args)
+	interfaces.SyncAll(client, backend, server, args)
 
 	ticker := time.NewTicker(args.WatchInterval)
 
@@ -99,11 +106,13 @@ out:
 		// for changes via a netlink socket (patch is pending)
 		case <-ticker.C:
 			log.Trace("Starting periodic interface sync")
-			interfaces.SyncAll(client, backend, args)
+			interfaces.SyncAll(client, backend, server, args)
+
+			backend.Tick()
 
 		case event := <-events:
 			log.Trace("Received interface event: %s", event)
-			interfaces.SyncAll(client, backend, args)
+			interfaces.SyncAll(client, backend, server, args)
 
 		case err := <-errors:
 			log.WithError(err).Error("Failed to watch for interface changes")
@@ -112,7 +121,7 @@ out:
 			log.WithField("signal", sig).Debug("Received signal")
 			switch sig {
 			case syscall.SIGUSR1:
-				interfaces.SyncAll(client, backend, args)
+				interfaces.SyncAll(client, backend, server, args)
 			default:
 				break out
 			}

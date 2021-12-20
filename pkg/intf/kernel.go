@@ -7,8 +7,9 @@ import (
 	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/args"
-	"riasc.eu/wice/pkg/backend"
 	nl "riasc.eu/wice/pkg/netlink"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 )
 
 type KernelInterface struct {
@@ -66,7 +67,7 @@ func (i *KernelInterface) SetDown(mtu int) error {
 	return netlink.LinkSetDown(i.link)
 }
 
-func CreateKernelInterface(name string, client *wgctrl.Client, backend backend.Backend, args *args.Args) (Interface, error) {
+func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
 	log.WithField("intf", name).Debug("Creating new kernel interface")
 
 	l := &nl.Wireguard{
@@ -89,7 +90,7 @@ func CreateKernelInterface(name string, client *wgctrl.Client, backend backend.B
 		return nil, err
 	}
 
-	baseDev, err := NewInterface(wgDev, client, backend, args)
+	baseDev, err := NewInterface(wgDev, client, backend, server, args)
 	if err != nil {
 		return nil, err
 	}

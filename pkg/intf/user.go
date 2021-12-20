@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 /* SPDX-License-Identifier: MIT
@@ -13,7 +14,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"riasc.eu/wice/pkg/args"
-	"riasc.eu/wice/pkg/backend"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
@@ -68,7 +70,7 @@ func (i *UserDevice) handleUserApi() {
 	}
 }
 
-func CreateUserInterface(name string, client *wgctrl.Client, backend backend.Backend, args *args.Args) (Interface, error) {
+func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
 	var err error
 	logger := log.WithFields(log.Fields{
 		"intf": name,
@@ -125,7 +127,7 @@ func CreateUserInterface(name string, client *wgctrl.Client, backend backend.Bac
 		return nil, err
 	}
 
-	dev.BaseInterface, err = NewInterface(wgDev, client, backend, args)
+	dev.BaseInterface, err = NewInterface(wgDev, client, backend, server, args)
 	if err != nil {
 		return nil, err
 	}
