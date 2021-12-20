@@ -49,8 +49,7 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 
 	// Update Wireguard peer endpoint
 	addr := proxy.conn.LocalAddr().(*net.UDPAddr)
-	err = cb(addr)
-	if err != nil {
+	if err := cb(addr); err != nil {
 		return nil, err
 	}
 

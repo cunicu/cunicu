@@ -30,8 +30,7 @@ func jsonCanonicalize(obj interface{}) (string, error) {
 		return "", err
 	}
 
-	err = json.Unmarshal(objJson, &objIntf)
-	if err != nil {
+	if err := json.Unmarshal(objJson, &objIntf); err != nil {
 		return "", err
 	}
 
@@ -106,8 +105,7 @@ func JWSCTVerify(obj interface{}, jwsStr string, pk Key) (bool, error) {
 	}
 
 	var hdr JWS
-	err = json.Unmarshal(hdrBytes, &hdr)
-	if err != nil {
+	if err := json.Unmarshal(hdrBytes, &hdr); err != nil {
 		return false, err
 	}
 

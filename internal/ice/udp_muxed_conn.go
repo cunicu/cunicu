@@ -111,13 +111,17 @@ func (c *udpMuxedConn) CloseChannel() <-chan struct{} {
 
 func (c *udpMuxedConn) Close() error {
 	var err error
+
 	c.closeOnce.Do(func() {
 		err = c.buffer.Close()
 		close(c.closedChan)
 	})
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	c.addresses = nil
+
 	return err
 }
 

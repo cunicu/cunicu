@@ -31,7 +31,7 @@ func (b *Backend) applyUpdates() {
 
 				nodes := b.clientSet.CoreV1().Nodes()
 
-				err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+				if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 					node, err := nodes.Get(context.TODO(), b.config.NodeName, metav1.GetOptions{})
 					if err != nil {
 						return fmt.Errorf("failed to get latest version of node %s: %w", b.config.NodeName, err)
@@ -46,8 +46,7 @@ func (b *Backend) applyUpdates() {
 					_, err = nodes.Update(context.TODO(), node, metav1.UpdateOptions{})
 
 					return err
-				})
-				if err != nil {
+				}); err != nil {
 					b.logger.WithError(err).Error("Failed to update node")
 				}
 

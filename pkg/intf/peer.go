@@ -162,8 +162,8 @@ func (p *Peer) onOffer(o signaling.Offer) {
 	}
 
 	for _, c := range o.Candidates {
-		err := p.ICEAgent.AddRemoteCandidate(c)
-		if err != nil {
+
+		if err := p.ICEAgent.AddRemoteCandidate(c); err != nil {
 			p.logger.WithError(err).Fatal("Failed to add remote candidate")
 		}
 		p.logger.WithField("candidate", c).Debug("Add remote candidate")
@@ -211,8 +211,8 @@ func (p *Peer) restart(offer signaling.Offer) {
 	}
 
 	for _, cand := range offer.Candidates {
-		err = p.ICEAgent.AddRemoteCandidate(cand.Candidate)
-		if err != nil {
+
+		if err = p.ICEAgent.AddRemoteCandidate(cand.Candidate); err != nil {
 			p.logger.WithError(err).Error("Failed to add remote candidate")
 		}
 	}

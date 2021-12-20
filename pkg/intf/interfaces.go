@@ -59,8 +59,8 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 			*interfaces = append(*interfaces, &i)
 		} else { // existing interface
 			log.WithField("intf", intf.Name()).Trace("Sync existing interface")
-			err := intf.Sync(device)
-			if err != nil {
+
+			if err := intf.Sync(device); err != nil {
 				log.WithError(err).WithField("intf", intf.Name()).Fatal("Failed to sync interface")
 			}
 		}

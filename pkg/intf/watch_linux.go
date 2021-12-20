@@ -1,14 +1,21 @@
 package intf
 
-func WatchKernelWireguardInterfaces(chan InterfaceEvent, chan error) error {
-	chNl := make(chan netlink.LinkUpdate, 32)
-	err := netlink.LinkSubscribeWithOptions(chNl, nil, netlink.LinkSubscribeOptions{
+import (
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
+	nl "github.com/vishvananda/netlink"
+	"golang.org/x/sys/unix"
+)
+
+func WatchKernelWireguardInterfaces(lu chan InterfaceEvent, errors chan error) error {
+	chNl := make(chan nl.LinkUpdate, 32)
+	if err := nl.LinkSubscribeWithOptions(chNl, nil, nl.LinkSubscribeOptions{
 		ErrorCallback: func(err error) {
 			errors <- err
 		},
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to subscribe to netlink link event group: %w", err)
+	}); err != nil {
+		return fmt.Errorf("failed to subscribe to netlink link event group: %w", err)
 	}
 
 	go func() {

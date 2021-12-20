@@ -43,15 +43,13 @@ func newLogger(log *log.Entry) *device.Logger {
 }
 
 func (i *UserDevice) Close() error {
-	err := i.userAPI.Close()
-	if err != nil {
+	if err := i.userAPI.Close(); err != nil {
 		return err
 	}
 
 	i.userDevice.Close()
 
-	err = i.BaseInterface.Close()
-	if err != nil {
+	if err := i.BaseInterface.Close(); err != nil {
 		return err
 	}
 

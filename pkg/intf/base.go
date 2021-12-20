@@ -52,8 +52,7 @@ func (i *BaseInterface) Close() error {
 	i.logger.Info("Closing interface")
 
 	for _, p := range i.peers {
-		err := p.Close()
-		if err != nil {
+		if err := p.Close(); err != nil {
 			return err
 		}
 	}
@@ -360,15 +359,13 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	// Sync config
 	if i.args.ConfigSync {
 		cfg := fmt.Sprintf("%s/%s.conf", i.args.ConfigPath, i.Name())
-		err := i.SyncConfig(cfg)
-		if err != nil {
+		if err := i.SyncConfig(cfg); err != nil {
 			return BaseInterface{}, fmt.Errorf("failed to sync interface configuration: %w", err)
 		}
 	}
 
 	// Fixup device config
-	err := i.Fixup()
-	if err != nil {
+	if err := i.Fixup(); err != nil {
 		return BaseInterface{}, fmt.Errorf("failed to fix interface configuration: %w", err)
 	}
 
@@ -409,8 +406,7 @@ func (i *BaseInterface) Fixup() error {
 		cfg.ListenPort = &port
 	}
 
-	err := i.client.ConfigureDevice(i.Name(), cfg)
-	if err != nil {
+	if err := i.client.ConfigureDevice(i.Name(), cfg); err != nil {
 		return fmt.Errorf("failed to configure device: %w", err)
 	}
 

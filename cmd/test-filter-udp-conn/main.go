@@ -50,8 +50,7 @@ func main() {
 		panic(err)
 	}
 
-	err = fuc.ApplyFilter(prog)
-	if err != nil {
+	if err := fuc.ApplyFilter(prog); err != nil {
 		panic(err)
 	}
 

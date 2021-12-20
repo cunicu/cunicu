@@ -66,8 +66,8 @@ func (c *Candidate) MarshalJSON() ([]byte, error) {
 
 func (c *Candidate) UnmarshalJSON(data []byte) error {
 	var jc jsonCandidate
-	err := json.Unmarshal(data, &jc)
-	if err != nil {
+
+	if err := json.Unmarshal(data, &jc); err != nil {
 		return err
 	}
 

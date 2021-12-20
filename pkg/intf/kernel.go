@@ -21,14 +21,14 @@ type KernelInterface struct {
 }
 
 func (i *KernelInterface) Close() error {
-	err := i.BaseInterface.Close()
-	if err != nil {
+
+	if err := i.BaseInterface.Close(); err != nil {
 		return err
 	}
 
 	if i.created {
-		err := i.Delete()
-		if err != nil {
+
+		if err := i.Delete(); err != nil {
 			return err
 		}
 	}
@@ -44,8 +44,7 @@ func (i *KernelInterface) Delete() error {
 	}
 	l.LinkAttrs.Name = i.Name()
 
-	err := netlink.LinkDel(l)
-	if err != nil {
+	if err := netlink.LinkDel(l); err != nil {
 		return fmt.Errorf("failed to delete Wireguard device: %w", err)
 	}
 
@@ -74,8 +73,8 @@ func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling
 		LinkAttrs: netlink.NewLinkAttrs(),
 	}
 	l.LinkAttrs.Name = name
-	err := netlink.LinkAdd(l)
-	if err != nil {
+
+	if err := netlink.LinkAdd(l); err != nil {
 		return nil, fmt.Errorf("failed to create Wireguard interface: %w", err)
 	}
 
@@ -101,8 +100,7 @@ func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling
 		link:          link,
 	}
 
-	err = i.SetUp()
-	if err != nil {
+	if err = i.SetUp(); err != nil {
 		return nil, fmt.Errorf("failed to bring link %s up: %w", name, err)
 	}
 

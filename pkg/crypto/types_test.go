@@ -67,8 +67,7 @@ func TestMarshal(t *testing.T) {
 		t.Fail()
 	}
 
-	err = json.Unmarshal(objJson, &obj2)
-	if err != nil {
+	if err := json.Unmarshal(objJson, &obj2); err != nil {
 		t.Fail()
 	}
 

@@ -58,8 +58,8 @@ func (b *Backend) processNode(node *corev1.Node) {
 	}
 
 	var om signaling.OfferMap
-	err = json.Unmarshal([]byte(offersJson), &om)
-	if err != nil {
+
+	if err := json.Unmarshal([]byte(offersJson), &om); err != nil {
 		b.logger.WithError(err).Warn("Failed to parse candidate annotation")
 		return
 	}

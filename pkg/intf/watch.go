@@ -46,8 +46,7 @@ func WatchWireguardUserspaceInterfaces(events chan InterfaceEvent, errors chan e
 	}
 
 	if _, err := os.Stat(wireguardSockDir); !os.IsNotExist(err) {
-		err = watcher.Add(wireguardSockDir)
-		if err != nil {
+		if err := watcher.Add(wireguardSockDir); err != nil {
 			return fmt.Errorf("failed to watch %s: %w", wireguardSockDir, err)
 		}
 	}

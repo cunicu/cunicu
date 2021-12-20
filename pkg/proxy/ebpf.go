@@ -1,11 +1,11 @@
-//+build linux
+//go:build linux
+// +build linux
 
 package proxy
 
 import (
 	"fmt"
 	"net"
-	"runtime"
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/asm"
@@ -71,8 +71,7 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 		return fmt.Errorf("failed to create BPF program: %w", err)
 	}
 
-	err = 	.ApplyFilter(prog)
-	if err != nil {
+	if err = conn.ApplyFilter(prog); err != nil {
 		return fmt.Errorf("failed to attach eBPF program to socket: %w", err)
 	}
 

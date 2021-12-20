@@ -17,8 +17,8 @@ func TestWireguardLink(t *testing.T) {
 		LinkAttrs: netlink.NewLinkAttrs(),
 	}
 	l.LinkAttrs.Name = "wg-test0"
-	err := netlink.LinkAdd(l)
-	if err != nil {
+
+	if err := netlink.LinkAdd(l); err != nil {
 		t.Errorf("failed to create Wireguard interface: %s", err)
 	}
 

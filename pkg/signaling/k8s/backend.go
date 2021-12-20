@@ -58,8 +58,7 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		updates: make(chan NodeCallback),
 	}
 
-	err := b.config.Parse(uri, options)
-	if err != nil {
+	if err := b.config.Parse(uri, options); err != nil {
 		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
@@ -145,8 +144,7 @@ func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer signaling.Offer) e
 		// Unmarshal
 		var om signaling.OfferMap
 		if ok && offerMapJson != "" {
-			err := json.Unmarshal([]byte(offerMapJson), &om)
-			if err != nil {
+			if err := json.Unmarshal([]byte(offerMapJson), &om); err != nil {
 				return err
 			}
 		} else {
