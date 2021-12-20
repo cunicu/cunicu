@@ -1,7 +1,7 @@
 package ice
 
 import (
-	"strings"
+	"unicode"
 
 	"github.com/pion/logging"
 	log "github.com/sirupsen/logrus"
@@ -11,42 +11,74 @@ type LoggerFactory struct {
 }
 
 type Logger struct {
-	log.Entry
+	*log.Entry
 }
 
 func capitalize(msg string) string {
-	for i, v := range msg {
-		return strings.ToUpper(string(v)) + msg[i+1:]
+	runes := []rune(msg)
+
+	if len(runes) > 0 {
+		runes[0] = unicode.ToUpper(runes[0])
 	}
-	return ""
+
+	return string(runes)
 }
 
 func (l *Logger) Debug(msg string) {
-	l.Entry.Debug(capitalize(msg))
+	msg = capitalize(msg)
+	l.Entry.Debug(msg)
 }
 
 func (l *Logger) Error(msg string) {
-	l.Entry.Error(capitalize(msg))
+	msg = capitalize(msg)
+	l.Entry.Error(msg)
 }
 
 func (l *Logger) Info(msg string) {
-	l.Entry.Info(capitalize(msg))
+	msg = capitalize(msg)
+	l.Entry.Info(msg)
 }
 
 func (l *Logger) Trace(msg string) {
-	l.Entry.Trace(capitalize(msg))
+	msg = capitalize(msg)
+	l.Entry.Trace(msg)
 }
 
 func (l *Logger) Warn(msg string) {
-	l.Entry.Warn(capitalize(msg))
+	msg = capitalize(msg)
+	l.Entry.Warn(msg)
+}
+
+func (l *Logger) Tracef(format string, args ...interface{}) {
+	format = capitalize(format)
+	l.Entry.Tracef(format, args...)
+}
+
+func (l *Logger) Debugf(format string, args ...interface{}) {
+	format = capitalize(format)
+	l.Entry.Debugf(format, args...)
+}
+
+func (l *Logger) Infof(format string, args ...interface{}) {
+	format = capitalize(format)
+	l.Entry.Infof(format, args...)
+}
+
+func (l *Logger) Warnf(format string, args ...interface{}) {
+	format = capitalize(format)
+	l.Entry.Warnf(format, args...)
+}
+
+func (l *Logger) Errorf(format string, args ...interface{}) {
+	format = capitalize(format)
+	l.Entry.Errorf(format, args...)
 }
 
 func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
-	logger := &Logger{
-		Entry: *log.WithFields(log.Fields{
-			"logger": scope,
+	return &Logger{
+		Entry: log.WithFields(log.Fields{
+			"logger": "ice",
+			"scope":  scope,
 		}),
 	}
-
-	return logger
 }
