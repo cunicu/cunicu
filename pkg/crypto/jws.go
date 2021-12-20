@@ -112,11 +112,11 @@ func JWSCTVerify(obj interface{}, jwsStr string, pk Key) (bool, error) {
 	}
 
 	if hdr.Key.KeyType != "OKP" {
-		return false, fmt.Errorf("Unsupported key type: %s", hdr.Key.KeyType)
+		return false, fmt.Errorf("unsupported key type: %s", hdr.Key.KeyType)
 	}
 
 	if hdr.Key.Curve != "X25519" {
-		return false, fmt.Errorf("Unsupported curve type: %s", hdr.Key.Curve)
+		return false, fmt.Errorf("unsupported curve type: %s", hdr.Key.Curve)
 	}
 
 	var ssig Signature

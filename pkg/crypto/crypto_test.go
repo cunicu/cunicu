@@ -28,12 +28,12 @@ func TestCurve25519Crypt(t *testing.T) {
 		t.Fail()
 	}
 
-	encPayload, err := crypto.Curve25519Crypt(keyA[:], pubB[:], payload)
+	encPayload, err := crypto.Curve25519Crypt(crypto.Key(keyA), crypto.Key(pubB), payload)
 	if err != nil {
 		t.Fail()
 	}
 
-	decPayload, err := crypto.Curve25519Crypt(keyB[:], pubA[:], encPayload)
+	decPayload, err := crypto.Curve25519Crypt(crypto.Key(keyB), crypto.Key(pubA), encPayload)
 	if err != nil {
 		t.Fail()
 	}

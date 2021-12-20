@@ -22,6 +22,7 @@ type KeyPair struct {
 	Private Key
 	Public  Key
 }
+
 type PublicKeyPair struct {
 	Ours   Key
 	Theirs Key

@@ -1,7 +1,6 @@
 package crypto_test
 
 import (
-	"fmt"
 	"testing"
 
 	"riasc.eu/wice/pkg/crypto"
@@ -38,17 +37,17 @@ func TestJWSCT(t *testing.T) {
 
 	einstein.Signature, err = crypto.JWSCTSign(&einstein, sk)
 	if err != nil {
-		t.Errorf("Failed to sign: %w", err)
+		t.Errorf("Failed to sign: %s", err)
 	}
 
 	sig := einstein.Signature
 	einstein.Signature = ""
 
-	fmt.Printf("Signature: %s\n", sig)
+	t.Logf("Signature: %s", sig)
 
 	match, err := crypto.JWSCTVerify(&einstein, sig, pk)
 	if err != nil {
-		t.Errorf("Failed to verify: %w", err)
+		t.Errorf("Failed to verify: %s", err)
 	}
 
 	if !match {
@@ -59,7 +58,7 @@ func TestJWSCT(t *testing.T) {
 
 	match, err = crypto.JWSCTVerify(&einstein, sig, pk)
 	if err != nil {
-		t.Errorf("Failed to verify: %w", err)
+		t.Errorf("Failed to verify: %s", err)
 	}
 
 	if match {
