@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
@@ -14,9 +15,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"riasc.eu/wice/pkg/backend"
-	"riasc.eu/wice/pkg/backend/base"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 const (
@@ -26,7 +26,9 @@ const (
 )
 
 type Backend struct {
-	base.Backend
+	logger log.FieldLogger
+	offers map[crypto.PublicKeyPair]chan signaling.Offer
+
 	config BackendConfig
 
 	clientSet *kubernetes.Clientset
@@ -37,15 +39,21 @@ type Backend struct {
 }
 
 func init() {
-	backend.Backends["k8s"] = &backend.BackendPlugin{
+	signaling.Backends["k8s"] = &signaling.BackendPlugin{
 		New:         NewBackend,
 		Description: "Exchange candidates via annotation in Kubernetes Node resource",
 	}
 }
 
-func NewBackend(uri *url.URL, options map[string]string) (backend.Backend, error) {
+func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, error) {
+	logFields := log.Fields{
+		"logger":  "backend",
+		"backend": uri.Scheme,
+	}
+
 	b := Backend{
-		Backend: base.NewBackend(uri, options),
+		offers:  make(map[crypto.PublicKeyPair]chan signaling.Offer),
+		logger:  log.WithFields(logFields),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
 	}
@@ -104,16 +112,22 @@ func NewBackend(uri *url.URL, options map[string]string) (backend.Backend, error
 	})
 
 	go b.informer.Run(b.term)
-	b.Logger.Debug("Started watching node resources")
+	b.logger.Debug("Started watching node resources")
 
 	go b.applyUpdates()
-	b.Logger.Debug("Started batched updates")
+	b.logger.Debug("Started batched updates")
 
 	return &b, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan backend.Offer, error) {
-	ch := b.Backend.SubscribeOffers(kp)
+func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer, error) {
+	b.logger.WithField("kp", kp).Info("Subscribe to offers from peer")
+
+	ch, ok := b.offers[kp]
+	if !ok {
+		ch = make(chan signaling.Offer, 100)
+		b.offers[kp] = ch
+	}
 
 	// Process the node annotation at least once before we rely on the informer
 	node, err := b.getNodeByPublicKey(kp.Theirs)
@@ -124,19 +138,19 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan backend.Offer, e
 	return ch, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer backend.Offer) error {
+func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer signaling.Offer) error {
 	b.updateNode(func(node *corev1.Node) error {
 		offerMapJson, ok := node.ObjectMeta.Annotations[b.config.AnnotationOffers]
 
 		// Unmarshal
-		var om backend.OfferMap
+		var om signaling.OfferMap
 		if ok && offerMapJson != "" {
 			err := json.Unmarshal([]byte(offerMapJson), &om)
 			if err != nil {
 				return err
 			}
 		} else {
-			om = backend.OfferMap{}
+			om = signaling.OfferMap{}
 		}
 
 		// Update
@@ -154,23 +168,19 @@ func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer backend.Offer) err
 		return nil
 	})
 
-	return b.Backend.PublishOffer(kp, offer)
-}
+	b.logger.WithField("kp", kp).WithField("offer", offer).Debug("Published offer")
 
-func (b *Backend) WithdrawOffer(kp crypto.PublicKeyPair) error {
-	b.updateNode(func(node *corev1.Node) error {
-		delete(node.ObjectMeta.Annotations, b.config.AnnotationOffers)
-
-		return nil
-	})
-
-	return b.Backend.WithdrawOffer(kp)
+	return nil
 }
 
 func (b *Backend) Close() error {
 	close(b.term)
 
 	return nil // TODO
+}
+
+func (b *Backend) Tick() {
+
 }
 
 func (b *Backend) getNodeByPublicKey(pk crypto.Key) (*corev1.Node, error) {

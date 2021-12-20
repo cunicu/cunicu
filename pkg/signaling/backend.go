@@ -1,4 +1,4 @@
-package backend
+package signaling
 
 import (
 	"fmt"
@@ -13,11 +13,11 @@ var (
 )
 
 type Backend interface {
+	io.Closer
+
 	PublishOffer(kp crypto.PublicKeyPair, offer Offer) error
 	SubscribeOffer(kp crypto.PublicKeyPair) (chan Offer, error)
-	WithdrawOffer(kp crypto.PublicKeyPair) error
-
-	io.Closer
+	Tick()
 }
 
 func NewBackend(uri *url.URL, options map[string]string) (Backend, error) {

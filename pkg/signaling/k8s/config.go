@@ -3,12 +3,10 @@ package k8s
 import (
 	"errors"
 	"net/url"
-
-	"riasc.eu/wice/pkg/backend/base"
 )
 
 type BackendConfig struct {
-	base.BackendConfig
+	URI *url.URL
 
 	NodeName            string
 	AnnotationOffers    string
@@ -18,10 +16,7 @@ type BackendConfig struct {
 func (c *BackendConfig) Parse(uri *url.URL, options map[string]string) error {
 	var ok bool
 
-	err := c.BackendConfig.Parse(uri, options)
-	if err != nil {
-		return err
-	}
+	c.URI = uri
 
 	c.NodeName, ok = options["nodename"]
 	if !ok {

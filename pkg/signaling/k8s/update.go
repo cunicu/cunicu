@@ -27,7 +27,7 @@ func (b *Backend) applyUpdates() {
 
 		case <-timer.C:
 			if len(cbs) > 0 {
-				b.Logger.Debugf("Applying %d batched updates", len(cbs))
+				b.logger.Debugf("Applying %d batched updates", len(cbs))
 
 				nodes := b.clientSet.CoreV1().Nodes()
 
@@ -48,7 +48,7 @@ func (b *Backend) applyUpdates() {
 					return err
 				})
 				if err != nil {
-					b.Logger.WithError(err).Error("Failed to update node")
+					b.logger.WithError(err).Error("Failed to update node")
 				}
 
 				cbs = nil

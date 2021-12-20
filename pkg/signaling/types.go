@@ -1,11 +1,10 @@
-package backend
+package signaling
 
 import (
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
-	"time"
 
 	"riasc.eu/wice/pkg/crypto"
 
@@ -179,25 +178,39 @@ func (p *Peer) UnmarshalJSON(data []byte) error {
 
 // Offers
 
+type ImplementationType string
+
+const (
+	ImplementationTypeFull ImplementationType = "full"
+	ImplementationTypeLite ImplementationType = "lite"
+)
+
+type Role string
+
+const (
+	RoleControlled  Role = "controlled"
+	RoleControlling Role = "controlling"
+)
+
 type OfferMap map[crypto.Key]Offer
 
 // SDP-like session description
 // See: https://www.rfc-editor.org/rfc/rfc8866.html
 type Offer struct {
-	ID                 int64       `json:"id"`
-	Version            int64       `json:"version"`
-	Candidates         []Candidate `json:"cands,omitempty"`
-	EndOfCandidates    bool        `json:"eoc,omitempty"`
-	CleartextSignature string      `json:"signature"`
-	// Ufrag           string      `json:"ufrag,omitempty"`
-	// Pwd             string      `json:"pwd,omitempty"`
+	Version            int64              `json:"version"`
+	Role               Role               `json:"role"`
+	Implementation     ImplementationType `json:"implementation"`
+	Candidates         []Candidate        `json:"candidates"`
+	Ufrag              string             `json:"ufrag"`
+	Pwd                string             `json:"pwd"`
+	Epoch              int64              `json:"epoch"`
+	CleartextSignature string             `json:"signature"`
 }
 
 func NewOffer() Offer {
 	return Offer{
-		ID:              time.Now().UnixNano(),
-		Version:         0,
-		Candidates:      []Candidate{},
-		EndOfCandidates: false,
+		Epoch:          0,
+		Candidates:     []Candidate{},
+		Implementation: ImplementationTypeFull,
 	}
 }

@@ -1,4 +1,4 @@
-// +build linux
+//go:build linux
 
 package proxy
 
@@ -24,11 +24,7 @@ type NFTablesProxy struct {
 	Conn   net.Conn
 }
 
-func CheckNFTablesSupport() bool {
-	return runtime.GOOS == "linux"
-}
-
-func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (*NFTablesProxy, error) {
+func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
 	ns, err := netns.Get()
 	if err != nil {
 		return nil, err
@@ -62,6 +58,14 @@ func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn ne
 	proxy.logger.Info("Configured stateless nftables port redirection")
 
 	return proxy, nil
+}
+
+func (p *NFTablesProxy) Type() ProxyType {
+	return ProxyTypeNFTables
+}
+
+func (p *NFTablesProxy) Setup(agentConfig *ice.AgentConfig, listenPort int) error {
+	return nil
 }
 
 func (p *NFTablesProxy) deleteTable() error {

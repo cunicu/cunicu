@@ -13,8 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	pice "riasc.eu/wice/internal/ice"
-	"riasc.eu/wice/pkg/backend"
 	"riasc.eu/wice/pkg/proxy"
+	"riasc.eu/wice/pkg/signaling"
 
 	"github.com/pion/ice/v2"
 )
@@ -52,7 +52,7 @@ type Args struct {
 	Backend        *url.URL
 	BackendOptions map[string]string
 	User           bool
-	ProxyType      proxy.ProxyType
+	ProxyType      proxy.Type
 	// Discover        bool
 	ConfigSync      bool
 	ConfigPath      string
@@ -85,7 +85,7 @@ func showUsage() {
 	fmt.Println("  (**) These options can be specified multiple times")
 	fmt.Println()
 	fmt.Println("Available backends types are:")
-	for name, plugin := range backend.Backends {
+	for name, plugin := range signaling.Backends {
 		fmt.Printf("  %-7s %s\n", name, plugin.Description)
 	}
 }
@@ -154,20 +154,20 @@ func Parse(progname string, argv []string) (*Args, error) {
 
 	logLevel := flags.String("log-level", "info", "log level (one of \"panic\", \"fatal\", \"error\", \"warn\", \"info\", \"debug\", \"trace\")")
 	// discover := flag.Bool("discover", false, "discover peers using the backend")
-	backend := flags.String("backend", "http://localhost:8080", "backend URL")
+	backend := flags.String("backend", "p2p", "backend type / URL")
 	backendOpts := flags.String("backend-opts", "", "comma-separated list of additional backend options (e.g. \"key1=val1,key2-val2\")")
 	user := flags.Bool("user", false, "start userspace Wireguard daemon")
 	proxyType := flags.String("proxy", "auto", "proxy type to use")
 	interfaceFilter := flags.String("interface-filter", ".*", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
 	configSync := flags.Bool("config-sync", false, "sync Wireguard interface with configuration file (see \"wg synconf\"")
 	configPath := flags.String("config-path", "/etc/wireguard", "base path to search for Wireguard configuration files")
-	watchInterval := flags.Duration("watch-interval", 2*time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
+	watchInterval := flags.Duration("watch-interval", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
 	// ice.AgentConfig fields
 	flags.Var(&iceURLs, "url", "STUN and/or TURN server address  (**)")
 	flags.Var(&iceCandidateTypes, "ice-candidate-type", "usable candidate types (**, one of \"host\", \"srflx\", \"prflx\", \"relay\")")
 	flags.Var(&iceNetworkTypes, "ice-network-type", "usable network types (**, select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
-	flags.Var(&iceNat1to1IPs, "ice-nat-1to1-ips", "list of IP addresses which will be added as local server reflexive candidates (**)")
+	flags.Var(&iceNat1to1IPs, "ice-nat-1to1-ip", "list of IP addresses which will be added as local server reflexive candidates (**)")
 
 	icePortMin := flags.Uint("ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
 	icePortMax := flags.Uint("ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
@@ -209,12 +209,12 @@ func Parse(progname string, argv []string) (*Args, error) {
 	}
 
 	// Find best proxy method
-	if args.ProxyType == proxy.ProxyTypeAuto {
+	if args.ProxyType == proxy.TypeAuto {
 		args.ProxyType = proxy.AutoProxy()
 	}
 
 	// Check proxy type
-	if args.ProxyType == proxy.ProxyTypeInvalid {
+	if args.ProxyType == proxy.TypeInvalid {
 		return nil, fmt.Errorf("invalid proxy type: %s", *proxyType)
 	}
 

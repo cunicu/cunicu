@@ -1,4 +1,4 @@
-// +build linux
+//+build linux
 
 package proxy
 
@@ -21,11 +21,24 @@ type EBPFProxy struct {
 	BaseProxy
 }
 
-func CheckEBPFSupport() bool {
-	return runtime.GOOS == "linux"
+func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
+
+	rUDPAddr := conn.RemoteAddr().(*net.UDPAddr)
+	cb(rUDPAddr)
+
+	return &EBPFProxy{
+		BaseProxy: BaseProxy{
+			Ident: ident,
+		},
+		// Conn: conn,
+	}, nil
 }
 
-func SetupEBPFMux(agentConfig *ice.AgentConfig, listenPort int) error {
+func (p *EBPFProxy) Type() ProxyType {
+	return ProxyTypeEBPF
+}
+
+func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 	addr := net.UDPAddr{
 		IP:   net.IPv4zero,
 		Port: listenPort,
@@ -58,7 +71,7 @@ func SetupEBPFMux(agentConfig *ice.AgentConfig, listenPort int) error {
 		return fmt.Errorf("failed to create BPF program: %w", err)
 	}
 
-	err = conn.ApplyFilter(prog)
+	err = 	.ApplyFilter(prog)
 	if err != nil {
 		return fmt.Errorf("failed to attach eBPF program to socket: %w", err)
 	}
@@ -69,19 +82,6 @@ func SetupEBPFMux(agentConfig *ice.AgentConfig, listenPort int) error {
 	})
 
 	return nil
-}
-
-func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (*EBPFProxy, error) {
-
-	rUDPAddr := conn.RemoteAddr().(*net.UDPAddr)
-	cb(rUDPAddr)
-
-	return &EBPFProxy{
-		BaseProxy: BaseProxy{
-			Ident: ident,
-		},
-		// Conn: conn,
-	}, nil
 }
 
 func (bpf *EBPFProxy) Close() error {

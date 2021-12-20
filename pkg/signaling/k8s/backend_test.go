@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"testing"
 
-	"riasc.eu/wice/pkg/backend"
-	"riasc.eu/wice/pkg/backend/k8s"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/signaling/k8s"
 )
 
 func TestBackend(t *testing.T) {
@@ -33,7 +33,7 @@ func TestBackend(t *testing.T) {
 		Theirs: theirSecretKey.PublicKey(),
 	}
 
-	o := backend.NewOffer()
+	o := signaling.NewOffer()
 
 	ch, err := b.SubscribeOffer(kp)
 	if err != nil {

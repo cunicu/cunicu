@@ -4,24 +4,27 @@ import (
 	"errors"
 	"io"
 	"net"
+	"runtime"
 )
 
-type ProxyType int
+type Type int
 
 type UpdateEndpointCb func(addr *net.UDPAddr) error
 
 const (
-	ProxyTypeInvalid ProxyType = iota
-	ProxyTypeAuto
-	ProxyTypeUser
-	ProxyTypeNFTables
-	ProxyTypeEBPF
+	TypeInvalid Type = iota
+	TypeAuto
+	TypeUser
+	TypeNFTables
+	TypeEBPF
 
 	StunMagicCookie uint32 = 0x2112A442
 )
 
 type Proxy interface {
 	io.Closer
+
+	Type() Type
 
 	UpdateEndpoint(addr *net.UDPAddr) error
 }
@@ -31,68 +34,63 @@ type BaseProxy struct {
 	Ident      string
 }
 
-func ProxyTypeFromString(typ string) ProxyType {
+func CheckNFTablesSupport() bool {
+	return runtime.GOOS == "linux"
+}
+
+func CheckEBPFSupport() bool {
+	return runtime.GOOS == "linux"
+}
+
+func ProxyTypeFromString(typ string) Type {
 	switch typ {
 	case "auto":
-		return ProxyTypeAuto
+		return TypeAuto
 	case "user":
-		return ProxyTypeUser
+		return TypeUser
 	case "nftables":
-		return ProxyTypeNFTables
+		return TypeNFTables
 	case "ebpf":
-		return ProxyTypeEBPF
+		return TypeEBPF
 	default:
-		return ProxyTypeInvalid
+		return TypeInvalid
 	}
 }
 
-func (pt ProxyType) String() string {
+func (pt Type) String() string {
 	switch pt {
-	case ProxyTypeAuto:
+	case TypeAuto:
 		return "auto"
-	case ProxyTypeUser:
+	case TypeUser:
 		return "user"
-	case ProxyTypeNFTables:
+	case TypeNFTables:
 		return "nftables"
-	case ProxyTypeEBPF:
+	case TypeEBPF:
 		return "ebpf"
 	}
 
 	return "invalid"
 }
 
-func AutoProxy() ProxyType {
+func AutoProxy() Type {
 	if CheckEBPFSupport() {
-		return ProxyTypeEBPF
+		return TypeEBPF
 	} else if CheckNFTablesSupport() {
-		return ProxyTypeNFTables
+		return TypeNFTables
 	} else {
-		return ProxyTypeUser
+		return TypeUser
 	}
 }
 
-func NewProxy(pt ProxyType, ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
+func NewProxy(pt Type, ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
 	switch pt {
-	case ProxyTypeUser:
+	case TypeUser:
 		return NewUserProxy(ident, listenPort, cb, conn)
-	case ProxyTypeNFTables:
+	case TypeNFTables:
 		return NewNFTablesProxy(ident, listenPort, cb, conn)
-	case ProxyTypeEBPF:
+	case TypeEBPF:
 		return NewEBPFProxy(ident, listenPort, cb, conn)
 	}
 
 	return nil, errors.New("unknown proxy type")
-}
-
-func Type(p Proxy) ProxyType {
-	switch p.(type) {
-	case *NFTablesProxy:
-		return ProxyTypeNFTables
-	case *UserProxy:
-		return ProxyTypeUser
-	case *EBPFProxy:
-		return ProxyTypeEBPF
-	default:
-		return ProxyTypeInvalid
-	}
 }

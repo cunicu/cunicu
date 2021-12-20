@@ -4,6 +4,7 @@ import (
 	"io"
 	"net"
 
+	"github.com/pion/ice/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +19,7 @@ type UserProxy struct {
 	logger log.FieldLogger
 }
 
-func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (*UserProxy, error) {
+func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
 	var err error
 
 	proxy := &UserProxy{
@@ -63,6 +64,14 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 	proxy.logger.Info("Setup user-space proxy")
 
 	return proxy, nil
+}
+
+func (p *UserProxy) Type() Type {
+	return TypeUser
+}
+
+func (p *UserProxy) Setup(agentConfig *ice.AgentConfig, listenPort int) error {
+	return nil
 }
 
 func (p *UserProxy) Close() error {
