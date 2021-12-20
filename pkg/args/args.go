@@ -63,6 +63,8 @@ type Args struct {
 	IceInterfaceRegex *regexp.Regexp
 	AgentConfig       ice.AgentConfig
 
+	Socket string
+
 	Interfaces []string
 }
 
@@ -80,7 +82,7 @@ func showUsage() {
 	fmt.Println(("Available OPTIONS are:"))
 	flag.PrintDefaults()
 	fmt.Println()
-	fmt.Println("  ** These options can be specified multiple times")
+	fmt.Println("  (**) These options can be specified multiple times")
 	fmt.Println()
 	fmt.Println("Available backends types are:")
 	for name, plugin := range backend.Backends {
@@ -183,6 +185,8 @@ func Parse(progname string, argv []string) (*Args, error) {
 	icePassword := flags.String("ice-pass", "", "password for STUN/TURN credentials")
 	// iceMaxBindingRequestTimeout := flag.Duration("ice-max-binding-request-timeout", maxBindingRequestTimeout, "wait time before binding requests can be deleted")
 
+	socket := flags.String("socket", "/var/run/wice.sock", "Unix control and monitoring socket")
+
 	flags.Parse(argv)
 
 	args := &Args{
@@ -194,6 +198,7 @@ func Parse(progname string, argv []string) (*Args, error) {
 		ConfigPath:      *configPath,
 		WatchInterval:   *watchInterval,
 		RestartInterval: *iceRestartInterval,
+		Socket:          *socket,
 		Interfaces:      flag.Args(),
 		AgentConfig: ice.AgentConfig{
 			PortMin:            uint16(*icePortMin),

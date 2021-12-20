@@ -63,6 +63,12 @@ func main() {
 		log.WithError(err).Fatal("Failed to initialize backend")
 	}
 
+	// Create control socket server
+	server, err := socket.Listen(args.Socket)
+	if err != nil {
+		log.WithError(err).Fatal("Failed to initialize control socket")
+	}
+
 	// Create Wireguard netlink socket
 	client, err := wgctrl.New()
 	if err != nil {
