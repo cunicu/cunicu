@@ -29,15 +29,15 @@ Only STUN binding requests are passed to WICE.
 ```bash
 $ sudo nft list ruleset
 table inet wice {
-	chain ingress {
-		type filter hook input priority raw; policy accept;
-		udp dport 37281 @th,96,32 != 554869826 notrack udp dport set 1001
-	}
+    chain ingress {
+        type filter hook input priority raw; policy accept;
+        udp dport 37281 @th,96,32 != 554869826 notrack udp dport set 1001
+    }
 
-	chain egress {
-		type filter hook output priority raw; policy accept;
-		udp sport 1001 udp dport 38767 notrack udp sport set 37281
-	}
+    chain egress {
+        type filter hook output priority raw; policy accept;
+        udp sport 1001 udp dport 38767 notrack udp sport set 37281
+    }
 }
 ```
 

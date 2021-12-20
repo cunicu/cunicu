@@ -11,7 +11,7 @@
   - Pass traffic in-process between userspace Wireguard and ICE sockets
   - Use Wireguard-go's conn.Bind interface
 - [ ] Single eBPF program per network NS to steer STUN traffic to ICE Agents
-  - https://ebpf.io/summit-2020-slides/eBPF_Summit_2020-Lightning-Jakub_Sitnicki-Steering_connections_to_sockets_with_BPF_socke_lookup_hook.pdf
+  - [Slides](https://ebpf.io/summit-2020-slides/eBPF_Summit_2020-Lightning-Jakub_Sitnicki-Steering_connections_to_sockets_with_BPF_socke_lookup_hook.pdf)
 - [ ] Use in-process pipe for wireguard-go's UAPI
 - [ ] Update proxy instances instead of recreating them.
   - Avoids possible packet loss during change of candidate pairs
@@ -22,7 +22,7 @@
 - [ ] Test co-existance of multipe `wice` instances
   - nft tables might collide
 - [ ] Use netlink multicast subscription for notification of Wireguard peer changes
-  - https://lore.kernel.org/patchwork/patch/1366219/
+  - [Patch](https://lore.kernel.org/patchwork/patch/1366219/)
 - [ ] Use netlink multicast group RTMGRP_LINK to for notification of new Wireguard interfaces
 - [ ] Add links to code in README
 - [ ] Add `XEdDSA` and `VXEdDSA` signature schemes to [JOSE IANA alg registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms)
@@ -33,3 +33,15 @@
   - `wicectl discover INTF GROUP`
   - `wicectl sync [INTF]`
   - `wicectl restart INTF PEER`
+  - `wicectl monitor`
+
+- [ ] Add check for availability of turnserver
+- [ ] Add check for handshakes before attempting to ping
+- [ ] Add context for waiting for events
+- [ ] Use mermaid actor diagram for signaling docs
+- [ ] Use RTT & packet loss for selecting ICE relay candidates
+- [ ] Embed routing daemon into WICE
+  - Facilitates reachability for non-directly connected peers
+  - Candidates:
+    - [bio-rd](https://github.com/bio-routing/bio-rd)
+    - [gobgp](https://github.com/osrg/gobgp/)

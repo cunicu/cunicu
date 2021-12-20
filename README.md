@@ -1,9 +1,9 @@
 # WICE - Wireguard Interactive Connectivity Establishment
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/stv0g/wice.svg)](https://pkg.go.dev/github.com/stv0g/wice)
-![](https://img.shields.io/snyk/vulnerabilities/github/stv0g/wice)
-[![](https://img.shields.io/github/checks-status/stv0g/wice/master)](https://github.com/stv0g/wice/actions)
-[![](https://img.shields.io/librariesio/release/stv0g/wice)](https://libraries.io/github/stv0g/wice)
+![Snyk](https://img.shields.io/snyk/vulnerabilities/github/stv0g/wice)
+[![Build](https://img.shields.io/github/checks-status/stv0g/wice/master)](https://github.com/stv0g/wice/actions)
+[![Dependencies](https://img.shields.io/librariesio/release/stv0g/wice)](https://libraries.io/github/stv0g/wice)
 [![GitHub](https://img.shields.io/github/license/stv0g/wice)](https://github.com/stv0g/wice/blob/master/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stv0g/wice)
 
@@ -13,19 +13,19 @@ It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice] pack
 
 ## Getting started
 
-To use WICE you first need to setup a signalling server:
+To use WICE you first need to setup a signaling server:
 
 1. Install WICE: `go get riasc.eu/wice`
-2. Run the signalling server on a publicly accessible node: `wice-signal-http -port 8080`
+2. Run the signaling server on a publicly accessible node: `wice-signal -port 8080`
 
 Afterwards perform the following steps on each node which should join the mesh:
 
 1. Install WICE: `go get riasc.eu/wice`
 2. Configure your Wireguard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
-3. Start the WICE daemon by running: `sudo wice -backend http://signalling-server:8080`
+3. Start the WICE daemon by running: `sudo wice -backend http://signaling-server:8080`
 
 The WICE daemons will now attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
-These _ICE candidates_ are then exchanged via the signalling server and WICE will update the endpoint addresses of the Wireguard peers accordingly.
+These _ICE candidates_ are then exchanged via the signaling server and WICE will update the endpoint addresses of the Wireguard peers accordingly.
 Once this has been done, the WICE logs should show `Connected to peer`.
 
 ## Documentation
@@ -38,8 +38,7 @@ Documentation of WICE can be found in the [`docs/`](./docs) directory.
 
 ## Funding acknowledment
 
-![](https://erigrid2.eu/wp-content/uploads/2020/03/europa_flag_low.jpg) The development of [WICE] has been supported by the [ERIGrid 2.0] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
-
+![Flag of Europe](https://erigrid2.eu/wp-content/uploads/2020/03/europa_flag_low.jpg) The development of [WICE] has been supported by the [ERIGrid 2.0] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
 
 [Wireguard]: https://wireguard.com
 [wireguard-go]: https://git.zx2c4.com/wireguard-go
@@ -66,5 +65,5 @@ Documentation of WICE can be found in the [`docs/`](./docs) directory.
 [Nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 [XEdDSA]: https://signal.org/docs/specifications/xeddsa/
 
-https://riyazali.net/posts/berkeley-packet-filter-in-golang/
-https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html
+[Golang BPF]: https://riyazali.net/posts/berkeley-packet-filter-in-golang/
+[Linux Raw Sockets]: https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html
