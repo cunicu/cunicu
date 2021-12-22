@@ -34,8 +34,8 @@ func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 	}, nil
 }
 
-func (p *EBPFProxy) Type() ProxyType {
-	return ProxyTypeEBPF
+func (p *EBPFProxy) Type() Type {
+	return TypeEBPF
 }
 
 func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {

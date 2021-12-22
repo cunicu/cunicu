@@ -5,11 +5,11 @@ package proxy
 import (
 	"fmt"
 	"net"
-	"runtime"
 
 	"github.com/google/nftables"
 	"github.com/google/nftables/binaryutil"
 	"github.com/google/nftables/expr"
+	"github.com/pion/ice/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netns"
 	"golang.org/x/sys/unix"
@@ -60,8 +60,8 @@ func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn ne
 	return proxy, nil
 }
 
-func (p *NFTablesProxy) Type() ProxyType {
-	return ProxyTypeNFTables
+func (p *NFTablesProxy) Type() Type {
+	return TypeNFTables
 }
 
 func (p *NFTablesProxy) Setup(agentConfig *ice.AgentConfig, listenPort int) error {
