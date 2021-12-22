@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -37,6 +38,83 @@ const (
 	defaultMaxBindingRequests = 7
 )
 
+var (
+	defaultICEUrls = []*ice.URL{
+		{
+			Scheme:   ice.SchemeTypeSTUN,
+			Host:     "stun.l.google.com",
+			Port:     19302,
+			Username: "",
+			Password: "",
+			Proto:    ice.ProtoTypeUDP,
+		},
+	}
+)
+
+type logLevel struct {
+	log.Level
+}
+
+func (l *logLevel) Set(value string) error {
+	if m, err := log.ParseLevel(value); err != nil {
+		return err
+	} else {
+		l.Level = m
+		return nil
+	}
+}
+
+type backendURLList []*url.URL
+
+func (i *backendURLList) String() string {
+	s := []string{}
+	for _, u := range *i {
+		s = append(s, u.String())
+	}
+
+	return strings.Join(s, ",")
+}
+
+func (i *backendURLList) Set(value string) error {
+
+	// Allow the user to specify just the backend type as a valid url.
+	// E.g. "p2p" instead of "p2p:"
+	if !strings.Contains(value, ":") {
+		value += ":"
+	}
+
+	uri, err := url.Parse(value)
+	if err != nil {
+		return fmt.Errorf("invalid backend URI: %w", err)
+	}
+
+	*i = append(*i, uri)
+
+	return nil
+}
+
+type iceURLList []*ice.URL
+
+func (i *iceURLList) String() string {
+	s := []string{}
+	for _, u := range *i {
+		s = append(s, u.String())
+	}
+
+	return strings.Join(s, ",")
+}
+
+func (i *iceURLList) Set(value string) error {
+	iceUrl, err := ice.ParseURL(value)
+	if err != nil {
+		return fmt.Errorf("failed to parse ICE url %s: %w", value, err)
+	}
+
+	*i = append(*i, iceUrl)
+
+	return nil
+}
+
 type arrayFlags []string
 
 func (i *arrayFlags) String() string {
@@ -49,11 +127,9 @@ func (i *arrayFlags) Set(value string) error {
 }
 
 type Args struct {
-	Backend        *url.URL
-	BackendOptions map[string]string
-	User           bool
-	ProxyType      proxy.Type
-	// Discover        bool
+	Backends        []*url.URL
+	User            bool
+	ProxyType       proxy.Type
 	ConfigSync      bool
 	ConfigPath      string
 	WatchInterval   time.Duration
@@ -63,14 +139,10 @@ type Args struct {
 	IceInterfaceRegex *regexp.Regexp
 	AgentConfig       ice.AgentConfig
 
-	Socket string
+	Socket     string
+	SocketWait bool
 
 	Interfaces []string
-}
-
-var yesno = map[bool]string{
-	true:  "yes",
-	false: "no",
 }
 
 func showUsage() {
@@ -102,13 +174,12 @@ func (a *Args) DumpConfig(wr io.Writer) {
 		fmt.Fprintf(wr, "    %s\n", d)
 	}
 
-	fmt.Fprintf(wr, "  User: %s\n", yesno[a.User])
+	fmt.Fprintf(wr, "  User: %s\n", strconv.FormatBool(a.User))
 	fmt.Fprintf(wr, "  ProxyType: %s\n", a.ProxyType.String())
 
-	fmt.Fprintf(wr, "  Backend: %s\n", a.Backend.String())
-	fmt.Fprintln(wr, "  Backend options:")
-	for k := range a.BackendOptions {
-		fmt.Fprintf(wr, "    %s=%s\n", k, a.BackendOptions[k])
+	fmt.Fprintf(wr, "  Signalling Backends:\n")
+	for _, b := range a.Backends {
+		fmt.Fprintf(wr, "    %s\n", b)
 	}
 }
 
@@ -143,19 +214,17 @@ func networkTypeFromString(t string) (ice.NetworkType, error) {
 }
 
 func Parse(progname string, argv []string) (*Args, error) {
-	var uri string
 	var err error
-
 	var iceURLs, iceCandidateTypes, iceNetworkTypes, iceNat1to1IPs arrayFlags
+	var backendURLs backendURLList
+	var logLevel logLevel = logLevel{log.InfoLevel}
 
 	flags := flag.NewFlagSet(progname, flag.ContinueOnError)
 
 	flags.Usage = showUsage
 
-	logLevel := flags.String("log-level", "info", "log level (one of \"panic\", \"fatal\", \"error\", \"warn\", \"info\", \"debug\", \"trace\")")
-	// discover := flag.Bool("discover", false, "discover peers using the backend")
-	backend := flags.String("backend", "p2p", "backend type / URL")
-	backendOpts := flags.String("backend-opts", "", "comma-separated list of additional backend options (e.g. \"key1=val1,key2-val2\")")
+	flags.Var(&logLevel, "log-level", "log level (one of \"panic\", \"fatal\", \"error\", \"warn\", \"info\", \"debug\", \"trace\")")
+	flags.Var(&backendURLs, "backend", "backend type / URL")
 	user := flags.Bool("user", false, "start userspace Wireguard daemon")
 	proxyType := flags.String("proxy", "auto", "proxy type to use")
 	interfaceFilter := flags.String("interface-filter", ".*", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
@@ -186,25 +255,33 @@ func Parse(progname string, argv []string) (*Args, error) {
 	// iceMaxBindingRequestTimeout := flag.Duration("ice-max-binding-request-timeout", maxBindingRequestTimeout, "wait time before binding requests can be deleted")
 
 	socket := flags.String("socket", "/var/run/wice.sock", "Unix control and monitoring socket")
+	socketWait := flags.Bool("socket-wait", false, "wait until first client connected to control socket before continuing start")
 
-	flags.Parse(argv)
+	if err := flags.Parse(argv); err != nil {
+		return nil, fmt.Errorf("failed to parse args: %w", err)
+	}
+
+	log.WithField("level", logLevel.Level).Info("Setting debug level")
+	log.SetLevel(logLevel.Level)
 
 	args := &Args{
-		User:           *user,
-		ProxyType:      proxy.ProxyTypeFromString(*proxyType),
-		BackendOptions: make(map[string]string),
+		User:      *user,
+		Backends:  backendURLs,
+		ProxyType: proxy.ProxyTypeFromString(*proxyType),
 		// Discover:        *discover,
 		ConfigSync:      *configSync,
 		ConfigPath:      *configPath,
 		WatchInterval:   *watchInterval,
 		RestartInterval: *iceRestartInterval,
 		Socket:          *socket,
+		SocketWait:      *socketWait,
 		Interfaces:      flag.Args(),
 		AgentConfig: ice.AgentConfig{
 			PortMin:            uint16(*icePortMin),
 			PortMax:            uint16(*icePortMax),
 			Lite:               *iceLite,
 			InsecureSkipVerify: *iceInsecureSkipVerify,
+			Urls:               []*ice.URL{},
 		},
 	}
 
@@ -222,37 +299,6 @@ func Parse(progname string, argv []string) (*Args, error) {
 	args.InterfaceRegex, err = regexp.Compile(*interfaceFilter)
 	if err != nil {
 		return nil, fmt.Errorf("invalid interface filter: %w", err)
-	}
-
-	// Parse log level
-	if lvl, err := log.ParseLevel(*logLevel); err != nil {
-		return nil, fmt.Errorf("invalid log level: %s", *logLevel)
-	} else {
-		log.SetLevel(lvl)
-	}
-
-	// Parse backend URI
-	if !strings.Contains(*backend, ":") {
-		*backend += ":"
-	}
-	if args.Backend, err = url.Parse(*backend); err != nil {
-		return nil, fmt.Errorf("invalid URI: %w", err)
-	}
-
-	// Parse additional backend options
-	if *backendOpts != "" {
-		opts := strings.Split(*backendOpts, ",")
-		for _, opt := range opts {
-			kv := strings.SplitN(opt, "=", 2)
-			if len(kv) < 2 {
-				return nil, fmt.Errorf("invalid backend option: %s", opt)
-			}
-
-			key := kv[0]
-			value := kv[1]
-
-			args.BackendOptions[key] = value
-		}
 	}
 
 	if *iceMaxBindingRequests >= 0 {
@@ -309,34 +355,27 @@ func Parse(progname string, argv []string) (*Args, error) {
 		}
 	}
 
-	// Parse ICE urls
-	for _, uri = range iceURLs {
-		iceUrl, err := ice.ParseURL(uri)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse url %s: %w", uri, err)
-		}
-
-		if *iceUsername != "" {
-			iceUrl.Username = *iceUsername
-		}
-		if *icePassword != "" {
-			iceUrl.Password = *icePassword
-		}
-
-		args.AgentConfig.Urls = append(args.AgentConfig.Urls, iceUrl)
+	// Add default backend
+	if len(args.Backends) == 0 {
+		args.Backends = append(args.Backends, &url.URL{
+			Scheme: "p2p",
+		})
 	}
 
-	// Add default STUN server
+	// Add default STUN/TURN servers
 	if len(args.AgentConfig.Urls) == 0 {
-		url := &ice.URL{
-			Scheme:   ice.SchemeTypeSTUN,
-			Host:     "stun.l.google.com",
-			Port:     19302,
-			Username: "",
-			Password: "",
-			Proto:    ice.ProtoTypeUDP,
+		args.AgentConfig.Urls = defaultICEUrls
+	} else {
+		// Set ICE credentials
+		for _, u := range args.AgentConfig.Urls {
+			if *iceUsername != "" {
+				u.Username = *iceUsername
+			}
+
+			if *icePassword != "" {
+				u.Password = *icePassword
+			}
 		}
-		args.AgentConfig.Urls = append(args.AgentConfig.Urls, url)
 	}
 
 	args.AgentConfig.LoggerFactory = &pice.LoggerFactory{}

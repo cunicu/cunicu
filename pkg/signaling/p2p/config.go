@@ -3,8 +3,9 @@ package p2p
 import (
 	"fmt"
 	"net/url"
-	"strings"
+	"strconv"
 
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/pnet"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
@@ -38,6 +39,9 @@ type BackendConfig struct {
 
 	RendezvousString string
 
+	// PrivateKey is the private key used by the libp2p host.
+	PrivateKey crypto.PrivKey
+
 	// PrivateNetwork configures libp2p to use the given private network protector.
 	PrivateNetwork pnet.PSK
 
@@ -66,8 +70,7 @@ type BackendConfig struct {
 	EnableHolePunching bool
 }
 
-func (al *multiAddressList) Set(option string) error {
-	as := strings.Split(option, ":")
+func (al *multiAddressList) Set(as []string) error {
 	for _, a := range as {
 		ma, err := maddr.NewMultiaddr(a)
 		if err != nil {
@@ -80,8 +83,7 @@ func (al *multiAddressList) Set(option string) error {
 	return nil
 }
 
-func (al *peerAddressList) Set(option string) error {
-	as := strings.Split(option, ":")
+func (al *peerAddressList) Set(as []string) error {
 	for _, a := range as {
 		pi, err := peer.AddrInfoFromString(a)
 		if err != nil {
@@ -94,21 +96,44 @@ func (al *peerAddressList) Set(option string) error {
 	return nil
 }
 
-func (c *BackendConfig) Parse(uri *url.URL, options map[string]string) error {
-	if rStr, ok := options["rendevouz-string"]; ok {
-		c.RendezvousString = rStr
-	} else {
-		c.RendezvousString = uri.Host
+func (c *BackendConfig) Parse(uri *url.URL) error {
+	var err error
+
+	c.RendezvousString = uri.Opaque
+
+	options := uri.Query()
+
+	if pkStr := options.Get("private-key"); pkStr != "" {
+		pk, err := crypto.ConfigDecodeKey(pkStr)
+		if err != nil {
+			return fmt.Errorf("failed to parse private key: %w", err)
+		}
+
+		if c.PrivateKey, err = crypto.UnmarshalEd25519PrivateKey(pk); err != nil {
+			return fmt.Errorf("failed to parse private key: %w", err)
+		}
 	}
 
-	if laStr, ok := options["listen-addresses"]; ok {
-		if err := c.ListenAddresses.Set(laStr); err != nil {
+	if bStr := options.Get("mdns"); bStr != "" {
+		if c.EnableMDNSDiscovery, err = strconv.ParseBool(bStr); err != nil {
+			return fmt.Errorf("failed to parse mdns option: %w", err)
+		}
+	}
+
+	if bStr := options.Get("dht"); bStr != "" {
+		if c.EnableDHTDiscovery, err = strconv.ParseBool(bStr); err != nil {
+			return fmt.Errorf("failed to parse dht option: %w", err)
+		}
+	}
+
+	if laStrs, ok := options["listen-addresses"]; ok {
+		if err := c.ListenAddresses.Set(laStrs); err != nil {
 			return fmt.Errorf("failed to parse listen-address option: %w", err)
 		}
 	}
 
-	if bpStr, ok := options["bootstrap-peers"]; ok {
-		if err := c.BootstrapPeers.Set(bpStr); err != nil {
+	if bpStrs, ok := options["bootstrap-peers"]; ok {
+		if err := c.BootstrapPeers.Set(bpStrs); err != nil {
 			return fmt.Errorf("failed to parse listen-address option: %w", err)
 		}
 	}

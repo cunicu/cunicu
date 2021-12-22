@@ -9,15 +9,19 @@ import (
 	p2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
+	discovery "github.com/libp2p/go-libp2p-discovery"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+	noise "github.com/libp2p/go-libp2p-noise"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	ptls "github.com/libp2p/go-libp2p-tls"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/multiformats/go-multiaddr"
-
 	log "github.com/sirupsen/logrus"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 )
 
 const (
@@ -48,9 +52,10 @@ type Backend struct {
 	mdns   mdns.Service
 	dht    *dht.IpfsDHT
 	pubsub *pubsub.PubSub
+	server *socket.Server
 }
 
-func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, error) {
+func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) {
 	var err error
 
 	logFields := log.Fields{
@@ -62,9 +67,10 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		peers:  map[crypto.PublicKeyPair]*Peer{},
 		logger: log.WithFields(logFields),
 		config: defaultConfig,
+		server: server,
 	}
 
-	if err := b.config.Parse(uri, options); err != nil {
+	if err := b.config.Parse(uri); err != nil {
 		return nil, fmt.Errorf("failed to parse backend options: %w", err)
 	}
 
@@ -73,6 +79,9 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 	opts := []p2p.Option{
 		p2p.UserAgent(userAgent),
 		p2p.DefaultTransports,
+		p2p.EnableNATService(),
+		p2p.Security(ptls.ID, ptls.New),
+		p2p.Security(noise.ID, noise.New),
 	}
 
 	if len(b.config.ListenAddresses) > 0 {
@@ -99,16 +108,27 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		opts = append(opts, p2p.EnableHolePunching())
 	}
 
+	if b.config.PrivateKey != nil {
+		opts = append(opts, p2p.Identity(b.config.PrivateKey))
+	}
+
+	// if b.config.EnableDHTDiscovery {
+	// 	opts = append(opts, p2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
+	// 		b.dht, err = dht.New(b.context, h)
+	// 		return b.dht, err
+	// 	}))
+	// }
+
 	// create host
 	if b.host, err = p2p.New(opts...); err != nil {
 		return nil, fmt.Errorf("failed to create host: %w", err)
 	}
-	b.logger.WithField("id", b.host.ID()).WithField("addrs", b.host.Addrs()).Info("Host created")
+	b.logger.WithFields(log.Fields{
+		"id":    b.host.ID(),
+		"addrs": b.host.Addrs(),
+	}).Info("Host created")
 
-	// setup PubSub service using the GossipSub router
-	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host); err != nil {
-		panic(err)
-	}
+	b.host.Network().Notify(b)
 
 	// setup local mDNS discovery
 	if b.config.EnableMDNSDiscovery {
@@ -124,14 +144,24 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 	if b.config.EnableDHTDiscovery {
 		b.logger.Debug("Bootstrapping the DHT")
 
-		b.dht, err = dht.New(b.context, b.host)
-		if err != nil {
+		if b.dht, err = dht.New(b.context, b.host); err != nil {
 			return nil, fmt.Errorf("failed to create DHT: %w", err)
 		}
 
 		if err = b.dht.Bootstrap(b.context); err != nil {
 			return nil, fmt.Errorf("failed to bootstrap DHT: %w", err)
 		}
+	}
+
+	rt := b.dht.RoutingTable()
+
+	// Add some handlers
+	rt.PeerAdded = func(i peer.ID) {
+		b.logger.WithField("peer", i).Debug("Peer added to routing table")
+	}
+
+	rt.PeerRemoved = func(i peer.ID) {
+		b.logger.WithField("peer", i).Debug("Peer removed from routing table")
 	}
 
 	// Let's connect to the bootstrap nodes first. They will tell us about the
@@ -142,14 +172,40 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		wg.Add(1)
 		go func(pi peer.AddrInfo) {
 			defer wg.Done()
+
+			logger := b.logger.WithField("peer", pi)
+
 			if err := b.host.Connect(b.context, pi); err != nil {
-				log.Warning(err)
+				logger.Warning("Failed to connect to boostrap node")
 			} else {
-				b.logger.WithField("peer", pi).Info("Connection established with bootstrap node")
+				logger.Info("Connection established with bootstrap node")
 			}
 		}(pi)
 	}
 	wg.Wait() // TODO: can we run this asynchronously?
+
+	rd := discovery.NewRoutingDiscovery(b.dht)
+
+	// setup PubSub service using the GossipSub router
+	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host, pubsub.WithDiscovery(rd)); err != nil {
+		return nil, fmt.Errorf("failed to create pubsub router: %w", err)
+	}
+
+	as := []string{}
+	for _, a := range b.host.Addrs() {
+		as = append(as, a.String())
+	}
+
+	b.server.BroadcastEvent(&pb.Event{
+		Type:  "backend",
+		State: "ready",
+		Event: &pb.Event_Backend{
+			Backend: &pb.BackendEvent{
+				Id:              b.host.ID().String(),
+				ListenAddresses: as,
+			},
+		},
+	})
 
 	return b, nil
 }

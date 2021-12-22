@@ -19,16 +19,12 @@ func TestParseArgsUser(t *testing.T) {
 }
 
 func TestParseArgsBackend(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-backend", "k8s", "-backend-opts", "key=value"})
+	config, err := args.Parse("prog", []string{"-backend", "k8s"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if config.Backend.Scheme != "k8s" {
-		t.Fail()
-	}
-
-	if config.BackendOptions["key"] != "value" {
+	if config.Backends[0].Scheme != "k8s" {
 		t.Fail()
 	}
 }

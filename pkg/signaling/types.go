@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/socket"
 
 	"github.com/pion/ice/v2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -15,7 +16,7 @@ import (
 // Backend
 
 type BackendType string // URL schemes
-type BackendFactory func(*url.URL, map[string]string) (Backend, error)
+type BackendFactory func(*url.URL, *socket.Server) (Backend, error)
 type BackendPlugin struct {
 	New         BackendFactory
 	Description string
@@ -65,6 +66,7 @@ func (c *Candidate) MarshalJSON() ([]byte, error) {
 }
 
 func (c *Candidate) UnmarshalJSON(data []byte) error {
+	var err error
 	var jc jsonCandidate
 
 	if err := json.Unmarshal(data, &jc); err != nil {

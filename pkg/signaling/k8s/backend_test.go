@@ -11,16 +11,12 @@ import (
 )
 
 func TestBackend(t *testing.T) {
-	opts := map[string]string{
-		"nodename": "red",
-	}
-
-	uri, err := url.Parse("k8s://")
+	uri, err := url.Parse("k8s:?node-name=red")
 	if err != nil {
 		t.Errorf("failed to parse backend URL: %w", err)
 	}
 
-	b, err := k8s.NewBackend(uri, opts)
+	b, err := k8s.NewBackend(uri, nil)
 	if err != nil {
 		t.Errorf("failed to create backend: %w", err)
 	}

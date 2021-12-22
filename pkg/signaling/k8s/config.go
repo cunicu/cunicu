@@ -13,25 +13,28 @@ type BackendConfig struct {
 	AnnotationPublicKey string
 }
 
-func (c *BackendConfig) Parse(uri *url.URL, options map[string]string) error {
-	var ok bool
+var defaultConfig = BackendConfig{
+	AnnotationOffers:    defaultAnnotationOffers,
+	AnnotationPublicKey: defaultAnnotationPublicKey,
+}
 
+func (c *BackendConfig) Parse(uri *url.URL) error {
+	options := uri.Query()
+
+	if str := options.Get("node"); str == "" {
+		return errors.New("missing backend option: node")
+	}
+
+	if str := options.Get("annotation-offers"); str != "" {
+		c.AnnotationOffers = str
+	}
+
+	if str := options.Get("annotation-public-key"); str != "" {
+		c.AnnotationPublicKey = str
+	}
+
+	uri.RawQuery = ""
 	c.URI = uri
-
-	c.NodeName, ok = options["nodename"]
-	if !ok {
-		return errors.New("missing backend option: nodename")
-	}
-
-	c.AnnotationOffers, ok = options["annotation-offers"]
-	if !ok {
-		c.AnnotationOffers = defaultAnnotationOffers
-	}
-
-	c.AnnotationPublicKey, ok = options["annotation-public-key"]
-	if !ok {
-		c.AnnotationPublicKey = defaultAnnotationPublicKey
-	}
 
 	return nil
 }

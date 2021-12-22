@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +31,10 @@ func (b *Backend) NewPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 		logger:  b.logger.WithField("kp", kp),
 	}
 
-	t := topicFromPublicKeyPair(kp)
+	// topicFromPublicKeyPair derives a common topic name by XOR-ing the public keys of the peers
+	// As Xor is a cummutative operation the topic name is the same from
+	// both the viewpoint of both sides respectively.
+	t := fmt.Sprintf("wice/pp/%s", kp.Shared())
 
 	if p.topic, err = b.pubsub.Join(t); err != nil {
 		return nil, err
@@ -51,12 +55,19 @@ func (p *Peer) publishOffer(o signaling.Offer) error {
 		return err
 	}
 
-	p.logger.WithFields(log.Fields{
-		"offer": o,
-		"topic": p.topic,
-	}).Debug("Published offer to topic")
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			p.logger.WithFields(log.Fields{
+				"offer": o,
+				"topic": p.topic,
+			}).Debug("Published offer to topic")
+			p.topic.Publish(p.context, data)
+		}
+	}()
+	return nil
 
-	return p.topic.Publish(p.context, data)
+	// return p.topic.Publish(p.context, data)
 }
 
 func (p *Peer) readLoop() {
@@ -79,13 +90,12 @@ func (p *Peer) readLoop() {
 			p.logger.WithError(err).Error("Failed to decode received offer")
 		}
 
-		p.logger.WithField("offer", o).Debug("Received offer")
+		p.logger.WithFields(log.Fields{
+			"offer": o,
+			"topic": p.topic,
+		}).Debug("Received offer")
 
 		// send valid messages onto the Messages channel
 		p.Offers <- o
 	}
-}
-
-func topicFromPublicKeyPair(kp crypto.PublicKeyPair) string {
-	return fmt.Sprintf("wice/%s/%s", kp.Ours, kp.Theirs)
 }

@@ -16,7 +16,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/socket"
 )
 
 const (
@@ -36,6 +38,8 @@ type Backend struct {
 
 	term    chan struct{}
 	updates chan NodeCallback
+
+	server *socket.Server
 }
 
 func init() {
@@ -45,7 +49,10 @@ func init() {
 	}
 }
 
-func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, error) {
+func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) {
+	var config *rest.Config
+	var err error
+
 	logFields := log.Fields{
 		"logger":  "backend",
 		"backend": uri.Scheme,
@@ -56,14 +63,15 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		logger:  log.WithFields(logFields),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
+		server:  server,
+		config:  defaultConfig,
 	}
 
-	if err := b.config.Parse(uri, options); err != nil {
+	if err := b.config.Parse(uri); err != nil {
 		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
 	kubeconfig := uri.Path
-	var config *rest.Config
 	if kubeconfig == "" {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 		// if you want to change the loading rules (which files in which order), you can do so here
@@ -72,13 +80,13 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 		// if you want to change override values or bind them to flags, there are methods to help you
 
 		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
-		config, err = kubeConfig.ClientConfig()
-		if err != nil {
+
+		if config, err = kubeConfig.ClientConfig(); err != nil {
 			return nil, fmt.Errorf("failed to load config: %w", err)
 		}
 	} else if kubeconfig == "incluster" {
-		config, err = rest.InClusterConfig()
-		if err != nil {
+
+		if config, err = rest.InClusterConfig(); err != nil {
 			return nil, fmt.Errorf("failed to get incluster configuration: %w", err)
 		}
 	} else {
@@ -115,6 +123,11 @@ func NewBackend(uri *url.URL, options map[string]string) (signaling.Backend, err
 
 	go b.applyUpdates()
 	b.logger.Debug("Started batched updates")
+
+	b.server.BroadcastEvent(&pb.Event{
+		Type:  "backend",
+		State: "ready",
+	})
 
 	return &b, nil
 }
