@@ -17,6 +17,7 @@ import (
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/args"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
 )
@@ -252,6 +253,7 @@ func (i *BaseInterface) SyncConfig(cfg string) error {
 		return err
 	}
 
+	// TODO: can we sync the config fully in Go?
 	cmd := exec.Command("wg", "syncconf", i.Name(), cfg)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -271,11 +273,21 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 
 	i.peers[peer.PublicKey()] = peer
 
-	i.server.BroadcastEvent(&socket.Event{
-		Type:      "peer",
-		State:     "added",
-		Interface: i.Name(),
-		Peer:      peer.PublicKey(),
+	i.server.BroadcastEvent(&pb.Event{
+		Type:  "peer",
+		State: "added",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: i.Name(),
+					Peers: []*pb.Peer{
+						{
+							PublicKey: peer.PublicKey().Bytes(),
+						},
+					},
+				},
+			},
+		},
 	})
 }
 
@@ -289,11 +301,21 @@ func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
 		i.logger.WithField("peer", peer.PublicKey).Warn("Failed to close peer")
 	}
 
-	i.server.BroadcastEvent(&socket.Event{
-		Type:      "peer",
-		State:     "removed",
-		Interface: i.Name(),
-		Peer:      peer.PublicKey(),
+	i.server.BroadcastEvent(&pb.Event{
+		Type:  "peer",
+		State: "removed",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: i.Name(),
+					Peers: []*pb.Peer{
+						{
+							PublicKey: peer.PublicKey().Bytes(),
+						},
+					},
+				},
+			},
+		},
 	})
 
 	delete(i.peers, peer.PublicKey())
@@ -307,11 +329,21 @@ func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModi
 		i.logger.Error("Failed to find modified peer")
 	}
 
-	i.server.BroadcastEvent(&socket.Event{
-		Type:      "peer",
-		State:     "modified",
-		Interface: i.Name(),
-		Peer:      peer.PublicKey(),
+	i.server.BroadcastEvent(&pb.Event{
+		Type:  "peer",
+		State: "modified",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: i.Name(),
+					Peers: []*pb.Peer{
+						{
+							PublicKey: peer.PublicKey().Bytes(),
+						},
+					},
+				},
+			},
+		},
 	})
 }
 
@@ -369,10 +401,16 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		return BaseInterface{}, fmt.Errorf("failed to fix interface configuration: %w", err)
 	}
 
-	server.BroadcastEvent(&socket.Event{
-		Type:      "interface",
-		State:     "added",
-		Interface: i.Name(),
+	i.server.BroadcastEvent(&pb.Event{
+		Type:  "interface",
+		State: "added",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: i.Name(),
+				},
+			},
+		},
 	})
 
 	// We remove all peers here so that they get added by the following sync

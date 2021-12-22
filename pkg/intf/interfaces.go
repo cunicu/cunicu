@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
 
@@ -77,10 +78,16 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 				log.WithError(err).Fatal("Failed to close interface")
 			}
 
-			server.BroadcastEvent(&socket.Event{
-				Type:      "interface",
-				State:     "removed",
-				Interface: i.Name(),
+			server.BroadcastEvent(&pb.Event{
+				Type:  "interface",
+				State: "removed",
+				Event: &pb.Event_Intf{
+					Intf: &pb.InterfaceEvent{
+						Interface: &pb.Interface{
+							Name: i.Name(),
+						},
+					},
+				},
 			})
 		} else {
 			keepInterfaces = append(keepInterfaces, intf)

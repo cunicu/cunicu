@@ -39,6 +39,8 @@ require (
 require (
 	github.com/libp2p/go-libp2p-pubsub v0.6.0
 	github.com/stv0g/gont v0.2.1
+	google.golang.org/grpc v1.40.0
+	google.golang.org/protobuf v1.27.1
 )
 
 require (

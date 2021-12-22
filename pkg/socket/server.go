@@ -1,111 +1,112 @@
 package socket
 
 import (
-	"encoding/json"
-	"io"
-	"time"
+	"context"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
+	"riasc.eu/wice/pkg/pb"
 
 	"net"
 	"os"
 )
 
 type Server struct {
+	pb.SocketServer
+
 	listener net.Listener
+	grpc     *grpc.Server
+
+	eventListeners     map[chan *pb.Event]interface{}
+	eventListenersLock sync.Mutex
+
+	waitGroup sync.WaitGroup
+	waitOnce  sync.Once
 
 	logger *log.Entry
-
-	connections map[*Connection]*struct{}
 }
 
-type Connection struct {
-	server *Server
-	logger *log.Entry
-
-	decoder *json.Decoder
-	encoder *json.Encoder
-}
-
-func Listen(path string) (*Server, error) {
-	// Remove old sockets
-	if err := os.RemoveAll(path); err != nil {
-		log.Fatal(err)
+func Listen(network string, address string, wait bool) (*Server, error) {
+	// Remove old unix sockets
+	if network == "unix" {
+		if err := os.RemoveAll(address); err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	l, err := net.Listen("unix", path)
+	l, err := net.Listen(network, address)
 	if err != nil {
 		return nil, err
 	}
 
-	logger := log.WithField("logger", "socket")
-
 	s := &Server{
-		listener:    l,
-		logger:      logger,
-		connections: map[*Connection]*struct{}{},
+		listener:       l,
+		logger:         log.WithField("logger", "socket"),
+		grpc:           grpc.NewServer(),
+		eventListeners: map[chan *pb.Event]interface{}{},
 	}
 
-	go func() {
-		for {
-			conn, err := l.Accept()
-			if err != nil {
-				log.WithError(err).Error("Failed to accept client connection")
-			}
+	pb.RegisterSocketServer(s.grpc, s)
 
-			go s.HandleConn(conn)
-		}
-	}()
+	go s.grpc.Serve(l)
+
+	s.waitGroup.Add(1)
+	if wait {
+		s.logger.Info("Wait for control socket connection")
+
+		s.waitGroup.Wait()
+	}
 
 	return s, nil
 }
 
-func (s *Server) HandleConn(conn net.Conn) {
-	c := &Connection{
-		server:  s,
-		decoder: json.NewDecoder(conn),
-		encoder: json.NewEncoder(conn),
+func (s *Server) BroadcastEvent(e *pb.Event) error {
+	if e.Time == nil {
+		e.Time = pb.TimeNow()
 	}
 
-	s.connections[c] = nil
-
-	logger := s.logger.WithField("conn", conn.RemoteAddr().String())
-
-	for {
-		var req Request
-
-		if err := c.decoder.Decode(&req); err == io.EOF {
-			logger.Info("Connection closed")
-			s.connections[c] = nil
-			break
-		} else if err != nil {
-			log.WithError(err).Error("Failed to decode client request")
-		} else {
-			if err := c.HandleReq(&req); err != nil {
-				log.WithError(err).Error("Failed to handle client request")
-			}
-		}
+	s.eventListenersLock.Lock()
+	for ch := range s.eventListeners {
+		ch <- e
 	}
-}
+	s.eventListenersLock.Unlock()
 
-func (c *Connection) HandleReq(req *Request) error {
-	c.logger.Info("Handling request: %s", req)
+	e.Log(s.logger, "Broadcasted event")
 
 	return nil
 }
 
-func (c *Connection) SendEvent(e *Event) error {
-	return c.encoder.Encode(e)
+func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) {
+	return &pb.Status{}, nil
 }
 
-func (s *Server) BroadcastEvent(e *Event) error {
-	if e.Time.IsZero() {
-		e.Time = time.Now()
-	}
+func (s *Server) StreamEvents(_ *pb.Void, stream pb.Socket_StreamEventsServer) error {
+	ch := make(chan *pb.Event, 100)
 
-	for conn := range s.connections {
-		conn.SendEvent(e)
+	s.eventListenersLock.Lock()
+	s.eventListeners[ch] = nil
+	s.eventListenersLock.Unlock()
+
+	for evt := range ch {
+		stream.Send(evt)
 	}
 
 	return nil
+}
+
+func (s *Server) UnWait(context.Context, *pb.Void) (*pb.Error, error) {
+	var e = &pb.Error{
+		Ok:    false,
+		Error: "already unwaited",
+	}
+
+	s.waitOnce.Do(func() {
+		s.logger.Info("Control socket un-waited")
+		s.waitGroup.Done()
+		e = &pb.Ok
+	})
+
+	return e, nil
 }

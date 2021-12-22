@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+import "common.proto";
+
+message Event {
+    Timestamp time = 1;
+    string type = 2;
+	string state = 3;
+
+    oneof event {
+        PeerEvent peer = 10;
+        InterfaceEvent intf = 11;
+        BackendEvent backend = 12;
+    }
+}
+
+message PeerEvent {
+    Peer peer = 1;
+
+    
+}
+
+message InterfaceEvent {
+    Interface interface = 1;
+}
+
+message BackendEvent {
+    enum Type {
+        READY = 0;
+    }
+
+    Type type = 1;
+
+    string id = 2;
+    repeated string listen_addresses = 3;
+}

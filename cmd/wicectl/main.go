@@ -59,7 +59,7 @@ func monitor(signals chan os.Signal) {
 			os.Exit(0)
 
 		case evt := <-sock.Events:
-			evt.Log(logger)
+			evt.Log(logger, "Event")
 		}
 	}
 }

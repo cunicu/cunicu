@@ -17,6 +17,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/args"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
@@ -89,11 +90,21 @@ func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 		p.logger.WithField("time", new.LastHandshakeTime).Debug("New handshake")
 	}
 
-	p.server.BroadcastEvent(&socket.Event{
-		Type:      "handshake",
-		Time:      p.LastHandshakeTime,
-		Interface: p.Interface.Name(),
-		Peer:      p.PublicKey(),
+	p.server.BroadcastEvent(&pb.Event{
+		Type:  "handshake",
+		State: "new",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: p.Interface.Name(),
+					Peers: []*pb.Peer{
+						{
+							PublicKey: p.PublicKey().Bytes(),
+						},
+					},
+				},
+			},
+		},
 	})
 }
 
@@ -121,11 +132,21 @@ func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
 
 	p.logger.WithField("state", stateLower).Infof("Connection state changed")
 
-	p.server.BroadcastEvent(&socket.Event{
-		Type:      "state",
-		State:     stateLower,
-		Interface: p.Interface.Name(),
-		Peer:      p.PublicKey(),
+	p.server.BroadcastEvent(&pb.Event{
+		Type:  "state",
+		State: "changed",
+		Event: &pb.Event_Intf{
+			Intf: &pb.InterfaceEvent{
+				Interface: &pb.Interface{
+					Name: p.Interface.Name(),
+					Peers: []*pb.Peer{
+						{
+							PublicKey: p.PublicKey().Bytes(),
+						},
+					},
+				},
+			},
+		},
 	})
 
 	if state == ice.ConnectionStateFailed {

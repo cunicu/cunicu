@@ -1,0 +1,44 @@
+syntax = "proto3";
+package wice;
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+message SignedOffer {
+    bytes offer = 1;
+    bytes sigature = 2;
+}
+
+message Offer {
+    enum Role {
+        CONTROLLED = 0;
+        CONTROLLING = 1;
+    }
+
+    enum Implementation {
+        FULL = 0;
+        LITE = 1;
+    }
+
+    int64 version = 1;
+    int64 epoch = 2;
+	Role role = 3;
+    Implementation implementation = 4;
+
+	repeated Candidate candidates = 5;
+
+    string Ufrag = 6;
+    string Pwd = 7;
+}
+
+message Candidate {
+    // Type        string  `json:"type"`
+	// Foundation  string  `json:"foundation"`
+	// Component   int     `json:"component"`
+	// NetworkType string  `json:"network"`
+	// Priority    int     `json:"priority"`
+	// Address     string  `json:"address"`
+	// Port        int     `json:"port"`
+	// TCPType     *string `json:"tcp_type,omitempty"`
+	// RelAddr     *string `json:"related_address,omitempty"`
+	// RelPort     *int    `json:"related_port,omitempty"`
+}

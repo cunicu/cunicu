@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+message Void {}
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message Status {
+    repeated Interface interfaces = 1;
+}
+
+message Error {
+    bool ok = 1;
+    string error = 2;
+}
+
+message Interface {
+    enum Type {
+        UNKNOWN = 0;
+	    LINUX_KERNEL = 1;
+	    OPENBSD_KERNEL = 2;
+	    WINDOWS_KERNEL = 3;
+	    USERSPACE = 4;
+    }
+
+    string name = 1;
+    Type type = 2;
+    
+    bytes private_key = 3;
+    bytes public_key = 4;
+
+    uint32 listen_port = 5;
+
+    uint32 firewall_mark = 6;
+
+    repeated Peer peers = 7;
+}
+
+message Peer {
+    bytes public_key = 1;
+
+    repeated string Endpoint = 2;
+ 
+    uint32 persistent_keepalive_interval = 3;
+    Timestamp last_handshake = 4;
+    int64 transmit_bytes = 5;
+    int64 receive_bytes = 6;
+    repeated string allowed_ips = 7;
+    uint32 protocol_version = 8;
+}

@@ -1,25 +1,25 @@
 package socket
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"riasc.eu/wice/pkg/pb"
 )
 
 type Client struct {
-	conn net.Conn
+	io.Closer
 
-	encoder *json.Encoder
-	decoder *json.Decoder
-
-	Events chan Event
-
+	pb.SocketClient
+	grpc   *grpc.ClientConn
 	logger *log.Entry
+
+	Events chan *pb.Event
 }
 
 func waitForSocket(path string) error {
@@ -48,74 +48,74 @@ func Connect(path string) (*Client, error) {
 		return nil, fmt.Errorf("failed to wait for socket: %w", err)
 	}
 
-	conn, err := net.Dial("unix", path)
+	tgt := fmt.Sprintf("unix://%s", path)
+	conn, err := grpc.Dial(tgt, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
-	logger := log.WithField("logger", "socket")
-
 	client := &Client{
-		conn:    conn,
-		encoder: json.NewEncoder(conn),
-		decoder: json.NewDecoder(conn),
-
-		logger: logger,
-
-		Events: make(chan Event, 100),
+		SocketClient: pb.NewSocketClient(conn),
+		grpc:         conn,
+		logger:       log.WithField("logger", "socket"),
+		Events:       make(chan *pb.Event, 100),
 	}
 
-	go client.handle()
+	sts, err := client.UnWait(context.Background(), &pb.Void{})
+	if err != nil {
+		return nil, fmt.Errorf("failed RPC request: %w", err)
+	} else if !sts.Ok {
+		return nil, fmt.Errorf("received RPC error: %s", sts.Error)
+	}
+
+	go client.streamEvents()
 
 	return client, nil
 }
 
-func (c *Client) handle() {
-	for {
-		var evt Event
+func (c *Client) Close() error {
+	close(c.Events)
 
-		if err := c.decoder.Decode(&evt); err == io.EOF {
-			c.logger.Info("Connection closed")
-			break
-		} else if err != nil {
+	return c.grpc.Close()
+}
+
+func (c *Client) streamEvents() {
+	str, err := c.StreamEvents(context.Background(), &pb.Void{})
+	if err != nil {
+		c.logger.WithError(err).Error("Failed to stream events")
+	}
+
+	ok := true
+	for ok {
+		evt, err := str.Recv()
+		if err != nil {
 			c.logger.WithError(err).Error("Failed to receive event")
-		} else {
-			evt.Log(c.logger)
-			c.Events <- evt
+			break
 		}
+
+		evt.Log(c.logger, "Received event")
+		c.Events <- evt
 	}
 }
 
-func (c *Client) WaitForEvent(flt Event) {
+func (c *Client) WaitForEvent(flt *pb.Event) *pb.Event {
 	for evt := range c.Events {
-		if flt.Type != "" && flt.Type != evt.Type {
-			continue
+		if evt.Match(flt) {
+			return evt
 		}
-
-		if flt.State != "" && flt.State != evt.State {
-			continue
-		}
-
-		if flt.Interface != "" && flt.Interface != evt.Interface {
-			continue
-		}
-
-		if flt.Peer.IsSet() && flt.Peer != evt.Peer {
-			continue
-		}
-
-		return
 	}
+
+	return nil
 }
 
 func (c *Client) WaitPeerHandshake() {
-	c.WaitForEvent(Event{
+	c.WaitForEvent(&pb.Event{
 		Type: "handshake",
 	})
 }
 
 func (c *Client) WaitPeerConnected() {
-	c.WaitForEvent(Event{
+	c.WaitForEvent(&pb.Event{
 		Type:  "state",
 		State: "connected",
 	})
