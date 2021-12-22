@@ -12,7 +12,7 @@ import (
 
 type NodeList []*Node
 
-func AddNodes(n *g.Network, backend *Backend, count int) (NodeList, error) {
+func AddNodes(n *g.Network, backend *SignalingNode, count int) (NodeList, error) {
 	nodes := []*Node{}
 
 	for i := 0; i < count; i++ {

@@ -69,6 +69,10 @@ func (k Key) PublicKey() Key {
 	return Key(key.PublicKey())
 }
 
+func (k Key) Bytes() []byte {
+	return k[:]
+}
+
 // Checks if the key is not zero
 func (k Key) IsSet() bool {
 	return k != Key{}
@@ -83,4 +87,14 @@ func (kp PublicKeyPair) ID(key []byte) string {
 	mac := ctx.Sum(nil)
 
 	return base64.URLEncoding.EncodeToString(mac)
+}
+
+func (kp PublicKeyPair) Shared() Key {
+	shared := Key{}
+
+	for i := range kp.Ours {
+		shared[i] = kp.Ours[i] ^ kp.Theirs[i]
+	}
+
+	return shared
 }

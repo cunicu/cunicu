@@ -28,15 +28,16 @@ type Node struct {
 	InterfaceName string
 	ListenPort    int
 
-	Command *exec.Cmd
-	Client  *socket.Client
+	ExtraArgs []interface{}
+	Command   *exec.Cmd
+	Client    *socket.Client
 
 	WireguardClient *wgctrl.Client
 
-	Backend *Backend
+	Backend *SignalingNode
 }
 
-func NewNode(m *g.Network, name string, backend *Backend, addr net.IPNet, opts ...g.Option) (*Node, error) {
+func NewNode(m *g.Network, name string, backend *SignalingNode, addr net.IPNet, opts ...g.Option) (*Node, error) {
 	h, err := m.AddHost(name, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create host: %w", err)
@@ -72,27 +73,33 @@ func (n *Node) Start(args ...interface{}) error {
 	var err error
 	var stdout, stderr io.Reader
 
-	sockPath := fmt.Sprintf("/var/run/wice.%s.sock", n.Name())
-	logPath := fmt.Sprintf("logs/wice_%s.log", n.Name())
+	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", n.Name())
+	var logPath = fmt.Sprintf("logs/%s.log", n.Name())
 
-	args = append(args, "-backend", n.Backend.URL(), "-socket", sockPath, "-log-level", "debug")
+	u, err := n.Backend.URL()
+	if err != nil {
+		return err
+	}
+
+	args = append(args,
+		"-backend", u.String(),
+		"-socket", sockPath,
+		"-log-level", "debug")
+	args = append(args, n.ExtraArgs...)
 
 	if err := os.RemoveAll(sockPath); err != nil {
 		log.Fatal(err)
 	}
 
-	stdout, stderr, n.Command, err = n.StartGo("../cmd/wice", args...)
-	if err != nil {
+	if stdout, stderr, n.Command, err = n.StartGo("../cmd/wice", args...); err != nil {
 		return err
 	}
 
-	_, err = FileWriter(logPath, stdout, stderr)
-	if err != nil {
+	if _, err = FileWriter(logPath, stdout, stderr); err != nil {
 		return err
 	}
 
-	n.Client, err = socket.Connect(sockPath)
-	if err != nil {
+	if n.Client, err = socket.Connect(sockPath); err != nil {
 		return err
 	}
 

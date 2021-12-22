@@ -16,14 +16,14 @@ func TestSimple(t *testing.T) {
 	var (
 		n  *g.Network
 		sw *g.Switch
-		b  *test.Backend
-		r  *test.Relay
+		b  *test.SignalingNode
+		r  *test.RelayNode
 		nl test.NodeList
 
 		err error
 	)
 
-	if n, err = g.NewNetwork("", gopt.Persistent(true)); err != nil {
+	if n, err = g.NewNetwork("", gopt.Persistent(false)); err != nil {
 		t.Fatalf("Failed to create network: %s", err)
 	}
 	defer n.Close()
@@ -32,13 +32,13 @@ func TestSimple(t *testing.T) {
 		t.Fatalf("Failed to create switch: %s", err)
 	}
 
-	if r, err = test.NewRelay(n, "relay"); err != nil {
+	if r, err = test.NewRelayNode(n, "relay"); err != nil {
 		t.Fatalf("Failed to start relay: %s", err)
 	}
 	defer r.Close()
 
-	if b, err = test.NewBackend(n, "backend"); err != nil {
-		t.Fatalf("Failed to start backend: %s", err)
+	if b, err = test.NewSignalingNode(n, "backend"); err != nil {
+		t.Fatalf("Failed to create signaling node: %s", err)
 	}
 	defer b.Close()
 
@@ -82,10 +82,11 @@ func TestSimple(t *testing.T) {
 	}
 
 	if err := b.Start(); err != nil {
-		t.Fatalf("Failed to start backend: %s", err)
+		t.Fatalf("Failed to start signaling node: %s", err)
 	}
 
 	args := []interface{}{
+		// ICE options
 		"-ice-user", r.Username,
 		"-ice-pass", r.Password,
 

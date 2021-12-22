@@ -19,7 +19,7 @@ const (
 	stunPort = 3478
 )
 
-type Relay struct {
+type RelayNode struct {
 	*g.Host
 
 	Command *exec.Cmd
@@ -29,13 +29,13 @@ type Relay struct {
 	Password string
 }
 
-func NewRelay(n *g.Network, name string) (*Relay, error) {
+func NewRelayNode(n *g.Network, name string) (*RelayNode, error) {
 	h, err := n.AddHost(name)
 	if err != nil {
 		return nil, err
 	}
 
-	t := &Relay{
+	t := &RelayNode{
 		Host:     h,
 		Username: "user1",
 		Password: "password1",
@@ -52,12 +52,13 @@ func NewRelay(n *g.Network, name string) (*Relay, error) {
 	return t, nil
 }
 
-func (t *Relay) Start() error {
+func (t *RelayNode) Start() error {
 	var stdout, stderr io.Reader
 	var err error
 	var args = []interface{}{
 		"-n",
 	}
+	var logPath = fmt.Sprintf("logs/%s.log", t.Name())
 
 	for key, value := range t.Config {
 		opt := fmt.Sprintf("--%s", key)
@@ -72,14 +73,14 @@ func (t *Relay) Start() error {
 		return fmt.Errorf("failed to start turnserver: %w", err)
 	}
 
-	if _, err = FileWriter("logs/turnserver.log", stdout, stderr); err != nil {
+	if _, err = FileWriter(logPath, stdout, stderr); err != nil {
 		return fmt.Errorf("failed to create logfile: %w", err)
 	}
 
 	return t.WaitReady()
 }
 
-func (t *Relay) Stop() error {
+func (t *RelayNode) Stop() error {
 	if t.Command == nil || t.Command.Process == nil {
 		return nil
 	}
@@ -87,11 +88,11 @@ func (t *Relay) Stop() error {
 	return t.Command.Process.Kill()
 }
 
-func (t *Relay) Close() error {
+func (t *RelayNode) Close() error {
 	return t.Stop()
 }
 
-func (t *Relay) IsReachable() bool {
+func (t *RelayNode) IsReachable() bool {
 	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, stunPort)
 
 	return t.RunFunc(func() error {
@@ -104,7 +105,7 @@ func (t *Relay) IsReachable() bool {
 	}) == nil
 }
 
-func (t *Relay) WaitReady() error {
+func (t *RelayNode) WaitReady() error {
 	for tries := 10; !t.IsReachable(); tries-- {
 		if tries == 0 {
 			return fmt.Errorf("timed out")
@@ -116,7 +117,7 @@ func (t *Relay) WaitReady() error {
 	return nil
 }
 
-func (t *Relay) URLs() []*ice.URL {
+func (t *RelayNode) URLs() []*ice.URL {
 	host := t.Name()
 
 	return []*ice.URL{

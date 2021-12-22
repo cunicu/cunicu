@@ -57,16 +57,21 @@ func main() {
 		args.DumpConfig(os.Stdout)
 	}
 
-	// Create backend
-	backend, err := signaling.NewBackend(args.Backend, args.BackendOptions)
-	if err != nil {
-		log.WithError(err).Fatal("Failed to initialize backend")
-	}
-
 	// Create control socket server
-	server, err := socket.Listen(args.Socket)
+	server, err := socket.Listen("unix", args.Socket, args.SocketWait)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to initialize control socket")
+	}
+
+	// Create backend
+	var backend signaling.Backend
+	if len(args.Backends) == 1 {
+		backend, err = signaling.NewBackend(args.Backends[0], server)
+	} else {
+		backend, err = signaling.NewMultiBackend(args.Backends, server)
+	}
+	if err != nil {
+		log.WithError(err).Fatal("Failed to initialize backend")
 	}
 
 	// Create Wireguard netlink socket
