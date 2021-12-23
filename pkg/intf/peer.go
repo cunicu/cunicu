@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/pion/ice/v2"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -38,7 +38,7 @@ type Peer struct {
 
 	LastHandshake time.Time
 
-	logger *log.Entry
+	logger *zap.Logger
 
 	client  *wgctrl.Client
 	args    *args.Args
@@ -87,7 +87,7 @@ func (p *Peer) isControlling() bool {
 func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 	if modified&PeerModifiedHandshakeTime > 0 {
 		p.LastHandshake = new.LastHandshakeTime
-		p.logger.WithField("time", new.LastHandshakeTime).Debug("New handshake")
+		p.logger.Debug("New handshake", zap.Time("time", new.LastHandshakeTime))
 	}
 
 	p.server.BroadcastEvent(&pb.Event{
@@ -112,7 +112,7 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
 	} else {
-		p.logger.WithField("candidate", c).Info("Found new local candidate")
+		p.logger.Info("Found new local candidate", zap.Any("candidate", c))
 
 		p.localOffer.Candidates = append(p.localOffer.Candidates, signaling.Candidate{
 			Candidate: c,
@@ -122,7 +122,7 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 	p.localOffer.Epoch++
 
 	if err := p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer); err != nil {
-		p.logger.WithError(err).Warn("Failed to publish offer")
+		p.logger.Warn("Failed to publish offer", zap.Error(err))
 		os.Exit(-1)
 	}
 }
@@ -130,7 +130,7 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
 	stateLower := strings.ToLower(state.String())
 
-	p.logger.WithField("state", stateLower).Infof("Connection state changed")
+	p.logger.Info("Connection state changed", zap.String("state", stateLower))
 
 	p.server.BroadcastEvent(&pb.Event{
 		Type:  "state",
@@ -160,7 +160,7 @@ func (p *Peer) onSelectedCandidatePairChange(a, b ice.Candidate) {
 		p.logger.Warn("Failed to get selected candidate pair")
 	}
 
-	p.logger.WithField("pair", cp).Info("Selected new candidate pair")
+	p.logger.Info("Selected new candidate pair", zap.Any("pair", cp))
 
 	p.selectedCandidatePairs <- cp
 }
@@ -168,7 +168,7 @@ func (p *Peer) onSelectedCandidatePairChange(a, b ice.Candidate) {
 func (p *Peer) isRestartingOffer(o signaling.Offer) bool {
 	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
 	if err != nil {
-		p.logger.WithError(err).Error("Failed to get local credentials")
+		p.logger.Error("Failed to get local credentials", zap.Error(err))
 	}
 
 	credsChanged := ufrag != o.Ufrag || pwd != o.Pwd
@@ -185,14 +185,14 @@ func (p *Peer) onOffer(o signaling.Offer) {
 	for _, c := range o.Candidates {
 
 		if err := p.ICEAgent.AddRemoteCandidate(c); err != nil {
-			p.logger.WithError(err).Fatal("Failed to add remote candidate")
+			p.logger.Fatal("Failed to add remote candidate", zap.Error(err))
 		}
-		p.logger.WithField("candidate", c).Debug("Add remote candidate")
+		p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
 	}
 }
 
 func (p *Peer) restartLocal() {
-	p.logger.Infof("Restarting session triggered locally in %s", p.args.RestartInterval)
+	p.logger.Info("Session restart triggered", zap.Duration("delay", p.args.RestartInterval))
 
 	time.Sleep(p.args.RestartInterval)
 
@@ -222,24 +222,24 @@ func (p *Peer) restart(offer signaling.Offer) {
 	var err error
 
 	if err := p.ICEAgent.Restart("", ""); err != nil {
-		p.logger.WithError(err).Error("Failed to restart ICE session")
+		p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		return
 	}
 
 	if err := p.ICEAgent.SetRemoteCredentials(offer.Ufrag, offer.Pwd); err != nil {
-		p.logger.WithError(err).Error("Failed to set remote creds")
+		p.logger.Error("Failed to set remote creds", zap.Error(err))
 		return
 	}
 
 	for _, cand := range offer.Candidates {
 
 		if err = p.ICEAgent.AddRemoteCandidate(cand.Candidate); err != nil {
-			p.logger.WithError(err).Error("Failed to add remote candidate")
+			p.logger.Error("Failed to add remote candidate", zap.Error(err))
 		}
 	}
 
 	if err := p.ICEAgent.GatherCandidates(); err != nil {
-		p.logger.WithError(err).Error("Failed to gather candidates")
+		p.logger.Error("Failed to gather candidates", zap.Error(err))
 		return
 	}
 }
@@ -251,7 +251,7 @@ func (p *Peer) start() {
 
 	p.remoteOffers, err = p.backend.SubscribeOffer(p.PublicKeyPair())
 	if err != nil {
-		p.logger.WithError(err).Fatal("Failed to subscribe to offers")
+		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
 	}
 
 	// Wait for first offer from remote agent before creating ICE connection
@@ -265,7 +265,7 @@ func (p *Peer) start() {
 		p.ICEConn, err = p.ICEAgent.Accept(context.TODO(), o.Ufrag, o.Pwd)
 	}
 	if err != nil {
-		p.logger.WithError(err).Fatal("Failed to establish ICE connection")
+		p.logger.Fatal("Failed to establish ICE connection", zap.Error(err))
 	}
 
 	// Wait until we are ready
@@ -302,7 +302,7 @@ func (p *Peer) start() {
 
 				// Replace proxy
 				if currentProxy, err = proxy.NewProxy(pt, ident, p.Interface.ListenPort, p.UpdateEndpoint, p.ICEConn); err != nil {
-					p.logger.WithError(err).Fatal("Failed to setup proxy")
+					p.logger.Fatal("Failed to setup proxy", zap.Error(err))
 				}
 			}
 
@@ -333,10 +333,10 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		localOffer:             signaling.NewOffer(),
 		args:                   i.args,
 		selectedCandidatePairs: make(chan *ice.CandidatePair),
-		logger: log.WithFields(log.Fields{
-			"intf": i.Name(),
-			"peer": wgp.PublicKey.String(),
-		}),
+		logger: zap.L().Named("peer").With(
+			zap.String("intf", i.Name()),
+			zap.Any("peer", wgp.PublicKey),
+		),
 	}
 
 	agentConfig := p.args.AgentConfig
@@ -361,10 +361,10 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		return Peer{}, fmt.Errorf("failed to get local credentials: %w", err)
 	}
 
-	p.logger.WithFields(log.Fields{
-		"ufrag": ufrag,
-		"pwd":   pwd,
-	}).Debug("Peer credentials")
+	p.logger.Debug("Peer credentials",
+		zap.String("ufrag", ufrag),
+		zap.String("pwd", pwd),
+	)
 
 	// When we have gathered a new ICE Candidate send it to the remote peer
 	if err := p.ICEAgent.OnCandidate(p.onCandidate); err != nil {

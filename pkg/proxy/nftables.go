@@ -10,15 +10,13 @@ import (
 	"github.com/google/nftables/binaryutil"
 	"github.com/google/nftables/expr"
 	"github.com/pion/ice/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netns"
+	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 )
 
 type NFTablesProxy struct {
 	BaseProxy
-
-	logger log.FieldLogger
 
 	NFConn *nftables.Conn
 	Conn   net.Conn
@@ -34,20 +32,17 @@ func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn ne
 		BaseProxy: BaseProxy{
 			Ident:      ident,
 			ListenPort: listenPort,
+			logger:     zap.L().Named("proxy.nft"),
 		},
-		logger: log.WithFields(log.Fields{
-			"logger": "proxy",
-			"type":   "nftables",
-		}),
 		NFConn: &nftables.Conn{
 			NetNS: int(ns),
 		},
 		Conn: conn,
 	}
 
-	proxy.logger.Infof("Network namespace: %s", ns)
-
-	proxy.setupTable()
+	if err := proxy.setupTable(); err != nil {
+		return nil, fmt.Errorf("failed to setup table: %w", err)
+	}
 
 	// Update Wireguard peer endpoint
 	rAddr := proxy.Conn.RemoteAddr().(*net.UDPAddr)

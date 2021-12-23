@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"net"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/args"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
@@ -33,8 +33,8 @@ type UserDevice struct {
 	userAPI    net.Listener
 }
 
-func newLogger(log *log.Entry) *device.Logger {
-	logger := log.WithField("logger", "wireguard")
+func newLogger(log *zap.Logger) *device.Logger {
+	logger := log.Named("wireguard").Sugar()
 
 	return &device.Logger{
 		Verbosef: logger.Debugf,
@@ -60,7 +60,7 @@ func (i *UserDevice) handleUserApi() {
 	for {
 		conn, err := i.userAPI.Accept()
 		if err != nil {
-			i.logger.WithError(err).Warn("Failed to accept UAPI connection")
+			i.logger.Warn("Failed to accept UAPI connection", zap.Error(err))
 			return
 		}
 
@@ -70,10 +70,10 @@ func (i *UserDevice) handleUserApi() {
 
 func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
 	var err error
-	logger := log.WithFields(log.Fields{
-		"intf": name,
-		"type": "user",
-	})
+	logger := zap.L().With(
+		zap.String("intf", name),
+		zap.String("type", "user"),
+	)
 
 	dev := &UserDevice{
 		log: newLogger(logger),

@@ -8,12 +8,23 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
 )
 
-func LogWriter(logger *log.Entry, stdout io.Reader, stderr io.Reader) {
-	go io.Copy(logger.Writer(), stdout)
-	go io.Copy(logger.Writer(), stderr)
+func LogWriter(logger *zap.Logger, stdout io.Reader, stderr io.Reader) {
+	logStdout := &zapio.Writer{
+		Log:   logger,
+		Level: zap.InfoLevel,
+	}
+
+	logStderr := &zapio.Writer{
+		Log:   logger,
+		Level: zap.WarnLevel,
+	}
+
+	go io.Copy(logStdout, stdout)
+	go io.Copy(logStderr, stderr)
 }
 
 func StdWriter(stdout io.Reader, stderr io.Reader) {
@@ -23,7 +34,6 @@ func StdWriter(stdout io.Reader, stderr io.Reader) {
 
 func FileWriter(fn string, stdout io.Reader, stderr io.Reader) (*os.File, error) {
 	dir := filepath.Dir(fn)
-
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, err
 	}

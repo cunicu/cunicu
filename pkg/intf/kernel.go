@@ -3,8 +3,8 @@ package intf
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
+	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/args"
 	nl "riasc.eu/wice/pkg/netlink"
@@ -67,7 +67,7 @@ func (i *KernelInterface) SetDown(mtu int) error {
 }
 
 func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
-	log.WithField("intf", name).Debug("Creating new kernel interface")
+	zap.L().Debug("Creating new kernel interface", zap.String("intf", name))
 
 	l := &nl.Wireguard{
 		LinkAttrs: netlink.NewLinkAttrs(),

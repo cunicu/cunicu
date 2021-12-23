@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/util"
@@ -34,7 +34,7 @@ type BaseInterface struct {
 	client  *wgctrl.Client
 	server  *socket.Server
 
-	logger *log.Entry
+	logger *zap.Logger
 }
 
 func (i *BaseInterface) Name() string {
@@ -153,10 +153,10 @@ func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
 	// }
 
 	if modified != PeerModifiedNone {
-		i.logger.WithFields(log.Fields{
-			"peer":     oldPeer.PublicKey,
-			"modified": modified.String(),
-		}).Info("Peer modified")
+		i.logger.Info("Peer modified",
+			zap.Any("peer", oldPeer.PublicKey),
+			zap.Any("modified", modified),
+		)
 
 		i.onPeerModified(oldPeer, newPeer, modified)
 	}
@@ -167,36 +167,32 @@ func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
 func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 	// Compare device properties
 	if newDev.Type != i.Type {
-		i.logger.WithFields(log.Fields{
-			"old": i.Type,
-			"new": newDev.Type,
-		}).Info("Type changed")
-
+		i.logger.Info("Type changed",
+			zap.Any("old", i.Type),
+			zap.Any("new", newDev.Type),
+		)
 		i.Device.Type = newDev.Type
 	}
 	if newDev.FirewallMark != i.FirewallMark {
-		i.logger.WithFields(log.Fields{
-			"old": i.FirewallMark,
-			"new": newDev.FirewallMark,
-		}).Info("FirewallMark changed")
-
+		i.logger.Info("FirewallMark changed",
+			zap.Any("old", i.FirewallMark),
+			zap.Any("new", newDev.FirewallMark),
+		)
 		i.Device.FirewallMark = newDev.FirewallMark
 	}
 	if newDev.PrivateKey != i.Device.PrivateKey {
-		i.logger.WithFields(log.Fields{
-			"old": i.PrivateKey,
-			"new": newDev.PrivateKey,
-		}).Info("PrivateKey changed")
-
+		i.logger.Info("PrivateKey changed",
+			zap.Any("old", i.PrivateKey),
+			zap.Any("new", newDev.PrivateKey),
+		)
 		i.Device.PrivateKey = newDev.PrivateKey
 		i.Device.PublicKey = newDev.PublicKey
 	}
 	if newDev.ListenPort != i.ListenPort {
-		i.logger.WithFields(log.Fields{
-			"old": i.ListenPort,
-			"new": newDev.ListenPort,
-		}).Info("ListenPort changed")
-
+		i.logger.Info("ListenPort changed",
+			zap.Any("old", i.ListenPort),
+			zap.Any("new", newDev.ListenPort),
+		)
 		i.Device.ListenPort = newDev.ListenPort
 	}
 
@@ -211,12 +207,12 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		cmp := wg.CmpPeers(oldPeer, newPeer)
 		switch {
 		case cmp < 0: // removed
-			i.logger.WithField("peer", oldPeer.PublicKey).Info("Peer removed")
+			i.logger.Info("Peer removed", zap.Any("peer", oldPeer.PublicKey))
 			i.onPeerRemoved(oldPeer)
 			k++
 
 		case cmp > 0: // added
-			i.logger.WithField("peer", oldPeer.PublicKey).Info("Peer added")
+			i.logger.Info("Peer added", zap.Any("peer", oldPeer.PublicKey))
 			i.onPeerAdded(newPeer)
 			j++
 
@@ -229,14 +225,14 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 
 	for k < len(i.Peers) {
 		oldPeer := &i.Peers[k]
-		i.logger.WithField("peer", oldPeer.PublicKey).Info("Peer removed")
+		i.logger.Info("Peer removed", zap.Any("peer", oldPeer.PublicKey))
 		i.onPeerRemoved(oldPeer)
 		k++
 	}
 
 	for j < len(newDev.Peers) {
 		newPeer := &newDev.Peers[j]
-		i.logger.WithField("peer", newPeer.PublicKey).Info("Peer added")
+		i.logger.Info("Peer added", zap.Any("peer", newPeer.PublicKey))
 		i.onPeerAdded(newPeer)
 		j++
 	}
@@ -260,7 +256,7 @@ func (i *BaseInterface) SyncConfig(cfg string) error {
 		return fmt.Errorf("failed to sync configuration: %w\n%s", err, output)
 	}
 
-	i.logger.WithField("config", cfg).Debug("Synced configuration")
+	i.logger.Debug("Synced configuration", zap.Any("config", cfg))
 
 	return nil
 }
@@ -268,7 +264,10 @@ func (i *BaseInterface) SyncConfig(cfg string) error {
 func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 	peer, err := NewPeer(p, i)
 	if err != nil {
-		i.logger.WithError(err).WithField("peer", peer.PublicKey).Fatal("Failed to setup peer")
+		i.logger.Fatal("Failed to setup peer",
+			zap.Error(err),
+			zap.Any("peer", peer.PublicKey),
+		)
 	}
 
 	i.peers[peer.PublicKey()] = peer
@@ -294,11 +293,11 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
 	peer, ok := i.peers[crypto.Key(p.PublicKey)]
 	if !ok {
-		i.logger.WithField("peer", peer.PublicKey).Warn("Failed to find matching peer")
+		i.logger.Warn("Failed to find matching peer", zap.Any("peer", peer.PublicKey))
 	}
 
 	if err := peer.Close(); err != nil {
-		i.logger.WithField("peer", peer.PublicKey).Warn("Failed to close peer")
+		i.logger.Warn("Failed to close peer", zap.Any("peer", peer.PublicKey))
 	}
 
 	i.server.BroadcastEvent(&pb.Event{
@@ -379,10 +378,10 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		backend: backend,
 		server:  server,
 		args:    args,
-		logger: log.WithFields(log.Fields{
-			"intf": dev.Name,
-			"type": "kernel",
-		}),
+		logger: zap.L().Named("interface").With(
+			zap.String("intf", dev.Name),
+			zap.String("type", "kernel"),
+		),
 		peers: make(map[crypto.Key]Peer),
 	}
 

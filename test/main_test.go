@@ -1,28 +1,61 @@
 package main_test
 
 import (
-	"flag"
 	"os"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/zapr"
+	glog "github.com/ipfs/go-log/v2"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc/grpclog"
+	"k8s.io/klog/v2"
+	"riasc.eu/wice/internal"
+	"riasc.eu/wice/pkg/socket"
 )
 
-var logLevel = flag.String("log-level", "info", "log level (one of \"panic\", \"fatal\", \"error\", \"warn\", \"info\", \"debug\", \"trace\")")
+func setupLogging() *zap.Logger {
+	cfg := zap.NewDevelopmentEncoderConfig()
+	cfg.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.99")
 
-func TestMain(m *testing.M) {
-	log.SetFormatter(&log.TextFormatter{
-		ForceColors:  true,
-		DisableQuote: true,
-	})
+	consoleEncoder := zapcore.NewConsoleEncoder(cfg)
 
-	if lvl, err := log.ParseLevel(*logLevel); err != nil {
-		log.Fatalf("invalid log level: %s", *logLevel)
-	} else {
-		log.SetLevel(lvl)
-		log.WithField("level", *logLevel).Debug("Set log level")
+	f, err := os.OpenFile("logs/test.log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		panic("failed to open log file")
 	}
 
-	rc := m.Run()
-	os.Exit(rc)
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(f), zap.InfoLevel),
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zap.InfoLevel),
+	)
+
+	logger := zap.New(core)
+
+	zap.RedirectStdLog(logger)
+	zap.ReplaceGlobals(logger)
+	zap.LevelFlag("log-level", zap.DebugLevel, "Log level")
+
+	// Redirect Kubernetes log to Zap
+	klogger := logger.Named("k8s")
+	klog.SetLogger(zapr.NewLogger(klogger))
+
+	// Redirect libp2p / ipfs log to Zap
+	glog.SetPrimaryCore(logger.Core())
+
+	// Redirect gRPC log to Zap
+	glogger := logger.Named("grpc")
+	grpclog.SetLoggerV2(socket.NewLogger(glogger, 0))
+
+	zap.ReplaceGlobals(logger)
+
+	return logger
+}
+
+func TestMain(m *testing.M) {
+	internal.SetupRand()
+	logger := setupLogging()
+	defer logger.Sync()
+
+	os.Exit(m.Run())
 }

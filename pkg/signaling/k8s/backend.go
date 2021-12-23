@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
@@ -28,7 +28,7 @@ const (
 )
 
 type Backend struct {
-	logger log.FieldLogger
+	logger *zap.Logger
 	offers map[crypto.PublicKeyPair]chan signaling.Offer
 
 	config BackendConfig
@@ -53,14 +53,9 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	var config *rest.Config
 	var err error
 
-	logFields := log.Fields{
-		"logger":  "backend",
-		"backend": uri.Scheme,
-	}
-
 	b := Backend{
 		offers:  make(map[crypto.PublicKeyPair]chan signaling.Offer),
-		logger:  log.WithFields(logFields),
+		logger:  zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
 		server:  server,
@@ -133,7 +128,7 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 }
 
 func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer, error) {
-	b.logger.WithField("kp", kp).Info("Subscribe to offers from peer")
+	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	ch, ok := b.offers[kp]
 	if !ok {
@@ -179,7 +174,10 @@ func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer signaling.Offer) e
 		return nil
 	})
 
-	b.logger.WithField("kp", kp).WithField("offer", offer).Debug("Published offer")
+	b.logger.Debug("Published offer",
+		zap.Any("kp", kp),
+		zap.Any("offer", offer),
+	)
 
 	return nil
 }

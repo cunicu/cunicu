@@ -7,7 +7,7 @@ import (
 	"time"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/signaling"
 )
@@ -15,7 +15,7 @@ import (
 type Peer struct {
 	Offers chan signaling.Offer
 
-	logger log.FieldLogger
+	logger *zap.Logger
 
 	topic *pubsub.Topic
 	sub   *pubsub.Subscription
@@ -28,7 +28,7 @@ func (b *Backend) NewPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 
 	p := &Peer{
 		context: context.Background(),
-		logger:  b.logger.WithField("kp", kp),
+		logger:  b.logger.With(zap.Any("kp", kp)),
 	}
 
 	// topicFromPublicKeyPair derives a common topic name by XOR-ing the public keys of the peers
@@ -58,10 +58,10 @@ func (p *Peer) publishOffer(o signaling.Offer) error {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			p.logger.WithFields(log.Fields{
-				"offer": o,
-				"topic": p.topic,
-			}).Debug("Published offer to topic")
+			p.logger.Debug("Published offer to topic",
+				zap.Any("offer", o),
+				zap.Any("topic", p.topic),
+			)
 			p.topic.Publish(p.context, data)
 		}
 	}()
@@ -87,13 +87,13 @@ func (p *Peer) readLoop() {
 
 		o := signaling.Offer{}
 		if err := json.Unmarshal(msg.Data, &o); err != nil {
-			p.logger.WithError(err).Error("Failed to decode received offer")
+			p.logger.Error("Failed to decode received offer", zap.Error(err))
 		}
 
-		p.logger.WithFields(log.Fields{
-			"offer": o,
-			"topic": p.topic,
-		}).Debug("Received offer")
+		p.logger.Debug("Received offer",
+			zap.Any("offer", o),
+			zap.Any("topic", p.topic),
+		)
 
 		// send valid messages onto the Messages channel
 		p.Offers <- o

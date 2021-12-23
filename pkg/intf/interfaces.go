@@ -2,9 +2,9 @@ package intf
 
 import (
 	"fmt"
-	"os"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
 	"riasc.eu/wice/pkg/args"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -32,9 +32,11 @@ func (interfaces *Interfaces) CloseAll() {
 }
 
 func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) error {
+	logger := zap.L().Named("interfaces")
+
 	devices, err := client.Devices()
 	if err != nil {
-		log.WithError(err).Fatal("Failed to list Wireguard interfaces")
+		logger.Fatal("Failed to list Wireguard interfaces", zap.Error(err))
 	}
 
 	syncedInterfaces := Interfaces{}
@@ -48,21 +50,27 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 		// Find matching interface
 		intf := interfaces.GetByName(device.Name)
 		if intf == nil { // new interface
-			log.WithField("intf", device.Name).Info("Adding new interface")
+			logger.Info("Adding new interface", zap.String("intf", device.Name))
 
 			i, err := NewInterface(device, client, backend, server, args)
 			if err != nil {
-				log.WithField("intf", device.Name).WithError(err).Fatalf("Failed to create new interface")
+				logger.Fatal("Failed to create new interface",
+					zap.Error(err),
+					zap.String("intf", device.Name),
+				)
 			}
 
 			intf = &i
 
 			*interfaces = append(*interfaces, &i)
 		} else { // existing interface
-			log.WithField("intf", intf.Name()).Trace("Sync existing interface")
+			logger.Debug("Sync existing interface", zap.String("intf", device.Name))
 
 			if err := intf.Sync(device); err != nil {
-				log.WithError(err).WithField("intf", intf.Name()).Fatal("Failed to sync interface")
+				logger.Fatal("Failed to sync interface",
+					zap.Error(err),
+					zap.String("intf", device.Name),
+				)
 			}
 		}
 
@@ -72,10 +80,10 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 	for _, intf := range *interfaces {
 		i := syncedInterfaces.GetByName(intf.Name())
 		if i == nil {
-			log.WithField("intf", intf.Name()).Info("Removing vanished interface")
+			logger.Info("Removing vanished interface", zap.String("intf", intf.Name()))
 
 			if err := intf.Close(); err != nil {
-				log.WithError(err).Fatal("Failed to close interface")
+				logger.Fatal("Failed to close interface", zap.Error(err))
 			}
 
 			server.BroadcastEvent(&pb.Event{
@@ -106,10 +114,12 @@ func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend sign
 		return err
 	}
 
+	logger := zap.L().Named("interfaces")
+
 	for _, i := range args.Interfaces {
 		dev := devs.GetByName(i)
 		if dev != nil {
-			log.WithField("intf", i).Warn("Interface already exists. Skipping..")
+			logger.Warn("Interface already exists. Skipping..", zap.Any("intf", i))
 			continue
 		}
 
@@ -123,9 +133,9 @@ func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend sign
 			return fmt.Errorf("failed to create Wireguard device: %w", err)
 		}
 
-		if log.GetLevel() >= log.DebugLevel {
-			log.Debug("Intialized interface:")
-			intf.DumpConfig(os.Stdout)
+		if logger.Core().Enabled(zap.DebugLevel) {
+			logger.Debug("Intialized interface:")
+			intf.DumpConfig(&zapio.Writer{Log: logger})
 		}
 
 		*interfaces = append(*interfaces, intf)

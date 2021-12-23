@@ -8,11 +8,10 @@ import (
 	"github.com/cilium/ebpf"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"go.uber.org/zap"
 	"golang.org/x/net/bpf"
 
 	"syscall"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -27,6 +26,8 @@ type FilteredUDPConn struct {
 	fd int
 
 	localAddr net.UDPAddr
+
+	logger *zap.Logger
 }
 
 func (fuc *FilteredUDPConn) LocalAddr() net.Addr {
@@ -69,7 +70,11 @@ func (fuc *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err erro
 
 	copy(buf[:n], payload.Payload()[:])
 
-	log.Tracef("ReadFrom: ra=%s, len=%d, buf=%s", rUDPAddr, n, hex.EncodeToString(buf[:n]))
+	fuc.logger.Debug("ReadFrom",
+		zap.Any("ra", rUDPAddr),
+		zap.Int("len", n),
+		zap.String("buf", hex.EncodeToString(buf[:n])),
+	)
 
 	return n, rUDPAddr, nil
 }

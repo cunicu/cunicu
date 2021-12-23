@@ -17,7 +17,7 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/multiformats/go-multiaddr"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -39,7 +39,7 @@ func init() {
 }
 
 type Backend struct {
-	logger log.FieldLogger
+	logger *zap.Logger
 	config BackendConfig
 
 	peers     map[crypto.PublicKeyPair]*Peer
@@ -58,14 +58,9 @@ type Backend struct {
 func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) {
 	var err error
 
-	logFields := log.Fields{
-		"logger":  "backend",
-		"backend": uri.Scheme,
-	}
-
 	b := &Backend{
 		peers:  map[crypto.PublicKeyPair]*Peer{},
-		logger: log.WithFields(logFields),
+		logger: zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		config: defaultConfig,
 		server: server,
 	}
@@ -123,10 +118,10 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	if b.host, err = p2p.New(opts...); err != nil {
 		return nil, fmt.Errorf("failed to create host: %w", err)
 	}
-	b.logger.WithFields(log.Fields{
-		"id":    b.host.ID(),
-		"addrs": b.host.Addrs(),
-	}).Info("Host created")
+	b.logger.Info("Host created",
+		zap.Any("id", b.host.ID()),
+		zap.Any("addrs", b.host.Addrs()),
+	)
 
 	b.host.Network().Notify(b)
 
@@ -157,32 +152,36 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 
 	// Add some handlers
 	rt.PeerAdded = func(i peer.ID) {
-		b.logger.WithField("peer", i).Debug("Peer added to routing table")
+		b.logger.Debug("Peer added to routing table", zap.Any("peer", i))
 	}
 
 	rt.PeerRemoved = func(i peer.ID) {
-		b.logger.WithField("peer", i).Debug("Peer removed from routing table")
+		b.logger.Debug("Peer removed from routing table", zap.Any("peer", i))
 	}
 
 	// Let's connect to the bootstrap nodes first. They will tell us about the
 	// other nodes in the network.
 	var wg sync.WaitGroup
 	for _, pi := range b.config.BootstrapPeers {
-		b.logger.WithField("peer", pi).Debug("Connecting to peer")
+		logger := b.logger.With(zap.Any("peer", pi))
+
+		logger.Debug("Connecting to peer")
 		wg.Add(1)
 		go func(pi peer.AddrInfo) {
 			defer wg.Done()
 
-			logger := b.logger.WithField("peer", pi)
-
 			if err := b.host.Connect(b.context, pi); err != nil {
-				logger.Warning("Failed to connect to boostrap node")
+				logger.Warn("Failed to connect to boostrap node")
 			} else {
 				logger.Info("Connection established with bootstrap node")
 			}
 		}(pi)
 	}
 	wg.Wait() // TODO: can we run this asynchronously?
+
+	b.dht.PutValue(context.Background(), "bla", []byte("blub"))
+
+	// b.dht.GetValue(context.Background(), "bla")
 
 	rd := discovery.NewRoutingDiscovery(b.dht)
 
@@ -229,7 +228,7 @@ func (b *Backend) getPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 }
 
 func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer, error) {
-	b.logger.WithField("kp", kp).Info("Subscribe to offers from peer")
+	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	p, err := b.getPeer(kp)
 	if err != nil {
@@ -264,9 +263,13 @@ func (b *Backend) HandlePeerFound(pi peer.AddrInfo) {
 		return // skip ourself
 	}
 
-	b.logger.WithField("peer", pi.ID).Info("Discovered new peer via mDNS")
+	b.logger.Info("Discovered new peer via mDNS",
+		zap.Any("peer", pi.ID))
 
 	if err := b.host.Connect(b.context, pi); err != nil {
-		b.logger.WithField("peer", pi.ID).WithError(err).Error("Failed connecting to peer")
+		b.logger.Error("Failed connecting to peer",
+			zap.Any("peer", pi.ID),
+			zap.Error(err),
+		)
 	}
 }

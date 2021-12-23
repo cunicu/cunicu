@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -51,13 +51,15 @@ func WatchWireguardUserspaceInterfaces(events chan InterfaceEvent, errors chan e
 		}
 	}
 
+	logger := zap.L().Named("wireguard")
+
 	go func() {
 		for {
 			select {
 
 			// Fsnotify events
 			case event := <-watcher.Events:
-				log.WithField("event", event).Trace("Received fsnotify event")
+				zap.L().Debug("Received fsnotify event", zap.Any("event", event))
 
 				name := normalizeSocketName(event.Name)
 
@@ -72,12 +74,12 @@ func WatchWireguardUserspaceInterfaces(events chan InterfaceEvent, errors chan e
 						Name: name,
 					}
 				} else {
-					log.Warn("Unknown fsnotify event: %+v", event)
+					logger.Warn("Unknown fsnotify event", zap.Any("event", event))
 				}
 
 			// Fsnotify errors
 			case errors <- <-watcher.Errors:
-				log.Trace("Error while watching for link changes")
+				logger.Debug("Error while watching for link changes")
 			}
 		}
 	}()

@@ -6,7 +6,6 @@ package main_test
 import (
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 	"riasc.eu/wice/internal/test"
@@ -16,38 +15,38 @@ func TestSimple(t *testing.T) {
 	var (
 		n  *g.Network
 		sw *g.Switch
-		b  *test.SignalingNode
+		s  *test.SignalingNode
 		r  *test.RelayNode
 		nl test.NodeList
 
 		err error
 	)
 
-	if n, err = g.NewNetwork("", gopt.Persistent(false)); err != nil {
+	if n, err = g.NewNetwork(""); err != nil {
 		t.Fatalf("Failed to create network: %s", err)
 	}
 	defer n.Close()
 
-	if sw, err = n.AddSwitch("sw"); err != nil {
+	if sw, err = n.AddSwitch("sw0"); err != nil {
 		t.Fatalf("Failed to create switch: %s", err)
 	}
 
-	if r, err = test.NewRelayNode(n, "relay"); err != nil {
+	if r, err = test.NewRelayNode(n, "r0"); err != nil {
 		t.Fatalf("Failed to start relay: %s", err)
 	}
 	defer r.Close()
 
-	if b, err = test.NewSignalingNode(n, "backend"); err != nil {
+	if s, err = test.NewSignalingNode(n, "s0"); err != nil {
 		t.Fatalf("Failed to create signaling node: %s", err)
 	}
-	defer b.Close()
+	defer s.Close()
 
-	if nl, err = test.AddNodes(n, b, 2); err != nil {
+	if nl, err = test.AddNodes(n, s, 2); err != nil {
 		t.Fatalf("Failed to created nodes: %s", err)
 	}
 
-	n1 := nl[0]
-	n2 := nl[1]
+	n0 := nl[0]
+	n1 := nl[1]
 
 	if err := n.AddLink(
 		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 1, 24), r.Host),
@@ -57,22 +56,22 @@ func TestSimple(t *testing.T) {
 	}
 
 	if err := n.AddLink(
-		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 2, 24), b.Host),
-		gopt.Interface("eth0-b", sw),
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 2, 24), s.Host),
+		gopt.Interface("eth0-s", sw),
 	); err != nil {
 		t.Fatalf("Failed to add link: %s", err)
 	}
 
 	if err := n.AddLink(
-		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 100, 24), n1.Host),
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 100, 24), n0.Host),
+		gopt.Interface("eth0-n0", sw),
+	); err != nil {
+		t.Fatalf("Failed to add link: %s", err)
+	}
+
+	if err := n.AddLink(
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 101, 24), n1.Host),
 		gopt.Interface("eth0-n1", sw),
-	); err != nil {
-		t.Fatalf("Failed to add link: %s", err)
-	}
-
-	if err := n.AddLink(
-		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 101, 24), n2.Host),
-		gopt.Interface("eth0-n2", sw),
 	); err != nil {
 		t.Fatalf("Failed to add link: %s", err)
 	}
@@ -81,7 +80,7 @@ func TestSimple(t *testing.T) {
 		t.Fatalf("Failed to start relay: %s", err)
 	}
 
-	if err := b.Start(); err != nil {
+	if err := s.Start(); err != nil {
 		t.Fatalf("Failed to start signaling node: %s", err)
 	}
 
@@ -103,14 +102,12 @@ func TestSimple(t *testing.T) {
 	}
 	defer nl.Stop()
 
-	log.SetLevel(log.DebugLevel)
+	// nl.ForEachPeer(func(n *test.Node) error {
+	// 	n.Run("wg")
+	// 	n.Run("ip", "a")
 
-	nl.ForEachPeer(func(n *test.Node) error {
-		n.Run("wg")
-		n.Run("ip", "a")
-
-		return nil
-	})
+	// 	return nil
+	// })
 
 	if err := nl.PingPeers(); err != nil {
 		t.Fatalf("Failed to ping peers: %s", err)

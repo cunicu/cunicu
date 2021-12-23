@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -17,7 +17,7 @@ type Client struct {
 
 	pb.SocketClient
 	grpc   *grpc.ClientConn
-	logger *log.Entry
+	logger *zap.Logger
 
 	Events chan *pb.Event
 }
@@ -57,7 +57,7 @@ func Connect(path string) (*Client, error) {
 	client := &Client{
 		SocketClient: pb.NewSocketClient(conn),
 		grpc:         conn,
-		logger:       log.WithField("logger", "socket"),
+		logger:       zap.L().Named("socket.client"),
 		Events:       make(chan *pb.Event, 100),
 	}
 
@@ -82,14 +82,14 @@ func (c *Client) Close() error {
 func (c *Client) streamEvents() {
 	str, err := c.StreamEvents(context.Background(), &pb.Void{})
 	if err != nil {
-		c.logger.WithError(err).Error("Failed to stream events")
+		c.logger.Error("Failed to stream events", zap.Error(err))
 	}
 
 	ok := true
 	for ok {
 		evt, err := str.Recv()
 		if err != nil {
-			c.logger.WithError(err).Error("Failed to receive event")
+			c.logger.Error("Failed to receive event", zap.Error(err))
 			break
 		}
 

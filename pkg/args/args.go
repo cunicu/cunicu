@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	pice "riasc.eu/wice/internal/ice"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
@@ -50,19 +50,6 @@ var (
 		},
 	}
 )
-
-type logLevel struct {
-	log.Level
-}
-
-func (l *logLevel) Set(value string) error {
-	if m, err := log.ParseLevel(value); err != nil {
-		return err
-	} else {
-		l.Level = m
-		return nil
-	}
-}
 
 type backendURLList []*url.URL
 
@@ -217,7 +204,7 @@ func Parse(progname string, argv []string) (*Args, error) {
 	var err error
 	var iceURLs, iceCandidateTypes, iceNetworkTypes, iceNat1to1IPs arrayFlags
 	var backendURLs backendURLList
-	var logLevel logLevel = logLevel{log.InfoLevel}
+	var logLevel zapcore.Level
 
 	flags := flag.NewFlagSet(progname, flag.ContinueOnError)
 
@@ -261,8 +248,10 @@ func Parse(progname string, argv []string) (*Args, error) {
 		return nil, fmt.Errorf("failed to parse args: %w", err)
 	}
 
-	log.WithField("level", logLevel.Level).Info("Setting debug level")
-	log.SetLevel(logLevel.Level)
+	logger := zap.L().Named("args")
+
+	logger.Info("Setting debug level", zap.Any("level", logLevel))
+	// logger.SetLevel(logLevel.Level)
 
 	args := &Args{
 		User:      *user,

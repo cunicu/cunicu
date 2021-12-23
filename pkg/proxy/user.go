@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 const (
@@ -16,7 +16,7 @@ type UserProxy struct {
 	BaseProxy
 	conn *net.UDPConn
 
-	logger log.FieldLogger
+	logger *zap.Logger
 }
 
 func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
@@ -24,12 +24,9 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 
 	proxy := &UserProxy{
 		BaseProxy: BaseProxy{
-			Ident: ident,
+			Ident:  ident,
+			logger: zap.L().Named("proxy.user"),
 		},
-		logger: log.WithFields(log.Fields{
-			"logger": "proxy",
-			"type":   "user",
-		}),
 	}
 
 	// Userspace proxying

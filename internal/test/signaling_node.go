@@ -6,15 +6,14 @@ package test
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"os"
 	"os/exec"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/sirupsen/logrus"
 	g "github.com/stv0g/gont/pkg"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
@@ -22,14 +21,11 @@ import (
 type SignalingNode struct {
 	*g.Host
 
-	logger logrus.FieldLogger
-
 	Command *exec.Cmd
+	Client  *socket.Client
 
 	ID              peer.ID
 	ListenAddresses []multiaddr.Multiaddr
-
-	Client *socket.Client
 }
 
 func NewSignalingNode(m *g.Network, name string, opts ...g.Option) (*SignalingNode, error) {
@@ -41,31 +37,22 @@ func NewSignalingNode(m *g.Network, name string, opts ...g.Option) (*SignalingNo
 	b := &SignalingNode{
 		Host:            h,
 		ListenAddresses: []multiaddr.Multiaddr{},
-		logger:          logrus.WithField("node", h.Name),
 	}
-
-	// Prepare listen address
-	ma, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/40151")
-	if err != nil {
-		return nil, err
-	}
-
-	b.ListenAddresses = append(b.ListenAddresses, ma)
 
 	return b, nil
 }
 
-func (b *SignalingNode) Start() error {
+func (s *SignalingNode) Start() error {
 	var err error
 	var stdout, stderr io.Reader
-	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", b.Name())
-	var logPath = fmt.Sprintf("logs/%s.log", b.Name())
+	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", s.Name())
+	var logPath = fmt.Sprintf("logs/%s.log", s.Name())
 
 	if err := os.RemoveAll(sockPath); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to remove old control socket: %w", err)
 	}
 
-	if stdout, stderr, b.Command, err = b.StartGo("../cmd/wice",
+	if stdout, stderr, s.Command, err = s.StartGo("../cmd/wice",
 		"-socket", sockPath,
 		"-socket-wait",
 	); err != nil {
@@ -73,54 +60,54 @@ func (b *SignalingNode) Start() error {
 	}
 
 	if _, err := FileWriter(logPath, stdout, stderr); err != nil {
-		return err
+		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
-	if b.Client, err = socket.Connect(sockPath); err != nil {
-		return err
+	if s.Client, err = socket.Connect(sockPath); err != nil {
+		return fmt.Errorf("failed to open control socket connection: %w", err)
 	}
 
-	if err := b.WaitReady(); err != nil {
+	if err := s.WaitReady(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (b *SignalingNode) Stop() error {
-	if b.Command == nil || b.Command.Process == nil {
+func (s *SignalingNode) Stop() error {
+	if s.Command == nil || s.Command.Process == nil {
 		return nil
 	}
 
-	return b.Command.Process.Kill()
+	return s.Command.Process.Kill()
 }
 
-func (b *SignalingNode) Close() error {
-	if err := b.Client.Close(); err != nil {
+func (s *SignalingNode) Close() error {
+	if err := s.Client.Close(); err != nil {
 		return fmt.Errorf("failed to close RPC connection: %s", err)
 	}
 
-	return b.Stop()
+	return s.Stop()
 }
 
-func (b *SignalingNode) URL() (*url.URL, error) {
-	// pi := &peer.AddrInfo{
-	// 	ID:    b.ID,
-	// 	Addrs: b.ListenAddresses,
-	// }
+func (s *SignalingNode) URL() (*url.URL, error) {
+	pi := &peer.AddrInfo{
+		ID:    s.ID,
+		Addrs: s.ListenAddresses,
+	}
 
-	// mas, err := peer.AddrInfoToP2pAddrs(pi)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get p2p addresses")
-	// }
+	mas, err := peer.AddrInfoToP2pAddrs(pi)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get p2p addresses")
+	}
 
 	q := url.Values{}
 	// q.Add("dht", "false")
 	// q.Add("mdns", "false")
 
-	// for _, ma := range mas {
-	// 	q.Add("bootstrap-peers", ma.String())
-	// }
+	for _, ma := range mas {
+		q.Add("bootstrap-peers", ma.String())
+	}
 
 	return &url.URL{
 		Scheme:   "p2p",
@@ -128,17 +115,16 @@ func (b *SignalingNode) URL() (*url.URL, error) {
 	}, nil
 }
 
-func (b *SignalingNode) WaitReady() error {
+func (s *SignalingNode) WaitReady() error {
 	var err error
 
-	evt := b.Client.WaitForEvent(&pb.Event{
+	evt := s.Client.WaitForEvent(&pb.Event{
 		Type:  "backend",
 		State: "ready",
 	})
 
-	be, ok := evt.Event.(*pb.Event_Backend)
-	if ok {
-		b.ID, err = peer.Decode(be.Backend.Id)
+	if be, ok := evt.Event.(*pb.Event_Backend); ok {
+		s.ID, err = peer.Decode(be.Backend.Id)
 		if err != nil {
 			return fmt.Errorf("failed to decode peer ID: %w", err)
 		}
@@ -147,11 +133,11 @@ func (b *SignalingNode) WaitReady() error {
 			if ma, err := multiaddr.NewMultiaddr(la); err != nil {
 				return fmt.Errorf("failed to decode listen address: %w", err)
 			} else {
-				b.ListenAddresses = append(b.ListenAddresses, ma)
+				s.ListenAddresses = append(s.ListenAddresses, ma)
 			}
 		}
 	} else {
-		logrus.Warn("Missing signaling details")
+		zap.L().Warn("Missing signaling details")
 	}
 
 	return nil

@@ -3,12 +3,14 @@ package wg
 import (
 	"net"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/conn"
 )
 
 type IceBind struct {
 	// Interface *intf.Interface
+
+	logger *zap.Logger
 }
 
 type IceEndpoint struct {
@@ -16,43 +18,49 @@ type IceEndpoint struct {
 
 	// Peer *intf.Peer
 
-	String string
+	logger *zap.Logger
+
+	name string
+}
+
+func (ep *IceEndpoint) String() string {
+	return ep.name
 }
 
 // clears the source address
 func (ep *IceEndpoint) ClearSrc() {
-	log.Debugf("EP %s ClearSrc()", ep.String)
+	ep.logger.Debug("ClearSrc()")
 }
 
 // returns the local source address (ip:port)
 func (ep *IceEndpoint) SrcToString() string {
-	log.Debugf("EP %s SrcToString()", ep.String)
+	ep.logger.Debug("SrcToString()")
 
-	return ep.String + ":src"
+	return ep.name + ":src"
 }
 
 // returns the destination address (ip:port)
 func (ep *IceEndpoint) DstToString() string {
-	log.Debugf("EP %s DstToString()", ep.String)
+	ep.logger.Debug("DstToString()")
 
-	return ep.String + ":dst"
+	return ep.name + ":dst"
 }
 
 // used for mac2 cookie calculations
 func (ep *IceEndpoint) DstToBytes() []byte {
-	log.Debugf("EP %s DstToBytes()", ep.String)
+	ep.logger.Debug("DstToBytes()")
 
-	return []byte(ep.String)
+	return []byte(ep.name)
 }
 
 func (ep *IceEndpoint) DstIP() net.IP {
-	log.Debugf("EP %s DstIP()", ep.String)
+	ep.logger.Debug("DstIP()")
 
 	return ep.IP
 }
 
 func (ep *IceEndpoint) SrcIP() net.IP {
-	log.Debugf("EP %s SrcIP()", ep.String)
+	ep.logger.Debug("SrcIP()")
 
 	return ep.IP
 }
@@ -60,6 +68,7 @@ func (ep *IceEndpoint) SrcIP() net.IP {
 func NewIceBind() conn.Bind {
 	return &IceBind{
 		// Interface: i,
+		logger: zap.L().Named("ice.bind"),
 	}
 }
 
@@ -67,7 +76,7 @@ func NewIceBind() conn.Bind {
 // port that it bound to. Passing zero results in a random selection.
 // fns is the set of functions that will be called to receive packets.
 func (b *IceBind) Open(port uint16) (fns []conn.ReceiveFunc, actualPort uint16, err error) {
-	log.Debugf("Bind Open(port=%d)", port)
+	b.logger.Debug("Open()", zap.Uint16("port", port))
 
 	fns = append(fns, b.receive)
 
@@ -77,7 +86,7 @@ func (b *IceBind) Open(port uint16) (fns []conn.ReceiveFunc, actualPort uint16, 
 // Close closes the Bind listener.
 // All fns returned by Open must return net.ErrClosed after a call to Close.
 func (b *IceBind) Close() error {
-	log.Debug("Bind Close()")
+	b.logger.Debug("Close()")
 
 	return nil
 }
@@ -85,21 +94,24 @@ func (b *IceBind) Close() error {
 // SetMark sets the mark for each packet sent through this Bind.
 // This mark is passed to the kernel as the socket option SO_MARK.
 func (b *IceBind) SetMark(mark uint32) error {
-	log.Debugf("Bind SetMark(mark=%d)", mark)
+	b.logger.Debug("SetMark", zap.Uint32("mark", mark))
 
 	return nil // Stub
 }
 
 // Send writes a packet b to address ep.
 func (b *IceBind) Send(buf []byte, ep conn.Endpoint) error {
-	log.Debugf("Bind Send(len=%d, ep=%s)", len(buf), ep.(*IceEndpoint).String)
+	b.logger.Debug("Send()",
+		zap.Int("len", len(buf)),
+		zap.Any("ep", ep.(*IceEndpoint)),
+	)
 
 	return nil
 }
 
 // ParseEndpoint creates a new endpoint from a string.
 func (b *IceBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
-	log.Debugf("Bind ParseEndpoints(%s)", s)
+	b.logger.Debug("ParseEndpoints()", zap.String("ep", s))
 
 	addr, err := net.ResolveUDPAddr("udp", s)
 	if err != nil {
@@ -108,12 +120,13 @@ func (b *IceBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
 
 	return &IceEndpoint{
 		UDPAddr: *addr,
-		String:  s,
+		name:    s,
+		logger:  b.logger.With(zap.String("ep", s)),
 	}, nil
 }
 
 func (b *IceBind) receive(buf []byte) (n int, ep conn.Endpoint, err error) {
-	log.Debug("Bind receive()")
+	b.logger.Debug("Bind receive()")
 
 	buf[0] = 1
 

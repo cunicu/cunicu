@@ -10,18 +10,19 @@ import (
 	"sync"
 
 	"github.com/pion/stun"
+	"go.uber.org/zap"
 
-	log "github.com/sirupsen/logrus"
 	netx "riasc.eu/wice/internal/net"
 )
 
 const (
-	receiveMTU = 8192
+	receiveMTU  = 8192
+	maxAddrSize = 512
 )
 
 // UDPMuxDefault is an implementation of the interface
 type FilteredUDPMux struct {
-	params FilteredUDPMuxParams
+	conn *netx.FilteredUDPConn
 
 	closedChan chan struct{}
 	closeOnce  sync.Once
@@ -36,25 +37,14 @@ type FilteredUDPMux struct {
 	pool *sync.Pool
 
 	mu sync.Mutex
-}
 
-const maxAddrSize = 512
-
-// UDPMuxParams are parameters for UDPMux.
-type FilteredUDPMuxParams struct {
-	Logger *log.Entry
-	Conn   *netx.FilteredUDPConn
+	logger *zap.Logger
 }
 
 // NewUDPMuxDefault creates an implementation of UDPMux
-func NewFilteredUDPMux(params FilteredUDPMuxParams) *FilteredUDPMux {
-	if params.Logger == nil {
-		params.Logger = log.WithField("logger", "ice-mux")
-	}
-
+func NewFilteredUDPMux(conn *netx.FilteredUDPConn) *FilteredUDPMux {
 	m := &FilteredUDPMux{
 		addressMap: map[string]*udpMuxedConn{},
-		params:     params,
 		conns:      make(map[string]*udpMuxedConn),
 		closedChan: make(chan struct{}, 1),
 		pool: &sync.Pool{
@@ -63,6 +53,7 @@ func NewFilteredUDPMux(params FilteredUDPMuxParams) *FilteredUDPMux {
 				return newBufferHolder(receiveMTU + maxAddrSize)
 			},
 		},
+		logger: zap.L().Named("ice.mux"),
 	}
 
 	go m.connWorker()
@@ -72,7 +63,7 @@ func NewFilteredUDPMux(params FilteredUDPMuxParams) *FilteredUDPMux {
 
 // LocalAddr returns the listening address of this UDPMuxDefault
 func (m *FilteredUDPMux) LocalAddr() net.Addr {
-	return m.params.Conn.LocalAddr()
+	return m.conn.LocalAddr()
 }
 
 // GetConn returns a PacketConn given the connection's ufrag and network
@@ -139,7 +130,7 @@ func (m *FilteredUDPMux) IsClosed() bool {
 
 // Close the mux, no further connections could be created
 func (m *FilteredUDPMux) Close() error {
-	m.params.Logger.Info("Closing mux")
+	m.logger.Info("Closing mux")
 
 	var err error
 	m.closeOnce.Do(func() {
@@ -176,7 +167,7 @@ func (m *FilteredUDPMux) removeConn(key string) {
 }
 
 func (m *FilteredUDPMux) writeTo(buf []byte, raddr net.Addr) (n int, err error) {
-	return m.params.Conn.WriteTo(buf, raddr)
+	return m.conn.WriteTo(buf, raddr)
 }
 
 func (m *FilteredUDPMux) registerConnForAddress(conn *udpMuxedConn, addr string) {
@@ -193,7 +184,7 @@ func (m *FilteredUDPMux) registerConnForAddress(conn *udpMuxedConn, addr string)
 	}
 	m.addressMap[addr] = conn
 
-	m.params.Logger.Debugf("Registered %s for %s", addr, conn.params.Key)
+	m.logger.Sugar().Debugf("Registered %s for %s", addr, conn.params.Key)
 }
 
 func (m *FilteredUDPMux) createMuxedConn(key string) *udpMuxedConn {
@@ -202,28 +193,25 @@ func (m *FilteredUDPMux) createMuxedConn(key string) *udpMuxedConn {
 		Key:       key,
 		AddrPool:  m.pool,
 		LocalAddr: m.LocalAddr(),
-		Logger:    m.params.Logger,
 	})
 	return c
 }
 
 func (m *FilteredUDPMux) connWorker() {
-	logger := m.params.Logger
-
 	defer func() {
 		_ = m.Close()
 	}()
 
 	buf := make([]byte, receiveMTU)
 	for {
-		n, addr, err := m.params.Conn.ReadFrom(buf)
+		n, addr, err := m.conn.ReadFrom(buf)
 		if m.IsClosed() {
 			return
 		} else if err != nil {
 			if os.IsTimeout(err) {
 				continue
 			} else if err != io.EOF {
-				logger.Errorf("could not read udp packet: %v", err)
+				m.logger.Error("Could not read UDP packet", zap.Error(err))
 			}
 
 			return
@@ -231,7 +219,7 @@ func (m *FilteredUDPMux) connWorker() {
 
 		udpAddr, ok := addr.(*net.UDPAddr)
 		if !ok {
-			logger.Errorf("underlying PacketConn did not return a UDPAddr")
+			m.logger.Error("Underlying PacketConn did not return a UDPAddr")
 			return
 		}
 
@@ -247,13 +235,13 @@ func (m *FilteredUDPMux) connWorker() {
 			}
 
 			if err = msg.Decode(); err != nil {
-				m.params.Logger.Warnf("Failed to handle decode ICE from %s: %v\n", addr.String(), err)
+				m.logger.Warn("Failed to handle decode ICE", zap.Any("address", addr), zap.Error(err))
 				continue
 			}
 
 			attr, stunAttrErr := msg.Get(stun.AttrUsername)
 			if stunAttrErr != nil {
-				m.params.Logger.Warnf("No Username attribute in STUN message from %s\n", addr.String())
+				m.logger.Warn("No Username attribute in STUN message", zap.Any("address", addr))
 				continue
 			}
 
@@ -265,12 +253,12 @@ func (m *FilteredUDPMux) connWorker() {
 		}
 
 		if destinationConn == nil {
-			m.params.Logger.Tracef("Dropping packet from %s, addr: %s", udpAddr.String(), addr.String())
+			m.logger.Sugar().Debug("Dropping packet from %s", udpAddr.String(), zap.Any("address", addr))
 			continue
 		}
 
 		if err = destinationConn.writePacket(buf[:n], udpAddr); err != nil {
-			m.params.Logger.Errorf("Could not write packet: %v", err)
+			m.logger.Error("Could not write packet: %v", zap.Error(err))
 		}
 	}
 }

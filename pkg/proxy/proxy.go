@@ -5,6 +5,8 @@ import (
 	"io"
 	"net"
 	"runtime"
+
+	"go.uber.org/zap"
 )
 
 type Type int
@@ -32,6 +34,7 @@ type Proxy interface {
 type BaseProxy struct {
 	ListenPort int
 	Ident      string
+	logger     *zap.Logger
 }
 
 func CheckNFTablesSupport() bool {

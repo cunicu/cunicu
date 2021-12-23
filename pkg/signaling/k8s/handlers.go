@@ -3,6 +3,7 @@ package k8s
 import (
 	"encoding/json"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 
 	"riasc.eu/wice/pkg/crypto"
@@ -12,41 +13,41 @@ import (
 func (b *Backend) onNodeAdd(obj interface{}) {
 	node := obj.(*corev1.Node)
 
-	b.logger.WithField("name", node.ObjectMeta.Name).Debug("Node added")
+	b.logger.Debug("Node added", zap.String("name", node.ObjectMeta.Name))
 	b.processNode(node)
 }
 
 func (b *Backend) onNodeUpdate(_ interface{}, new interface{}) {
 	newNode := new.(*corev1.Node)
 
-	b.logger.WithField("name", newNode.ObjectMeta.Name).Debug("Node updated")
+	b.logger.Debug("Node updated", zap.String("name", newNode.ObjectMeta.Name))
 	b.processNode(newNode)
 }
 
 func (b *Backend) onNodeDelete(obj interface{}) {
 	node := obj.(*corev1.Node)
 
-	b.logger.WithField("name", node.ObjectMeta.Name).Debug("Node deleted")
+	b.logger.Debug("Node deleted", zap.String("name", node.ObjectMeta.Name))
 	b.processNode(node)
 }
 
 func (b *Backend) processNode(node *corev1.Node) {
 	// Ignore ourself
 	if node.ObjectMeta.Name == b.config.NodeName {
-		b.logger.WithField("node", node.ObjectMeta.Name).Trace("Ignoring ourself")
+		b.logger.Debug("Ignoring ourself", zap.String("node", node.ObjectMeta.Name))
 		return
 	}
 
 	// Check if required annotations are present
 	offersJson, ok := node.ObjectMeta.Annotations[b.config.AnnotationOffers]
 	if !ok {
-		b.logger.WithField("node", node.ObjectMeta.Name).Trace("Missing candidate annotation")
+		b.logger.Debug("Missing candidate annotation", zap.String("node", node.ObjectMeta.Name))
 		return
 	}
 
 	keyString, ok := node.ObjectMeta.Annotations[b.config.AnnotationPublicKey]
 	if !ok {
-		b.logger.WithField("node", node.ObjectMeta.Name).Trace("Missing public key annotation")
+		b.logger.Debug("Missing public key annotation", zap.String("node", node.ObjectMeta.Name))
 		return
 	}
 
@@ -54,13 +55,13 @@ func (b *Backend) processNode(node *corev1.Node) {
 	var theirPK crypto.Key
 	theirPK, err = crypto.ParseKey(keyString)
 	if err != nil {
-		b.logger.WithError(err).Warn("Failed to parse public key")
+		b.logger.Warn("Failed to parse public key", zap.Error(err))
 	}
 
 	var om signaling.OfferMap
 
 	if err := json.Unmarshal([]byte(offersJson), &om); err != nil {
-		b.logger.WithError(err).Warn("Failed to parse candidate annotation")
+		b.logger.Warn("Failed to parse candidate annotation", zap.Error(err))
 		return
 	}
 
@@ -72,7 +73,7 @@ func (b *Backend) processNode(node *corev1.Node) {
 
 		ch, ok := b.offers[kp]
 		if !ok {
-			b.logger.WithField("kp", kp).Warn("Found candidates for unknown peer")
+			b.logger.Warn("Found candidates for unknown peer", zap.Any("kp", kp))
 			continue
 		}
 

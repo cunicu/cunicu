@@ -1,18 +1,20 @@
 package pb
 
-import "github.com/sirupsen/logrus"
+import (
+	"go.uber.org/zap"
+)
 
-func (e *Event) Log(l logrus.FieldLogger, fmt string, args ...interface{}) {
-	f := logrus.Fields{
-		"type":  e.Type,
-		"state": e.State,
-	}
+func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
+	fields = append(fields,
+		zap.String("type", e.Type),
+		zap.String("state", e.State),
+	)
 
 	if e.Time != nil {
-		f["time"] = e.Time.Time()
+		fields = append(fields, zap.Any("time", e.Time.Time()))
 	}
 
-	l.WithFields(f).Infof(fmt, args...)
+	l.Info(msg, fields...)
 }
 
 func (e *Event) Match(o *Event) bool {

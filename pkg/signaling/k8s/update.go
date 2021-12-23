@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -27,7 +28,7 @@ func (b *Backend) applyUpdates() {
 
 		case <-timer.C:
 			if len(cbs) > 0 {
-				b.logger.Debugf("Applying %d batched updates", len(cbs))
+				b.logger.Debug("Applying batched updates", zap.Int("count", len(cbs)))
 
 				nodes := b.clientSet.CoreV1().Nodes()
 
@@ -47,7 +48,7 @@ func (b *Backend) applyUpdates() {
 
 					return err
 				}); err != nil {
-					b.logger.WithError(err).Error("Failed to update node")
+					b.logger.Error("Failed to update node", zap.Error(err))
 				}
 
 				cbs = nil

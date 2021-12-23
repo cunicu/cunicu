@@ -10,11 +10,10 @@ import (
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/asm"
 	"github.com/pion/ice/v2"
+	"go.uber.org/zap"
 
 	icex "riasc.eu/wice/internal/ice"
 	netx "riasc.eu/wice/internal/net"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type EBPFProxy struct {
@@ -28,7 +27,8 @@ func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 
 	return &EBPFProxy{
 		BaseProxy: BaseProxy{
-			Ident: ident,
+			Ident:  ident,
+			logger: zap.L().Named("proxy.ebpf"),
 		},
 		// Conn: conn,
 	}, nil
@@ -75,10 +75,7 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 		return fmt.Errorf("failed to attach eBPF program to socket: %w", err)
 	}
 
-	agentConfig.UDPMux = icex.NewFilteredUDPMux(icex.FilteredUDPMuxParams{
-		Logger: log.WithField("logger", "ice-mux"),
-		Conn:   conn,
-	})
+	agentConfig.UDPMux = icex.NewFilteredUDPMux(conn)
 
 	return nil
 }

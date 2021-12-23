@@ -3,8 +3,8 @@ package intf
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	nl "github.com/vishvananda/netlink"
+	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/netlink"
 )
@@ -20,9 +20,11 @@ func WatchWireguardKernelInterfaces(events chan InterfaceEvent, errors chan erro
 		return fmt.Errorf("failed to subscribe to netlink link event group: %w", err)
 	}
 
+	logger := zap.L().Named("wireguard")
+
 	go func() {
 		for lu := range nlu {
-			log.WithField("update", lu).Trace("Received netlink link update")
+			logger.Debug("Received netlink link update", zap.Any("update", lu))
 			if lu.Link.Type() != netlink.LinkTypeWireguard {
 				continue
 			}

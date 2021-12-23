@@ -62,9 +62,9 @@ func NewNode(m *g.Network, name string, backend *SignalingNode, addr net.IPNet, 
 		return nil, fmt.Errorf("failed to create Wireguard client: %w", err)
 	}
 
-	if err := n.SetupInterface(); err != nil {
-		return nil, fmt.Errorf("failed to setup interface: %w", err)
-	}
+	// if err := n.SetupInterface(); err != nil {
+	// 	return nil, fmt.Errorf("failed to setup interface: %w", err)
+	// }
 
 	return n, nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"riasc.eu/wice/pkg/pb"
@@ -25,14 +25,15 @@ type Server struct {
 	waitGroup sync.WaitGroup
 	waitOnce  sync.Once
 
-	logger *log.Entry
+	logger *zap.Logger
 }
 
 func Listen(network string, address string, wait bool) (*Server, error) {
+	logger := zap.L().Named("socket.server")
 	// Remove old unix sockets
 	if network == "unix" {
 		if err := os.RemoveAll(address); err != nil {
-			log.Fatal(err)
+			logger.Fatal("Failed to remove old socket", zap.Error(err))
 		}
 	}
 
@@ -43,7 +44,7 @@ func Listen(network string, address string, wait bool) (*Server, error) {
 
 	s := &Server{
 		listener:       l,
-		logger:         log.WithField("logger", "socket"),
+		logger:         logger,
 		grpc:           grpc.NewServer(),
 		eventListeners: map[chan *pb.Event]interface{}{},
 	}
