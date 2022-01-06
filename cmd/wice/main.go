@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"syscall"
 	"time"
 
@@ -57,7 +56,7 @@ func post(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
-	}
+}
 
 func run(cmd *cobra.Command, args []string) {
 	signals := internal.SetupSignals()
@@ -98,15 +97,15 @@ func run(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to create interfaces", zap.Error(err))
 	}
 
-	events := make(chan intf.InterfaceEvent, 16)
+	ifEvents := make(chan intf.InterfaceEvent, 16)
 	errors := make(chan error, 16)
 
-	if err := intf.WatchWireguardUserspaceInterfaces(events, errors); err != nil {
+	if err := intf.WatchWireguardUserspaceInterfaces(ifEvents, errors); err != nil {
 		logger.Error("Failed to watch userspace interfaces", zap.Error(err))
 		return
 	}
 
-	if err := intf.WatchWireguardKernelInterfaces(events, errors); err != nil {
+	if err := intf.WatchWireguardKernelInterfaces(ifEvents, errors); err != nil {
 		logger.Error("Failed to watch kernel interfaces", zap.Error(err))
 		return
 	}
@@ -127,7 +126,21 @@ out:
 
 			backend.Tick()
 
-		case event := <-events:
+		case req := <-server.Requests:
+			switch req.(type) {
+			case *pb.ShutdownParams:
+				logger.Debug("Shutdown requested via control socket")
+				break out
+
+			case *pb.SyncInterfaceParams:
+				logger.Debug("Starting interface sync triggerd via control socket")
+				interfaces.SyncAll(client, backend, server, cfg)
+
+			default:
+				logger.Warn("Unhandled request", zap.Any("request", req))
+			}
+
+		case event := <-ifEvents:
 			logger.Debug("Received interface event", zap.String("event", event.String()))
 			interfaces.SyncAll(client, backend, server, cfg)
 
