@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"net"
-	"os"
 	"strings"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/config"
+	pice "riasc.eu/wice/internal/ice"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
@@ -31,8 +31,8 @@ type Peer struct {
 	ICEAgent *ice.Agent
 	ICEConn  *ice.Conn
 
-	localOffer   signaling.Offer
-	remoteOffers chan signaling.Offer
+	localOffer   *pb.Offer
+	remoteOffers chan *pb.Offer
 
 	selectedCandidatePairs chan *ice.CandidatePair
 
@@ -91,17 +91,13 @@ func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 	}
 
 	p.server.BroadcastEvent(&pb.Event{
-		Type:  "handshake",
-		State: "new",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: p.Interface.Name(),
-					Peers: []*pb.Peer{
-						{
-							PublicKey: p.PublicKey().Bytes(),
-						},
-					},
+		Type:  "peer",
+		State: "modified",
+		Event: &pb.Event_Peer{
+			Peer: &pb.PeerEvent{
+				Peer: &pb.Peer{
+					PublicKey:     p.PublicKey().Bytes(),
+					LastHandshake: pb.Time(new.LastHandshakeTime),
 				},
 			},
 		},
@@ -114,16 +110,13 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 	} else {
 		p.logger.Info("Found new local candidate", zap.Any("candidate", c))
 
-		p.localOffer.Candidates = append(p.localOffer.Candidates, signaling.Candidate{
-			Candidate: c,
-		})
+		p.localOffer.Candidates = append(p.localOffer.Candidates, pb.NewCandidate(c))
 	}
 
 	p.localOffer.Epoch++
 
 	if err := p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer); err != nil {
-		p.logger.Warn("Failed to publish offer", zap.Error(err))
-		os.Exit(-1)
+		p.logger.Error("Failed to publish offer", zap.Error(err))
 	}
 }
 
@@ -142,6 +135,7 @@ func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
 					Peers: []*pb.Peer{
 						{
 							PublicKey: p.PublicKey().Bytes(),
+							State:     pb.ConnectionState(state),
 						},
 					},
 				},
@@ -165,8 +159,8 @@ func (p *Peer) onSelectedCandidatePairChange(a, b ice.Candidate) {
 	p.selectedCandidatePairs <- cp
 }
 
-func (p *Peer) isRestartingOffer(o signaling.Offer) bool {
-	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
+func (p *Peer) isRestartingOffer(o *pb.Offer) bool {
+	ufrag, pwd, err := p.ICEAgent.GetRemoteUserCredentials()
 	if err != nil {
 		p.logger.Error("Failed to get local credentials", zap.Error(err))
 	}
@@ -176,15 +170,19 @@ func (p *Peer) isRestartingOffer(o signaling.Offer) bool {
 	return credsChanged
 }
 
-func (p *Peer) onOffer(o signaling.Offer) {
-
-	if p.isRestartingOffer(o) {
-		p.restartRemote(o)
-	}
+func (p *Peer) onOffer(o *pb.Offer) {
+	// if p.isRestartingOffer(o) {
+	// 	p.restartRemote(o)
+	// }
 
 	for _, c := range o.Candidates {
+		ic, err := c.ICECandidate()
+		if err != nil {
+			p.logger.Error("Failed to decode offer. Ignoring...", zap.Error(err))
+			continue
+		}
 
-		if err := p.ICEAgent.AddRemoteCandidate(c); err != nil {
+		if err := p.ICEAgent.AddRemoteCandidate(ic); err != nil {
 			p.logger.Fatal("Failed to add remote candidate", zap.Error(err))
 		}
 		p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
@@ -196,7 +194,7 @@ func (p *Peer) restartLocal() {
 
 	time.Sleep(p.config.RestartInterval)
 
-	p.localOffer = signaling.NewOffer()
+	p.localOffer = p.newOffer()
 
 	p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer)
 
@@ -205,10 +203,10 @@ func (p *Peer) restartLocal() {
 	p.restart(offer)
 }
 
-func (p *Peer) restartRemote(offer signaling.Offer) {
-	p.logger.Info("Restarting session triggered locally")
+func (p *Peer) restartRemote(offer *pb.Offer) {
+	p.logger.Info("Session restart triggered by remote")
 
-	p.localOffer = signaling.NewOffer()
+	p.localOffer = p.newOffer()
 
 	p.restart(offer)
 }
@@ -218,9 +216,7 @@ func (p *Peer) restartRemote(offer signaling.Offer) {
 // This restart can either be triggered by a failed
 // ICE connection state (Peer.onConnectionState())
 // or by a remote offer which indicates a restart (Peer.onOffer())
-func (p *Peer) restart(offer signaling.Offer) {
-	var err error
-
+func (p *Peer) restart(offer *pb.Offer) {
 	if err := p.ICEAgent.Restart("", ""); err != nil {
 		p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		return
@@ -231,9 +227,14 @@ func (p *Peer) restart(offer signaling.Offer) {
 		return
 	}
 
-	for _, cand := range offer.Candidates {
+	for _, c := range offer.Candidates {
+		ic, err := c.ICECandidate()
+		if err != nil {
+			p.logger.Error("Failed to decode offer. Ignoring...", zap.Error(err))
+			continue
+		}
 
-		if err = p.ICEAgent.AddRemoteCandidate(cand.Candidate); err != nil {
+		if err = p.ICEAgent.AddRemoteCandidate(ic); err != nil {
 			p.logger.Error("Failed to add remote candidate", zap.Error(err))
 		}
 	}
@@ -310,6 +311,32 @@ func (p *Peer) start() {
 	}
 }
 
+func (p *Peer) newOffer() *pb.Offer {
+	offer := &pb.Offer{
+		Version:        pb.OfferVersion,
+		Type:           pb.Offer_OFFER,
+		Implementation: pb.Offer_FULL,
+		Epoch:          0,
+		Candidates:     []*pb.Candidate{},
+	}
+
+	if p.isControlling() {
+		offer.Role = pb.Offer_CONTROLLING
+	} else {
+		offer.Role = pb.Offer_CONTROLLED
+	}
+
+	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
+	if err != nil {
+		p.logger.Error("Failed to get local user credentials", zap.Error(err))
+	}
+
+	offer.Ufrag = ufrag
+	offer.Pwd = pwd
+
+	return offer
+}
+
 func (p *Peer) PublicKey() crypto.Key {
 	return crypto.Key(p.Peer.PublicKey)
 }
@@ -322,15 +349,12 @@ func (p *Peer) PublicKeyPair() crypto.PublicKeyPair {
 }
 
 func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
-	var err error
-
 	p := Peer{
 		Interface:              i,
 		Peer:                   *wgp,
 		client:                 i.client,
 		backend:                i.backend,
 		server:                 i.server,
-		localOffer:             signaling.NewOffer(),
 		config:                 i.config,
 		selectedCandidatePairs: make(chan *ice.CandidatePair),
 		logger: zap.L().Named("peer").With(
@@ -342,6 +366,10 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 	agentConfig, err := p.config.AgentConfig()
 	if err != nil {
 		return Peer{}, fmt.Errorf("failed to generate ICE agent: %w", err)
+	}
+
+	agentConfig.LoggerFactory = &pice.LoggerFactory{
+		Base: p.logger,
 	}
 
 	agentConfig.InterfaceFilter = func(name string) bool {
@@ -358,6 +386,9 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 	if p.ICEAgent, err = ice.NewAgent(agentConfig); err != nil {
 		return Peer{}, fmt.Errorf("failed to create ICE agent: %w", err)
 	}
+
+	// create initial offer using freshly generated creds
+	p.localOffer = p.newOffer()
 
 	ufrag, pwd, err := p.ICEAgent.GetLocalUserCredentials()
 	if err != nil {

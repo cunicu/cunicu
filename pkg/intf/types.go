@@ -23,14 +23,18 @@ var (
 	}
 )
 
-func (i PeerModifier) String() string {
+func (i PeerModifier) Strings() []string {
 	modifiers := []string{}
 
-	for j := 0; j <= 4; i++ {
+	for j := 0; j <= 4; j++ {
 		if i&(1<<j) != 0 {
 			modifiers = append(modifiers, peerModifiersStrings[j])
 		}
 	}
 
-	return strings.Join(modifiers, ",")
+	return modifiers
+}
+
+func (i PeerModifier) String() string {
+	return strings.Join(i.Strings(), ",")
 }

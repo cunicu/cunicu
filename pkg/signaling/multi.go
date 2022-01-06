@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
 
@@ -28,7 +29,7 @@ func NewMultiBackend(uris []*url.URL, server *socket.Server) (Backend, error) {
 	return mb, nil
 }
 
-func (m *MultiBackend) PublishOffer(kp crypto.PublicKeyPair, offer Offer) error {
+func (m *MultiBackend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
 	for _, b := range m.backends {
 		if err := b.PublishOffer(kp, offer); err != nil {
 			return err
@@ -38,8 +39,8 @@ func (m *MultiBackend) PublishOffer(kp crypto.PublicKeyPair, offer Offer) error 
 	return nil
 }
 
-func (m *MultiBackend) SubscribeOffer(kp crypto.PublicKeyPair) (chan Offer, error) {
-	chans := []chan Offer{}
+func (m *MultiBackend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
+	chans := []chan *pb.Offer{}
 
 	for _, b := range m.backends {
 		if ch, err := b.SubscribeOffer(kp); err != nil {
@@ -67,11 +68,11 @@ func (m *MultiBackend) Close() error {
 }
 
 // pumpOffers reads offers from the secondary backends and pushes them into a common channel
-func pumpOffers(chans []chan Offer) chan Offer {
-	nch := make(chan Offer)
+func pumpOffers(chans []chan *pb.Offer) chan *pb.Offer {
+	nch := make(chan *pb.Offer)
 
 	for _, ch := range chans {
-		go func(ch chan Offer) {
+		go func(ch chan *pb.Offer) {
 			for o := range ch {
 				nch <- o
 			}

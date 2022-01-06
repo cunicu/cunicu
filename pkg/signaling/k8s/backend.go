@@ -29,7 +29,7 @@ const (
 
 type Backend struct {
 	logger *zap.Logger
-	offers map[crypto.PublicKeyPair]chan signaling.Offer
+	offers map[crypto.PublicKeyPair]chan *pb.Offer
 
 	config BackendConfig
 
@@ -41,6 +41,8 @@ type Backend struct {
 
 	server *socket.Server
 }
+
+type OfferMap map[crypto.Key]*pb.Offer
 
 func init() {
 	signaling.Backends["k8s"] = &signaling.BackendPlugin{
@@ -54,7 +56,7 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	var err error
 
 	b := Backend{
-		offers:  make(map[crypto.PublicKeyPair]chan signaling.Offer),
+		offers:  make(map[crypto.PublicKeyPair]chan *pb.Offer),
 		logger:  zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
@@ -127,12 +129,12 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	return &b, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer, error) {
+func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	ch, ok := b.offers[kp]
 	if !ok {
-		ch = make(chan signaling.Offer, 100)
+		ch = make(chan *pb.Offer, 100)
 		b.offers[kp] = ch
 	}
 
@@ -145,18 +147,18 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer,
 	return ch, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer signaling.Offer) error {
+func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
 	b.updateNode(func(node *corev1.Node) error {
 		offerMapJson, ok := node.ObjectMeta.Annotations[b.config.AnnotationOffers]
 
 		// Unmarshal
-		var om signaling.OfferMap
+		var om OfferMap
 		if ok && offerMapJson != "" {
 			if err := json.Unmarshal([]byte(offerMapJson), &om); err != nil {
 				return err
 			}
 		} else {
-			om = signaling.OfferMap{}
+			om = OfferMap{}
 		}
 
 		// Update

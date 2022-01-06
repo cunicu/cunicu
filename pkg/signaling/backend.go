@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
 
@@ -13,11 +14,20 @@ var (
 	Backends = map[BackendType]*BackendPlugin{}
 )
 
+type BackendType string // URL schemes
+
+type BackendFactory func(*url.URL, *socket.Server) (Backend, error)
+
+type BackendPlugin struct {
+	New         BackendFactory
+	Description string
+}
+
 type Backend interface {
 	io.Closer
 
-	PublishOffer(kp crypto.PublicKeyPair, offer Offer) error
-	SubscribeOffer(kp crypto.PublicKeyPair) (chan Offer, error)
+	PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error
+	SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error)
 	Tick()
 }
 

@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"runtime"
@@ -45,18 +46,18 @@ func CheckEBPFSupport() bool {
 	return runtime.GOOS == "linux"
 }
 
-func ProxyTypeFromString(typ string) ProxyType {
+func ProxyTypeFromString(typ string) (ProxyType, error) {
 	switch typ {
 	case "auto":
-		return TypeAuto
+		return TypeAuto, nil
 	case "user":
-		return TypeUser
+		return TypeUser, nil
 	case "nftables":
-		return TypeNFTables
+		return TypeNFTables, nil
 	case "ebpf":
-		return TypeEBPF
+		return TypeEBPF, nil
 	default:
-		return TypeInvalid
+		return -1, fmt.Errorf("invalid proxy type: %s", typ)
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"sync"
+	"time"
 
 	p2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -139,7 +140,9 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	if b.config.EnableDHTDiscovery {
 		b.logger.Debug("Bootstrapping the DHT")
 
-		if b.dht, err = dht.New(b.context, b.host); err != nil {
+		if b.dht, err = dht.New(b.context, b.host,
+			dht.Mode(dht.ModeServer),
+		); err != nil {
 			return nil, fmt.Errorf("failed to create DHT: %w", err)
 		}
 
@@ -179,14 +182,12 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	}
 	wg.Wait() // TODO: can we run this asynchronously?
 
-	b.dht.PutValue(context.Background(), "bla", []byte("blub"))
-
-	// b.dht.GetValue(context.Background(), "bla")
-
 	rd := discovery.NewRoutingDiscovery(b.dht)
 
 	// setup PubSub service using the GossipSub router
-	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host, pubsub.WithDiscovery(rd)); err != nil {
+	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host,
+		pubsub.WithDiscovery(rd),
+	); err != nil {
 		return nil, fmt.Errorf("failed to create pubsub router: %w", err)
 	}
 
@@ -227,7 +228,7 @@ func (b *Backend) getPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 	return p, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer, error) {
+func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	p, err := b.getPeer(kp)
@@ -238,13 +239,18 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan signaling.Offer,
 	return p.Offers, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer signaling.Offer) error {
+func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
 	p, err := b.getPeer(kp)
 	if err != nil {
 		return fmt.Errorf("failed to get peer: %w", err)
 	}
 
-	return p.publishOffer(offer)
+	go func() {
+		time.Sleep(3 * time.Second) // TODO remove
+		p.publishOffer(offer)
+	}()
+
+	return nil
 }
 
 func (b *Backend) Close() error {
@@ -252,7 +258,6 @@ func (b *Backend) Close() error {
 }
 
 func (b *Backend) Tick() {
-
 }
 
 // HandlePeerFound connects to peers discovered via mDNS. Once they're connected,

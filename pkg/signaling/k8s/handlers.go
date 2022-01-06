@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
 )
 
 func (b *Backend) onNodeAdd(obj interface{}) {
@@ -58,7 +57,7 @@ func (b *Backend) processNode(node *corev1.Node) {
 		b.logger.Warn("Failed to parse public key", zap.Error(err))
 	}
 
-	var om signaling.OfferMap
+	var om OfferMap
 
 	if err := json.Unmarshal([]byte(offersJson), &om); err != nil {
 		b.logger.Warn("Failed to parse candidate annotation", zap.Error(err))
