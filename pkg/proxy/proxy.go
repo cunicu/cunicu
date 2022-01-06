@@ -9,12 +9,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type Type int
+type ProxyType int
 
 type UpdateEndpointCb func(addr *net.UDPAddr) error
 
 const (
-	TypeInvalid Type = iota
+	TypeInvalid ProxyType = iota
 	TypeAuto
 	TypeUser
 	TypeNFTables
@@ -26,7 +26,7 @@ const (
 type Proxy interface {
 	io.Closer
 
-	Type() Type
+	Type() ProxyType
 
 	UpdateEndpoint(addr *net.UDPAddr) error
 }
@@ -45,7 +45,7 @@ func CheckEBPFSupport() bool {
 	return runtime.GOOS == "linux"
 }
 
-func ProxyTypeFromString(typ string) Type {
+func ProxyTypeFromString(typ string) ProxyType {
 	switch typ {
 	case "auto":
 		return TypeAuto
@@ -60,7 +60,7 @@ func ProxyTypeFromString(typ string) Type {
 	}
 }
 
-func (pt Type) String() string {
+func (pt ProxyType) String() string {
 	switch pt {
 	case TypeAuto:
 		return "auto"
@@ -75,7 +75,7 @@ func (pt Type) String() string {
 	return "invalid"
 }
 
-func AutoProxy() Type {
+func AutoProxy() ProxyType {
 	if CheckEBPFSupport() {
 		return TypeEBPF
 	} else if CheckNFTablesSupport() {
@@ -85,7 +85,7 @@ func AutoProxy() Type {
 	}
 }
 
-func NewProxy(pt Type, ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
+func NewProxy(pt ProxyType, ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
 	switch pt {
 	case TypeUser:
 		return NewUserProxy(ident, listenPort, cb, conn)

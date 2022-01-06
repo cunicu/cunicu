@@ -62,7 +62,7 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 	return proxy, nil
 }
 
-func (p *UserProxy) Type() Type {
+func (p *UserProxy) Type() ProxyType {
 	return TypeUser
 }
 

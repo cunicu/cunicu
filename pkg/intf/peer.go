@@ -279,7 +279,7 @@ func (p *Peer) start() {
 
 		// New selected candidate pair
 		case cp := <-p.selectedCandidatePairs:
-			pt := p.args.ProxyType
+			pt := p.arguments.ProxyType.ProxyType
 
 			// p.logger.Infof("Conntype: %+v", reflect.ValueOf(cp.Local).Elem().Type())
 

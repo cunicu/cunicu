@@ -55,7 +55,7 @@ func NewNFTablesProxy(ident string, listenPort int, cb UpdateEndpointCb, conn ne
 	return proxy, nil
 }
 
-func (p *NFTablesProxy) Type() Type {
+func (p *NFTablesProxy) Type() ProxyType {
 	return TypeNFTables
 }
 

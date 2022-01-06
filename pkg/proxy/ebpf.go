@@ -34,7 +34,7 @@ func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 	}, nil
 }
 
-func (p *EBPFProxy) Type() Type {
+func (p *EBPFProxy) Type() ProxyType {
 	return TypeEBPF
 }
 
