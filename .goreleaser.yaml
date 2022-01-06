@@ -47,6 +47,12 @@ archives:
   - goos: windows
     format: zip
 
+  files:
+  - src: contrib/wice.service
+    dst: contrib
+  - src: docs/**
+    dst: docs
+
 nfpms:
 - vendor: stv0g
   homepage: https://github.com/stv0g/wice/
@@ -57,15 +63,10 @@ nfpms:
   - deb
   - rpm
   contents:
-  # manpages
-  - src: "./manpage/wice*.1"
+  - src: "./contrib/wice.service"
+    dst: "/usr/lib/systemd/system"
+  - src: "./docs/usage/man/*.1"
     dst: "/usr/share/man/man1"
-  # bash
-  - src: "./contrib/completion/bash/exo"
-    dst: "/usr/share/bash-completion/completions"
-  # zsh
-  - src: "./contrib/completion/zsh/_exo"
-    dst: "/usr/share/zsh/vendor-completions/_exo"
 
 dockers:
 - use: buildx
