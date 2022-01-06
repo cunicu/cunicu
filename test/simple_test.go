@@ -8,6 +8,7 @@ import (
 
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
+	"go.uber.org/zap"
 	"riasc.eu/wice/internal/test"
 )
 
@@ -22,21 +23,23 @@ func TestSimple(t *testing.T) {
 		err error
 	)
 
-	if n, err = g.NewNetwork(""); err != nil {
+	logger := zap.L()
+
+	if n, err = g.NewNetwork("", gopt.Persistent(true)); err != nil {
 		t.Fatalf("Failed to create network: %s", err)
 	}
 	defer n.Close()
 
-	if sw, err = n.AddSwitch("sw0"); err != nil {
+	if sw, err = n.AddSwitch("sw1"); err != nil {
 		t.Fatalf("Failed to create switch: %s", err)
 	}
 
-	if r, err = test.NewRelayNode(n, "r0"); err != nil {
+	if r, err = test.NewRelayNode(n, "r1"); err != nil {
 		t.Fatalf("Failed to start relay: %s", err)
 	}
 	defer r.Close()
 
-	if s, err = test.NewSignalingNode(n, "s0"); err != nil {
+	if s, err = test.NewSignalingNode(n, "s1"); err != nil {
 		t.Fatalf("Failed to create signaling node: %s", err)
 	}
 	defer s.Close()
@@ -45,8 +48,8 @@ func TestSimple(t *testing.T) {
 		t.Fatalf("Failed to created nodes: %s", err)
 	}
 
-	n0 := nl[0]
-	n1 := nl[1]
+	n1 := nl[0]
+	n2 := nl[1]
 
 	if err := n.AddLink(
 		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 1, 24), r.Host),
@@ -63,15 +66,15 @@ func TestSimple(t *testing.T) {
 	}
 
 	if err := n.AddLink(
-		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 100, 24), n0.Host),
-		gopt.Interface("eth0-n0", sw),
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 100, 24), n1.Host),
+		gopt.Interface("eth0-n1", sw),
 	); err != nil {
 		t.Fatalf("Failed to add link: %s", err)
 	}
 
 	if err := n.AddLink(
-		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 101, 24), n1.Host),
-		gopt.Interface("eth0-n1", sw),
+		gopt.Interface("eth0", gopt.AddressIPv4(10, 0, 0, 101, 24), n2.Host),
+		gopt.Interface("eth0-n2", sw),
 	); err != nil {
 		t.Fatalf("Failed to add link: %s", err)
 	}
@@ -102,12 +105,15 @@ func TestSimple(t *testing.T) {
 	}
 	defer nl.Stop()
 
-	// nl.ForEachPeer(func(n *test.Node) error {
-	// 	n.Run("wg")
-	// 	n.Run("ip", "a")
+	nl.ForEachPeer(func(n *test.Node) error {
+		out, _, _ := n.Run("wg")
+		logger.Info(string(out))
 
-	// 	return nil
-	// })
+		out, _, _ = n.Run("ip", "a")
+		logger.Info(string(out))
+
+		return nil
+	})
 
 	if err := nl.PingPeers(); err != nil {
 		t.Fatalf("Failed to ping peers: %s", err)
