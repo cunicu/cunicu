@@ -13,9 +13,9 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/internal/wg"
-	"riasc.eu/wice/pkg/args"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -30,7 +30,7 @@ type BaseInterface struct {
 	lastSync time.Time
 
 	backend signaling.Backend
-	args    *args.Args
+	config  *config.Config
 	client  *wgctrl.Client
 	server  *socket.Server
 
@@ -371,13 +371,13 @@ func (i *BaseInterface) RemovePeer(pk wgtypes.Key) error {
 	return i.client.ConfigureDevice(i.Name(), cfg)
 }
 
-func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (BaseInterface, error) {
+func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) (BaseInterface, error) {
 	i := BaseInterface{
 		Device:  *dev,
 		client:  client,
 		backend: backend,
 		server:  server,
-		args:    args,
+		config:  cfg,
 		logger: zap.L().Named("interface").With(
 			zap.String("intf", dev.Name),
 			zap.String("type", "kernel"),
@@ -388,8 +388,8 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	i.logger.Info("Creating new interface")
 
 	// Sync config
-	if i.args.ConfigSync {
-		cfg := fmt.Sprintf("%s/%s.conf", i.args.ConfigPath, i.Name())
+	if i.config.ConfigSync {
+		cfg := fmt.Sprintf("%s/%s.conf", i.config.ConfigPath, i.Name())
 		if err := i.SyncConfig(cfg); err != nil {
 			return BaseInterface{}, fmt.Errorf("failed to sync interface configuration: %w", err)
 		}

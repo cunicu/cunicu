@@ -6,7 +6,7 @@ import (
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/internal/config"
 	nl "riasc.eu/wice/pkg/netlink"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
@@ -66,7 +66,7 @@ func (i *KernelInterface) SetDown(mtu int) error {
 	return netlink.LinkSetDown(i.link)
 }
 
-func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
+func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) (Interface, error) {
 	zap.L().Debug("Creating new kernel interface", zap.String("intf", name))
 
 	l := &nl.Wireguard{
@@ -89,7 +89,7 @@ func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling
 		return nil, err
 	}
 
-	baseDev, err := NewInterface(wgDev, client, backend, server, args)
+	baseDev, err := NewInterface(wgDev, client, backend, server, cfg)
 	if err != nil {
 		return nil, err
 	}

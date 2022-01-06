@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
-	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
@@ -31,7 +31,7 @@ func (interfaces *Interfaces) CloseAll() {
 	}
 }
 
-func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) error {
+func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) error {
 	logger := zap.L().Named("interfaces")
 
 	devices, err := client.Devices()
@@ -43,7 +43,7 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 	keepInterfaces := Interfaces{}
 
 	for _, device := range devices {
-		if !args.InterfaceRegex.Match([]byte(device.Name)) {
+		if !cfg.InterfaceFilter.Match([]byte(device.Name)) {
 			continue // Skip interfaces which dont match the filter
 		}
 
@@ -52,7 +52,7 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 		if intf == nil { // new interface
 			logger.Info("Adding new interface", zap.String("intf", device.Name))
 
-			i, err := NewInterface(device, client, backend, server, args)
+			i, err := NewInterface(device, client, backend, server, cfg)
 			if err != nil {
 				logger.Fatal("Failed to create new interface",
 					zap.Error(err),
@@ -107,7 +107,7 @@ func (interfaces *Interfaces) SyncAll(client *wgctrl.Client, backend signaling.B
 	return nil
 }
 
-func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) error {
+func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) error {
 	var devs Devices
 	devs, err := client.Devices()
 	if err != nil {
@@ -116,7 +116,7 @@ func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend sign
 
 	logger := zap.L().Named("interfaces")
 
-	for _, i := range args.Interfaces {
+	for _, i := range cfg.Interfaces {
 		dev := devs.GetByName(i)
 		if dev != nil {
 			logger.Warn("Interface already exists. Skipping..", zap.Any("intf", i))
@@ -124,10 +124,10 @@ func (interfaces *Interfaces) CreateFromArgs(client *wgctrl.Client, backend sign
 		}
 
 		var intf Interface
-		if args.User {
-			intf, err = CreateUserInterface(i, client, backend, server, args)
+		if cfg.User {
+			intf, err = CreateUserInterface(i, client, backend, server, cfg)
 		} else {
-			intf, err = CreateKernelInterface(i, client, backend, server, args)
+			intf, err = CreateKernelInterface(i, client, backend, server, cfg)
 		}
 		if err != nil {
 			return fmt.Errorf("failed to create Wireguard device: %w", err)

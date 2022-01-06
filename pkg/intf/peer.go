@@ -15,7 +15,7 @@ import (
 	"github.com/pion/ice/v2"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
@@ -41,7 +41,7 @@ type Peer struct {
 	logger *zap.Logger
 
 	client  *wgctrl.Client
-	args    *args.Args
+	config  *config.Config
 	backend signaling.Backend
 	server  *socket.Server
 }
@@ -192,9 +192,9 @@ func (p *Peer) onOffer(o signaling.Offer) {
 }
 
 func (p *Peer) restartLocal() {
-	p.logger.Info("Session restart triggered", zap.Duration("delay", p.args.RestartInterval))
+	p.logger.Info("Session restart triggered locally", zap.Duration("delay", p.config.RestartInterval))
 
-	time.Sleep(p.args.RestartInterval)
+	time.Sleep(p.config.RestartInterval)
 
 	p.localOffer = signaling.NewOffer()
 
@@ -279,7 +279,7 @@ func (p *Peer) start() {
 
 		// New selected candidate pair
 		case cp := <-p.selectedCandidatePairs:
-			pt := p.arguments.ProxyType.ProxyType
+			pt := p.config.ProxyType.ProxyType
 
 			// p.logger.Infof("Conntype: %+v", reflect.ValueOf(cp.Local).Elem().Type())
 
@@ -331,7 +331,7 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		backend:                i.backend,
 		server:                 i.server,
 		localOffer:             signaling.NewOffer(),
-		args:                   i.args,
+		config:                 i.config,
 		selectedCandidatePairs: make(chan *ice.CandidatePair),
 		logger: zap.L().Named("peer").With(
 			zap.String("intf", i.Name()),
@@ -339,20 +339,23 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (Peer, error) {
 		),
 	}
 
-	agentConfig := p.args.AgentConfig
+	agentConfig, err := p.config.AgentConfig()
+	if err != nil {
+		return Peer{}, fmt.Errorf("failed to generate ICE agent: %w", err)
+	}
 
 	agentConfig.InterfaceFilter = func(name string) bool {
 		_, err := p.client.Device(name)
-		return p.args.IceInterfaceRegex.Match([]byte(name)) && err != nil
+		return p.config.InterfaceFilterICE.Match([]byte(name)) && err != nil
 	}
 
-	if i.args.ProxyType == proxy.TypeEBPF {
-		if err := proxy.SetupEBPFProxy(&agentConfig, p.Interface.ListenPort); err != nil {
+	if i.config.ProxyType.ProxyType == proxy.TypeEBPF {
+		if err := proxy.SetupEBPFProxy(agentConfig, p.Interface.ListenPort); err != nil {
 			return Peer{}, fmt.Errorf("failed to setup proxy: %w", err)
 		}
 	}
 
-	if p.ICEAgent, err = ice.NewAgent(&agentConfig); err != nil {
+	if p.ICEAgent, err = ice.NewAgent(agentConfig); err != nil {
 		return Peer{}, fmt.Errorf("failed to create ICE agent: %w", err)
 	}
 

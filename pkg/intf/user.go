@@ -13,7 +13,7 @@ import (
 	"net"
 
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/socket"
 
@@ -68,7 +68,7 @@ func (i *UserDevice) handleUserApi() {
 	}
 }
 
-func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, args *args.Args) (Interface, error) {
+func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) (Interface, error) {
 	var err error
 	logger := zap.L().With(
 		zap.String("intf", name),
@@ -125,7 +125,7 @@ func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.B
 		return nil, err
 	}
 
-	dev.BaseInterface, err = NewInterface(wgDev, client, backend, server, args)
+	dev.BaseInterface, err = NewInterface(wgDev, client, backend, server, cfg)
 	if err != nil {
 		return nil, err
 	}
