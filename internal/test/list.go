@@ -15,9 +15,9 @@ type NodeList []*Node
 func AddNodes(n *g.Network, backend *SignalingNode, count int) (NodeList, error) {
 	nodes := []*Node{}
 
-	for i := 0; i < count; i++ {
+	for i := 1; i <= count; i++ {
 		addr := net.IPNet{
-			IP:   net.IPv4(10, 1, 0, byte(i+1)),
+			IP:   net.IPv4(10, 1, 0, byte(i)),
 			Mask: net.IPv4Mask(255, 255, 255, 0),
 		}
 

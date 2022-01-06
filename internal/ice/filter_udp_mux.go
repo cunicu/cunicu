@@ -45,6 +45,7 @@ type FilteredUDPMux struct {
 func NewFilteredUDPMux(conn *netx.FilteredUDPConn) *FilteredUDPMux {
 	m := &FilteredUDPMux{
 		addressMap: map[string]*udpMuxedConn{},
+		conn:       conn,
 		conns:      make(map[string]*udpMuxedConn),
 		closedChan: make(chan struct{}, 1),
 		pool: &sync.Pool{

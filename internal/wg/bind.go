@@ -1,9 +1,8 @@
 package wg
 
 import (
-	"net"
-
 	"go.uber.org/zap"
+	"golang.zx2c4.com/go118/netip"
 	"golang.zx2c4.com/wireguard/conn"
 )
 
@@ -14,7 +13,7 @@ type IceBind struct {
 }
 
 type IceEndpoint struct {
-	net.UDPAddr
+	netip.AddrPort
 
 	// Peer *intf.Peer
 
@@ -53,16 +52,16 @@ func (ep *IceEndpoint) DstToBytes() []byte {
 	return []byte(ep.name)
 }
 
-func (ep *IceEndpoint) DstIP() net.IP {
+func (ep *IceEndpoint) DstIP() netip.Addr {
 	ep.logger.Debug("DstIP()")
 
-	return ep.IP
+	return ep.Addr()
 }
 
-func (ep *IceEndpoint) SrcIP() net.IP {
+func (ep *IceEndpoint) SrcIP() netip.Addr {
 	ep.logger.Debug("SrcIP()")
 
-	return ep.IP
+	return ep.Addr() // TODO: this is wrong
 }
 
 func NewIceBind() conn.Bind {
@@ -113,15 +112,15 @@ func (b *IceBind) Send(buf []byte, ep conn.Endpoint) error {
 func (b *IceBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
 	b.logger.Debug("ParseEndpoints()", zap.String("ep", s))
 
-	addr, err := net.ResolveUDPAddr("udp", s)
+	addrPort, err := netip.ParseAddrPort(s)
 	if err != nil {
 		return &IceEndpoint{}, err
 	}
 
 	return &IceEndpoint{
-		UDPAddr: *addr,
-		name:    s,
-		logger:  b.logger.With(zap.String("ep", s)),
+		AddrPort: addrPort,
+		name:     s,
+		logger:   b.logger.With(zap.String("ep", s)),
 	}, nil
 }
 

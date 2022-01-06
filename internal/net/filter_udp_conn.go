@@ -31,7 +31,6 @@ type FilteredUDPConn struct {
 }
 
 func (fuc *FilteredUDPConn) LocalAddr() net.Addr {
-
 	return &fuc.localAddr
 }
 
@@ -59,18 +58,18 @@ func (fuc *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err erro
 	if !ok {
 		return -1, nil, fmt.Errorf("invalid layer type")
 	}
-	payload := packet.ApplicationLayer()
+	pl := packet.ApplicationLayer()
 
 	rUDPAddr := &net.UDPAddr{
 		IP:   rAddrIn4.Addr[:],
 		Port: int(udp.SrcPort),
 	}
 
-	n = len(payload.Payload())
+	n = len(pl.Payload())
 
-	copy(buf[:n], payload.Payload()[:])
+	copy(buf[:n], pl.Payload()[:])
 
-	fuc.logger.Debug("ReadFrom",
+	fuc.logger.Debug("Read data from socket",
 		zap.Any("ra", rUDPAddr),
 		zap.Int("len", n),
 		zap.String("buf", hex.EncodeToString(buf[:n])),
@@ -114,6 +113,12 @@ func (fuc *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err erro
 
 	syscall.Sendto(fuc.fd, buffer.Bytes(), 0, rSockAddr)
 
+	fuc.logger.Debug("Written data to socket",
+		zap.Any("ra", rUDPAddr),
+		zap.Int("len", len(buf)),
+		zap.String("buf", hex.EncodeToString(buf)),
+	)
+
 	return 0, nil
 }
 
@@ -133,6 +138,7 @@ func (fuc *FilteredUDPConn) Close() error {
 func NewFilteredUDPConn(lAddr net.UDPAddr) (fuc *FilteredUDPConn, err error) {
 	fuc = &FilteredUDPConn{
 		localAddr: lAddr,
+		logger:    zap.L().Named("fuc"),
 	}
 
 	// Open a raw socket

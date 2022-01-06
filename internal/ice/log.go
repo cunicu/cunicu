@@ -9,7 +9,7 @@ import (
 )
 
 type LoggerFactory struct {
-	base *zap.Logger
+	Base *zap.Logger
 }
 
 type LeveledLogger struct {
@@ -58,23 +58,20 @@ func (l *LeveledLogger) Errorf(format string, args ...interface{}) {
 	l.logger.Errorf(format, args...)
 }
 
-func capitalize(msg string) string {
-	runes := []rune(msg)
+func (f *LoggerFactory) hook(e zapcore.Entry) error {
+	runes := []rune(e.Message)
 
 	if len(runes) > 0 {
 		runes[0] = unicode.ToUpper(runes[0])
 	}
 
-	return string(runes)
-}
+	e.Message = string(runes)
 
-func (f *LoggerFactory) hook(e zapcore.Entry) error {
-	e.Message = capitalize(e.Message)
 	return nil
 }
 
 func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
-	logger := f.base.Named("ice").WithOptions(
+	logger := f.Base.Named("ice").WithOptions(
 		zap.Hooks(f.hook),
 		zap.Fields(zap.String("scope", scope)),
 	)
