@@ -29,7 +29,7 @@ jobs:
     
     # Install all the dependencies
     - name: Install dependencies
-      run: go get -u golang.org/x/lint/golint      
+      run: go install golang.org/x/lint/golint@latest
 
     # Run build of the application
     - name: Run wice build
@@ -40,15 +40,15 @@ jobs:
       
     # Run vet on the code
     - name: Run vet
-      run: go vet ./wice
+      run: go vet ./...
 
     # Run lint on the code
     - name: Run lint
-      run: golint ./wice
+      run: golint ./...
 
     # Run testing on the code
     - name: Run testing
-      run: go test -v ./wice
+      run: go test -v ./...
 
     # Run static check
     - uses: reviewdog/action-staticcheck@v1
