@@ -7,6 +7,8 @@
 [![GitHub](https://img.shields.io/github/license/stv0g/wice)](https://github.com/stv0g/wice/blob/master/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stv0g/wice)
 
+# 🚧 WICE is currently still in an Alpha state and not usable yet ⚠️
+
 WICE is a userspace daemon managing Wireguard interfaces to establish peer-to-peer connections in harsh network environments.
 
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice] package for the interactive connectivity establishment as well as bundles the Go userspace implementation of Wiguard in a single binary for environments in which Wireguard kernel support has not landed yet.
