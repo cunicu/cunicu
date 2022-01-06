@@ -13,7 +13,7 @@ import (
 type runEfunc func(cmd *cobra.Command, args []string) error
 
 var (
-	outputDir string = "./"
+	outputDir string
 )
 
 func NewDocsCommand(rootCmd *cobra.Command) *cobra.Command {
@@ -50,7 +50,7 @@ func NewDocsCommand(rootCmd *cobra.Command) *cobra.Command {
 	})
 
 	pf := cmd.PersistentFlags()
-	pf.StringVar(&outputDir, "output-dir", "./docs", "Output directory of generated documenation")
+	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documenation")
 
 	return cmd
 }
