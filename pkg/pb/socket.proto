@@ -5,16 +5,30 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
 import "event.proto";
+import "interface.proto";
+
+message Status {
+    repeated Interface interfaces = 1;
+}
+
+message UnWaitParams {}
+message SyncConfigParams {}
+message SyncInterfaceParams {}
+message ShutdownParams {}
+message StreamEventsParams {}
 
 service Socket {
-    rpc GetStatus(Void) returns (Status);
-    rpc UnWait(Void) returns (Error);
-    // rpc Shutdown(Void) returns (Error);
-    // rpc SyncConfig(Void) returns (Error);
-    // rpc SyncInterfaces(Void) returns (Error);
-    // rpc AddInterface(Interface) returns (Error);
-    // rpc RemoveInterface(Interface) returns (Error);
-    // rpc AddPeer(Peer) returns (Error);
+    rpc GetStatus(Void) returns (Status) {}
+    rpc StreamEvents(StreamEventsParams) returns (stream Event) {}
 
-    rpc StreamEvents(Void) returns (stream Event);
+    rpc UnWait(UnWaitParams) returns (Error) {}
+    rpc Shutdown(ShutdownParams) returns (Error) {}
+    
+    rpc SyncConfig(SyncConfigParams) returns (Error) {}
+    rpc SyncInterfaces(SyncInterfaceParams) returns (Error) {}
+
+    // rpc AddInterface(Interface) returns (Error) {}
+    // rpc RemoveInterface(Interface) returns (Error) {}
+    
+    // rpc AddPeer(Peer) returns (Error) {}
 }

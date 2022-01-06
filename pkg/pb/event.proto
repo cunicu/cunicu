@@ -3,6 +3,8 @@ syntax = "proto3";
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
+import "peer.proto";
+import "interface.proto";
 
 message Event {
     Timestamp time = 1;
@@ -19,7 +21,7 @@ message Event {
 message PeerEvent {
     Peer peer = 1;
 
-    
+    repeated string modified = 2;   
 }
 
 message InterfaceEvent {

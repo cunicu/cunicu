@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+message RelatedAddress {
+	string address = 1;
+	int32  port = 2;
+}
+
+message Candidate {
+    enum Type {
+        TYPE_UNSPECIFIED = 0;
+        TYPE_HOST = 1;
+        TYPE_SERVER_REFLEXIVE = 2;
+        TYPE_PEER_REFLEXIVE = 3;
+        TYPE_RELAY = 4;
+    }
+
+    enum NetworkType {
+        UDP4 = 0;
+		UDP6 = 1;
+		TCP4 = 2;
+		TCP6 = 3;
+    }
+
+    enum TCPType {
+        TCP_TYPE_UNSPECIFIED = 0;
+        TCP_TYPE_ACTIVE = 1;
+        TCP_TYPE_PASSIVE = 2;
+        TCP_TYPE_SIMULTANEOUS_OPEN = 3;
+    }
+    
+    Type type = 1;
+    string foundation = 2;
+    int32 component = 3;
+    NetworkType network_type = 4;
+    int32 priority = 5;
+    string address = 6;
+    int32 port = 7;
+    TCPType tcp_type = 8;
+    RelatedAddress related_address = 9;
+}

@@ -3,11 +3,10 @@ package wice;
 
 option go_package = "riasc.eu/wice/pkg/pb";
 
-message SignedOffer {
-    bytes offer = 1;
-    bytes sigature = 2;
-}
+import "candidate.proto";
 
+// SDP-like session description
+// See: https://www.rfc-editor.org/rfc/rfc8866.html
 message Offer {
     enum Role {
         CONTROLLED = 0;
@@ -19,26 +18,23 @@ message Offer {
         LITE = 1;
     }
 
-    int64 version = 1;
-    int64 epoch = 2;
-	Role role = 3;
-    Implementation implementation = 4;
+    enum Type {
+        OFFER = 0;
+        ANSWER = 1;
+    }
 
-	repeated Candidate candidates = 5;
+    // Version of the WICE signalling protocoll (currently always 1)
+    int64 version = 1;
+
+    // Session epoch, incremented with each offer
+    int64 epoch = 2;
+
+    Type type = 3;
+	Role role = 4;
+    Implementation implementation = 5;
 
     string Ufrag = 6;
     string Pwd = 7;
-}
 
-message Candidate {
-    // Type        string  `json:"type"`
-	// Foundation  string  `json:"foundation"`
-	// Component   int     `json:"component"`
-	// NetworkType string  `json:"network"`
-	// Priority    int     `json:"priority"`
-	// Address     string  `json:"address"`
-	// Port        int     `json:"port"`
-	// TCPType     *string `json:"tcp_type,omitempty"`
-	// RelAddr     *string `json:"related_address,omitempty"`
-	// RelPort     *int    `json:"related_port,omitempty"`
+	repeated Candidate candidates = 8;
 }

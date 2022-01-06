@@ -20,59 +20,125 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Interface_Type int32
+// from pion/ice/ice.go
+type ConnectionState int32
 
 const (
-	Interface_UNKNOWN        Interface_Type = 0
-	Interface_LINUX_KERNEL   Interface_Type = 1
-	Interface_OPENBSD_KERNEL Interface_Type = 2
-	Interface_WINDOWS_KERNEL Interface_Type = 3
-	Interface_USERSPACE      Interface_Type = 4
+	ConnectionState_NEW          ConnectionState = 0 // ConnectionStateNew ICE agent is gathering addresses
+	ConnectionState_CHECKING     ConnectionState = 1 // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
+	ConnectionState_CONNECTED    ConnectionState = 2 // ConnectionStateConnected ICE agent has a pairing, but is still checking other pairs
+	ConnectionState_COMPLETED    ConnectionState = 3 // ConnectionStateCompleted ICE agent has finished
+	ConnectionState_FAILED       ConnectionState = 4 // ConnectionStateFailed ICE agent never could successfully connect
+	ConnectionState_DISCONNECTED ConnectionState = 5 // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
+	ConnectionState_CLOSED       ConnectionState = 6 // ConnectionStateClosed ICE agent has finished and is no longer handling requests
 )
 
-// Enum value maps for Interface_Type.
+// Enum value maps for ConnectionState.
 var (
-	Interface_Type_name = map[int32]string{
-		0: "UNKNOWN",
-		1: "LINUX_KERNEL",
-		2: "OPENBSD_KERNEL",
-		3: "WINDOWS_KERNEL",
-		4: "USERSPACE",
+	ConnectionState_name = map[int32]string{
+		0: "NEW",
+		1: "CHECKING",
+		2: "CONNECTED",
+		3: "COMPLETED",
+		4: "FAILED",
+		5: "DISCONNECTED",
+		6: "CLOSED",
 	}
-	Interface_Type_value = map[string]int32{
-		"UNKNOWN":        0,
-		"LINUX_KERNEL":   1,
-		"OPENBSD_KERNEL": 2,
-		"WINDOWS_KERNEL": 3,
-		"USERSPACE":      4,
+	ConnectionState_value = map[string]int32{
+		"NEW":          0,
+		"CHECKING":     1,
+		"CONNECTED":    2,
+		"COMPLETED":    3,
+		"FAILED":       4,
+		"DISCONNECTED": 5,
+		"CLOSED":       6,
 	}
 )
 
-func (x Interface_Type) Enum() *Interface_Type {
-	p := new(Interface_Type)
+func (x ConnectionState) Enum() *ConnectionState {
+	p := new(ConnectionState)
 	*p = x
 	return p
 }
 
-func (x Interface_Type) String() string {
+func (x ConnectionState) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (Interface_Type) Descriptor() protoreflect.EnumDescriptor {
+func (ConnectionState) Descriptor() protoreflect.EnumDescriptor {
 	return file_common_proto_enumTypes[0].Descriptor()
 }
 
-func (Interface_Type) Type() protoreflect.EnumType {
+func (ConnectionState) Type() protoreflect.EnumType {
 	return &file_common_proto_enumTypes[0]
 }
 
-func (x Interface_Type) Number() protoreflect.EnumNumber {
+func (x ConnectionState) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use Interface_Type.Descriptor instead.
-func (Interface_Type) EnumDescriptor() ([]byte, []int) {
-	return file_common_proto_rawDescGZIP(), []int{4, 0}
+// Deprecated: Use ConnectionState.Descriptor instead.
+func (ConnectionState) EnumDescriptor() ([]byte, []int) {
+	return file_common_proto_rawDescGZIP(), []int{0}
+}
+
+// https://pubs.opengroup.org/onlinepubs/009696899/functions/xsh_chap02_03.html
+type Error_Code int32
+
+const (
+	Error_SUCCESS  Error_Code = 0
+	Error_EPERM    Error_Code = 1
+	Error_ENOENT   Error_Code = 2
+	Error_EEXIST   Error_Code = 17
+	Error_EALREADY Error_Code = 18
+	Error_ENOTSUP  Error_Code = 10
+)
+
+// Enum value maps for Error_Code.
+var (
+	Error_Code_name = map[int32]string{
+		0:  "SUCCESS",
+		1:  "EPERM",
+		2:  "ENOENT",
+		17: "EEXIST",
+		18: "EALREADY",
+		10: "ENOTSUP",
+	}
+	Error_Code_value = map[string]int32{
+		"SUCCESS":  0,
+		"EPERM":    1,
+		"ENOENT":   2,
+		"EEXIST":   17,
+		"EALREADY": 18,
+		"ENOTSUP":  10,
+	}
+)
+
+func (x Error_Code) Enum() *Error_Code {
+	p := new(Error_Code)
+	*p = x
+	return p
+}
+
+func (x Error_Code) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Error_Code) Descriptor() protoreflect.EnumDescriptor {
+	return file_common_proto_enumTypes[1].Descriptor()
+}
+
+func (Error_Code) Type() protoreflect.EnumType {
+	return &file_common_proto_enumTypes[1]
+}
+
+func (x Error_Code) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Error_Code.Descriptor instead.
+func (Error_Code) EnumDescriptor() ([]byte, []int) {
+	return file_common_proto_rawDescGZIP(), []int{2, 0}
 }
 
 type Void struct {
@@ -168,66 +234,19 @@ func (x *Timestamp) GetNanos() int32 {
 	return 0
 }
 
-type Status struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Interfaces []*Interface `protobuf:"bytes,1,rep,name=interfaces,proto3" json:"interfaces,omitempty"`
-}
-
-func (x *Status) Reset() {
-	*x = Status{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Status) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Status) ProtoMessage() {}
-
-func (x *Status) ProtoReflect() protoreflect.Message {
-	mi := &file_common_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Status.ProtoReflect.Descriptor instead.
-func (*Status) Descriptor() ([]byte, []int) {
-	return file_common_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Status) GetInterfaces() []*Interface {
-	if x != nil {
-		return x.Interfaces
-	}
-	return nil
-}
-
 type Error struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Ok    bool   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
-	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Code    Error_Code `protobuf:"varint,1,opt,name=code,proto3,enum=Error_Code" json:"code,omitempty"`
+	Message string     `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 }
 
 func (x *Error) Reset() {
 	*x = Error{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_proto_msgTypes[3]
+		mi := &file_common_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -240,7 +259,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_common_proto_msgTypes[3]
+	mi := &file_common_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -253,219 +272,21 @@ func (x *Error) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Error.ProtoReflect.Descriptor instead.
 func (*Error) Descriptor() ([]byte, []int) {
-	return file_common_proto_rawDescGZIP(), []int{3}
+	return file_common_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Error) GetOk() bool {
+func (x *Error) GetCode() Error_Code {
 	if x != nil {
-		return x.Ok
+		return x.Code
 	}
-	return false
+	return Error_SUCCESS
 }
 
-func (x *Error) GetError() string {
+func (x *Error) GetMessage() string {
 	if x != nil {
-		return x.Error
+		return x.Message
 	}
 	return ""
-}
-
-type Interface struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name         string         `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type         Interface_Type `protobuf:"varint,2,opt,name=type,proto3,enum=Interface_Type" json:"type,omitempty"`
-	PrivateKey   []byte         `protobuf:"bytes,3,opt,name=private_key,json=privateKey,proto3" json:"private_key,omitempty"`
-	PublicKey    []byte         `protobuf:"bytes,4,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
-	ListenPort   uint32         `protobuf:"varint,5,opt,name=listen_port,json=listenPort,proto3" json:"listen_port,omitempty"`
-	FirewallMark uint32         `protobuf:"varint,6,opt,name=firewall_mark,json=firewallMark,proto3" json:"firewall_mark,omitempty"`
-	Peers        []*Peer        `protobuf:"bytes,7,rep,name=peers,proto3" json:"peers,omitempty"`
-}
-
-func (x *Interface) Reset() {
-	*x = Interface{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Interface) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Interface) ProtoMessage() {}
-
-func (x *Interface) ProtoReflect() protoreflect.Message {
-	mi := &file_common_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Interface.ProtoReflect.Descriptor instead.
-func (*Interface) Descriptor() ([]byte, []int) {
-	return file_common_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Interface) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Interface) GetType() Interface_Type {
-	if x != nil {
-		return x.Type
-	}
-	return Interface_UNKNOWN
-}
-
-func (x *Interface) GetPrivateKey() []byte {
-	if x != nil {
-		return x.PrivateKey
-	}
-	return nil
-}
-
-func (x *Interface) GetPublicKey() []byte {
-	if x != nil {
-		return x.PublicKey
-	}
-	return nil
-}
-
-func (x *Interface) GetListenPort() uint32 {
-	if x != nil {
-		return x.ListenPort
-	}
-	return 0
-}
-
-func (x *Interface) GetFirewallMark() uint32 {
-	if x != nil {
-		return x.FirewallMark
-	}
-	return 0
-}
-
-func (x *Interface) GetPeers() []*Peer {
-	if x != nil {
-		return x.Peers
-	}
-	return nil
-}
-
-type Peer struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	PublicKey                   []byte     `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
-	Endpoint                    []string   `protobuf:"bytes,2,rep,name=Endpoint,proto3" json:"Endpoint,omitempty"`
-	PersistentKeepaliveInterval uint32     `protobuf:"varint,3,opt,name=persistent_keepalive_interval,json=persistentKeepaliveInterval,proto3" json:"persistent_keepalive_interval,omitempty"`
-	LastHandshake               *Timestamp `protobuf:"bytes,4,opt,name=last_handshake,json=lastHandshake,proto3" json:"last_handshake,omitempty"`
-	TransmitBytes               int64      `protobuf:"varint,5,opt,name=transmit_bytes,json=transmitBytes,proto3" json:"transmit_bytes,omitempty"`
-	ReceiveBytes                int64      `protobuf:"varint,6,opt,name=receive_bytes,json=receiveBytes,proto3" json:"receive_bytes,omitempty"`
-	AllowedIps                  []string   `protobuf:"bytes,7,rep,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
-	ProtocolVersion             uint32     `protobuf:"varint,8,opt,name=protocol_version,json=protocolVersion,proto3" json:"protocol_version,omitempty"`
-}
-
-func (x *Peer) Reset() {
-	*x = Peer{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Peer) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Peer) ProtoMessage() {}
-
-func (x *Peer) ProtoReflect() protoreflect.Message {
-	mi := &file_common_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Peer.ProtoReflect.Descriptor instead.
-func (*Peer) Descriptor() ([]byte, []int) {
-	return file_common_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *Peer) GetPublicKey() []byte {
-	if x != nil {
-		return x.PublicKey
-	}
-	return nil
-}
-
-func (x *Peer) GetEndpoint() []string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return nil
-}
-
-func (x *Peer) GetPersistentKeepaliveInterval() uint32 {
-	if x != nil {
-		return x.PersistentKeepaliveInterval
-	}
-	return 0
-}
-
-func (x *Peer) GetLastHandshake() *Timestamp {
-	if x != nil {
-		return x.LastHandshake
-	}
-	return nil
-}
-
-func (x *Peer) GetTransmitBytes() int64 {
-	if x != nil {
-		return x.TransmitBytes
-	}
-	return 0
-}
-
-func (x *Peer) GetReceiveBytes() int64 {
-	if x != nil {
-		return x.ReceiveBytes
-	}
-	return 0
-}
-
-func (x *Peer) GetAllowedIps() []string {
-	if x != nil {
-		return x.AllowedIps
-	}
-	return nil
-}
-
-func (x *Peer) GetProtocolVersion() uint32 {
-	if x != nil {
-		return x.ProtocolVersion
-	}
-	return 0
 }
 
 var File_common_proto protoreflect.FileDescriptor
@@ -476,57 +297,25 @@ var file_common_proto_rawDesc = []byte{
 	0x61, 0x6d, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x73, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x73, 0x12, 0x14, 0x0a,
 	0x05, 0x6e, 0x61, 0x6e, 0x6f, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6e, 0x61,
-	0x6e, 0x6f, 0x73, 0x22, 0x34, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2a, 0x0a,
-	0x0a, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x0a, 0x2e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x52, 0x0a, 0x69,
-	0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x73, 0x22, 0x2d, 0x0a, 0x05, 0x45, 0x72, 0x72,
-	0x6f, 0x72, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x02,
-	0x6f, 0x6b, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0xc5, 0x02, 0x0a, 0x09, 0x49, 0x6e, 0x74,
-	0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0f, 0x2e, 0x49, 0x6e, 0x74, 0x65, 0x72,
-	0x66, 0x61, 0x63, 0x65, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12,
-	0x1f, 0x0a, 0x0b, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x0a, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4b, 0x65, 0x79,
-	0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x4b, 0x65, 0x79, 0x12,
-	0x1f, 0x0a, 0x0b, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x5f, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x0d, 0x52, 0x0a, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x50, 0x6f, 0x72, 0x74,
-	0x12, 0x23, 0x0a, 0x0d, 0x66, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x5f, 0x6d, 0x61, 0x72,
-	0x6b, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0c, 0x66, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c,
-	0x6c, 0x4d, 0x61, 0x72, 0x6b, 0x12, 0x1b, 0x0a, 0x05, 0x70, 0x65, 0x65, 0x72, 0x73, 0x18, 0x07,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x05, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x52, 0x05, 0x70, 0x65, 0x65,
-	0x72, 0x73, 0x22, 0x5c, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e,
-	0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x4c, 0x49, 0x4e, 0x55, 0x58,
-	0x5f, 0x4b, 0x45, 0x52, 0x4e, 0x45, 0x4c, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e, 0x4f, 0x50, 0x45,
-	0x4e, 0x42, 0x53, 0x44, 0x5f, 0x4b, 0x45, 0x52, 0x4e, 0x45, 0x4c, 0x10, 0x02, 0x12, 0x12, 0x0a,
-	0x0e, 0x57, 0x49, 0x4e, 0x44, 0x4f, 0x57, 0x53, 0x5f, 0x4b, 0x45, 0x52, 0x4e, 0x45, 0x4c, 0x10,
-	0x03, 0x12, 0x0d, 0x0a, 0x09, 0x55, 0x53, 0x45, 0x52, 0x53, 0x50, 0x41, 0x43, 0x45, 0x10, 0x04,
-	0x22, 0xd0, 0x02, 0x0a, 0x04, 0x50, 0x65, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x75, 0x62,
-	0x6c, 0x69, 0x63, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x70,
-	0x75, 0x62, 0x6c, 0x69, 0x63, 0x4b, 0x65, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x45, 0x6e, 0x64, 0x70,
-	0x6f, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x45, 0x6e, 0x64, 0x70,
-	0x6f, 0x69, 0x6e, 0x74, 0x12, 0x42, 0x0a, 0x1d, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65,
-	0x6e, 0x74, 0x5f, 0x6b, 0x65, 0x65, 0x70, 0x61, 0x6c, 0x69, 0x76, 0x65, 0x5f, 0x69, 0x6e, 0x74,
-	0x65, 0x72, 0x76, 0x61, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x1b, 0x70, 0x65, 0x72,
-	0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x74, 0x4b, 0x65, 0x65, 0x70, 0x61, 0x6c, 0x69, 0x76, 0x65,
-	0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c, 0x12, 0x31, 0x0a, 0x0e, 0x6c, 0x61, 0x73, 0x74,
-	0x5f, 0x68, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x0a, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0d, 0x6c, 0x61,
-	0x73, 0x74, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x12, 0x25, 0x0a, 0x0e, 0x74,
-	0x72, 0x61, 0x6e, 0x73, 0x6d, 0x69, 0x74, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x0d, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x6d, 0x69, 0x74, 0x42, 0x79, 0x74,
-	0x65, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x5f, 0x62, 0x79,
-	0x74, 0x65, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0c, 0x72, 0x65, 0x63, 0x65, 0x69,
-	0x76, 0x65, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x61, 0x6c, 0x6c, 0x6f, 0x77,
-	0x65, 0x64, 0x5f, 0x69, 0x70, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x61, 0x6c,
-	0x6c, 0x6f, 0x77, 0x65, 0x64, 0x49, 0x70, 0x73, 0x12, 0x29, 0x0a, 0x10, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x0f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x56, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x42, 0x16, 0x5a, 0x14, 0x72, 0x69, 0x61, 0x73, 0x63, 0x2e, 0x65, 0x75, 0x2f,
-	0x77, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x6e, 0x6f, 0x73, 0x22, 0x95, 0x01, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x1f, 0x0a,
+	0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0b, 0x2e, 0x45, 0x72,
+	0x72, 0x6f, 0x72, 0x2e, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x18,
+	0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x51, 0x0a, 0x04, 0x43, 0x6f, 0x64, 0x65,
+	0x12, 0x0b, 0x0a, 0x07, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53, 0x10, 0x00, 0x12, 0x09, 0x0a,
+	0x05, 0x45, 0x50, 0x45, 0x52, 0x4d, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x45, 0x4e, 0x4f, 0x45,
+	0x4e, 0x54, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x45, 0x45, 0x58, 0x49, 0x53, 0x54, 0x10, 0x11,
+	0x12, 0x0c, 0x0a, 0x08, 0x45, 0x41, 0x4c, 0x52, 0x45, 0x41, 0x44, 0x59, 0x10, 0x12, 0x12, 0x0b,
+	0x0a, 0x07, 0x45, 0x4e, 0x4f, 0x54, 0x53, 0x55, 0x50, 0x10, 0x0a, 0x2a, 0x70, 0x0a, 0x0f, 0x43,
+	0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x07,
+	0x0a, 0x03, 0x4e, 0x45, 0x57, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x43, 0x48, 0x45, 0x43, 0x4b,
+	0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54,
+	0x45, 0x44, 0x10, 0x02, 0x12, 0x0d, 0x0a, 0x09, 0x43, 0x4f, 0x4d, 0x50, 0x4c, 0x45, 0x54, 0x45,
+	0x44, 0x10, 0x03, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x04, 0x12,
+	0x10, 0x0a, 0x0c, 0x44, 0x49, 0x53, 0x43, 0x4f, 0x4e, 0x4e, 0x45, 0x43, 0x54, 0x45, 0x44, 0x10,
+	0x05, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0x10, 0x06, 0x42, 0x16, 0x5a,
+	0x14, 0x72, 0x69, 0x61, 0x73, 0x63, 0x2e, 0x65, 0x75, 0x2f, 0x77, 0x69, 0x63, 0x65, 0x2f, 0x70,
+	0x6b, 0x67, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -541,27 +330,22 @@ func file_common_proto_rawDescGZIP() []byte {
 	return file_common_proto_rawDescData
 }
 
-var file_common_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_common_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_common_proto_goTypes = []interface{}{
-	(Interface_Type)(0), // 0: Interface.Type
-	(*Void)(nil),        // 1: Void
-	(*Timestamp)(nil),   // 2: Timestamp
-	(*Status)(nil),      // 3: Status
-	(*Error)(nil),       // 4: Error
-	(*Interface)(nil),   // 5: Interface
-	(*Peer)(nil),        // 6: Peer
+	(ConnectionState)(0), // 0: ConnectionState
+	(Error_Code)(0),      // 1: Error.Code
+	(*Void)(nil),         // 2: Void
+	(*Timestamp)(nil),    // 3: Timestamp
+	(*Error)(nil),        // 4: Error
 }
 var file_common_proto_depIdxs = []int32{
-	5, // 0: Status.interfaces:type_name -> Interface
-	0, // 1: Interface.type:type_name -> Interface.Type
-	6, // 2: Interface.peers:type_name -> Peer
-	2, // 3: Peer.last_handshake:type_name -> Timestamp
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1, // 0: Error.code:type_name -> Error.Code
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_common_proto_init() }
@@ -595,43 +379,7 @@ func file_common_proto_init() {
 			}
 		}
 		file_common_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Status); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_common_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Error); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_common_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Interface); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_common_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Peer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -648,8 +396,8 @@ func file_common_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

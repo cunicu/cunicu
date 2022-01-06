@@ -8,6 +8,7 @@ func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
 	fields = append(fields,
 		zap.String("type", e.Type),
 		zap.String("state", e.State),
+		zap.Any("event", e.Event),
 	)
 
 	if e.Time != nil {

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+import "peer.proto";
+
+message Interface {
+    enum Type {
+        UNKNOWN = 0;
+	    LINUX_KERNEL = 1;
+	    OPENBSD_KERNEL = 2;
+	    WINDOWS_KERNEL = 3;
+	    USERSPACE = 4;
+    }
+
+    string name = 1;
+    Type type = 2;
+    
+    bytes private_key = 3;
+    bytes public_key = 4;
+
+    uint32 listen_port = 5;
+
+    uint32 firewall_mark = 6;
+
+    repeated Peer peers = 7;
+}

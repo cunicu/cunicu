@@ -9,6 +9,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	ginsecure "google.golang.org/grpc/credentials/insecure"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -49,23 +51,25 @@ func Connect(path string) (*Client, error) {
 	}
 
 	tgt := fmt.Sprintf("unix://%s", path)
-	conn, err := grpc.Dial(tgt, grpc.WithInsecure())
+	conn, err := grpc.Dial(tgt, grpc.WithTransportCredentials(ginsecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
 
+	logger := zap.L().Named("socket.client").With(zap.String("path", path))
+
 	client := &Client{
 		SocketClient: pb.NewSocketClient(conn),
 		grpc:         conn,
-		logger:       zap.L().Named("socket.client"),
+		logger:       logger,
 		Events:       make(chan *pb.Event, 100),
 	}
 
-	sts, err := client.UnWait(context.Background(), &pb.Void{})
+	rerr, err := client.UnWait(context.Background(), &pb.UnWaitParams{})
 	if err != nil {
 		return nil, fmt.Errorf("failed RPC request: %w", err)
-	} else if !sts.Ok {
-		return nil, fmt.Errorf("received RPC error: %s", sts.Error)
+	} else if !rerr.Ok() && rerr.Code != pb.Error_EALREADY {
+		return nil, fmt.Errorf("received RPC error: %w", rerr)
 	}
 
 	go client.streamEvents()
@@ -80,7 +84,7 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) streamEvents() {
-	str, err := c.StreamEvents(context.Background(), &pb.Void{})
+	str, err := c.StreamEvents(context.Background(), &pb.StreamEventsParams{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
 	}
@@ -108,9 +112,10 @@ func (c *Client) WaitForEvent(flt *pb.Event) *pb.Event {
 	return nil
 }
 
-func (c *Client) WaitPeerHandshake() {
+func (c *Client) WaitPeerHandshake(peer crypto.Key) {
 	c.WaitForEvent(&pb.Event{
-		Type: "handshake",
+		Type:  "handshake",
+		State: "new",
 	})
 }
 

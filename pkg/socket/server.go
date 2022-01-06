@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"context"
 	"sync"
 
 	"go.uber.org/zap"
@@ -18,6 +17,8 @@ type Server struct {
 
 	listener net.Listener
 	grpc     *grpc.Server
+
+	Requests chan interface{}
 
 	eventListeners     map[chan *pb.Event]interface{}
 	eventListenersLock sync.Mutex
@@ -47,6 +48,7 @@ func Listen(network string, address string, wait bool) (*Server, error) {
 		logger:         logger,
 		grpc:           grpc.NewServer(),
 		eventListeners: map[chan *pb.Event]interface{}{},
+		Requests:       make(chan interface{}),
 	}
 
 	pb.RegisterSocketServer(s.grpc, s)
@@ -77,37 +79,4 @@ func (s *Server) BroadcastEvent(e *pb.Event) error {
 	e.Log(s.logger, "Broadcasted event")
 
 	return nil
-}
-
-func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) {
-	return &pb.Status{}, nil
-}
-
-func (s *Server) StreamEvents(_ *pb.Void, stream pb.Socket_StreamEventsServer) error {
-	ch := make(chan *pb.Event, 100)
-
-	s.eventListenersLock.Lock()
-	s.eventListeners[ch] = nil
-	s.eventListenersLock.Unlock()
-
-	for evt := range ch {
-		stream.Send(evt)
-	}
-
-	return nil
-}
-
-func (s *Server) UnWait(context.Context, *pb.Void) (*pb.Error, error) {
-	var e = &pb.Error{
-		Ok:    false,
-		Error: "already unwaited",
-	}
-
-	s.waitOnce.Do(func() {
-		s.logger.Info("Control socket un-waited")
-		s.waitGroup.Done()
-		e = &pb.Ok
-	})
-
-	return e, nil
 }

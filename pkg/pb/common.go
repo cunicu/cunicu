@@ -1,14 +1,28 @@
 package pb
 
-import "time"
+import (
+	"time"
+)
 
-var Ok = Error{
-	Ok: true,
+var Success = &Error{
+	Code: Error_SUCCESS,
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
+func (e *Error) Ok() bool {
+	return e.Code == Error_SUCCESS
 }
 
 func TimeNow() *Timestamp {
+	return Time(time.Now())
+}
+
+func Time(s time.Time) *Timestamp {
 	t := &Timestamp{}
-	t.Set(time.Now())
+	t.Set(s)
 	return t
 }
 

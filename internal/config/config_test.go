@@ -1,14 +1,14 @@
-package args_test
+package config_test
 
 import (
 	"testing"
 
 	"github.com/pion/ice/v2"
-	"riasc.eu/wice/pkg/args"
+	"riasc.eu/wice/internal/config"
 )
 
 func TestParseArgsUser(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-user"})
+	config, err := config.Parse("prog", []string{"-user"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -19,7 +19,7 @@ func TestParseArgsUser(t *testing.T) {
 }
 
 func TestParseArgsBackend(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-backend", "k8s"})
+	config, err := config.Parse("prog", []string{"-backend", "k8s"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -30,7 +30,7 @@ func TestParseArgsBackend(t *testing.T) {
 }
 
 func TestParseArgsUrls(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-url", "stun:stun.riasc.eu", "-url", "turn:turn.riasc.eu"})
+	config, err := config.Parse("prog", []string{"-url", "stun:stun.riasc.eu", "-url", "turn:turn.riasc.eu"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -57,7 +57,7 @@ func TestParseArgsUrls(t *testing.T) {
 }
 
 func TestParseArgsCandidateTypes(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-ice-candidate-type", "host", "-ice-candidate-type", "relay"})
+	config, err := config.Parse("prog", []string{"-ice-candidate-type", "host", "-ice-candidate-type", "relay"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -76,7 +76,7 @@ func TestParseArgsCandidateTypes(t *testing.T) {
 }
 
 func TestParseArgsInterfaceFilter(t *testing.T) {
-	config, err := args.Parse("prog", []string{"-interface-filter", "eth\\d+"})
+	config, err := config.Parse("prog", []string{"-interface-filter", "eth\\d+"})
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -91,14 +91,14 @@ func TestParseArgsInterfaceFilter(t *testing.T) {
 }
 
 func TestParseArgsInterfaceFilterFail(t *testing.T) {
-	_, err := args.Parse("prog", []string{"-interface-filter", "eth("})
+	_, err := config.Parse("prog", []string{"-interface-filter", "eth("})
 	if err == nil {
 		t.Fail()
 	}
 }
 
 func TestParseArgsDefault(t *testing.T) {
-	config, err := args.Parse("prog", []string{})
+	config, err := config.Parse("prog", []string{})
 	if err != nil {
 		t.Fail()
 	}

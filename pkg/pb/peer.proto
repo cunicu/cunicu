@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+import "common.proto";
+
+message PeerDescriptor {
+    bytes public_key = 1;
+    string hostname = 2;
+    repeated string allowed_ips = 3;
+}
+
+message Peer {
+    bytes public_key = 1;
+
+    repeated string Endpoint = 2;
+ 
+    uint32 persistent_keepalive_interval = 3;
+    Timestamp last_handshake = 4;
+    int64 transmit_bytes = 5;
+    int64 receive_bytes = 6;
+    repeated string allowed_ips = 7;
+    uint32 protocol_version = 8;
+
+    ConnectionState state = 9;
+}

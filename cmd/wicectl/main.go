@@ -1,51 +1,43 @@
 package main
 
 import (
-	"flag"
-	"os"
+	"fmt"
 
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/pkg/socket"
 )
 
-var sockPath = flag.String("socket", "/var/run/wice.go", "Unix control and monitoring socket")
+var client *socket.Client = nil
+var logger *zap.Logger
 
-func main() {
+func pre(cmd *cobra.Command, args []string) error {
+	var err error
+
 	internal.SetupRand()
-	signals := internal.SetupSignals()
-	logger := internal.SetupLogging()
-	defer logger.Sync()
 
-	flag.Parse()
+	logger = internal.SetupLogging()
 
-	subCommand := flag.Arg(0)
-
-	switch subCommand {
-	case "monitor":
-		monitor(signals)
-
-	default:
-		logger.Fatal("Unknown subcommand", zap.String("command", subCommand))
+	if client, err = socket.Connect(sockPath); err != nil {
+		return fmt.Errorf("failed to connect to control socket: %w", err)
 	}
+
+	return nil
 }
 
-func monitor(signals chan os.Signal) {
-	logger := zap.L().Named("events")
-
-	sock, err := socket.Connect(*sockPath)
-	if err != nil {
-		logger.Fatal("Failed to connect to control socket", zap.Error(err))
+func post(cmd *cobra.Command, args []string) error {
+	if err := client.Close(); err != nil {
+		return err
 	}
 
-	for {
-		select {
-		case sig := <-signals:
-			logger.Info("Received signal", zap.Any("signal", sig))
-			os.Exit(0)
-
-		case evt := <-sock.Events:
-			evt.Log(logger, "Event")
-		}
+	if err := logger.Sync(); err != nil {
+		return err
 	}
+
+	return nil
+}
+
+func main() {
+	rootCmd.Execute()
 }
