@@ -48,31 +48,7 @@ Agent will restart
 
 ## Offer
 
-Offers are encoded as JSON:
-
-```json
-{
-  "version": 1,               // Version of the WICE signalling protocoll (currently always 1)
-  "type": "offer",            // or "answer"
-  "impelementation": "full",  // or "lite"
-  "role": "controlling",      // or "controlled"
-  "candidates": [             // List of ICE candidates
-    {
-      "type": "host",
-      "foundation": "1742129347",
-      "component": 1,
-      "network": "udp4",
-      "priority": 2130706431,
-      "address": "10.2.0.11",
-      "port": 37518
-    }
-  ],
-  "ufrag": "",                // ICE credentials
-  "pwd": "",
-  "epoch": 0,                 // Session epoch, incremented with each offer
-  "signature": ""             // JWS-CT signature of offer
-}
-```
+Offers are exchanged of the signaling backend as packed Protobuf messages:
 
 ## Backends
 

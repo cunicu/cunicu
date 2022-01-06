@@ -127,7 +127,6 @@ func ShowUsage() {
 func NewConfig(flags *pflag.FlagSet) *Config {
 	matchAll, _ := regexp.Compile(".*")
 
-	// Default arguments
 	cfg := &Config{
 		Backends:           backendURLList{},
 		iceCandidateTypes:  candidateTypeList{},
@@ -301,7 +300,7 @@ func (c *Config) Dump(wr io.Writer) {
 	fmt.Fprintf(wr, "  User: %s\n", strconv.FormatBool(c.User))
 	fmt.Fprintf(wr, "  ProxyType: %s\n", c.ProxyType.String())
 
-	fmt.Fprintf(wr, "  Signalling Backends:\n")
+	fmt.Fprintf(wr, "  Signaling Backends:\n")
 	for _, b := range c.Backends {
 		fmt.Fprintf(wr, "    %s\n", b)
 	}
