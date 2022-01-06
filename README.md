@@ -53,9 +53,6 @@ Documentation of WICE can be found in the [`docs/`](./docs) directory.
 [STUN]: https://datatracker.ietf.org/doc/html/rfc8489
 [SDP]: https://datatracker.ietf.org/doc/html/rfc8866
 [SDP-Offer-Answer]: https://datatracker.ietf.org/doc/html/rfc3264
-[JWS]: https://datatracker.ietf.org/doc/html/rfc7515
-[JWS-CT]: https://tools.ietf.org/id/draft-jordan-jws-ct-02.html
-[JCS]: https://datatracker.ietf.org/doc/html/rfc8785
 [WICE]: https://github.com/stv0g/wice
 [ERIGrid 2.0]: https://erigrid2.eu
 [NetworkManager]: https://github.com/max-moser/network-manager-wireguard
