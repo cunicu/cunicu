@@ -15,20 +15,18 @@ It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice] pack
 
 ## Getting started
 
-To use WICE you first need to setup a signaling server:
+To use WICE follow these steps on each host:
 
-1. Install WICE: `go get riasc.eu/wice`
-2. Run the signaling server on a publicly accessible node: `wice-signal -port 8080`
-
-Afterwards perform the following steps on each node which should join the mesh:
-
-1. Install WICE: `go get riasc.eu/wice`
+1. Install WICE: `go install riasc.eu/wice/cmd@latest`
 2. Configure your Wireguard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
-3. Start the WICE daemon by running: `sudo wice -backend http://signaling-server:8080`
+3. Start the WICE daemon by running: `sudo wice daemon`
 
-The WICE daemons will now attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
+Make sure that in step 2. you have created Wireguard keys and exchanged them by hand between the hosts.
+WICE does not (yet) discover available peers. You are responsible to add the peers to the Wireguard interface by yourself.
+
+After the WICE daemons have been started, they will attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
 These _ICE candidates_ are then exchanged via the signaling server and WICE will update the endpoint addresses of the Wireguard peers accordingly.
-Once this has been done, the WICE logs should show `Connected to peer`.
+Once this has been done, the WICE logs should show a line `state=connected`.
 
 ## Documentation
 
