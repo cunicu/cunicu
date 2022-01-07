@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"go.uber.org/zap"
 
 	_ "riasc.eu/wice/pkg/signaling/k8s"
@@ -12,5 +14,9 @@ var (
 )
 
 func main() {
-	rootCmd.Execute()
+	if os.Args[0] == "wg" {
+		wgCmd.Execute()
+	} else {
+		rootCmd.Execute()
+	}
 }
