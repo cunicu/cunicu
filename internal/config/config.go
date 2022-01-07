@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"net/url"
@@ -13,7 +12,6 @@ import (
 
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/proxy"
-	"riasc.eu/wice/pkg/signaling"
 
 	"github.com/pion/ice/v2"
 	"github.com/spf13/pflag"
@@ -107,23 +105,6 @@ type Config struct {
 
 	viper  *viper.Viper
 	logger *zap.Logger
-}
-
-func ShowUsage() {
-	fmt.Fprintf(os.Stderr, "usage: %s [OPTIONS] [IFACES ...]\n", os.Args[0])
-	fmt.Println()
-	fmt.Println("  IFACES  is a list of Wireguard interfaces")
-	fmt.Println("          (defaults to all available Wireguard interfaces)")
-	fmt.Println("")
-	fmt.Println(("Available OPTIONS are:"))
-	flag.PrintDefaults()
-	fmt.Println()
-	fmt.Println("  (**) These options can be specified multiple times")
-	fmt.Println()
-	fmt.Println("Available backends types are:")
-	for name, plugin := range signaling.Backends {
-		fmt.Printf("  %-7s %s\n", name, plugin.Description)
-	}
 }
 
 func NewConfig(flags *pflag.FlagSet) *Config {
