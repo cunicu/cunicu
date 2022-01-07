@@ -36,6 +36,8 @@ const (
 
 	// max binding request before considering a pair failed
 	defaultMaxBindingRequests = 7
+
+	DefaultSocketPath = "/var/run/wice.sock"
 )
 
 var (
@@ -176,7 +178,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringVarP(&cfg.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
 	// iceMaxBindingRequestTimeout := flag.Duration("ice-max-binding-request-timeout", maxBindingRequestTimeout, "wait time before binding requests can be deleted")
 
-	flags.StringVar(&cfg.Socket, "socket", "/var/run/wice.sock", "Unix control and monitoring socket")
+	flags.StringVar(&cfg.Socket, "socket", DefaultSocketPath, "Unix control and monitoring socket")
 	flags.BoolVar(&cfg.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
 
 	cfg.viper.BindPFlags(flags)

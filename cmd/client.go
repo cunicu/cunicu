@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg/socket"
 )
 
@@ -18,7 +19,7 @@ func addClientCommand(cmd *cobra.Command) {
 
 	pf := cmd.PersistentFlags()
 
-	pf.StringVar(&sockPath, "socket", "/var/run/wice.sock", "Unix control and monitoring socket")
+	pf.StringVarP(&sockPath, "socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
 
 	rootCmd.AddCommand(cmd)
 }
