@@ -24,6 +24,25 @@
   - [systemd-networkd]
   - [wg-quick]
   - [kilo]
+  - [drago]
 - Monitoring for new Wireguard interfaces and peers
   - Inotify for new UAPI sockets in /var/run/wireguard
-  - Netlink subscription for link updates
+  - Netlink subscription for link updates (patch is pending)
+
+[kilo]: https://kilo.squat.ai
+[drago]: https://seashell.github.io/drago/
+[NetworkManager]: https://github.com/max-moser/network-manager-wireguard
+[systemd-networkd]: https://www.freedesktop.org/software/systemd/man/systemd.netdev.html#%5BWireGuard%5D%20Section%20Options
+[wg-quick]: https://manpages.debian.org/unstable/wireguard-tools/wg-quick.8.en.html
+
+[ICE-TCP]: https://datatracker.ietf.org/doc/html/rfc6544
+[Trickle ICE]: https://datatracker.ietf.org/doc/html/rfc8838
+[XEdDSA]: https://signal.org/docs/specifications/xeddsa/
+[ICE]: https://datatracker.ietf.org/doc/html/rfc8445
+[ICE-PAC]: https://datatracker.ietf.org/doc/html/rfc8863
+[ICE-SDP]: https://datatracker.ietf.org/doc/html/rfc8839
+[TURN-TCP]: https://datatracker.ietf.org/doc/html/rfc6062
+[TURN-STUN]: https://datatracker.ietf.org/doc/html/rfc8656
+[STUN]: https://datatracker.ietf.org/doc/html/rfc8489
+[SDP]: https://datatracker.ietf.org/doc/html/rfc8866
+[SDP-Offer-Answer]: https://datatracker.ietf.org/doc/html/rfc3264

@@ -43,24 +43,5 @@ Documentation of WICE can be found in the [`docs/`](./docs) directory.
 [Wireguard]: https://wireguard.com
 [wireguard-go]: https://git.zx2c4.com/wireguard-go
 [pion/ice]: https://github.com/pion/ice
-[ICE]: https://datatracker.ietf.org/doc/html/rfc8445
-[ICE-PAC]: https://datatracker.ietf.org/doc/html/rfc8863
-[ICE-TCP]: https://datatracker.ietf.org/doc/html/rfc6544
-[Trickle ICE]: https://datatracker.ietf.org/doc/html/rfc8838
-[ICE-SDP]: https://datatracker.ietf.org/doc/html/rfc8839
-[TURN-TCP]: https://datatracker.ietf.org/doc/html/rfc6062
-[TURN-STUN]: https://datatracker.ietf.org/doc/html/rfc8656
-[STUN]: https://datatracker.ietf.org/doc/html/rfc8489
-[SDP]: https://datatracker.ietf.org/doc/html/rfc8866
-[SDP-Offer-Answer]: https://datatracker.ietf.org/doc/html/rfc3264
 [WICE]: https://github.com/stv0g/wice
 [ERIGrid 2.0]: https://erigrid2.eu
-[NetworkManager]: https://github.com/max-moser/network-manager-wireguard
-[systemd-networkd]: https://www.freedesktop.org/software/systemd/man/systemd.netdev.html#%5BWireGuard%5D%20Section%20Options
-[wg-quick]: https://manpages.debian.org/unstable/wireguard-tools/wg-quick.8.en.html
-[kilo]: https://kilo.squat.ai
-[Nftables]: https://www.netfilter.org/projects/nftables/manpage.html
-[XEdDSA]: https://signal.org/docs/specifications/xeddsa/
-
-[Golang BPF]: https://riyazali.net/posts/berkeley-packet-filter-in-golang/
-[Linux Raw Sockets]: https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html
