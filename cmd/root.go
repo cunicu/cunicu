@@ -48,10 +48,9 @@ var (
 		Long:  "Wireguard Interactive Connectitivty Establishment",
 	}
 
-	// set via ldflags -X / goreleaser
-	version string
-	commit  string
-	date    string
+	version string //lint:ignore U1000 set via ldflags -X / goreleaser
+	commit  string //lint:ignore U1000 set via ldflags -X / goreleaser
+	date    string //lint:ignore U1000 set via ldflags -X / goreleaser
 )
 
 func init() {
