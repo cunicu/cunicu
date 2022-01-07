@@ -37,7 +37,7 @@ wice daemon [interfaces...] [flags]
   -a, --url strings                        STUN and/or TURN server addresses
   -i, --watch-interval duration            interval at which we are polling the kernel for updates on the Wireguard interfaces (default 1s)
   -w, --wg-config-path string              base path to search for Wireguard configuration files (default "/etc/wireguard")
-  -S, --wg-config-sync                     sync Wireguard interface with configuration file (see "wg synconf"
+  -S, --wg-config-sync                     sync Wireguard interface with configuration file (see "wg synconf")
   -u, --wg-user                            start userspace Wireguard daemon
 ```
 

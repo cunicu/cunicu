@@ -134,7 +134,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.DurationVarP(&cfg.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
 	flags.BoolVarP(&cfg.User, "wg-user", "u", false, "start userspace Wireguard daemon")
-	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\"")
+	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
 	flags.StringVarP(&cfg.ConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
 
 	// ice.AgentConfig fields
@@ -157,7 +157,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.DurationVar(&cfg.RestartInterval, "ice-restart-interval", defaultDisconnectedTimeout, "time to wait before ICE restart")
 	flags.StringVarP(&cfg.iceUsername, "ice-user", "U", "", "username for STUN/TURN credentials")
 	flags.StringVarP(&cfg.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
-	// iceMaxBindingRequestTimeout := flag.Duration("ice-max-binding-request-timeout", maxBindingRequestTimeout, "wait time before binding requests can be deleted")
 
 	flags.StringVarP(&cfg.Socket, "socket", "s", DefaultSocketPath, "Unix control and monitoring socket")
 	flags.BoolVar(&cfg.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
@@ -195,6 +194,7 @@ func (c *Config) Setup() {
 		viper.SetConfigName("wicerc")
 	}
 
+	c.viper.SetEnvPrefix("wice")
 	c.viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
