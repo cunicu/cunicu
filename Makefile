@@ -7,6 +7,6 @@ all: wice
 
 wice:
 	go generate ./...
-	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd
+	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/wice
 
 .PHONY: all wice

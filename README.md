@@ -17,7 +17,7 @@ It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice] pack
 
 To use WICE follow these steps on each host:
 
-1. Install WICE: `go install riasc.eu/wice/cmd@latest`
+1. Install WICE: `go install riasc.eu/wice/cmd/wice@latest`
 2. Configure your Wireguard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
 3. Start the WICE daemon by running: `sudo wice daemon`
 
