@@ -10,8 +10,12 @@ var monitorCmd = &cobra.Command{
 	Use:                "monitor",
 	Short:              "Monitor the WICE daemon for events",
 	RunE:               monitor,
-	PersistentPreRunE:  pre,
-	PersistentPostRunE: post,
+	PersistentPreRunE:  connect,
+	PersistentPostRunE: disconnect,
+}
+
+func init() {
+	addClientCommand(monitorCmd)
 }
 
 func monitor(cmd *cobra.Command, args []string) error {

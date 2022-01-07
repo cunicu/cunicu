@@ -12,8 +12,12 @@ var shutdownCmd = &cobra.Command{
 	Use:                "shutdown",
 	Short:              "Shutdown the WICE daemon",
 	RunE:               shutdown,
-	PersistentPreRunE:  pre,
-	PersistentPostRunE: post,
+	PersistentPreRunE:  connect,
+	PersistentPostRunE: disconnect,
+}
+
+func init() {
+	addClientCommand(shutdownCmd)
 }
 
 func shutdown(cmd *cobra.Command, args []string) error {

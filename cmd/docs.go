@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"fmt"
@@ -14,18 +14,16 @@ type runEfunc func(cmd *cobra.Command, args []string) error
 
 var (
 	outputDir string
-)
 
-func NewDocsCommand(rootCmd *cobra.Command) *cobra.Command {
-	cmd := &cobra.Command{
+	docsCmd = &cobra.Command{
 		Use:   "docs",
 		Short: "Generate documentation for the wice commands",
 		// Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := docsMarkdown(rootCmd); err != nil {
+			if err := docsMarkdown(cmd, args); err != nil {
 				return err
 			}
-			if err := docsManpage(rootCmd); err != nil {
+			if err := docsManpage(cmd, args); err != nil {
 				return err
 			}
 
@@ -33,29 +31,30 @@ func NewDocsCommand(rootCmd *cobra.Command) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(&cobra.Command{
+	docsMarkdownCmd = &cobra.Command{
 		Use:   "markdown",
 		Short: "Generate markdown docs",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return docsMarkdown(rootCmd)
-		},
-	})
+		RunE:  docsMarkdown,
+	}
 
-	cmd.AddCommand(&cobra.Command{
+	docsManpageCmd = &cobra.Command{
 		Use:   "man",
 		Short: "Generate manpages",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return docsManpage(rootCmd)
-		},
-	})
+		RunE:  docsManpage,
+	}
+)
 
-	pf := cmd.PersistentFlags()
+func init() {
+	rootCmd.AddCommand(docsCmd)
+
+	docsCmd.AddCommand(docsManpageCmd)
+	docsCmd.AddCommand(docsMarkdownCmd)
+
+	pf := docsCmd.PersistentFlags()
 	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documenation")
-
-	return cmd
 }
 
-func docsMarkdown(rootCmd *cobra.Command) error {
+func docsMarkdown(cmd *cobra.Command, args []string) error {
 	dir := filepath.Join(outputDir, "md")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
@@ -68,7 +67,7 @@ func docsMarkdown(rootCmd *cobra.Command) error {
 	return nil
 }
 
-func docsManpage(rootCmd *cobra.Command) error {
+func docsManpage(cmd *cobra.Command, args []string) error {
 	dir := filepath.Join(outputDir, "man")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)

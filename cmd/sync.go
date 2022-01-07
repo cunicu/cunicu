@@ -11,8 +11,8 @@ import (
 var (
 	syncCmd = &cobra.Command{
 		Use:                "sync",
-		PersistentPreRunE:  pre,
-		PersistentPostRunE: post,
+		PersistentPreRunE:  connect,
+		PersistentPostRunE: disconnect,
 	}
 
 	syncConfigCmd = &cobra.Command{
@@ -29,6 +29,8 @@ var (
 func init() {
 	syncCmd.AddCommand(syncConfigCmd)
 	syncCmd.AddCommand(syncInterfacesCmd)
+
+	addClientCommand(syncCmd)
 }
 
 func syncConfig(cmd *cobra.Command, args []string) error {

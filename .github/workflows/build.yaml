@@ -34,9 +34,6 @@ jobs:
     # Run build of the application
     - name: Run wice build
       run: go build ./cmd/wice
-
-    - name: Run wicectl build
-      run: go build ./cmd/wicectl
       
     # Run vet on the code
     - name: Run vet

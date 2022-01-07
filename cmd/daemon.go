@@ -9,56 +9,38 @@ import (
 	"go.uber.org/zap/zapio"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal"
-	"riasc.eu/wice/internal/cli"
 	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
-	_ "riasc.eu/wice/pkg/signaling/k8s"
-	_ "riasc.eu/wice/pkg/signaling/p2p"
 	"riasc.eu/wice/pkg/socket"
 )
 
 var (
-	logger *zap.Logger
-	cfg    *config.Config
-
-	rootCmd = &cobra.Command{
-		Use:                "wice",
-		Short:              "The WICE daemon",
-		Run:                run,
-		PersistentPreRunE:  pre,
-		PersistentPostRunE: post,
+	daemonCmd = &cobra.Command{
+		Use: "daemon",
+		Aliases: []string{
+			"start",
+		},
+		Short: "Start the WICE daemon",
+		Run:   daemon,
 	}
+
+	cfg *config.Config
 )
 
-func main() {
-	pf := rootCmd.LocalFlags()
-
+func init() {
+	pf := daemonCmd.LocalFlags()
 	cfg = config.NewConfig(pf)
 
-	cobra.OnInitialize(cfg.Setup)
-
-	rootCmd.AddCommand(cli.NewDocsCommand(rootCmd))
-
-	rootCmd.Execute()
+	rootCmd.AddCommand(daemonCmd)
 }
 
-func pre(cmd *cobra.Command, args []string) error {
-	logger = internal.SetupLogging()
-
-	return nil
+func daemonPre(cmd *cobra.Command, args []string) {
+	cfg.Setup()
 }
 
-func post(cmd *cobra.Command, args []string) error {
-	if err := logger.Sync(); err != nil {
-		// return err
-	}
-
-	return nil
-}
-
-func run(cmd *cobra.Command, args []string) {
+func daemon(cmd *cobra.Command, args []string) {
 	signals := internal.SetupSignals()
 
 	if logger.Core().Enabled(zap.DebugLevel) {

@@ -22,26 +22,10 @@ builds:
   goarm:
   - "6"
   - "7"
-- id: wicectl
-  main: ./cmd/wicectl
-  binary: wicectl
-  env:
-  - CGO_ENABLED=0
-  goos:
-  - linux
-  - darwin
-  goarch:
-  - amd64
-  - arm64
-  - arm
-  goarm:
-  - "6"
-  - "7"
 
 archives:
 - builds:
   - wice
-  - wicectl
 
   format_overrides:
   - goos: windows
