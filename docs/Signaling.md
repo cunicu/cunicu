@@ -48,7 +48,9 @@ Agent will restart
 
 ## Offer
 
-Offers are exchanged of the signaling backend as packed Protobuf messages:
+Offers are exchanged by one or more the signaling backends via Protobuf messages.
+
+Checkout the [`pkg/pb/offer.proto`](../pkg/pb/offer.proto) for details.
 
 ## Backends
 
@@ -56,5 +58,6 @@ WICE can support multiple backends for signaling session information such as ses
 
 ### Available backends
 
-Currently HTTP REST, HTTP WebSockets, Kubernetes and libp2p are supported as backends.
-Checkout the `Backend` interface in `wice/backend/backend.go` for implementing your own backend.
+Currently, the main backend is based on [libp2p](https://libp2p.io/).
+For the use within a Kubernetes cluster also a dedicated backend using the Kubernetes api-server is available.
+Checkout the [`Backend`](../pkg/signaling/backend.go) interface for implementing your own backend.

@@ -45,3 +45,4 @@
   - Candidates:
     - [bio-rd](https://github.com/bio-routing/bio-rd)
     - [gobgp](https://github.com/osrg/gobgp/)
+- [ ] Add gRPC signaling backend by contacting already connected peers
