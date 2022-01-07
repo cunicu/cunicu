@@ -22,6 +22,7 @@ var (
 		Short:             "Start the daemon",
 		Run:               daemon,
 		PreRun:            daemonPre,
+		ValidArgsFunction: daemonArgs,
 	}
 
 	cfg *config.Config
@@ -36,6 +37,34 @@ func init() {
 
 func daemonPre(cmd *cobra.Command, args []string) {
 	cfg.Setup()
+}
+
+func daemonArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// Create Wireguard netlink socket
+	client, err := wgctrl.New()
+	if err != nil {
+		logger.Fatal("Failed to create Wireguard client", zap.Error(err))
+	}
+
+	devs, err := client.Devices()
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError | cobra.ShellCompDirectiveNoFileComp
+	}
+
+	var existing = map[string]interface{}{}
+	var ifnames = []string{}
+
+	for _, arg := range args {
+		existing[arg] = nil
+	}
+
+	for _, dev := range devs {
+		if _, exists := existing[dev.Name]; !exists {
+			ifnames = append(ifnames, dev.Name)
+		}
+	}
+
+	return ifnames, cobra.ShellCompDirectiveNoFileComp
 }
 
 func daemon(cmd *cobra.Command, args []string) {
