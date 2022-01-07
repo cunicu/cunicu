@@ -137,7 +137,7 @@ out:
 
 		case req := <-server.Requests:
 			switch req.(type) {
-			case *pb.ShutdownParams:
+			case *pb.StopParams:
 				logger.Debug("Shutdown requested via control socket")
 				break out
 

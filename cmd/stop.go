@@ -8,19 +8,19 @@ import (
 	"riasc.eu/wice/pkg/pb"
 )
 
-var shutdownCmd = &cobra.Command{
-	Use:   "shutdown",
+var stopCmd = &cobra.Command{
+	Use:   "stop",
 	Short: "Shutdown the WICE daemon",
-	RunE:  shutdown,
+	RunE:  stop,
 	Args:  cobra.NoArgs,
 }
 
 func init() {
-	addClientCommand(shutdownCmd)
+	addClientCommand(stopCmd)
 }
 
-func shutdown(cmd *cobra.Command, args []string) error {
-	rerr, err := client.Shutdown(context.Background(), &pb.ShutdownParams{})
+func stop(cmd *cobra.Command, args []string) error {
+	rerr, err := client.Stop(context.Background(), &pb.StopParams{})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	} else if !rerr.Ok() {

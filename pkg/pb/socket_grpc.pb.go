@@ -21,7 +21,7 @@ type SocketClient interface {
 	GetStatus(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Status, error)
 	StreamEvents(ctx context.Context, in *StreamEventsParams, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Error, error)
-	Shutdown(ctx context.Context, in *ShutdownParams, opts ...grpc.CallOption) (*Error, error)
+	Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Error, error)
 	SyncConfig(ctx context.Context, in *SyncConfigParams, opts ...grpc.CallOption) (*Error, error)
 	SyncInterfaces(ctx context.Context, in *SyncInterfaceParams, opts ...grpc.CallOption) (*Error, error)
 }
@@ -84,9 +84,9 @@ func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grp
 	return out, nil
 }
 
-func (c *socketClient) Shutdown(ctx context.Context, in *ShutdownParams, opts ...grpc.CallOption) (*Error, error) {
+func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Error, error) {
 	out := new(Error)
-	err := c.cc.Invoke(ctx, "/wice.Socket/Shutdown", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Socket/Stop", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ type SocketServer interface {
 	GetStatus(context.Context, *Void) (*Status, error)
 	StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error
 	UnWait(context.Context, *UnWaitParams) (*Error, error)
-	Shutdown(context.Context, *ShutdownParams) (*Error, error)
+	Stop(context.Context, *StopParams) (*Error, error)
 	SyncConfig(context.Context, *SyncConfigParams) (*Error, error)
 	SyncInterfaces(context.Context, *SyncInterfaceParams) (*Error, error)
 	mustEmbedUnimplementedSocketServer()
@@ -137,8 +137,8 @@ func (UnimplementedSocketServer) StreamEvents(*StreamEventsParams, Socket_Stream
 func (UnimplementedSocketServer) UnWait(context.Context, *UnWaitParams) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnWait not implemented")
 }
-func (UnimplementedSocketServer) Shutdown(context.Context, *ShutdownParams) (*Error, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
+func (UnimplementedSocketServer) Stop(context.Context, *StopParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
 func (UnimplementedSocketServer) SyncConfig(context.Context, *SyncConfigParams) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SyncConfig not implemented")
@@ -216,20 +216,20 @@ func _Socket_UnWait_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Socket_Shutdown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ShutdownParams)
+func _Socket_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocketServer).Shutdown(ctx, in)
+		return srv.(SocketServer).Stop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Socket/Shutdown",
+		FullMethod: "/wice.Socket/Stop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).Shutdown(ctx, req.(*ShutdownParams))
+		return srv.(SocketServer).Stop(ctx, req.(*StopParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -286,8 +286,8 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Socket_UnWait_Handler,
 		},
 		{
-			MethodName: "Shutdown",
-			Handler:    _Socket_Shutdown_Handler,
+			MethodName: "Stop",
+			Handler:    _Socket_Stop_Handler,
 		},
 		{
 			MethodName: "SyncConfig",

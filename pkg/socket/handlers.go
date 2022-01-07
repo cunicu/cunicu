@@ -39,7 +39,7 @@ func (s *Server) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb.Error
 	return e, nil
 }
 
-func (s *Server) Shutdown(ctx context.Context, params *pb.ShutdownParams) (*pb.Error, error) {
+func (s *Server) Stop(ctx context.Context, params *pb.StopParams) (*pb.Error, error) {
 	// Notify main loop
 	s.Requests <- params
 

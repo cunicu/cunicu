@@ -14,7 +14,7 @@ message Status {
 message UnWaitParams {}
 message SyncConfigParams {}
 message SyncInterfaceParams {}
-message ShutdownParams {}
+message StopParams {}
 message StreamEventsParams {}
 
 service Socket {
@@ -22,7 +22,7 @@ service Socket {
     rpc StreamEvents(StreamEventsParams) returns (stream Event) {}
 
     rpc UnWait(UnWaitParams) returns (Error) {}
-    rpc Shutdown(ShutdownParams) returns (Error) {}
+    rpc Stop(StopParams) returns (Error) {}
     
     rpc SyncConfig(SyncConfigParams) returns (Error) {}
     rpc SyncInterfaces(SyncInterfaceParams) returns (Error) {}
