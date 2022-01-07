@@ -371,6 +371,12 @@ func (i *BaseInterface) RemovePeer(pk wgtypes.Key) error {
 	return i.client.ConfigureDevice(i.Name(), cfg)
 }
 
+func (i *BaseInterface) addLinkLocalAddress() error {
+	addr := i.PublicKey().IPv6Address()
+
+	return i.addAddress(addr)
+}
+
 func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) (BaseInterface, error) {
 	i := BaseInterface{
 		Device:  *dev,
@@ -398,6 +404,11 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	// Fixup device config
 	if err := i.Fixup(); err != nil {
 		return BaseInterface{}, fmt.Errorf("failed to fix interface configuration: %w", err)
+	}
+
+	// Add link local address
+	if err := i.addLinkLocalAddress(); err != nil {
+		return BaseInterface{}, fmt.Errorf("failed to assign link-local address: %w", err)
 	}
 
 	i.server.BroadcastEvent(&pb.Event{
