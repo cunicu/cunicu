@@ -92,7 +92,7 @@ func (n *Node) Start(directArgs ...interface{}) error {
 		log.Fatal(err)
 	}
 
-	if stdout, stderr, n.Command, err = n.StartGo("../cmd", args...); err != nil {
+	if stdout, stderr, n.Command, err = n.StartGo("../cmd/wice", args...); err != nil {
 		return err
 	}
 

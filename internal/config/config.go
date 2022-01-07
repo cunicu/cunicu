@@ -103,8 +103,16 @@ type Config struct {
 
 	iceMaxBindingRequests uint16
 
+	flags  *pflag.FlagSet
 	viper  *viper.Viper
 	logger *zap.Logger
+}
+
+func Parse(args ...string) (*Config, error) {
+	f := pflag.NewFlagSet("", pflag.ContinueOnError)
+	c := NewConfig(f)
+
+	return c, c.flags.Parse(args)
 }
 
 func NewConfig(flags *pflag.FlagSet) *Config {
@@ -122,6 +130,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		LogLevel:           logLevel{zap.NewAtomicLevel()},
 		ProxyType:          proxyType{proxy.TypeAuto},
 
+		flags:  flags,
 		viper:  viper.New(),
 		logger: zap.L().Named("config"),
 	}

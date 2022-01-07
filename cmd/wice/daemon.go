@@ -136,6 +136,7 @@ out:
 			backend.Tick()
 
 		case req := <-server.Requests:
+			switch req := req.(type) {
 			case *pb.StopParams:
 				logger.Debug("Shutdown requested via control socket")
 				break out

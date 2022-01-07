@@ -14,6 +14,8 @@ var (
 )
 
 func addClientCommand(cmd *cobra.Command) {
+	cmd.PersistentPreRunE = connect
+	cmd.PersistentPostRunE = disconnect
 
 	pf := cmd.PersistentFlags()
 	pf.StringVarP(&sockPath, "socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")

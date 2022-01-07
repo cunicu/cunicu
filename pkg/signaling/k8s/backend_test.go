@@ -3,6 +3,7 @@ package k8s_test
 import (
 	"log"
 	"net/url"
+	"os"
 	"testing"
 
 	"riasc.eu/wice/pkg/crypto"
@@ -11,7 +12,11 @@ import (
 )
 
 func TestBackend(t *testing.T) {
-	uri, err := url.Parse("k8s:?node-name=red")
+	if os.Getenv("CI") != "" {
+		t.Skipf("Kubernetes tests are not yet supported in CI")
+	}
+
+	uri, err := url.Parse("k8s:?node=red")
 	if err != nil {
 		t.Errorf("failed to parse backend URL: %s", err)
 	}
@@ -29,7 +34,7 @@ func TestBackend(t *testing.T) {
 		Theirs: theirSecretKey.PublicKey(),
 	}
 
-	o := pb.NewOffer()
+	o := &pb.Offer{}
 
 	ch, err := b.SubscribeOffer(kp)
 	if err != nil {

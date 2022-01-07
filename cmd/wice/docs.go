@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-type runEfunc func(cmd *cobra.Command, args []string) error
-
 var (
 	outputDir string
 

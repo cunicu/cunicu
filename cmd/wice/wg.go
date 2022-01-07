@@ -6,9 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/wg"
 )
 
 var (

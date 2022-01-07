@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseArgsUser(t *testing.T) {
-	config, err := config.Parse("prog", []string{"-user"})
+	config, err := config.Parse("--wg-user")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -19,7 +19,7 @@ func TestParseArgsUser(t *testing.T) {
 }
 
 func TestParseArgsBackend(t *testing.T) {
-	config, err := config.Parse("prog", []string{"-backend", "k8s"})
+	config, err := config.Parse("--backend", "k8s")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
@@ -30,80 +30,95 @@ func TestParseArgsBackend(t *testing.T) {
 }
 
 func TestParseArgsUrls(t *testing.T) {
-	config, err := config.Parse("prog", []string{"-url", "stun:stun.riasc.eu", "-url", "turn:turn.riasc.eu"})
+	config, err := config.Parse("--url", "stun:stun.riasc.eu", "--url", "turn:turn.riasc.eu")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if len(config.AgentConfig.Urls) != 2 {
+	agentConfig, err := config.AgentConfig()
+	if err != nil {
+		t.FailNow()
+	}
+
+	if len(agentConfig.Urls) != 2 {
 		t.Fail()
 	}
 
-	if config.AgentConfig.Urls[0].Host != "stun.riasc.eu" {
+	if agentConfig.Urls[0].Host != "stun.riasc.eu" {
 		t.Fail()
 	}
 
-	if config.AgentConfig.Urls[0].Scheme != ice.SchemeTypeSTUN {
+	if agentConfig.Urls[0].Scheme != ice.SchemeTypeSTUN {
 		t.Fail()
 	}
 
-	if config.AgentConfig.Urls[1].Host != "turn.riasc.eu" {
+	if agentConfig.Urls[1].Host != "turn.riasc.eu" {
 		t.Fail()
 	}
 
-	if config.AgentConfig.Urls[1].Scheme != ice.SchemeTypeTURN {
+	if agentConfig.Urls[1].Scheme != ice.SchemeTypeTURN {
 		t.Fail()
 	}
 }
 
 func TestParseArgsCandidateTypes(t *testing.T) {
-	config, err := config.Parse("prog", []string{"-ice-candidate-type", "host", "-ice-candidate-type", "relay"})
+	config, err := config.Parse("--ice-candidate-type", "host", "--ice-candidate-type", "relay")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if len(config.AgentConfig.CandidateTypes) != 2 {
+	agentConfig, err := config.AgentConfig()
+	if err != nil {
+		t.FailNow()
+	}
+
+	if len(agentConfig.CandidateTypes) != 2 {
 		t.Fail()
 	}
 
-	if config.AgentConfig.CandidateTypes[0] != ice.CandidateTypeHost {
+	if agentConfig.CandidateTypes[0] != ice.CandidateTypeHost {
 		t.Fail()
 	}
 
-	if config.AgentConfig.CandidateTypes[1] != ice.CandidateTypeRelay {
+	if agentConfig.CandidateTypes[1] != ice.CandidateTypeRelay {
 		t.Fail()
 	}
 }
 
 func TestParseArgsInterfaceFilter(t *testing.T) {
-	config, err := config.Parse("prog", []string{"-interface-filter", "eth\\d+"})
+	config, err := config.Parse("--interface-filter", "eth\\d+")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !config.InterfaceRegex.Match([]byte("eth0")) {
+	if !config.InterfaceFilter.Match([]byte("eth0")) {
 		t.Fail()
 	}
 
-	if config.InterfaceRegex.Match([]byte("wifi0")) {
+	if config.InterfaceFilter.Match([]byte("wifi0")) {
 		t.Fail()
 	}
 }
 
 func TestParseArgsInterfaceFilterFail(t *testing.T) {
-	_, err := config.Parse("prog", []string{"-interface-filter", "eth("})
+	_, err := config.Parse("--interface-filter", "eth(")
 	if err == nil {
 		t.Fail()
 	}
 }
 
 func TestParseArgsDefault(t *testing.T) {
-	config, err := config.Parse("prog", []string{})
+	config, err := config.Parse()
 	if err != nil {
 		t.Fail()
 	}
 
-	if len(config.AgentConfig.Urls) != 1 {
+	agentConfig, err := config.AgentConfig()
+	if err != nil {
+		t.FailNow()
+	}
+
+	if len(agentConfig.Urls) != 1 {
 		t.Fail()
 	}
 }
