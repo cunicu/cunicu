@@ -20,6 +20,10 @@ func setupLogging() *zap.Logger {
 
 	consoleEncoder := zapcore.NewConsoleEncoder(cfg)
 
+	if err := os.MkdirAll("./logs", 0755); err != nil {
+		panic("failed to create log dir")
+	}
+
 	f, err := os.OpenFile("logs/test.log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		panic("failed to open log file")

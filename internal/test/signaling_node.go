@@ -51,9 +51,10 @@ func (s *SignalingNode) Start() error {
 		return fmt.Errorf("failed to remove old control socket: %w", err)
 	}
 
-	if stdout, stderr, s.Command, err = s.StartGo("../cmd/wice",
-		"-socket", sockPath,
-		"-socket-wait",
+	if stdout, stderr, s.Command, err = s.StartGo("../cmd",
+		"daemon",
+		"--socket="+sockPath,
+		"--socket-wait",
 	); err != nil {
 		return err
 	}
@@ -82,8 +83,10 @@ func (s *SignalingNode) Stop() error {
 }
 
 func (s *SignalingNode) Close() error {
+	if s.Client != nil {
 	if err := s.Client.Close(); err != nil {
 		return fmt.Errorf("failed to close RPC connection: %s", err)
+		}
 	}
 
 	return s.Stop()

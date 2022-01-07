@@ -68,7 +68,7 @@ func NewNode(m *g.Network, name string, backend *SignalingNode, addr net.IPNet, 
 	return n, nil
 }
 
-func (n *Node) Start(args ...interface{}) error {
+func (n *Node) Start(directArgs ...interface{}) error {
 	var err error
 	var stdout, stderr io.Reader
 
@@ -80,17 +80,19 @@ func (n *Node) Start(args ...interface{}) error {
 		return err
 	}
 
-	args = append(args,
-		"-backend", u.String(),
-		"-socket", sockPath,
-		"-log-level", "debug")
+	args := []interface{}{
+		"daemon",
+		"--backend", u.String(),
+		"--socket", sockPath,
+		"--log-level", "debug"}
+	args = append(args, directArgs...)
 	args = append(args, n.ExtraArgs...)
 
 	if err := os.RemoveAll(sockPath); err != nil {
 		log.Fatal(err)
 	}
 
-	if stdout, stderr, n.Command, err = n.StartGo("../cmd/wice", args...); err != nil {
+	if stdout, stderr, n.Command, err = n.StartGo("../cmd", args...); err != nil {
 		return err
 	}
 

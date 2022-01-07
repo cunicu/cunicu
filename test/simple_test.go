@@ -88,15 +88,15 @@ func TestSimple(t *testing.T) {
 
 	args := []interface{}{
 		// ICE options
-		"-ice-user", r.Username,
-		"-ice-pass", r.Password,
+		"--ice-user", r.Username,
+		"--ice-pass", r.Password,
 
 		// Limititing ourself to IPv4 network types
-		"-ice-network-type", "tcp4",
-		"-ice-network-type", "udp4",
+		"--ice-network-type", "tcp4",
+		"--ice-network-type", "udp4",
 	}
 	for _, u := range r.URLs() {
-		args = append(args, "-url", u)
+		args = append(args, "--url", u)
 	}
 
 	if err := nl.StartAndWait(args...); err != nil {

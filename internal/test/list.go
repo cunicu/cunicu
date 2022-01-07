@@ -46,9 +46,9 @@ func ParseIP(s string) (net.IPNet, error) {
 }
 
 func (nl NodeList) StartAndWait(args ...interface{}) error {
-	// if err := nl.AddPeers(); err != nil {
-	// 	return err
-	// }
+	if err := nl.AddPeers(); err != nil {
+		return err
+	}
 
 	if err := nl.ForEachPeer(func(n *Node) error {
 		return n.Start(args...)

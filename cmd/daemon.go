@@ -29,7 +29,7 @@ var (
 )
 
 func init() {
-	pf := daemonCmd.LocalFlags()
+	pf := daemonCmd.PersistentFlags()
 	cfg = config.NewConfig(pf)
 
 	rootCmd.AddCommand(daemonCmd)
