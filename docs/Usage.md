@@ -2,8 +2,9 @@
 
 ## Command Line
 
-- [`wice` Daemon](./usage/md/wice.md)
-- [`wicectl` Client](./usage/md/wicectl.md)
+For a detailed documentation of the `wice` commandline tool please have a look at the following page:
+
+- [`wice`](./usage/md/wice.md)
 
 ## Daemon
 

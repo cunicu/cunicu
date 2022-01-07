@@ -26,14 +26,14 @@
 - [ ] Use netlink multicast group RTMGRP_LINK to for notification of new Wireguard interfaces
 - [ ] Add links to code in README
 - [ ] Add `XEdDSA` and `VXEdDSA` signature schemes to [JOSE IANA alg registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms)
-- [ ] Add wicectl command for controlling `wice` deaemon:
-  - `wicectl show [[INTF] [PEER]]`
-  - `wicectl add INTF`
-  - `wicectl del INTF`
-  - `wicectl discover INTF GROUP`
-  - `wicectl sync [INTF]`
-  - `wicectl restart INTF PEER`
-  - `wicectl monitor`
+- [ ] Add sub-commands for controlling `wice` deaemon:
+  - `wice show [[INTF] [PEER]]`
+  - `wice add INTF`
+  - `wice del INTF`
+  - `wice discover INTF GROUP`
+  - `wice sync [INTF]`
+  - `wice restart INTF PEER`
+  - `wice monitor`
 
 - [ ] Add check for availability of turnserver
 - [ ] Add check for handshakes before attempting to ping
