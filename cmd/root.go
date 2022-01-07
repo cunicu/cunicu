@@ -13,6 +13,11 @@ var (
 		Use:   "wice",
 		Short: "Wireguard Interactive Connectitivty Establishment",
 	}
+
+	// set via ldflags -X / goreleaser
+	version string
+	commit  string
+	date    string
 )
 
 func init() {
@@ -20,6 +25,8 @@ func init() {
 		internal.SetupRand,
 		setupLogging,
 	)
+
+	rootCmd.Version = version
 }
 
 func setupLogging() {
