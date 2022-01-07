@@ -153,14 +153,14 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.DurationVarP(&cfg.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
 	flags.BoolVarP(&cfg.User, "wg-user", "u", false, "start userspace Wireguard daemon")
-	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "s", false, "sync Wireguard interface with configuration file (see \"wg synconf\"")
+	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\"")
 	flags.StringVarP(&cfg.ConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
 
 	// ice.AgentConfig fields
-	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server address  (**)")
+	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server addresses")
 	flags.Var(&cfg.iceCandidateTypes, "ice-candidate-type", "usable candidate types (**, one of \"host\", \"srflx\", \"prflx\", \"relay\")")
 	flags.Var(&cfg.iceNetworkTypes, "ice-network-type", "usable network types (**, select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
-	flags.Var(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", "list of IP addresses which will be added as local server reflexive candidates (**)")
+	flags.Var(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", "IP addresses which will be added as local server reflexive candidates")
 
 	flags.Uint16Var(&cfg.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
 	flags.Uint16Var(&cfg.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
@@ -178,7 +178,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringVarP(&cfg.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
 	// iceMaxBindingRequestTimeout := flag.Duration("ice-max-binding-request-timeout", maxBindingRequestTimeout, "wait time before binding requests can be deleted")
 
-	flags.StringVar(&cfg.Socket, "socket", DefaultSocketPath, "Unix control and monitoring socket")
+	flags.StringVarP(&cfg.Socket, "socket", "s", DefaultSocketPath, "Unix control and monitoring socket")
 	flags.BoolVar(&cfg.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
 
 	cfg.viper.BindPFlags(flags)
