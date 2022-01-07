@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"math/rand"
 	"net"
+	"os"
 	"syscall"
 	"unsafe"
 )
@@ -65,4 +66,10 @@ func SetsockoptBytes(fd int, level int, opt int, b []byte) syscall.Errno {
 		uintptr(unsafe.Pointer(&b[0])), uintptr(len(b)), 0)
 
 	return errno
+}
+
+func IsATTY() bool {
+	fi, _ := os.Stdout.Stat()
+
+	return (fi.Mode() & os.ModeCharDevice) != 0
 }
