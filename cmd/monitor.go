@@ -7,11 +7,10 @@ import (
 )
 
 var monitorCmd = &cobra.Command{
-	Use:                "monitor",
-	Short:              "Monitor the WICE daemon for events",
-	RunE:               monitor,
-	PersistentPreRunE:  connect,
-	PersistentPostRunE: disconnect,
+	Use:   "monitor",
+	Short: "Monitor the WICE daemon for events",
+	RunE:  monitor,
+	Args:  cobra.NoArgs,
 }
 
 func init() {

@@ -19,6 +19,7 @@ var (
 		Use:   "docs",
 		Short: "Generate documentation for the wice commands",
 		// Hidden: true,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := docsMarkdown(cmd, args); err != nil {
 				return err
@@ -35,12 +36,14 @@ var (
 		Use:   "markdown",
 		Short: "Generate markdown docs",
 		RunE:  docsMarkdown,
+		Args:  cobra.NoArgs,
 	}
 
 	docsManpageCmd = &cobra.Command{
 		Use:   "man",
 		Short: "Generate manpages",
 		RunE:  docsManpage,
+		Args:  cobra.NoArgs,
 	}
 )
 

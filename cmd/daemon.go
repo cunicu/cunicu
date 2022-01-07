@@ -18,12 +18,10 @@ import (
 
 var (
 	daemonCmd = &cobra.Command{
-		Use: "daemon",
-		Aliases: []string{
-			"start",
-		},
-		Short: "Start the WICE daemon",
-		Run:   daemon,
+		Use:               "daemon [interfaces...]",
+		Short:             "Start the daemon",
+		Run:               daemon,
+		PreRun:            daemonPre,
 	}
 
 	cfg *config.Config

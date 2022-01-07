@@ -9,11 +9,10 @@ import (
 )
 
 var shutdownCmd = &cobra.Command{
-	Use:                "shutdown",
-	Short:              "Shutdown the WICE daemon",
-	RunE:               shutdown,
-	PersistentPreRunE:  connect,
-	PersistentPostRunE: disconnect,
+	Use:   "shutdown",
+	Short: "Shutdown the WICE daemon",
+	RunE:  shutdown,
+	Args:  cobra.NoArgs,
 }
 
 func init() {

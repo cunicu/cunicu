@@ -11,7 +11,8 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "wice",
-		Short: "Wireguard Interactive Connectitivty Establishment",
+		Short: "WICE",
+		Long:  "Wireguard Interactive Connectitivty Establishment",
 	}
 
 	// set via ldflags -X / goreleaser
