@@ -46,6 +46,9 @@ var (
 		Use:   "wice",
 		Short: "WICE",
 		Long:  "Wireguard Interactive Connectitivty Establishment",
+
+		// The main wice command is just an alias for "wice daemon"
+		Run: daemon,
 	}
 
 	version string //lint:ignore U1000 set via ldflags -X / goreleaser
