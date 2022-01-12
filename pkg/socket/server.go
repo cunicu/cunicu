@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
 
 	"net"
@@ -15,13 +16,10 @@ import (
 type Server struct {
 	pb.SocketServer
 
+	daemon *pkg.Daemon
+
 	listener net.Listener
 	grpc     *grpc.Server
-
-	Requests chan interface{}
-
-	eventListeners     map[chan *pb.Event]interface{}
-	eventListenersLock sync.Mutex
 
 	waitGroup sync.WaitGroup
 	waitOnce  sync.Once
@@ -29,7 +27,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func Listen(network string, address string, wait bool) (*Server, error) {
+func Listen(network string, address string, wait bool, daemon *pkg.Daemon) (*Server, error) {
 	logger := zap.L().Named("socket.server")
 	// Remove old unix sockets
 	if network == "unix" {
@@ -44,11 +42,10 @@ func Listen(network string, address string, wait bool) (*Server, error) {
 	}
 
 	s := &Server{
-		listener:       l,
-		logger:         logger,
-		grpc:           grpc.NewServer(),
-		eventListeners: map[chan *pb.Event]interface{}{},
-		Requests:       make(chan interface{}),
+		daemon:   daemon,
+		listener: l,
+		logger:   logger,
+		grpc:     grpc.NewServer(),
 	}
 
 	pb.RegisterSocketServer(s.grpc, s)
@@ -63,20 +60,4 @@ func Listen(network string, address string, wait bool) (*Server, error) {
 	}
 
 	return s, nil
-}
-
-func (s *Server) BroadcastEvent(e *pb.Event) error {
-	if e.Time == nil {
-		e.Time = pb.TimeNow()
-	}
-
-	s.eventListenersLock.Lock()
-	for ch := range s.eventListeners {
-		ch <- e
-	}
-	s.eventListenersLock.Unlock()
-
-	e.Log(s.logger, "Broadcasted event")
-
-	return nil
 }

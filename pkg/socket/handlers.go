@@ -7,18 +7,24 @@ import (
 )
 
 func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) {
-	return &pb.Status{}, nil
+	s.daemon.InterfaceLock.Lock()
+	defer s.daemon.InterfaceLock.Unlock()
+
+	interfaces := []*pb.Interface{}
+	for _, i := range s.daemon.Interfaces {
+		interfaces = append(interfaces, i.Marshal())
+	}
+
+	return &pb.Status{
+		Interfaces: interfaces,
+	}, nil
 }
 
 func (s *Server) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
-	ch := make(chan *pb.Event, 100)
+	events := s.daemon.ListenEvents()
 
-	s.eventListenersLock.Lock()
-	s.eventListeners[ch] = nil
-	s.eventListenersLock.Unlock()
-
-	for evt := range ch {
-		stream.Send(evt)
+	for e := range events {
+		stream.Send(e)
 	}
 
 	return nil
@@ -40,23 +46,37 @@ func (s *Server) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb.Error
 }
 
 func (s *Server) Stop(ctx context.Context, params *pb.StopParams) (*pb.Error, error) {
-	// Notify main loop
-	s.Requests <- params
+	if err := s.daemon.Stop(); err != nil {
+		return pb.NewError(err), nil
+	}
 
 	return pb.Success, nil
 }
 
-func (s *Server) SyncInterfaces(ctx context.Context, params *pb.SyncInterfaceParams) (*pb.Error, error) {
-	// Notify main loop
-	s.Requests <- params
+func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, error) {
+	if err := s.daemon.SyncAllInterfaces(); err != nil {
+		return pb.NewError(err), nil
+	}
 
 	return pb.Success, nil
 }
 
-func (s *Server) SyncConfig(ctx context.Context, params *pb.SyncConfigParams) (*pb.Error, error) {
+func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
+	return pb.NotSupported, nil
+}
 
-	return &pb.Error{
-		Code:    pb.Error_ENOTSUP,
-		Message: "not implemented yet",
-	}, nil
+func (s *Server) RemoveInterface(ctx context.Context, params *pb.RemoveInterfaceParams) (*pb.Error, error) {
+	return pb.NotSupported, nil
+}
+
+func (s *Server) SyncInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Error, error) {
+	return pb.NotSupported, nil
+}
+
+func (s *Server) AddInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Error, error) {
+	return pb.NotSupported, nil
+}
+
+func (s *Server) SetInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Error, error) {
+	return pb.NotSupported, nil
 }
