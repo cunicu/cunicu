@@ -1,10 +1,13 @@
-package socket
+package log
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strconv"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -15,7 +18,24 @@ type grpcLogger struct {
 	verbosity int
 }
 
-func NewLogger(logger *zap.Logger, verbosity int) grpclog.LoggerV2 {
+func NewGRPCLogger(logger *zap.Logger) grpclog.LoggerV2 {
+	var verbosity int
+	var level zapcore.Level
+
+	verbosityLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
+	if vl, err := strconv.Atoi(verbosityLevel); err == nil {
+		verbosity = vl
+	}
+
+	severityLevel := os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL")
+	if severityLevel != "" {
+		level.UnmarshalText([]byte(severityLevel))
+	} else {
+		level = zap.WarnLevel
+	}
+
+	logger = logger.WithOptions(WithLevel(level))
+
 	return &grpcLogger{
 		SugaredLogger: logger.Sugar(),
 		verbosity:     verbosity,
@@ -66,5 +86,5 @@ func (l *grpcLogger) Fatalln(args ...interface{}) {
 }
 
 func (l *grpcLogger) V(lvl int) bool {
-	return lvl > l.verbosity
+	return lvl < l.verbosity
 }

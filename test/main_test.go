@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"k8s.io/klog/v2"
 	"riasc.eu/wice/internal"
-	"riasc.eu/wice/pkg/socket"
+	"riasc.eu/wice/internal/log"
 )
 
 func setupLogging() *zap.Logger {
@@ -49,7 +49,7 @@ func setupLogging() *zap.Logger {
 
 	// Redirect gRPC log to Zap
 	glogger := logger.Named("grpc")
-	grpclog.SetLoggerV2(socket.NewLogger(glogger, 0))
+	grpclog.SetLoggerV2(log.NewGRPCLogger(glogger))
 
 	zap.ReplaceGlobals(logger)
 
