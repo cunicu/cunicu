@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+message InterfaceConfig {
+	bytes private_key = 1;
+	uint32 listen_port = 2;
+	uint32 firewall_mark = 3;
+	bool replace_peers = 4;
+	
+    repeated PeerConfig peers = 5;
+}
+
+message PeerConfig {
+	bytes public_key = 1;
+	bool remove = 2;
+	bool update_only = 3;
+	bytes preshared_key = 4;
+    string endpoint = 5;
+	uint32 persistent_keepalive_interval = 6;
+	bool replace_allowed_ips = 7;
+	repeated string allowed_ips = 8;
+}

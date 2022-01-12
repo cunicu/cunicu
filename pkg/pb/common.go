@@ -8,6 +8,18 @@ var Success = &Error{
 	Code: Error_SUCCESS,
 }
 
+var NotSupported = &Error{
+	Code:    Error_ENOTSUP,
+	Message: "not supported yet",
+}
+
+func NewError(e error) *Error {
+	return &Error{
+		Code:    Error_EUNKNOWN,
+		Message: e.Error(),
+	}
+}
+
 func (e *Error) Error() string {
 	return e.Message
 }

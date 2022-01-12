@@ -22,8 +22,12 @@ type SocketClient interface {
 	StreamEvents(ctx context.Context, in *StreamEventsParams, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Error, error)
 	Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Error, error)
-	SyncConfig(ctx context.Context, in *SyncConfigParams, opts ...grpc.CallOption) (*Error, error)
-	SyncInterfaces(ctx context.Context, in *SyncInterfaceParams, opts ...grpc.CallOption) (*Error, error)
+	Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Error, error)
+	RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Error, error)
+	RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Error, error)
+	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
+	AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
+	SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
 }
 
 type socketClient struct {
@@ -93,18 +97,54 @@ func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *socketClient) SyncConfig(ctx context.Context, in *SyncConfigParams, opts ...grpc.CallOption) (*Error, error) {
+func (c *socketClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Error, error) {
 	out := new(Error)
-	err := c.cc.Invoke(ctx, "/wice.Socket/SyncConfig", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Socket/Sync", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *socketClient) SyncInterfaces(ctx context.Context, in *SyncInterfaceParams, opts ...grpc.CallOption) (*Error, error) {
+func (c *socketClient) RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Error, error) {
 	out := new(Error)
-	err := c.cc.Invoke(ctx, "/wice.Socket/SyncInterfaces", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Socket/RestartPeer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, "/wice.Socket/RemoveInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, "/wice.Socket/SyncInterfaceConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, "/wice.Socket/AddInterfaceConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, "/wice.Socket/SetInterfaceConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +159,12 @@ type SocketServer interface {
 	StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error
 	UnWait(context.Context, *UnWaitParams) (*Error, error)
 	Stop(context.Context, *StopParams) (*Error, error)
-	SyncConfig(context.Context, *SyncConfigParams) (*Error, error)
-	SyncInterfaces(context.Context, *SyncInterfaceParams) (*Error, error)
+	Sync(context.Context, *SyncParams) (*Error, error)
+	RestartPeer(context.Context, *RestartPeerParams) (*Error, error)
+	RemoveInterface(context.Context, *RemoveInterfaceParams) (*Error, error)
+	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
+	AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
+	SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
 	mustEmbedUnimplementedSocketServer()
 }
 
@@ -140,11 +184,23 @@ func (UnimplementedSocketServer) UnWait(context.Context, *UnWaitParams) (*Error,
 func (UnimplementedSocketServer) Stop(context.Context, *StopParams) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedSocketServer) SyncConfig(context.Context, *SyncConfigParams) (*Error, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SyncConfig not implemented")
+func (UnimplementedSocketServer) Sync(context.Context, *SyncParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
-func (UnimplementedSocketServer) SyncInterfaces(context.Context, *SyncInterfaceParams) (*Error, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SyncInterfaces not implemented")
+func (UnimplementedSocketServer) RestartPeer(context.Context, *RestartPeerParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestartPeer not implemented")
+}
+func (UnimplementedSocketServer) RemoveInterface(context.Context, *RemoveInterfaceParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveInterface not implemented")
+}
+func (UnimplementedSocketServer) SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncInterfaceConfig not implemented")
+}
+func (UnimplementedSocketServer) AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddInterfaceConfig not implemented")
+}
+func (UnimplementedSocketServer) SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetInterfaceConfig not implemented")
 }
 func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
 
@@ -234,38 +290,110 @@ func _Socket_Stop_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Socket_SyncConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SyncConfigParams)
+func _Socket_Sync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocketServer).SyncConfig(ctx, in)
+		return srv.(SocketServer).Sync(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Socket/SyncConfig",
+		FullMethod: "/wice.Socket/Sync",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).SyncConfig(ctx, req.(*SyncConfigParams))
+		return srv.(SocketServer).Sync(ctx, req.(*SyncParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Socket_SyncInterfaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SyncInterfaceParams)
+func _Socket_RestartPeer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestartPeerParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocketServer).SyncInterfaces(ctx, in)
+		return srv.(SocketServer).RestartPeer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Socket/SyncInterfaces",
+		FullMethod: "/wice.Socket/RestartPeer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).SyncInterfaces(ctx, req.(*SyncInterfaceParams))
+		return srv.(SocketServer).RestartPeer(ctx, req.(*RestartPeerParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Socket_RemoveInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveInterfaceParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).RemoveInterface(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Socket/RemoveInterface",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).RemoveInterface(ctx, req.(*RemoveInterfaceParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Socket_SyncInterfaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InterfaceConfigParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).SyncInterfaceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Socket/SyncInterfaceConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).SyncInterfaceConfig(ctx, req.(*InterfaceConfigParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Socket_AddInterfaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InterfaceConfigParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).AddInterfaceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Socket/AddInterfaceConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).AddInterfaceConfig(ctx, req.(*InterfaceConfigParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Socket_SetInterfaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InterfaceConfigParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).SetInterfaceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Socket/SetInterfaceConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).SetInterfaceConfig(ctx, req.(*InterfaceConfigParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -290,12 +418,28 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Socket_Stop_Handler,
 		},
 		{
-			MethodName: "SyncConfig",
-			Handler:    _Socket_SyncConfig_Handler,
+			MethodName: "Sync",
+			Handler:    _Socket_Sync_Handler,
 		},
 		{
-			MethodName: "SyncInterfaces",
-			Handler:    _Socket_SyncInterfaces_Handler,
+			MethodName: "RestartPeer",
+			Handler:    _Socket_RestartPeer_Handler,
+		},
+		{
+			MethodName: "RemoveInterface",
+			Handler:    _Socket_RemoveInterface_Handler,
+		},
+		{
+			MethodName: "SyncInterfaceConfig",
+			Handler:    _Socket_SyncInterfaceConfig_Handler,
+		},
+		{
+			MethodName: "AddInterfaceConfig",
+			Handler:    _Socket_AddInterfaceConfig_Handler,
+		},
+		{
+			MethodName: "SetInterfaceConfig",
+			Handler:    _Socket_SetInterfaceConfig_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

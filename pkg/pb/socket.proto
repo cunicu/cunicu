@@ -6,16 +6,34 @@ option go_package = "riasc.eu/wice/pkg/pb";
 import "common.proto";
 import "event.proto";
 import "interface.proto";
+import "config.proto";
 
 message Status {
     repeated Interface interfaces = 1;
 }
 
 message UnWaitParams {}
-message SyncConfigParams {}
-message SyncInterfaceParams {}
 message StopParams {}
 message StreamEventsParams {}
+message SyncParams {}
+
+message RemoveInterfaceParams {
+    Key intf = 1;
+}
+
+message RestartPeerParams {
+    Key intf = 1;
+    Key peer = 2;
+}
+
+message SyncInterfaceParams {
+    Key intf = 1;
+}
+
+message InterfaceConfigParams {
+    string name = 1;
+    InterfaceConfig interface = 2;
+}
 
 service Socket {
     rpc GetStatus(Void) returns (Status) {}
@@ -24,11 +42,12 @@ service Socket {
     rpc UnWait(UnWaitParams) returns (Error) {}
     rpc Stop(StopParams) returns (Error) {}
     
-    rpc SyncConfig(SyncConfigParams) returns (Error) {}
-    rpc SyncInterfaces(SyncInterfaceParams) returns (Error) {}
+    rpc Sync(SyncParams) returns (Error) {}
 
-    // rpc AddInterface(Interface) returns (Error) {}
-    // rpc RemoveInterface(Interface) returns (Error) {}
-    
-    // rpc AddPeer(Peer) returns (Error) {}
+    rpc RestartPeer(RestartPeerParams) returns (Error) {}
+    rpc RemoveInterface(RemoveInterfaceParams) returns (Error) {}
+
+    rpc SyncInterfaceConfig(InterfaceConfigParams) returns (Error) {}
+    rpc AddInterfaceConfig(InterfaceConfigParams) returns (Error) {}
+    rpc SetInterfaceConfig(InterfaceConfigParams) returns (Error) {}
 }

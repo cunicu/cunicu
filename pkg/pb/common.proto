@@ -29,8 +29,20 @@ message Error {
 		EEXIST = 17;
 		EALREADY = 18;
 		ENOTSUP = 10;
+
+		EUNKNOWN = 255;
 	}
 
 	Code code = 1;
     string message = 2;
+}
+
+message Key {
+	bytes key = 1;
+}
+
+message Address{
+	bytes ip = 1;
+	int32 prefix_len = 2;
+	int32 port = 3;
 }

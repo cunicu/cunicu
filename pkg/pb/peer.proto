@@ -13,7 +13,7 @@ message PeerDescriptor {
 message Peer {
     bytes public_key = 1;
 
-    repeated string Endpoint = 2;
+    string Endpoint = 2;
  
     uint32 persistent_keepalive_interval = 3;
     Timestamp last_handshake = 4;
@@ -22,5 +22,7 @@ message Peer {
     repeated string allowed_ips = 7;
     uint32 protocol_version = 8;
 
-    ConnectionState state = 9;
+    bytes preshared_key = 9;
+
+    ConnectionState state = 10;
 }

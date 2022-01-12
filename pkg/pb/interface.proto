@@ -16,11 +16,10 @@ message Interface {
     string name = 1;
     Type type = 2;
     
-    bytes private_key = 3;
-    bytes public_key = 4;
+    bytes public_key = 3;
+    bytes private_key = 4;
 
     uint32 listen_port = 5;
-
     uint32 firewall_mark = 6;
 
     repeated Peer peers = 7;
