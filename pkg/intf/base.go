@@ -102,6 +102,10 @@ func (i *BaseInterface) DumpConfig(wr io.Writer) {
 	}
 }
 
+func (i *BaseInterface) Marshal() *pb.Interface {
+	return pb.NewInterface(&i.Device)
+}
+
 func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
 	var modified PeerModifier = PeerModifiedNone
 

@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/pb"
 )
 
 var (
@@ -36,6 +39,13 @@ var (
 		RunE:  wgPubKey,
 		Args:  cobra.NoArgs,
 	}
+
+	wgShowCmd = &cobra.Command{
+		Use:   "show",
+		Short: "Shows the current configuration and device information",
+		RunE:  wgShow,
+		Args:  cobra.ArbitraryArgs,
+	}
 )
 
 func init() {
@@ -44,6 +54,8 @@ func init() {
 	wgCmd.AddCommand(wgGenKeyCmd)
 	wgCmd.AddCommand(wgGenPSKCmd)
 	wgCmd.AddCommand(wgPubKeyCmd)
+
+	addClientCommand(wgCmd, wgShowCmd)
 }
 
 func wgGenKey(cmd *cobra.Command, args []string) error {
@@ -67,6 +79,22 @@ func wgPubKey(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println(privKey.PublicKey().String())
+
+	return nil
+}
+
+func wgShow(cmd *cobra.Command, args []string) error {
+	sts, err := client.GetStatus(context.Background(), &pb.Void{})
+	if err != nil {
+		return fmt.Errorf("failed RPC request: %w", err)
+	}
+
+	for _, intf := range sts.Interfaces {
+		mdev := intf.Device()
+		wdev := wg.Device(*mdev)
+
+		wdev.DumpEnv(os.Stdout)
+	}
 
 	return nil
 }

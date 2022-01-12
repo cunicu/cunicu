@@ -13,14 +13,14 @@ var (
 	sockPath string
 )
 
-func addClientCommand(cmd *cobra.Command) {
+func addClientCommand(rcmd, cmd *cobra.Command) {
 	cmd.PersistentPreRunE = connect
 	cmd.PersistentPostRunE = disconnect
 
 	pf := cmd.PersistentFlags()
 	pf.StringVarP(&sockPath, "socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
 
-	rootCmd.AddCommand(cmd)
+	rcmd.AddCommand(cmd)
 }
 
 func connect(cmd *cobra.Command, args []string) error {

@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/pkg/pb"
 )
 
 type Interface interface {
@@ -15,6 +16,8 @@ type Interface interface {
 	RemovePeer(peer wgtypes.Key) error
 
 	Sync(*wgtypes.Device) error
+
+	Marshal() *pb.Interface
 
 	Name() string
 }

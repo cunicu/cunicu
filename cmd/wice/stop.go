@@ -16,7 +16,7 @@ var stopCmd = &cobra.Command{
 }
 
 func init() {
-	addClientCommand(stopCmd)
+	addClientCommand(rootCmd, stopCmd)
 }
 
 func stop(cmd *cobra.Command, args []string) error {
