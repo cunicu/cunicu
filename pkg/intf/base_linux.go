@@ -1,8 +1,10 @@
 package intf
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
@@ -21,7 +23,11 @@ func (i *BaseInterface) addAddress(ip *net.IPNet) error {
 		Scope: unix.RT_SCOPE_LINK,
 	}
 
-	return netlink.AddrAdd(link, addr)
+	if err := netlink.AddrAdd(link, addr); err != nil && !errors.Is(err, os.ErrExist) {
+		return err
+	}
+
+	return nil
 }
 
 func (i *BaseInterface) addRoute(dst *net.IPNet) error {
