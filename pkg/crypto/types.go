@@ -32,8 +32,8 @@ type KeyPair struct {
 }
 
 type PublicKeyPair struct {
-	Ours   Key
-	Theirs Key
+	Ours   Key `json:"ours"`
+	Theirs Key `json:"theirs"`
 }
 
 func GeneratePrivateKey() (Key, error) {
@@ -100,6 +100,10 @@ func (k Key) IPv6Address() *net.IPNet {
 // Checks if the key is not zero
 func (k Key) IsSet() bool {
 	return k != Key{}
+}
+
+func (k Signature) String() string {
+	return base64.StdEncoding.EncodeToString(k[:])
 }
 
 func (kp PublicKeyPair) ID(key []byte) string {
