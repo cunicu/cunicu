@@ -3,27 +3,27 @@
 
 .SH NAME
 .PP
-wice-docs - Generate documentation for the wice commands
+wice-wg-show - Shows the current configuration and device information
 
 
 .SH SYNOPSIS
 .PP
-\fBwice docs [flags]\fP
+\fBwice wg show [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Generate documentation for the wice commands
+Shows the current configuration and device information
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for docs
+	help for show
 
 .PP
-\fB--output-dir\fP="./docs/usage"
-	Output directory of generated documenation
+\fB-s\fP, \fB--socket\fP="/var/run/wice.sock"
+	Unix control and monitoring socket
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -34,7 +34,7 @@ Generate documentation for the wice commands
 
 .SH SEE ALSO
 .PP
-\fBwice(3)\fP, \fBwice-docs-man(3)\fP, \fBwice-docs-markdown(3)\fP
+\fBwice-wg(3)\fP
 
 
 .SH HISTORY

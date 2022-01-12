@@ -1,15 +1,16 @@
-## wice wg pubkey
+## wice wg show
 
-Reads a private key from stdin and writes a public key to stdout
+Shows the current configuration and device information
 
 ```
-wice wg pubkey [flags]
+wice wg show [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for pubkey
+  -h, --help            help for show
+  -s, --socket string   Unix control and monitoring socket (default "/var/run/wice.sock")
 ```
 
 ### Options inherited from parent commands
