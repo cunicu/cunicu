@@ -19,7 +19,6 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/socket"
 )
 
 type BaseInterface struct {
@@ -32,7 +31,7 @@ type BaseInterface struct {
 	backend signaling.Backend
 	config  *config.Config
 	client  *wgctrl.Client
-	server  *socket.Server
+	events  chan *pb.Event
 
 	logger *zap.Logger
 }
@@ -173,6 +172,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		)
 		i.Device.Type = newDev.Type
 	}
+
 	if newDev.FirewallMark != i.FirewallMark {
 		i.logger.Info("FirewallMark changed",
 			zap.Any("old", i.FirewallMark),
@@ -180,6 +180,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		)
 		i.Device.FirewallMark = newDev.FirewallMark
 	}
+
 	if newDev.PrivateKey != i.Device.PrivateKey {
 		i.logger.Info("PrivateKey changed",
 			zap.Any("old", i.PrivateKey),
@@ -188,6 +189,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		i.Device.PrivateKey = newDev.PrivateKey
 		i.Device.PublicKey = newDev.PublicKey
 	}
+
 	if newDev.ListenPort != i.ListenPort {
 		i.logger.Info("ListenPort changed",
 			zap.Any("old", i.ListenPort),
@@ -272,7 +274,7 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 
 	i.peers[peer.PublicKey()] = peer
 
-	i.server.BroadcastEvent(&pb.Event{
+	i.events <- &pb.Event{
 		Type:  "peer",
 		State: "added",
 		Event: &pb.Event_Intf{
@@ -287,7 +289,7 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 				},
 			},
 		},
-	})
+	}
 }
 
 func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
@@ -300,7 +302,7 @@ func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
 		i.logger.Warn("Failed to close peer", zap.Any("peer", peer.PublicKey))
 	}
 
-	i.server.BroadcastEvent(&pb.Event{
+	i.events <- &pb.Event{
 		Type:  "peer",
 		State: "removed",
 		Event: &pb.Event_Intf{
@@ -315,7 +317,7 @@ func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
 				},
 			},
 		},
-	})
+	}
 
 	delete(i.peers, peer.PublicKey())
 }
@@ -328,7 +330,7 @@ func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModi
 		i.logger.Error("Failed to find modified peer")
 	}
 
-	i.server.BroadcastEvent(&pb.Event{
+	i.events <- &pb.Event{
 		Type:  "peer",
 		State: "modified",
 		Event: &pb.Event_Intf{
@@ -343,7 +345,7 @@ func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModi
 				},
 			},
 		},
-	})
+	}
 }
 
 func (i *BaseInterface) AddPeer(pk wgtypes.Key) error {
@@ -377,12 +379,12 @@ func (i *BaseInterface) addLinkLocalAddress() error {
 	return i.addAddress(addr)
 }
 
-func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, server *socket.Server, cfg *config.Config) (BaseInterface, error) {
+func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, events chan *pb.Event, cfg *config.Config) (BaseInterface, error) {
 	i := BaseInterface{
 		Device:  *dev,
 		client:  client,
 		backend: backend,
-		server:  server,
+		events:  events,
 		config:  cfg,
 		logger: zap.L().Named("interface").With(
 			zap.String("intf", dev.Name),
@@ -411,7 +413,7 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		return BaseInterface{}, fmt.Errorf("failed to assign link-local address: %w", err)
 	}
 
-	i.server.BroadcastEvent(&pb.Event{
+	i.events <- &pb.Event{
 		Type:  "interface",
 		State: "added",
 		Event: &pb.Event_Intf{
@@ -421,7 +423,7 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 				},
 			},
 		},
-	})
+	}
 
 	// We remove all peers here so that they get added by the following sync
 	i.Peers = nil

@@ -4,9 +4,9 @@ import (
 	"net/url"
 	"testing"
 
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/signaling/p2p"
-	"riasc.eu/wice/pkg/socket"
 )
 
 func TestNewBackend(t *testing.T) {
@@ -15,12 +15,9 @@ func TestNewBackend(t *testing.T) {
 		t.Fatalf("Failed to parse URL: %s", err)
 	}
 
-	s, err := socket.Listen("tcp4", "127.0.0.1:0", false)
-	if err != nil {
-		t.Fatalf("Failed to listen for control socket: %s", err)
-	}
+	events := make(chan *pb.Event, 100)
 
-	b, err := signaling.NewBackend(uri, s)
+	b, err := signaling.NewBackend(uri, events)
 	if err != nil {
 		t.Fatalf("Failed to create new backend: %s", err)
 	}

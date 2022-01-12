@@ -21,7 +21,9 @@ func TestBackend(t *testing.T) {
 		t.Errorf("failed to parse backend URL: %s", err)
 	}
 
-	b, err := k8s.NewBackend(uri, nil)
+	events := make(chan *pb.Event, 100)
+
+	b, err := k8s.NewBackend(uri, events)
 	if err != nil {
 		t.Errorf("failed to create backend: %s", err)
 	}

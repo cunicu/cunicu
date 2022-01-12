@@ -5,20 +5,19 @@ import (
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
-	"riasc.eu/wice/pkg/socket"
 )
 
 type MultiBackend struct {
 	backends []Backend
 }
 
-func NewMultiBackend(uris []*url.URL, server *socket.Server) (Backend, error) {
+func NewMultiBackend(uris []*url.URL, events chan *pb.Event) (Backend, error) {
 	mb := &MultiBackend{
 		backends: []Backend{},
 	}
 
 	for _, u := range uris {
-		b, err := NewBackend(u, server)
+		b, err := NewBackend(u, events)
 		if err != nil {
 			return nil, err
 		}

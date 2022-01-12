@@ -22,7 +22,6 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/socket"
 )
 
 const (
@@ -53,17 +52,17 @@ type Backend struct {
 	mdns   mdns.Service
 	dht    *dht.IpfsDHT
 	pubsub *pubsub.PubSub
-	server *socket.Server
+	events chan *pb.Event
 }
 
-func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) {
+func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
 		peers:  map[crypto.PublicKeyPair]*Peer{},
 		logger: zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		config: defaultConfig,
-		server: server,
+		events: events,
 	}
 
 	if err := b.config.Parse(uri); err != nil {
@@ -196,7 +195,7 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 		as = append(as, a.String())
 	}
 
-	b.server.BroadcastEvent(&pb.Event{
+	b.events <- &pb.Event{
 		Type:  "backend",
 		State: "ready",
 		Event: &pb.Event_Backend{
@@ -205,7 +204,7 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 				ListenAddresses: as,
 			},
 		},
-	})
+	}
 
 	return b, nil
 }

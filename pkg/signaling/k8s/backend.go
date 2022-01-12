@@ -18,7 +18,6 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/socket"
 )
 
 const (
@@ -39,7 +38,7 @@ type Backend struct {
 	term    chan struct{}
 	updates chan NodeCallback
 
-	server *socket.Server
+	events chan *pb.Event
 }
 
 type OfferMap map[crypto.Key]*pb.Offer
@@ -51,7 +50,7 @@ func init() {
 	}
 }
 
-func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) {
+func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
 	var config *rest.Config
 	var err error
 
@@ -60,8 +59,8 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 		logger:  zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
-		server:  server,
 		config:  defaultConfig,
+		events:  events,
 	}
 
 	if err := b.config.Parse(uri); err != nil {
@@ -121,10 +120,10 @@ func NewBackend(uri *url.URL, server *socket.Server) (signaling.Backend, error) 
 	go b.applyUpdates()
 	b.logger.Debug("Started batched updates")
 
-	b.server.BroadcastEvent(&pb.Event{
+	b.events <- &pb.Event{
 		Type:  "backend",
 		State: "ready",
-	})
+	}
 
 	return &b, nil
 }

@@ -7,7 +7,6 @@ import (
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
-	"riasc.eu/wice/pkg/socket"
 )
 
 var (
@@ -16,7 +15,7 @@ var (
 
 type BackendType string // URL schemes
 
-type BackendFactory func(*url.URL, *socket.Server) (Backend, error)
+type BackendFactory func(*url.URL, chan *pb.Event) (Backend, error)
 
 type BackendPlugin struct {
 	New         BackendFactory
@@ -31,7 +30,7 @@ type Backend interface {
 	Tick()
 }
 
-func NewBackend(uri *url.URL, server *socket.Server) (Backend, error) {
+func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
 	typ := BackendType(uri.Scheme)
 
 	p, ok := Backends[typ]
@@ -39,7 +38,7 @@ func NewBackend(uri *url.URL, server *socket.Server) (Backend, error) {
 		return nil, fmt.Errorf("unknown backend type: %s", typ)
 	}
 
-	be, err := p.New(uri, server)
+	be, err := p.New(uri, events)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create backend: %w", err)
 	}
