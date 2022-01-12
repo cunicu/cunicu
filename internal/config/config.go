@@ -58,8 +58,7 @@ var (
 )
 
 type Config struct {
-	File     string
-	LogLevel logLevel
+	File string
 
 	Socket     string
 	SocketWait bool
@@ -127,7 +126,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		iceURLs:            iceURLList{},
 		InterfaceFilter:    regex{matchAll},
 		Interfaces:         []string{},
-		LogLevel:           logLevel{zap.NewAtomicLevel()},
 		ProxyType:          proxyType{proxy.TypeAuto},
 
 		flags:  flags,
@@ -136,7 +134,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	}
 
 	flags.StringVarP(&cfg.File, "config", "c", "", "Path of configuration file")
-	flags.VarP(&cfg.LogLevel, "log-level", "d", "log level (one of \"panic\", \"fatal\", \"error\", \"warn\", \"info\", \"debug\", \"trace\")")
 	flags.VarP(&cfg.Backends, "backend", "b", "backend types / URLs")
 	flags.VarP(&cfg.ProxyType, "proxy", "p", "proxy type to use")
 	flags.VarP(&cfg.InterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
@@ -148,8 +145,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	// ice.AgentConfig fields
 	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server addresses")
-	flags.Var(&cfg.iceCandidateTypes, "ice-candidate-type", "usable candidate types (**, one of \"host\", \"srflx\", \"prflx\", \"relay\")")
-	flags.Var(&cfg.iceNetworkTypes, "ice-network-type", "usable network types (**, select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
+	flags.Var(&cfg.iceCandidateTypes, "ice-candidate-type", "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
+	flags.Var(&cfg.iceNetworkTypes, "ice-network-type", "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
 	flags.Var(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", "IP addresses which will be added as local server reflexive candidates")
 
 	flags.Uint16Var(&cfg.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
@@ -175,7 +172,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	return cfg
 }
 
-func (c *Config) Setup() {
+func (c *Config) Setup(args []string) {
+	c.Interfaces = args
+
 	// Find best proxy method
 	if c.ProxyType.ProxyType == proxy.TypeAuto {
 		c.ProxyType.ProxyType = proxy.AutoProxy()

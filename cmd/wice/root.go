@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"go.uber.org/zap/zapcore"
 	"riasc.eu/wice/internal"
 )
 
@@ -39,9 +40,6 @@ Website:
 )
 
 var (
-	// Used for flags.
-	CfgFile string
-
 	rootCmd = &cobra.Command{
 		Use:   "wice",
 		Short: "WICE",
@@ -54,7 +52,17 @@ var (
 	version string //lint:ignore U1000 set via ldflags -X / goreleaser
 	commit  string //lint:ignore U1000 set via ldflags -X / goreleaser
 	date    string //lint:ignore U1000 set via ldflags -X / goreleaser
+
+	level = logLevel{zapcore.InfoLevel}
 )
+
+type logLevel struct {
+	zapcore.Level
+}
+
+func (l *logLevel) Type() string {
+	return "string"
+}
 
 func init() {
 	cobra.OnInitialize(
@@ -64,8 +72,11 @@ func init() {
 
 	rootCmd.Version = version
 	rootCmd.SetUsageTemplate(usageTemplate)
+
+	pf := rootCmd.PersistentFlags()
+	pf.VarP(&level, "log-level", "d", "log level (one of \"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", and \"fatal\")")
 }
 
 func setupLogging() {
-	logger = internal.SetupLogging()
+	logger = internal.SetupLogging(level.Level)
 }

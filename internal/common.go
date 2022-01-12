@@ -19,9 +19,10 @@ import (
 	"riasc.eu/wice/internal/log"
 )
 
-func SetupLogging() *zap.Logger {
+func SetupLogging(level zapcore.Level) *zap.Logger {
 	cfg := zap.NewDevelopmentConfig()
 
+	cfg.Level = zap.NewAtomicLevelAt(level)
 	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.99")
 	cfg.DisableCaller = true
 	cfg.DisableStacktrace = true
