@@ -20,16 +20,19 @@ type EBPFProxy struct {
 }
 
 func NewEBPFProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
+	logger := zap.L().Named("proxy.ebpf")
 
+	// Update Wireguard peer endpoint
 	rUDPAddr := conn.RemoteAddr().(*net.UDPAddr)
-	cb(rUDPAddr)
+	if err := cb(rUDPAddr); err != nil {
+		return nil, err
+	}
 
 	return &EBPFProxy{
 		BaseProxy: BaseProxy{
 			Ident:  ident,
-			logger: zap.L().Named("proxy.ebpf"),
+			logger: logger,
 		},
-		// Conn: conn,
 	}, nil
 }
 

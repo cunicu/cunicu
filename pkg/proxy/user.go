@@ -15,17 +15,17 @@ const (
 type UserProxy struct {
 	BaseProxy
 	conn *net.UDPConn
-
-	logger *zap.Logger
 }
 
 func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
 	var err error
 
-	proxy := &UserProxy{
+	logger := zap.L().Named("proxy.user")
+
+	p := &UserProxy{
 		BaseProxy: BaseProxy{
 			Ident:  ident,
-			logger: zap.L().Named("proxy.user"),
+			logger: logger,
 		},
 	}
 
@@ -39,13 +39,13 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 		Port: 0, // choose automatically
 	}
 
-	proxy.conn, err = net.DialUDP("udp", &lAddr, &rAddr)
+	p.conn, err = net.DialUDP("udp", &lAddr, &rAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update Wireguard peer endpoint
-	addr := proxy.conn.LocalAddr().(*net.UDPAddr)
+	addr := p.conn.LocalAddr().(*net.UDPAddr)
 	if err := cb(addr); err != nil {
 		return nil, err
 	}
@@ -54,12 +54,12 @@ func NewUserProxy(ident string, listenPort int, cb UpdateEndpointCb, conn net.Co
 	egressBuf := make([]byte, maxSegmentSize)
 
 	// Bi-directional copy between ICE and loopback UDP sockets until proxy.conn is closed
-	go io.CopyBuffer(conn, proxy.conn, ingressBuf)
-	go io.CopyBuffer(proxy.conn, conn, egressBuf)
+	go io.CopyBuffer(conn, p.conn, ingressBuf)
+	go io.CopyBuffer(p.conn, conn, egressBuf)
 
-	proxy.logger.Info("Setup user-space proxy")
+	p.logger.Info("Setup user-space proxy")
 
-	return proxy, nil
+	return p, nil
 }
 
 func (p *UserProxy) Type() ProxyType {
