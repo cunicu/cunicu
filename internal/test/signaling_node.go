@@ -13,6 +13,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
@@ -120,18 +121,15 @@ func (s *SignalingNode) URL() (*url.URL, error) {
 func (s *SignalingNode) WaitReady() error {
 	var err error
 
-	evt := s.Client.WaitForEvent(&pb.Event{
-		Type:  "backend",
-		State: "ready",
-	})
+	evt := s.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
 
-	if be, ok := evt.Event.(*pb.Event_Backend); ok {
-		s.ID, err = peer.Decode(be.Backend.Id)
+	if be, ok := evt.Event.(*pb.Event_BackendReady); ok {
+		s.ID, err = peer.Decode(be.BackendReady.Id)
 		if err != nil {
 			return fmt.Errorf("failed to decode peer ID: %w", err)
 		}
 
-		for _, la := range be.Backend.ListenAddresses {
+		for _, la := range be.BackendReady.ListenAddresses {
 			if ma, err := multiaddr.NewMultiaddr(la); err != nil {
 				return fmt.Errorf("failed to decode listen address: %w", err)
 			} else {

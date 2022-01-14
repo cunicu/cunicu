@@ -39,10 +39,18 @@ func NewRelayNode(n *g.Network, name string) (*RelayNode, error) {
 		Username: "user1",
 		Password: "password1",
 		Config: map[string]string{
-			"verbose":        "",
-			"lt-cred-mech":   "",
-			"log-file":       "/dev/null",
-			"listening-port": strconv.Itoa(stunPort),
+			"verbose":                  "",
+			"no-tls":                   "",
+			"no-dtls":                  "",
+			"lt-cred-mech":             "",
+			"simple-log":               "",
+			"new-log-timestamp":        "",
+			"new-log-timestamp-format": "%H:%M:%S",
+			"log-binding":              "",
+			"log-file":                 "logs/relay.log",
+			"listening-port":           strconv.Itoa(stunPort),
+			"realm":                    "wice",
+			"cli-password":             "wice",
 		},
 	}
 
@@ -124,18 +132,19 @@ func (t *RelayNode) URLs() []*ice.URL {
 			Scheme: ice.SchemeTypeSTUN,
 			Host:   host,
 			Port:   stunPort,
-		},
-		{
-			Scheme: ice.SchemeTypeTURN,
-			Host:   host,
-			Port:   stunPort,
-			Proto:  ice.ProtoTypeTCP,
+			Proto:  ice.ProtoTypeUDP,
 		},
 		{
 			Scheme: ice.SchemeTypeTURN,
 			Host:   host,
 			Port:   stunPort,
 			Proto:  ice.ProtoTypeUDP,
+		},
+		{
+			Scheme: ice.SchemeTypeTURN,
+			Host:   host,
+			Port:   stunPort,
+			Proto:  ice.ProtoTypeTCP,
 		},
 	}
 }

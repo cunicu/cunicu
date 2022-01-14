@@ -2,7 +2,7 @@ package intf
 
 import "strings"
 
-type PeerModifier int
+type PeerModifier uint32
 
 const (
 	PeerModifiedNone              PeerModifier = 0
@@ -37,4 +37,8 @@ func (i PeerModifier) Strings() []string {
 
 func (i PeerModifier) String() string {
 	return strings.Join(i.Strings(), ",")
+}
+
+func (i PeerModifier) Is(j PeerModifier) bool {
+	return i&j > 0
 }

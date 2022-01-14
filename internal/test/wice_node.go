@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
 	nl "github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -36,6 +37,11 @@ type Node struct {
 	Backend *SignalingNode
 }
 
+var (
+	// Singleton for compiled wice executable
+	wiceBinary string
+)
+
 func NewNode(m *g.Network, name string, backend *SignalingNode, addr net.IPNet, opts ...g.Option) (*Node, error) {
 	h, err := m.AddHost(name, opts...)
 	if err != nil {
@@ -48,6 +54,7 @@ func NewNode(m *g.Network, name string, backend *SignalingNode, addr net.IPNet, 
 		Address:       addr,
 		InterfaceName: "wg0",
 		ListenPort:    51822,
+		ExtraArgs:     []interface{}{},
 	}
 
 	if n.PrivateKey, err = crypto.GeneratePrivateKey(); err != nil {
@@ -92,16 +99,21 @@ func (n *Node) Start(directArgs ...interface{}) error {
 		log.Fatal(err)
 	}
 
-	if stdout, stderr, n.Command, err = n.StartGo("../cmd/wice", args...); err != nil {
-		return err
+	cmd, err := n.build()
+	if err != nil {
+		return fmt.Errorf("failed to build wice: %w", err)
+	}
+
+	if stdout, stderr, n.Command, err = n.Host.Start(cmd, args...); err != nil {
+		return fmt.Errorf("failed to start wice: %w", err)
 	}
 
 	if _, err = FileWriter(logPath, stdout, stderr); err != nil {
-		return err
+		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
 	if n.Client, err = socket.Connect(sockPath); err != nil {
-		return err
+		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
 
 	return nil
@@ -159,7 +171,10 @@ func (n *Node) AddPeer(peer *Node) error {
 			{
 				PublicKey: wgtypes.Key(peer.PrivateKey.PublicKey()),
 				AllowedIPs: []net.IPNet{
-					peer.Address,
+					{
+						IP:   peer.Address.IP,
+						Mask: net.CIDRMask(32, 32),
+					},
 				},
 			},
 		},
@@ -178,14 +193,32 @@ func (n *Node) ConfigureInterface(cfg wgtypes.Config) error {
 	return nil
 }
 
-func (n *Node) WaitReady(peer *Node) error {
-	n.Client.WaitPeerHandshake(peer.PrivateKey.PublicKey())
+func (n *Node) WaitReady(p *Node) error {
+	n.Client.WaitForPeerConnectionState(p.PrivateKey.PublicKey(), ice.ConnectionStateConnected)
 
 	return nil
 }
 
 func (n *Node) PingPeer(peer *Node) error {
-	_, _, err := n.Run("ping", "-c", 1, peer.Address.IP)
+	if out, _, err := n.Run("ping", "-c", 1, peer.Address.IP); err != nil {
+		os.Stdout.Write(out)
 
-	return err
+		return err
+	}
+
+	return nil
+}
+
+func (n *Node) build() (string, error) {
+	if wiceBinary != "" {
+		return wiceBinary, nil
+	}
+
+	wiceBinary := "/tmp/wice"
+
+	if out, _, err := n.Host.Network().HostNode.Run("go", "build", "-o", wiceBinary, "../cmd/wice/"); err != nil {
+		return "", fmt.Errorf("%w\n%s", err, out)
+	}
+
+	return wiceBinary, nil
 }
