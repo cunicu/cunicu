@@ -86,7 +86,7 @@ func (k Key) IPv6Address() *net.IPNet {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
 	hash, _ := siphash.New64(addrHashKey)
-	hash.Write(ip)
+	hash.Write(k[:])
 
 	// Append interface identifier from the hash function
 	ip = hash.Sum(ip)
