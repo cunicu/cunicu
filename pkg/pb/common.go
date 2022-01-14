@@ -1,7 +1,10 @@
 package pb
 
 import (
+	"strings"
 	"time"
+
+	"github.com/pion/ice/v2"
 )
 
 var Success = &Error{
@@ -45,4 +48,50 @@ func (t *Timestamp) Set(s time.Time) {
 
 func (t *Timestamp) Time() time.Time {
 	return time.Unix(t.Seconds, int64(t.Nanos))
+}
+
+func NewConnectionState(s ice.ConnectionState) ConnectionState {
+	switch s {
+	case ice.ConnectionStateNew:
+		return ConnectionState_NEW
+	case ice.ConnectionStateChecking:
+		return ConnectionState_CHECKING
+	case ice.ConnectionStateConnected:
+		return ConnectionState_CONNECTED
+	case ice.ConnectionStateCompleted:
+		return ConnectionState_COMPLETED
+	case ice.ConnectionStateFailed:
+		return ConnectionState_FAILED
+	case ice.ConnectionStateDisconnected:
+		return ConnectionState_DISCONNECTED
+	case ice.ConnectionStateClosed:
+		return ConnectionState_CLOSED
+	}
+
+	return -1
+}
+
+func (s *ConnectionState) ConnectionState() ice.ConnectionState {
+	switch *s {
+	case ConnectionState_NEW:
+		return ice.ConnectionStateNew
+	case ConnectionState_CHECKING:
+		return ice.ConnectionStateChecking
+	case ConnectionState_CONNECTED:
+		return ice.ConnectionStateConnected
+	case ConnectionState_COMPLETED:
+		return ice.ConnectionStateCompleted
+	case ConnectionState_FAILED:
+		return ice.ConnectionStateFailed
+	case ConnectionState_DISCONNECTED:
+		return ice.ConnectionStateDisconnected
+	case ConnectionState_CLOSED:
+		return ice.ConnectionStateClosed
+	}
+
+	return -1
+}
+
+func (s *ConnectionState) MarshalText() ([]byte, error) {
+	return []byte(strings.ToLower(s.String())), nil
 }
