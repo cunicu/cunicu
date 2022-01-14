@@ -1,7 +1,6 @@
 package ice
 
 import (
-	"encoding/hex"
 	"fmt"
 	"net"
 
@@ -69,11 +68,11 @@ func (fuc *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err erro
 
 	copy(buf[:n], pl.Payload()[:])
 
-	fuc.logger.Debug("Read data from socket",
-		zap.Any("ra", rUDPAddr),
-		zap.Int("len", n),
-		zap.String("buf", hex.EncodeToString(buf[:n])),
-	)
+	// fuc.logger.Debug("Read data from socket",
+	// 	zap.Any("ra", rUDPAddr),
+	// 	zap.Int("len", n),
+	// 	zap.String("buf", hex.EncodeToString(buf[:n])),
+	// )
 
 	return n, rUDPAddr, nil
 }
@@ -113,11 +112,11 @@ func (fuc *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err erro
 
 	syscall.Sendto(fuc.fd, buffer.Bytes(), 0, rSockAddr)
 
-	fuc.logger.Debug("Written data to socket",
-		zap.Any("ra", rUDPAddr),
-		zap.Int("len", len(buf)),
-		zap.String("buf", hex.EncodeToString(buf)),
-	)
+	// fuc.logger.Debug("Written data to socket",
+	// 	zap.Any("ra", rUDPAddr),
+	// 	zap.Int("len", len(buf)),
+	// 	zap.String("buf", hex.EncodeToString(buf)),
+	// )
 
 	return 0, nil
 }
