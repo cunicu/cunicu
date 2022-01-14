@@ -12,7 +12,7 @@ func NewCandidate(ic ice.Candidate) *Candidate {
 		Type:        Candidate_Type(ic.Type()),
 		Foundation:  ic.Foundation(),
 		Component:   int32(ic.Component()),
-		NetworkType: Candidate_NetworkType(ic.NetworkType()),
+		NetworkType: NewNetworkType(ic.NetworkType()),
 		Priority:    int32(ic.Priority()),
 		Address:     ic.Address(),
 		Port:        int32(ic.Port()),
@@ -95,4 +95,34 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 	}
 
 	return ic, err
+}
+
+func NewNetworkType(nt ice.NetworkType) Candidate_NetworkType {
+	switch nt {
+	case ice.NetworkTypeUDP4:
+		return Candidate_UDP4
+	case ice.NetworkTypeUDP6:
+		return Candidate_UDP6
+	case ice.NetworkTypeTCP4:
+		return Candidate_TCP4
+	case ice.NetworkTypeTCP6:
+		return Candidate_TCP6
+	}
+
+	return -1
+}
+
+func (nt *Candidate_NetworkType) NetworkType() ice.NetworkType {
+	switch *nt {
+	case Candidate_UDP4:
+		return ice.NetworkTypeUDP4
+	case Candidate_UDP6:
+		return ice.NetworkTypeUDP6
+	case Candidate_TCP4:
+		return ice.NetworkTypeTCP4
+	case Candidate_TCP6:
+		return ice.NetworkTypeTCP6
+	}
+
+	return -1
 }
