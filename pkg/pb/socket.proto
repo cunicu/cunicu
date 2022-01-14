@@ -18,12 +18,12 @@ message StreamEventsParams {}
 message SyncParams {}
 
 message RemoveInterfaceParams {
-    Key intf = 1;
+    string intf = 1;
 }
 
 message RestartPeerParams {
-    Key intf = 1;
-    Key peer = 2;
+    string intf = 1;
+    bytes peer = 2;
 }
 
 message SyncInterfaceParams {
