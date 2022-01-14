@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -41,12 +42,10 @@ const (
 var (
 	defaultICEUrls = []*ice.URL{
 		{
-			Scheme:   ice.SchemeTypeSTUN,
-			Host:     "stun.l.google.com",
-			Port:     19302,
-			Username: "",
-			Password: "",
-			Proto:    ice.ProtoTypeUDP,
+			Scheme: ice.SchemeTypeSTUN,
+			Host:   "stun.l.google.com",
+			Port:   19302,
+			Proto:  ice.ProtoTypeUDP,
 		},
 	}
 
@@ -79,7 +78,7 @@ type Config struct {
 	// for ice.AgentConfig
 	iceURLs iceURLList
 
-	iceNat1to1IPs arrayFlags
+	iceNat1to1IPs []net.IP
 
 	iceInsecureSkipVerify bool
 
@@ -121,7 +120,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		Backends:           backendURLList{},
 		iceCandidateTypes:  candidateTypeList{},
 		InterfaceFilterICE: regex{matchAll},
-		iceNat1to1IPs:      arrayFlags{},
+		iceNat1to1IPs:      []net.IP{},
 		iceNetworkTypes:    networkTypeList{},
 		iceURLs:            iceURLList{},
 		InterfaceFilter:    regex{matchAll},
@@ -147,7 +146,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server addresses")
 	flags.Var(&cfg.iceCandidateTypes, "ice-candidate-type", "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
 	flags.Var(&cfg.iceNetworkTypes, "ice-network-type", "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
-	flags.Var(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", "IP addresses which will be added as local server reflexive candidates")
+	flags.IPSliceVar(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", []net.IP{}, "IP addresses which will be added as local server reflexive candidates")
 
 	flags.Uint16Var(&cfg.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
 	flags.Uint16Var(&cfg.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
@@ -260,7 +259,11 @@ func (a *Config) AgentConfig() (*ice.AgentConfig, error) {
 
 	if len(a.iceNat1to1IPs) > 0 {
 		cfg.NAT1To1IPCandidateType = ice.CandidateTypeServerReflexive
-		cfg.NAT1To1IPs = a.iceNat1to1IPs
+
+		cfg.NAT1To1IPs = []string{}
+		for _, i := range a.iceNat1to1IPs {
+			cfg.NAT1To1IPs = append(cfg.NAT1To1IPs, i.String())
+		}
 	}
 
 	// Default network types

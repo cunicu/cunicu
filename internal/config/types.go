@@ -27,36 +27,22 @@ func (i *backendURLList) String() string {
 }
 
 func (i *backendURLList) Set(value string) error {
+	for _, value := range strings.Split(value, ",") {
+		// Allow the user to specify just the backend type as a valid url.
+		// E.g. "p2p" instead of "p2p:"
+		if !strings.Contains(value, ":") {
+			value += ":"
+		}
 
-	// Allow the user to specify just the backend type as a valid url.
-	// E.g. "p2p" instead of "p2p:"
-	if !strings.Contains(value, ":") {
-		value += ":"
+		uri, err := url.Parse(value)
+		if err != nil {
+			return fmt.Errorf("invalid backend URI: %w", err)
+		}
+
+		*i = append(*i, uri)
 	}
 
-	uri, err := url.Parse(value)
-	if err != nil {
-		return fmt.Errorf("invalid backend URI: %w", err)
-	}
-
-	*i = append(*i, uri)
-
 	return nil
-}
-
-type arrayFlags []string
-
-func (i *arrayFlags) String() string {
-	return strings.Join(*i, ",")
-}
-
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
-
-func (i *arrayFlags) Type() string {
-	return "stringSlice"
 }
 
 type iceURLList []*ice.URL
@@ -66,12 +52,14 @@ func (ul *iceURLList) Type() string {
 }
 
 func (ul *iceURLList) Set(value string) error {
-	u, err := ice.ParseURL(value)
-	if err != nil {
-		return err
-	}
+	for _, value := range strings.Split(value, ",") {
+		u, err := ice.ParseURL(value)
+		if err != nil {
+			return err
+		}
 
-	*ul = append(*ul, u)
+		*ul = append(*ul, u)
+	}
 
 	return nil
 }
@@ -93,12 +81,14 @@ func (cl *candidateTypeList) Type() string {
 }
 
 func (cl *candidateTypeList) Set(value string) error {
-	ct, err := candidateTypeFromString(value)
-	if err != nil {
-		return err
-	}
+	for _, value := range strings.Split(value, ",") {
+		ct, err := candidateTypeFromString(value)
+		if err != nil {
+			return err
+		}
 
-	*cl = append(*cl, ct)
+		*cl = append(*cl, ct)
+	}
 
 	return nil
 }
@@ -120,12 +110,14 @@ func (nl *networkTypeList) Type() string {
 }
 
 func (nl *networkTypeList) Set(value string) error {
-	ct, err := networkTypeFromString(value)
-	if err != nil {
-		return err
-	}
+	for _, value := range strings.Split(value, ",") {
+		ct, err := networkTypeFromString(value)
+		if err != nil {
+			return err
+		}
 
-	*nl = append(*nl, ct)
+		*nl = append(*nl, ct)
+	}
 
 	return nil
 }
