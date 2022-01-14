@@ -90,18 +90,18 @@ func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 		p.logger.Debug("New handshake", zap.Time("time", new.LastHandshakeTime))
 	}
 
-	p.server.BroadcastEvent(&pb.Event{
-		Type:  "peer",
-		State: "modified",
-		Event: &pb.Event_Peer{
-			Peer: &pb.PeerEvent{
-				Peer: &pb.Peer{
-					PublicKey:     p.PublicKey().Bytes(),
-					LastHandshake: pb.Time(new.LastHandshakeTime),
+	p.events <- &pb.Event{
+		Type: pb.Event_PEER_MODIFIED,
+
+		Interface: p.Interface.Name(),
+		Peer:      p.PublicKey().Bytes(),
+
+		Event: &pb.Event_PeerModified{
+			PeerModified: &pb.PeerModifiedEvent{
+				Modified: uint32(modified),
 				},
 			},
-		},
-	})
+	}
 }
 
 func (p *Peer) onCandidate(c ice.Candidate) {
@@ -125,23 +125,18 @@ func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
 
 	p.logger.Info("Connection state changed", zap.String("state", stateLower))
 
-	p.server.BroadcastEvent(&pb.Event{
-		Type:  "state",
-		State: "changed",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: p.Interface.Name(),
-					Peers: []*pb.Peer{
-						{
-							PublicKey: p.PublicKey().Bytes(),
-							State:     pb.ConnectionState(state),
+	p.events <- &pb.Event{
+		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
+
+		Interface: p.Interface.Name(),
+		Peer:      p.PublicKey().Bytes(),
+
+		Event: &pb.Event_PeerConnectionStateChange{
+			PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
+				NewState: pb.NewConnectionState(state),
 						},
 					},
-				},
-			},
-		},
-	})
+	}
 
 	if state == ice.ConnectionStateFailed {
 		go p.restartLocal()

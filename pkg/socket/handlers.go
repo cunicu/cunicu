@@ -23,6 +23,24 @@ func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) 
 func (s *Server) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
 	events := s.daemon.ListenEvents()
 
+	// Send initial connection state of all peers
+	for _, i := range s.daemon.Interfaces {
+		for key, p := range i.Peers() {
+			e := &pb.Event{
+				Type:      pb.Event_PEER_CONNECTION_STATE_CHANGED,
+				Interface: p.Interface.Name(),
+				Peer:      key.Bytes(),
+				Event: &pb.Event_PeerConnectionStateChange{
+					PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
+						NewState: pb.NewConnectionState(p.ConnectionState),
+					},
+				},
+			}
+
+			stream.Send(e)
+		}
+	}
+
 	for e := range events {
 		stream.Send(e)
 	}

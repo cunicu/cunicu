@@ -196,10 +196,10 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	}
 
 	b.events <- &pb.Event{
-		Type:  "backend",
-		State: "ready",
-		Event: &pb.Event_Backend{
-			Backend: &pb.BackendEvent{
+		Type: pb.Event_BACKEND_READY,
+		Event: &pb.Event_BackendReady{
+			BackendReady: &pb.BackendReadyEvent{
+				Type:            pb.BackendReadyEvent_P2P,
 				Id:              b.host.ID().String(),
 				ListenAddresses: as,
 			},

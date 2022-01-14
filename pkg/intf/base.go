@@ -279,20 +279,10 @@ func (i *BaseInterface) onPeerAdded(p *wgtypes.Peer) {
 	i.peers[peer.PublicKey()] = peer
 
 	i.events <- &pb.Event{
-		Type:  "peer",
-		State: "added",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: i.Name(),
-					Peers: []*pb.Peer{
-						{
-							PublicKey: peer.PublicKey().Bytes(),
-						},
-					},
-				},
-			},
-		},
+		Type: pb.Event_PEER_ADDED,
+
+		Interface: i.Name(),
+		Peer:      p.PublicKey[:],
 	}
 }
 
@@ -307,20 +297,10 @@ func (i *BaseInterface) onPeerRemoved(p *wgtypes.Peer) {
 	}
 
 	i.events <- &pb.Event{
-		Type:  "peer",
-		State: "removed",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: i.Name(),
-					Peers: []*pb.Peer{
-						{
-							PublicKey: peer.PublicKey().Bytes(),
-						},
-					},
-				},
-			},
-		},
+		Type: pb.Event_PEER_REMOVED,
+
+		Interface: i.Name(),
+		Peer:      p.PublicKey[:],
 	}
 
 	delete(i.peers, peer.PublicKey())
@@ -332,23 +312,6 @@ func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModi
 		peer.OnModified(new, modified)
 	} else {
 		i.logger.Error("Failed to find modified peer")
-	}
-
-	i.events <- &pb.Event{
-		Type:  "peer",
-		State: "modified",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: i.Name(),
-					Peers: []*pb.Peer{
-						{
-							PublicKey: peer.PublicKey().Bytes(),
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -418,15 +381,9 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	}
 
 	i.events <- &pb.Event{
-		Type:  "interface",
-		State: "added",
-		Event: &pb.Event_Intf{
-			Intf: &pb.InterfaceEvent{
-				Interface: &pb.Interface{
-					Name: i.Name(),
-				},
-			},
-		},
+		Type: pb.Event_INTERFACE_ADDED,
+
+		Interface: i.Name(),
 	}
 
 	// We remove all peers here so that they get added by the following sync

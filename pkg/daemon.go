@@ -222,15 +222,8 @@ func (d *Daemon) SyncAllInterfaces() error {
 			}
 
 			d.Events <- &pb.Event{
-				Type:  "interface",
-				State: "removed",
-				Event: &pb.Event_Intf{
-					Intf: &pb.InterfaceEvent{
-						Interface: &pb.Interface{
-							Name: i.Name(),
-						},
-					},
-				},
+				Type:      pb.Event_INTERFACE_REMOVED,
+				Interface: intf.Name(),
 			}
 		} else {
 			keepInterfaces = append(keepInterfaces, intf)

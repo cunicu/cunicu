@@ -3,34 +3,47 @@ syntax = "proto3";
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
-import "peer.proto";
-import "interface.proto";
 
 message Event {
-    Timestamp time = 1;
-    string type = 2;
-	string state = 3;
+    enum Type {
+        BACKEND_READY = 0;
+
+        PEER_ADDED = 20;
+        PEER_REMOVED = 21;
+        PEER_MODIFIED = 22;
+        PEER_CONNECTION_STATE_CHANGED = 23;
+
+        INTERFACE_ADDED = 30;
+        INTERFACE_REMOVED = 31;
+    }
+
+    Type type = 1;
+    Timestamp time = 2;
+
+    // Originator
+    bytes peer = 3;
+    string interface = 4;
 
     oneof event {
-        PeerEvent peer = 10;
-        InterfaceEvent intf = 11;
-        BackendEvent backend = 12;
+        PeerModifiedEvent peer_modified = 10;
+        PeerConnectionStateChangeEvent peer_connection_state_change = 11;
+
+        BackendReadyEvent backend_ready = 30;
     }
 }
 
-message PeerEvent {
-    Peer peer = 1;
-
-    repeated string modified = 2;   
+message PeerModifiedEvent {
+    uint32 modified = 1;   
 }
 
-message InterfaceEvent {
-    Interface interface = 1;
+message PeerConnectionStateChangeEvent {
+    ConnectionState new_state = 3;
 }
 
-message BackendEvent {
+message BackendReadyEvent {
     enum Type {
-        READY = 0;
+        P2P = 0;
+        K8S = 1;
     }
 
     Type type = 1;
