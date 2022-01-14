@@ -73,7 +73,3 @@ func (p *UserProxy) Setup(agentConfig *ice.AgentConfig, listenPort int) error {
 func (p *UserProxy) Close() error {
 	return p.conn.Close()
 }
-
-func (bpf *UserProxy) UpdateEndpoint(addr *net.UDPAddr) error {
-	return nil
-}

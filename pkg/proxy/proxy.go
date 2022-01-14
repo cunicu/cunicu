@@ -28,8 +28,6 @@ type Proxy interface {
 	io.Closer
 
 	Type() ProxyType
-
-	UpdateEndpoint(addr *net.UDPAddr) error
 }
 
 type BaseProxy struct {

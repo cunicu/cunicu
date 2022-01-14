@@ -82,7 +82,3 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 func (bpf *EBPFProxy) Close() error {
 	return nil
 }
-
-func (bpf *EBPFProxy) UpdateEndpoint(addr *net.UDPAddr) error {
-	return nil
-}

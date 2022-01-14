@@ -247,7 +247,3 @@ func (p *NFTablesProxy) setupTable() error {
 func (p *NFTablesProxy) Close() error {
 	return p.deleteTable()
 }
-
-func (bpf *NFTablesProxy) UpdateEndpoint(addr *net.UDPAddr) error {
-	return nil
-}
