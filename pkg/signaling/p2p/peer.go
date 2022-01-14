@@ -47,8 +47,6 @@ func (b *Backend) NewPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 		return nil, fmt.Errorf("failed to subscribe to topic: %w", err)
 	}
 
-	p.logger.Debug("Starting reading messages", zap.String("topic", t))
-
 	go p.readLoop()
 
 	return p, nil
@@ -65,7 +63,8 @@ func (p *Peer) publishOffer(offer *pb.Offer) error {
 		zap.Any("topic", p.topic),
 	)
 
-	return p.topic.Publish(p.context, payload)
+	return p.topic.Publish(p.context, payload,
+		pubsub.WithReadiness(pubsub.MinTopicSize(1)))
 }
 
 func (p *Peer) readLoop() {

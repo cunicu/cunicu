@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"sync"
-	"time"
 
 	p2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -244,10 +243,9 @@ func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
 		return fmt.Errorf("failed to get peer: %w", err)
 	}
 
-	go func() {
-		time.Sleep(3 * time.Second) // TODO remove
-		p.publishOffer(offer)
-	}()
+	if err := p.publishOffer(offer); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -256,8 +254,7 @@ func (b *Backend) Close() error {
 	return nil // TODO
 }
 
-func (b *Backend) Tick() {
-}
+func (b *Backend) Tick() {}
 
 // HandlePeerFound connects to peers discovered via mDNS. Once they're connected,
 // the PubSub system will automatically start interacting with them if they also
