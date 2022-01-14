@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -11,6 +12,7 @@ type Interface interface {
 	io.Closer
 
 	DumpConfig(io.Writer)
+	SyncConfig(cfg string) error
 
 	AddPeer(peer wgtypes.Key) error
 	RemovePeer(peer wgtypes.Key) error
@@ -19,5 +21,9 @@ type Interface interface {
 
 	Marshal() *pb.Interface
 
+	// Getter
 	Name() string
+	PublicKey() crypto.Key
+	PrivateKey() crypto.Key
+	Peers() map[crypto.Key]*Peer
 }

@@ -24,7 +24,7 @@ import (
 type BaseInterface struct {
 	wgtypes.Device
 
-	peers map[crypto.Key]Peer
+	peers map[crypto.Key]*Peer
 
 	lastSync time.Time
 
@@ -46,6 +46,10 @@ func (i *BaseInterface) PublicKey() crypto.Key {
 
 func (i *BaseInterface) PrivateKey() crypto.Key {
 	return crypto.Key(i.Device.PrivateKey)
+}
+
+func (i *BaseInterface) Peers() map[crypto.Key]*Peer {
+	return i.peers
 }
 
 func (i *BaseInterface) Close() error {
@@ -75,7 +79,7 @@ func (i *BaseInterface) DumpConfig(wr io.Writer) {
 		fmt.Fprintf(wr, "FwMark = %#x\n", i.FirewallMark)
 	}
 
-	for _, p := range i.Peers {
+	for _, p := range i.Device.Peers {
 		fmt.Fprintf(wr, "[Peer]\n")
 		if crypto.Key(p.PublicKey).IsSet() {
 			fmt.Fprintf(wr, "PublicKey = %s\n", p.PublicKey)
@@ -203,11 +207,11 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 	}
 
 	sort.Slice(newDev.Peers, wg.LessPeers(newDev.Peers))
-	sort.Slice(i.Device.Peers, wg.LessPeers(i.Peers))
+	sort.Slice(i.Device.Peers, wg.LessPeers(i.Device.Peers))
 
 	k, j := 0, 0
-	for k < len(i.Peers) && j < len(newDev.Peers) {
-		oldPeer := &i.Peers[k]
+	for k < len(i.Device.Peers) && j < len(newDev.Peers) {
+		oldPeer := &i.Device.Peers[k]
 		newPeer := &newDev.Peers[j]
 
 		cmp := wg.CmpPeers(oldPeer, newPeer)
@@ -229,8 +233,8 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		}
 	}
 
-	for k < len(i.Peers) {
-		oldPeer := &i.Peers[k]
+	for k < len(i.Device.Peers) {
+		oldPeer := &i.Device.Peers[k]
 		i.logger.Info("Peer removed", zap.Any("peer", oldPeer.PublicKey))
 		i.onPeerRemoved(oldPeer)
 		k++
@@ -243,7 +247,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		j++
 	}
 
-	i.Peers = newDev.Peers
+	i.Device.Peers = newDev.Peers
 	i.lastSync = time.Now()
 
 	return nil
@@ -347,22 +351,24 @@ func (i *BaseInterface) addLinkLocalAddress() error {
 }
 
 func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, events chan *pb.Event, cfg *config.Config) (BaseInterface, error) {
+	logger := zap.L().Named("interface").With(
+		zap.String("intf", dev.Name),
+		zap.String("type", "kernel"),
+	)
+
 	i := BaseInterface{
 		Device:  *dev,
 		client:  client,
 		backend: backend,
 		events:  events,
 		config:  cfg,
-		logger: zap.L().Named("interface").With(
-			zap.String("intf", dev.Name),
-			zap.String("type", "kernel"),
-		),
-		peers: make(map[crypto.Key]Peer),
+		logger:  logger,
+		peers:   make(map[crypto.Key]*Peer),
 	}
 
 	i.logger.Info("Creating new interface")
 
-	// Sync config
+	// Sync Wireguard device configuration with configuration file
 	if i.config.ConfigSync {
 		cfg := fmt.Sprintf("%s/%s.conf", i.config.ConfigPath, i.Name())
 		if err := i.SyncConfig(cfg); err != nil {
@@ -387,7 +393,7 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	}
 
 	// We remove all peers here so that they get added by the following sync
-	i.Peers = nil
+	i.Device.Peers = nil
 	i.Sync(dev)
 
 	return i, nil
