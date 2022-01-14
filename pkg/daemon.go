@@ -125,7 +125,7 @@ out:
 			}
 			d.eventListenersLock.Unlock()
 
-			event.Log(d.logger, "Broadcasted event")
+			event.Log(d.logger, "Broadcasted event", zap.Int("listeners", len(d.eventListeners)))
 
 		case event := <-ifEvents:
 			d.logger.Debug("Received interface event", zap.String("event", event.String()))
@@ -167,11 +167,9 @@ func (d *Daemon) GetInterfaceByName(name string) intf.Interface {
 }
 
 func (d *Daemon) SyncAllInterfaces() error {
-	logger := zap.L().Named("interfaces")
-
 	devices, err := d.Client.Devices()
 	if err != nil {
-		logger.Fatal("Failed to list Wireguard interfaces", zap.Error(err))
+		d.logger.Fatal("Failed to list Wireguard interfaces", zap.Error(err))
 	}
 
 	syncedInterfaces := intf.InterfaceList{}
@@ -185,11 +183,11 @@ func (d *Daemon) SyncAllInterfaces() error {
 		// Find matching interface
 		interf := d.GetInterfaceByName(device.Name)
 		if interf == nil { // new interface
-			logger.Info("Adding new interface", zap.String("intf", device.Name))
+			d.logger.Info("Adding new interface", zap.String("intf", device.Name))
 
 			i, err := intf.NewInterface(device, d.Client, d.Backend, d.Events, d.Config)
 			if err != nil {
-				logger.Fatal("Failed to create new interface",
+				d.logger.Fatal("Failed to create new interface",
 					zap.Error(err),
 					zap.String("intf", device.Name),
 				)
@@ -199,10 +197,10 @@ func (d *Daemon) SyncAllInterfaces() error {
 
 			d.Interfaces = append(d.Interfaces, &i)
 		} else { // existing interface
-			logger.Debug("Sync existing interface", zap.String("intf", device.Name))
+			d.logger.Debug("Sync existing interface", zap.String("intf", device.Name))
 
 			if err := interf.Sync(device); err != nil {
-				logger.Fatal("Failed to sync interface",
+				d.logger.Fatal("Failed to sync interface",
 					zap.Error(err),
 					zap.String("intf", device.Name),
 				)
@@ -215,10 +213,10 @@ func (d *Daemon) SyncAllInterfaces() error {
 	for _, intf := range d.Interfaces {
 		i := syncedInterfaces.GetByName(intf.Name())
 		if i == nil {
-			logger.Info("Removing vanished interface", zap.String("intf", intf.Name()))
+			d.logger.Info("Removing vanished interface", zap.String("intf", intf.Name()))
 
 			if err := intf.Close(); err != nil {
-				logger.Fatal("Failed to close interface", zap.Error(err))
+				d.logger.Fatal("Failed to close interface", zap.Error(err))
 			}
 
 			d.Events <- &pb.Event{
@@ -242,12 +240,10 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		return err
 	}
 
-	logger := zap.L().Named("interfaces")
-
 	for _, interfName := range d.Config.Interfaces {
 		dev := devs.GetByName(interfName)
 		if dev != nil {
-			logger.Warn("Interface already exists. Skipping..", zap.Any("intf", interfName))
+			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", interfName))
 			continue
 		}
 
@@ -261,9 +257,9 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 			return fmt.Errorf("failed to create Wireguard device: %w", err)
 		}
 
-		if logger.Core().Enabled(zap.DebugLevel) {
-			logger.Debug("Intialized interface:")
-			interf.DumpConfig(&zapio.Writer{Log: logger})
+		if d.logger.Core().Enabled(zap.DebugLevel) {
+			d.logger.Debug("Intialized interface:")
+			interf.DumpConfig(&zapio.Writer{Log: d.logger})
 		}
 
 		d.Interfaces = append(d.Interfaces, interf)
