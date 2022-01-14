@@ -118,7 +118,7 @@ func (t *RelayNode) WaitReady() error {
 			return fmt.Errorf("timed out")
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(time.Second)
 	}
 
 	return nil
