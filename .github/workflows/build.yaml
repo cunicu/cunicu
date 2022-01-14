@@ -47,3 +47,12 @@ jobs:
         reporter: github-pr-review
         filter_mode: nofilter
         fail_on_error: true
+
+    - name: Run codacy-coverage-reporter
+      uses: codacy/codacy-coverage-reporter-action@v1
+      env:
+        CODACY_REPORTER_TMP_FOLDER: .codacy
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage.out
+        force-coverage-parser: go
