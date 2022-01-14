@@ -3,6 +3,7 @@ package socket
 import (
 	"context"
 
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -80,7 +81,29 @@ func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, er
 }
 
 func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
-	return pb.NotSupported, nil
+	intf := s.daemon.Interfaces.GetByName(params.Intf)
+	if intf == nil {
+		return &pb.Error{
+			Code:    pb.Error_ENOENT,
+			Message: "Interface not found",
+		}, nil
+	}
+
+	pk := *(*crypto.Key)(params.Peer)
+
+	peer, ok := intf.Peers()[pk]
+	if !ok {
+		return &pb.Error{
+			Code:    pb.Error_ENOENT,
+			Message: "Peer not found",
+		}, nil
+	}
+
+	if err := peer.Restart(); err != nil {
+		return pb.NewError(err), nil
+	}
+
+	return pb.Success, nil
 }
 
 func (s *Server) RemoveInterface(ctx context.Context, params *pb.RemoveInterfaceParams) (*pb.Error, error) {
