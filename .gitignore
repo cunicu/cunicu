@@ -3,4 +3,4 @@ test/logs/
 .vscode/
 
 dist/
-wice
+/wice
