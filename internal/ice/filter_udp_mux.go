@@ -254,7 +254,7 @@ func (m *FilteredUDPMux) connWorker() {
 		}
 
 		if destinationConn == nil {
-			m.logger.Sugar().Debug("Dropping packet from %s", udpAddr.String(), zap.Any("address", addr))
+			m.logger.Sugar().Debugf("Dropping packet from %s", udpAddr.String(), zap.Any("address", addr))
 			continue
 		}
 
