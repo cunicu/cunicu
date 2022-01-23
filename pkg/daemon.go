@@ -18,13 +18,6 @@ import (
 	"go.uber.org/zap/zapio"
 )
 
-func init() {
-	// Disable memlock for loading eBPF programs
-	if err := rlimit.RemoveMemlock(); err != nil {
-		panic(fmt.Errorf("failed to remove memlock: %w", err))
-	}
-}
-
 type Daemon struct {
 	Backend signaling.Backend
 	Client  *wgctrl.Client
@@ -58,6 +51,11 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize backend: %w", err)
+	}
+
+	// Disable memlock for loading eBPF programs
+	if err := rlimit.RemoveMemlock(); err != nil {
+		panic(fmt.Errorf("failed to remove memlock: %w", err))
 	}
 
 	// Create Wireguard netlink socket
