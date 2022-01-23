@@ -1,15 +1,23 @@
-FROM golang:1.16-alpine AS builder
+FROM golang:1.17-alpine AS builder
 
 WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY wice/ ./wice/
-RUN go build -o build/wice ./wice
+RUN apk add \
+    git \
+    make \
+    protoc
 
-FROM scratch
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
-COPY --from=builder /app/build/wice /
+COPY . .
+RUN make
+
+FROM alpine:3.15
+
+COPY --from=builder /app/wice /
 
 CMD [ "/wice" ]
