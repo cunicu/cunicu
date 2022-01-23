@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"strings"
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -31,12 +32,15 @@ type Backend interface {
 }
 
 func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
-	typ := BackendType(uri.Scheme)
+	typs := strings.SplitN(uri.Scheme, "+", 1)
+	typ := BackendType(typs[0])
 
 	p, ok := Backends[typ]
 	if !ok {
 		return nil, fmt.Errorf("unknown backend type: %s", typ)
 	}
+
+	uri.Scheme = typs[1]
 
 	be, err := p.New(uri, events)
 	if err != nil {

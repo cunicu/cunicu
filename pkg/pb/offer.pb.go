@@ -165,7 +165,7 @@ type Offer struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Version of the WICE signaling protocoll (currently always 1)
+	// Version of the WICE signaling protocol (currently always 1)
 	Version int64 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
 	// Session epoch, incremented with each offer
 	Epoch          int64                `protobuf:"varint,2,opt,name=epoch,proto3" json:"epoch,omitempty"`

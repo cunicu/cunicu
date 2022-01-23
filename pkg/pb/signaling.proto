@@ -1,0 +1,21 @@
+syntax = "proto3";
+package wice;
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+import "common.proto";
+import "offer.proto";
+
+message SubscribeOffersParams {
+    bytes shared_key = 1;
+}
+
+message PublishOffersParams {
+    bytes shared_key = 1;
+    Offer offer = 2;
+}
+
+service Signaling {
+    rpc SubscribeOffers(SubscribeOffersParams) returns (stream Offer) {}
+    rpc PublishOffer(PublishOffersParams) returns (Error) {}
+}

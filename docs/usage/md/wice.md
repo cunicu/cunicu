@@ -23,6 +23,7 @@ wice [flags]
 * [wice daemon](wice_daemon.md)	 - Start the daemon
 * [wice docs](wice_docs.md)	 - Generate documentation for the wice commands
 * [wice monitor](wice_monitor.md)	 - Monitor the WICE daemon for events
+* [wice signal](wice_signal.md)	 - Start gRPC signaling server
 * [wice stop](wice_stop.md)	 - Shutdown the WICE daemon
 * [wice sync](wice_sync.md)	 - Synchronize interfaces
 * [wice wg](wice_wg.md)	 - Wireguard commands

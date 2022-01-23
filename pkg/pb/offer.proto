@@ -23,7 +23,7 @@ message Offer {
         ANSWER = 1;
     }
 
-    // Version of the WICE signaling protocoll (currently always 1)
+    // Version of the WICE signaling protocol (currently always 1)
     int64 version = 1;
 
     // Session epoch, incremented with each offer
