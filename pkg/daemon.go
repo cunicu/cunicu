@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cilium/ebpf/rlimit"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal"
@@ -16,6 +17,13 @@ import (
 
 	"go.uber.org/zap/zapio"
 )
+
+func init() {
+	// Disable memlock for loading eBPF programs
+	if err := rlimit.RemoveMemlock(); err != nil {
+		panic(fmt.Errorf("failed to remove memlock: %w", err))
+	}
+}
 
 type Daemon struct {
 	Backend signaling.Backend
