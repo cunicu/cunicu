@@ -439,6 +439,24 @@ func (p *Peer) PublicKeyPair() crypto.PublicKeyPair {
 	}
 }
 
+func (p *Peer) Config() *wgtypes.PeerConfig {
+	cfg := &wgtypes.PeerConfig{
+		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
+		Endpoint:   p.Endpoint,
+		AllowedIPs: p.Peer.AllowedIPs,
+	}
+
+	if crypto.Key(p.PresharedKey).IsSet() {
+		cfg.PresharedKey = &p.PresharedKey
+	}
+
+	if p.PersistentKeepaliveInterval > 0 {
+		cfg.PersistentKeepaliveInterval = &p.PersistentKeepaliveInterval
+	}
+
+	return cfg
+}
+
 // NewPeer creates a new peer and ICE session
 func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
 	logger := zap.L().Named("peer").With(

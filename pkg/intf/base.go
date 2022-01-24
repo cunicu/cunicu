@@ -5,9 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
-	"os/exec"
 	"sort"
-	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -22,7 +20,7 @@ import (
 )
 
 type BaseInterface struct {
-	wgtypes.Device
+	wg.Device
 
 	peers map[crypto.Key]*Peer
 
@@ -36,18 +34,22 @@ type BaseInterface struct {
 	logger *zap.Logger
 }
 
+// Name returns the Wireguard interface name
 func (i *BaseInterface) Name() string {
 	return i.Device.Name
 }
 
+// PublicKey returns the Curve25519 public key of the Wireguard interface
 func (i *BaseInterface) PublicKey() crypto.Key {
 	return crypto.Key(i.Device.PublicKey)
 }
 
+// PublicKey returns the Curve25519 private key of the Wireguard interface
 func (i *BaseInterface) PrivateKey() crypto.Key {
 	return crypto.Key(i.Device.PrivateKey)
 }
 
+// Peers returns a map of Curve25519 public keys to Peers
 func (i *BaseInterface) Peers() map[crypto.Key]*Peer {
 	return i.peers
 }
@@ -64,50 +66,30 @@ func (i *BaseInterface) Close() error {
 	return nil
 }
 
-func (i *BaseInterface) DumpConfig(wr io.Writer) {
-	fmt.Fprintf(wr, "[Interface] # %s\n", i.Name())
-	if i.PublicKey().IsSet() {
-		fmt.Fprintf(wr, "PublicKey = %s\n", i.PublicKey())
-	}
-	if i.PrivateKey().IsSet() {
-		fmt.Fprintf(wr, "PrivateKey = %s\n", i.PrivateKey())
-	}
-	if i.ListenPort != 0 {
-		fmt.Fprintf(wr, "ListenPort = %d\n", i.ListenPort)
-	}
-	if i.FirewallMark != 0 {
-		fmt.Fprintf(wr, "FwMark = %#x\n", i.FirewallMark)
+func (i *BaseInterface) Config() *wgtypes.Config {
+	cfg := &wgtypes.Config{
+		PrivateKey:   (*wgtypes.Key)(i.PrivateKey().Bytes()),
+		ListenPort:   &i.ListenPort,
+		FirewallMark: &i.FirewallMark,
 	}
 
-	for _, p := range i.Device.Peers {
-		fmt.Fprintf(wr, "[Peer]\n")
-		if crypto.Key(p.PublicKey).IsSet() {
-			fmt.Fprintf(wr, "PublicKey = %s\n", p.PublicKey)
-		}
-		if crypto.Key(p.PresharedKey).IsSet() {
-			fmt.Fprintf(wr, "PresharedKey = %s\n", p.PresharedKey)
-		}
-		if !p.LastHandshakeTime.Equal(time.Time{}) {
-			fmt.Fprintf(wr, "LastHandshakeTime = %v\n", p.LastHandshakeTime)
-		}
-		if p.PersistentKeepaliveInterval.Seconds() != 0 {
-			fmt.Fprintf(wr, "PersistentKeepalive = %d # seconds\n", int(p.PersistentKeepaliveInterval.Seconds()))
-		}
-		if len(p.AllowedIPs) > 0 {
-			aIPs := []string{}
-			for _, aIP := range p.AllowedIPs {
-				aIPs = append(aIPs, aIP.String())
-			}
-			fmt.Fprintf(wr, "AllowedIPs = %s\n", strings.Join(aIPs, ", "))
-		}
-		if p.Endpoint != nil {
-			fmt.Fprintf(wr, "Endpoint = %s\n", p.Endpoint.String())
-		}
+	for _, peer := range i.Peers() {
+		cfg.Peers = append(cfg.Peers, *peer.Config())
 	}
+
+	return cfg
+}
+
+func (i *BaseInterface) DumpConfig(wr io.Writer) {
+	cfg := i.Config()
+
+	wg.DumpConfig(wr, &wg.Config{
+		Config: *cfg,
+	})
 }
 
 func (i *BaseInterface) Marshal() *pb.Interface {
-	return pb.NewInterface(&i.Device)
+	return pb.NewInterface((*wgtypes.Device)(&i.Device))
 }
 
 func (i *BaseInterface) syncPeer(oldPeer, newPeer *wgtypes.Peer) error {
@@ -253,18 +235,22 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 	return nil
 }
 
-func (i *BaseInterface) SyncConfig(cfg string) error {
-	_, err := os.Stat(cfg)
+func (i *BaseInterface) SyncConfig(cfgFilename string) error {
+	cfgFile, err := os.Open(cfgFilename)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open configfile %s: %w", cfgFilename, err)
 	}
 
-	// TODO: can we sync the config fully in Go?
-	cmd := exec.Command("wg", "syncconf", i.Name(), cfg)
-	output, err := cmd.CombinedOutput()
+	cfg, err := wg.ParseConfig(cfgFile, i.Name())
 	if err != nil {
-		return fmt.Errorf("failed to sync configuration: %w\n%s", err, output)
+		return fmt.Errorf("failed to parse configuration: %s", err)
 	}
+
+	if err := i.client.ConfigureDevice(i.Name(), cfg.Config); err != nil {
+		return fmt.Errorf("failed to sync interface config: %s", err)
+	}
+
+	// TODO: emulate wg-quick behaviour here?
 
 	i.logger.Debug("Synced configuration", zap.Any("config", cfg))
 
@@ -357,7 +343,7 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	)
 
 	i := BaseInterface{
-		Device:  *dev,
+		Device:  wg.Device(*dev),
 		client:  client,
 		backend: backend,
 		events:  events,

@@ -11,7 +11,8 @@ import (
 type Interface interface {
 	io.Closer
 
-	DumpConfig(io.Writer)
+	Dump(wr io.Writer, color bool, hideKeys bool)
+	DumpConfig(wr io.Writer)
 	SyncConfig(cfg string) error
 
 	AddPeer(peer wgtypes.Key) error
