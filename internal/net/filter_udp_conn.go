@@ -3,6 +3,7 @@ package ice
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/cilium/ebpf"
 	"github.com/google/gopacket"
@@ -130,8 +131,24 @@ func (fuc *FilteredUDPConn) ApplyFilter(prog *ebpf.Program) error {
 	return nil
 }
 
+func (fuc *FilteredUDPConn) SetDeadline(t time.Time) error {
+	// TODO
+	return nil
+}
+
+func (fuc *FilteredUDPConn) SetReadDeadline(t time.Time) error {
+	// TODO
+	return nil
+}
+
+func (fuc *FilteredUDPConn) SetWriteDeadline(t time.Time) error {
+	// TODO
+	return nil
+}
+
 func (fuc *FilteredUDPConn) Close() error {
-	return nil // TODO
+	// TODO
+	return nil
 }
 
 func NewFilteredUDPConn(lAddr net.UDPAddr) (fuc *FilteredUDPConn, err error) {

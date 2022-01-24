@@ -77,7 +77,14 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 		return fmt.Errorf("failed to attach eBPF program to socket: %w", err)
 	}
 
-	agentConfig.UDPMux = icex.NewFilteredUDPMux(conn)
+	lf := &icex.LoggerFactory{
+		Base: zap.L(),
+	}
+
+	agentConfig.UDPMux = ice.NewUDPMuxDefault(ice.UDPMuxParams{
+		UDPConn: conn,
+		Logger:  lf.NewLogger("udpmux"),
+	})
 
 	return nil
 }
