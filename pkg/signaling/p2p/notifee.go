@@ -6,25 +6,35 @@ import (
 	"go.uber.org/zap"
 )
 
-func (b *Backend) Listen(n network.Network, a ma.Multiaddr) {
-	b.logger.Debug("Started listening", zap.Any("addr", a))
+type notifee struct {
+	logger *zap.Logger
 }
 
-func (b *Backend) ListenClose(n network.Network, a ma.Multiaddr) {
-	b.logger.Debug("Stopped listening", zap.Any("addr", a))
+func newNotifee(b *Backend) *notifee {
+	return &notifee{
+		logger: b.logger.Named("p2p"),
+	}
 }
 
-func (b *Backend) Connected(n network.Network, c network.Conn) {
-	b.logger.Debug("Connected", zap.Any("remote", c.RemoteMultiaddr()))
+func (n *notifee) Listen(_ network.Network, a ma.Multiaddr) {
+	n.logger.Debug("Started listening on address", zap.Any("addr", a))
 }
 
-func (b *Backend) Disconnected(n network.Network, c network.Conn) {
-	b.logger.Debug("Disconnected", zap.Any("remote", c.RemoteMultiaddr()))
+func (n *notifee) ListenClose(_ network.Network, a ma.Multiaddr) {
+	n.logger.Debug("Stopped listening on address", zap.Any("addr", a))
+}
+
+func (n *notifee) Connected(_ network.Network, c network.Conn) {
+	n.logger.Debug("Connected to remote", zap.Any("remote", c.RemoteMultiaddr()))
+}
+
+func (n *notifee) Disconnected(_ network.Network, c network.Conn) {
+	n.logger.Debug("Disconnected from remote", zap.Any("remote", c.RemoteMultiaddr()))
 
 }
 
-func (b *Backend) OpenedStream(n network.Network, s network.Stream) {
-	b.logger.Debug("Stream opened",
+func (n *notifee) OpenedStream(_ network.Network, s network.Stream) {
+	n.logger.Debug("Stream opened",
 		zap.Any("id", s.ID()),
 		zap.Any("remote", s.Conn().RemoteMultiaddr()),
 		zap.Any("protocol", s.Protocol()),
@@ -32,8 +42,8 @@ func (b *Backend) OpenedStream(n network.Network, s network.Stream) {
 
 }
 
-func (b *Backend) ClosedStream(n network.Network, s network.Stream) {
-	b.logger.Debug("Stream closed",
+func (n *notifee) ClosedStream(_ network.Network, s network.Stream) {
+	n.logger.Debug("Stream closed",
 		zap.Any("id", s.ID()),
 		zap.Any("remote", s.Conn().RemoteMultiaddr()),
 		zap.Any("protocol", s.Protocol()),

@@ -122,7 +122,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 		zap.Any("addrs", b.host.Addrs()),
 	)
 
-	b.host.Network().Notify(b)
+	b.host.Network().Notify(newNotifee(b))
 
 	// setup local mDNS discovery
 	if b.config.EnableMDNSDiscovery {
@@ -185,6 +185,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	// setup PubSub service using the GossipSub router
 	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host,
 		pubsub.WithDiscovery(rd),
+		pubsub.WithRawTracer(newTracer(b)),
 	); err != nil {
 		return nil, fmt.Errorf("failed to create pubsub router: %w", err)
 	}
