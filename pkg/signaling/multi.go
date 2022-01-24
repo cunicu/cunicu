@@ -28,7 +28,7 @@ func NewMultiBackend(uris []*url.URL, events chan *pb.Event) (Backend, error) {
 	return mb, nil
 }
 
-func (m *MultiBackend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
+func (m *MultiBackend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
 	for _, b := range m.backends {
 		if err := b.PublishOffer(kp, offer); err != nil {
 			return err
@@ -38,11 +38,11 @@ func (m *MultiBackend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) er
 	return nil
 }
 
-func (m *MultiBackend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
+func (m *MultiBackend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
 	chans := []chan *pb.Offer{}
 
 	for _, b := range m.backends {
-		if ch, err := b.SubscribeOffer(kp); err != nil {
+		if ch, err := b.SubscribeOffers(kp); err != nil {
 			return nil, err
 		} else {
 			chans = append(chans, ch)

@@ -28,7 +28,7 @@ const (
 
 type Backend struct {
 	logger *zap.Logger
-	offers map[crypto.PublicKeyPair]chan *pb.Offer
+	offers map[crypto.KeyPair]chan *pb.Offer
 
 	config BackendConfig
 
@@ -55,7 +55,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	var err error
 
 	b := Backend{
-		offers:  make(map[crypto.PublicKeyPair]chan *pb.Offer),
+		offers:  make(map[crypto.KeyPair]chan *pb.Offer),
 		logger:  zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		term:    make(chan struct{}),
 		updates: make(chan NodeCallback),
@@ -132,7 +132,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	return &b, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
+func (b *Backend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	ch, ok := b.offers[kp]
@@ -150,7 +150,7 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error
 	return ch, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
+func (b *Backend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
 	b.updateNode(func(node *corev1.Node) error {
 		offerMapJson, ok := node.ObjectMeta.Annotations[b.config.AnnotationOffers]
 

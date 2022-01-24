@@ -41,7 +41,7 @@ type Backend struct {
 	logger *zap.Logger
 	config BackendConfig
 
-	peers     map[crypto.PublicKeyPair]*Peer
+	peers     map[crypto.KeyPair]*Peer
 	peersLock sync.Mutex
 
 	host host.Host
@@ -58,7 +58,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	var err error
 
 	b := &Backend{
-		peers:  map[crypto.PublicKeyPair]*Peer{},
+		peers:  map[crypto.KeyPair]*Peer{},
 		logger: zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
 		config: defaultConfig,
 		events: events,
@@ -209,7 +209,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	return b, nil
 }
 
-func (b *Backend) getPeer(kp crypto.PublicKeyPair) (*Peer, error) {
+func (b *Backend) getPeer(kp crypto.KeyPair) (*Peer, error) {
 	var err error
 
 	b.peersLock.Lock()
@@ -227,7 +227,7 @@ func (b *Backend) getPeer(kp crypto.PublicKeyPair) (*Peer, error) {
 	return p, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
+func (b *Backend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	p, err := b.getPeer(kp)
@@ -238,7 +238,7 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error
 	return p.Offers, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
+func (b *Backend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
 	p, err := b.getPeer(kp)
 	if err != nil {
 		return fmt.Errorf("failed to get peer: %w", err)

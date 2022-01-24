@@ -30,11 +30,6 @@ type Key [KeyLength]byte
 type Signature [SignatureLength]byte
 
 type KeyPair struct {
-	Private Key
-	Public  Key
-}
-
-type PublicKeyPair struct {
 	Ours   Key `json:"ours"`
 	Theirs Key `json:"theirs"`
 }
@@ -118,7 +113,7 @@ func (k Signature) String() string {
 	return base64.StdEncoding.EncodeToString(k[:])
 }
 
-func (kp PublicKeyPair) ID(key []byte) string {
+func (kp KeyPair) ID(key []byte) string {
 	ctx := hmac.New(hash.SHA512.CryptoHash().HashFunc().New, key)
 
 	ctx.Write(kp.Ours[:])
@@ -129,7 +124,7 @@ func (kp PublicKeyPair) ID(key []byte) string {
 	return base64.URLEncoding.EncodeToString(mac)
 }
 
-func (kp PublicKeyPair) Shared() Key {
+func (kp KeyPair) Shared() Key {
 	shared := Key{}
 
 	for i := range kp.Ours {

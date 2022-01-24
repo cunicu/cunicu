@@ -298,7 +298,7 @@ func (p *Peer) start() {
 		p.logger.Fatal("Failed to gather candidates", zap.Error(err))
 	}
 
-	p.remoteOffers, err = p.backend.SubscribeOffer(p.PublicKeyPair())
+	p.remoteOffers, err = p.backend.SubscribeOffers(p.PublicKeyPair())
 	if err != nil {
 		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
 	}
@@ -426,15 +426,23 @@ func (p *Peer) addAllowedIP(a net.IPNet) error {
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
 
-// PublicKey returns the X25199 public key of the Wireguard peer
+// PublicKey returns the Curve25199 public key of the Wireguard peer
 func (p *Peer) PublicKey() crypto.Key {
 	return crypto.Key(p.Peer.PublicKey)
 }
 
 // PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
-func (p *Peer) PublicKeyPair() crypto.PublicKeyPair {
-	return crypto.PublicKeyPair{
+func (p *Peer) PublicKeyPair() crypto.KeyPair {
+	return crypto.KeyPair{
 		Ours:   p.Interface.PublicKey(),
+		Theirs: p.PublicKey(),
+	}
+}
+
+// PublicPrivateKeyPair returns both the public key of the local (our) and remote peer (theirs)
+func (p *Peer) PublicPrivateKeyPair() crypto.KeyPair {
+	return crypto.KeyPair{
+		Ours:   p.Interface.PrivateKey(),
 		Theirs: p.PublicKey(),
 	}
 }

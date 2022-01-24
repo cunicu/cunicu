@@ -26,8 +26,8 @@ type BackendPlugin struct {
 type Backend interface {
 	io.Closer
 
-	PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error
-	SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error)
+	PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error
+	SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error)
 	Tick()
 }
 

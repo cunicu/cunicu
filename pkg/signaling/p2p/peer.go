@@ -24,7 +24,7 @@ type Peer struct {
 	context context.Context
 }
 
-func (b *Backend) NewPeer(kp crypto.PublicKeyPair) (*Peer, error) {
+func (b *Backend) NewPeer(kp crypto.KeyPair) (*Peer, error) {
 	var err error
 
 	p := &Peer{

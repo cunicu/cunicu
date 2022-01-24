@@ -65,7 +65,7 @@ func (b *Backend) processNode(node *corev1.Node) {
 	}
 
 	for ourPK, o := range om {
-		kp := crypto.PublicKeyPair{
+		kp := crypto.KeyPair{
 			Ours:   ourPK,
 			Theirs: theirPK,
 		}

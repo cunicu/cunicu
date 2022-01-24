@@ -53,12 +53,12 @@ func TestBackend(t *testing.T) {
 		t.FailNow()
 	}
 
-	kp := crypto.PublicKeyPair{
+	kp := crypto.KeyPair{
 		Ours:   ourKey.PublicKey(),
 		Theirs: theirKey.PublicKey(),
 	}
 
-	ch, err := be.SubscribeOffer(kp)
+	ch, err := be.SubscribeOffers(kp)
 	if err != nil {
 		t.Fatalf("Failed to subscribe to offers: %s", err)
 	}

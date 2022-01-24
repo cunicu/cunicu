@@ -31,14 +31,14 @@ func TestBackend(t *testing.T) {
 	ourSecretKey, _ := crypto.GeneratePrivateKey()
 	theirSecretKey, _ := crypto.GeneratePrivateKey()
 
-	kp := crypto.PublicKeyPair{
+	kp := crypto.KeyPair{
 		Ours:   ourSecretKey.PublicKey(),
 		Theirs: theirSecretKey.PublicKey(),
 	}
 
 	o := &pb.Offer{}
 
-	ch, err := b.SubscribeOffer(kp)
+	ch, err := b.SubscribeOffers(kp)
 	if err != nil {
 		t.Errorf("failed to subscribe to offer")
 	}
