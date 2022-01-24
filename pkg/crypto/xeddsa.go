@@ -8,7 +8,7 @@ import (
 )
 
 // sign signs the message with privateKey and returns a signature as a byte slice.
-func (sk Key) Sign(msg []byte, rnd []byte) Signature {
+func (sk Key) Sign(msg []byte, nonce Nonce) Signature {
 
 	// Calculate Ed25519 public key from Curve25519 private key
 	var A edwards25519.ExtendedGroupElement
@@ -29,7 +29,7 @@ func (sk Key) Sign(msg []byte, rnd []byte) Signature {
 	hash.Write(diversifier)
 	hash.Write(sk[:])
 	hash.Write(msg)
-	hash.Write(rnd)
+	hash.Write(nonce[:])
 	hash.Sum(r[:0])
 
 	// Calculate R

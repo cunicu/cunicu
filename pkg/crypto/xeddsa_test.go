@@ -17,9 +17,8 @@ func TestXEdDSA(t *testing.T) {
 	pk := sk.PublicKey()
 
 	msg := make([]byte, 200)
-	rnd := make([]byte, 32)
 
-	_, err = rand.Reader.Read(rnd[:])
+	nonce, err := crypto.GetNonce()
 	if err != nil {
 		t.Fail()
 	}
@@ -29,7 +28,7 @@ func TestXEdDSA(t *testing.T) {
 		t.Fail()
 	}
 
-	signature := sk.Sign(msg, rnd)
+	signature := sk.Sign(msg, nonce)
 
 	fmt.Printf("PrivateKey = %s\n", sk)
 	fmt.Printf("PublicKey = %s\n", pk)
