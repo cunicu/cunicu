@@ -13,7 +13,7 @@ func TestParseArgsUser(t *testing.T) {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !config.User {
+	if !config.Userspace {
 		t.Fail()
 	}
 }

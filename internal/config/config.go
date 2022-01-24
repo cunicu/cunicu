@@ -63,7 +63,7 @@ type Config struct {
 	SocketWait bool
 
 	Backends        backendURLList
-	User            bool
+	Userspace       *bool
 	ProxyType       proxyType
 	ConfigSync      bool
 	ConfigPath      string
@@ -138,7 +138,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.VarP(&cfg.InterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
 	flags.DurationVarP(&cfg.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
-	flags.BoolVarP(&cfg.User, "wg-user", "u", false, "start userspace Wireguard daemon")
+	cfg.Userspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
 	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
 	flags.StringVarP(&cfg.ConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
 
@@ -291,7 +291,7 @@ func (c *Config) Dump(wr io.Writer) {
 		fmt.Fprintf(wr, "    %s\n", d)
 	}
 
-	fmt.Fprintf(wr, "  User: %s\n", strconv.FormatBool(c.User))
+	fmt.Fprintf(wr, "  User: %s\n", strconv.FormatBool(*c.Userspace))
 	fmt.Fprintf(wr, "  ProxyType: %s\n", c.ProxyType.String())
 
 	fmt.Fprintf(wr, "  Signaling Backends:\n")

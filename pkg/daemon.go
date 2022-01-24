@@ -80,6 +80,12 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		logger: logger,
 	}
 
+	// Check if Wireguard interface can be created by the kernel
+	if cfg.Userspace == nil {
+		u := !intf.WireguardModuleExists()
+		cfg.Userspace = &u
+	}
+
 	return d, nil
 }
 

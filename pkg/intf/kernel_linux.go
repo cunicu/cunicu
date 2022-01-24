@@ -1,7 +1,10 @@
 package intf
 
 import (
+	"errors"
 	"fmt"
+	"math"
+	"syscall"
 
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
@@ -105,4 +108,25 @@ func CreateKernelInterface(name string, client *wgctrl.Client, backend signaling
 	}
 
 	return i, nil
+}
+
+func WireguardModuleExists() bool {
+	l := &nl.Wireguard{
+		LinkAttrs: netlink.NewLinkAttrs(),
+	}
+	l.LinkAttrs.Name = "mustnotexist"
+
+	// We willingly try to create a device with an invalid
+	// MTU here as the validation of the MTU will be performed after
+	// the validation of the link kind and hence allows us to check
+	// for the existance of the wireguard module without actually
+	// creating a link.
+	//
+	// As a side-effect, this will also let the kernel lazy-load
+	// the wireguard module.
+	l.LinkAttrs.MTU = math.MaxInt
+
+	err := netlink.LinkAdd(l)
+
+	return errors.Is(err, syscall.EINVAL)
 }
