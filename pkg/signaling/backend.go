@@ -32,7 +32,7 @@ type Backend interface {
 }
 
 func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
-	typs := strings.SplitN(uri.Scheme, "+", 1)
+	typs := strings.SplitN(uri.Scheme, "+", 2)
 	typ := BackendType(typs[0])
 
 	p, ok := Backends[typ]
@@ -40,11 +40,13 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
 		return nil, fmt.Errorf("unknown backend type: %s", typ)
 	}
 
-	uri.Scheme = typs[1]
+	if len(typs) > 1 {
+		uri.Scheme = typs[1]
+	}
 
 	be, err := p.New(uri, events)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create backend: %w", err)
+		return nil, err
 	}
 
 	return be, nil

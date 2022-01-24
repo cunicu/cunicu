@@ -42,9 +42,7 @@ func (s *Server) SubscribeOffers(params *pb.SubscribeOffersParams, stream pb.Sig
 	ch := top.Subscribe()
 	for o := range ch {
 		err := stream.Send(o)
-		if err == io.EOF {
-			break
-		} else {
+		if err != nil && err != io.EOF {
 			s.logger.Error("Failed to receive offer", zap.Error(err))
 		}
 	}

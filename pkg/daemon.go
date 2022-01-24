@@ -50,7 +50,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		backend, err = signaling.NewMultiBackend(cfg.Backends, events)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize backend: %w", err)
+		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
 	}
 
 	// Disable memlock for loading eBPF programs
@@ -260,7 +260,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		}
 
 		var interf intf.Interface
-		if d.Config.User {
+		if *d.Config.Userspace {
 			interf, err = intf.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		} else {
 			interf, err = intf.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)

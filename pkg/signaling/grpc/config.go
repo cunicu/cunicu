@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -29,6 +30,10 @@ func (c *BackendConfig) Parse(uri *url.URL) error {
 	}
 
 	c.URI = uri
+
+	if uri.Host == "" {
+		return errors.New("missing gRPC server url")
+	}
 
 	c.Target = fmt.Sprintf("%s", uri.Host)
 

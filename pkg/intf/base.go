@@ -191,7 +191,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 
 	if newDev.PrivateKey != i.Device.PrivateKey {
 		i.logger.Info("PrivateKey changed",
-			zap.Any("old", i.PrivateKey),
+			zap.Any("old", i.PrivateKey()),
 			zap.Any("new", newDev.PrivateKey),
 		)
 		i.Device.PrivateKey = newDev.PrivateKey
