@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/Scratch-net/vxeddsa v0.0.0-20180216190124-07c00d1c9bf7
 	github.com/aead/siphash v1.0.1
-	github.com/cilium/ebpf v0.7.0
+	github.com/cilium/ebpf v0.8.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/gopacket v1.1.19
@@ -16,39 +16,39 @@ require (
 	github.com/libp2p/go-libp2p-discovery v0.6.0
 	github.com/libp2p/go-libp2p-kad-dht v0.15.0
 	github.com/libp2p/go-libp2p-noise v0.3.0
-	github.com/libp2p/go-libp2p-pubsub v0.6.0
+	github.com/libp2p/go-libp2p-pubsub v0.6.1
 	github.com/libp2p/go-libp2p-tls v0.3.1
 	github.com/multiformats/go-multiaddr v0.5.0
-	github.com/pion/dtls/v2 v2.0.13
-	github.com/pion/ice/v2 v2.1.18
+	github.com/pion/dtls/v2 v2.1.0
+	github.com/pion/ice/v2 v2.1.19
 	github.com/pion/logging v0.2.2
 	github.com/pion/stun v0.3.5
 	github.com/pion/transport v0.13.0
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
-	github.com/stv0g/gont v0.2.2
+	github.com/stv0g/gont v0.3.0
 	github.com/vishvananda/netlink v1.1.1-0.20210924202909-187053b97868
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	go.uber.org/zap v1.20.0
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.zx2c4.com/go118/netip v0.0.0-20211111135330-a4a02eeacf9d
-	golang.zx2c4.com/wireguard v0.0.0-20211209221555-9c9e7e272434
+	golang.zx2c4.com/wireguard v0.0.0-20220117163742-e0b8f11489c5
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211230205640-daad0b7ba671
 	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
-	gopkg.in/ini.v1 v1.66.2
-	k8s.io/api v0.23.1
-	k8s.io/apimachinery v0.23.1
-	k8s.io/client-go v0.23.1
+	gopkg.in/ini.v1 v1.66.3
+	k8s.io/api v0.23.2
+	k8s.io/apimachinery v0.23.2
+	k8s.io/client-go v0.23.2
 	k8s.io/klog/v2 v2.40.1
 )
 
 require (
-	github.com/BurntSushi/toml v0.4.1 // indirect
+	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
@@ -59,7 +59,7 @@ require (
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/go-logr/logr v1.2.2 // indirect
-	github.com/go-ping/ping v0.0.0-20211014180314-6e2b003bffdd // indirect
+	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -90,39 +90,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/koneu/natend v0.0.0-20150829182554-ec0926ea948d // indirect
 	github.com/koron/go-ssdp v0.0.2 // indirect
-	github.com/libp2p/go-addr-util v0.1.0 // indirect
-	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
-	github.com/libp2p/go-cidranger v1.1.0 // indirect
-	github.com/libp2p/go-conn-security-multistream v0.3.0 // indirect
-	github.com/libp2p/go-eventbus v0.2.1 // indirect
-	github.com/libp2p/go-flow-metrics v0.0.3 // indirect
-	github.com/libp2p/go-libp2p-asn-util v0.1.0 // indirect
-	github.com/libp2p/go-libp2p-autonat v0.7.0 // indirect
-	github.com/libp2p/go-libp2p-blankhost v0.3.0 // indirect
-	github.com/libp2p/go-libp2p-kbucket v0.4.7 // indirect
-	github.com/libp2p/go-libp2p-mplex v0.4.1 // indirect
-	github.com/libp2p/go-libp2p-nat v0.1.0 // indirect
-	github.com/libp2p/go-libp2p-peerstore v0.6.0 // indirect
-	github.com/libp2p/go-libp2p-pnet v0.2.0 // indirect
-	github.com/libp2p/go-libp2p-quic-transport v0.15.2 // indirect
-	github.com/libp2p/go-libp2p-record v0.1.3 // indirect
-	github.com/libp2p/go-libp2p-swarm v0.9.0 // indirect
-	github.com/libp2p/go-libp2p-transport-upgrader v0.6.0 // indirect
-	github.com/libp2p/go-libp2p-yamux v0.7.0 // indirect
-	github.com/libp2p/go-maddr-filter v0.1.0 // indirect
-	github.com/libp2p/go-mplex v0.3.0 // indirect
-	github.com/libp2p/go-msgio v0.1.0 // indirect
-	github.com/libp2p/go-nat v0.1.0 // indirect
-	github.com/libp2p/go-netroute v0.1.6 // indirect
-	github.com/libp2p/go-openssl v0.0.7 // indirect
-	github.com/libp2p/go-reuseport v0.1.0 // indirect
-	github.com/libp2p/go-reuseport-transport v0.1.0 // indirect
-	github.com/libp2p/go-sockaddr v0.1.1 // indirect
-	github.com/libp2p/go-stream-muxer-multistream v0.3.0 // indirect
-	github.com/libp2p/go-tcp-transport v0.4.0 // indirect
-	github.com/libp2p/go-ws-transport v0.5.0 // indirect
-	github.com/libp2p/go-yamux/v2 v2.3.0 // indirect
-	github.com/libp2p/zeroconf/v2 v2.1.1 // indirect
 	github.com/lucas-clemente/quic-go v0.24.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/marten-seemann/qtls-go1-16 v0.1.4 // indirect
@@ -180,7 +147,7 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/tools v0.1.8 // indirect
@@ -195,12 +162,48 @@ require (
 	honnef.co/go/tools v0.2.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
-	kernel.org/pub/linux/libs/security/libcap/cap v1.2.59 // indirect
-	kernel.org/pub/linux/libs/security/libcap/psx v1.2.59 // indirect
+	kernel.org/pub/linux/libs/security/libcap/cap v1.2.62 // indirect
+	kernel.org/pub/linux/libs/security/libcap/psx v1.2.62 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
+)
+
+require (
+	github.com/libp2p/go-addr-util v0.1.0 // indirect
+	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
+	github.com/libp2p/go-cidranger v1.1.0 // indirect
+	github.com/libp2p/go-conn-security-multistream v0.3.0 // indirect
+	github.com/libp2p/go-eventbus v0.2.1 // indirect
+	github.com/libp2p/go-flow-metrics v0.0.3 // indirect
+	github.com/libp2p/go-libp2p-asn-util v0.1.0 // indirect
+	github.com/libp2p/go-libp2p-autonat v0.7.0 // indirect
+	github.com/libp2p/go-libp2p-blankhost v0.3.0 // indirect
+	github.com/libp2p/go-libp2p-kbucket v0.4.7 // indirect
+	github.com/libp2p/go-libp2p-mplex v0.4.1 // indirect
+	github.com/libp2p/go-libp2p-nat v0.1.0 // indirect
+	github.com/libp2p/go-libp2p-peerstore v0.6.0 // indirect
+	github.com/libp2p/go-libp2p-pnet v0.2.0 // indirect
+	github.com/libp2p/go-libp2p-quic-transport v0.15.2 // indirect
+	github.com/libp2p/go-libp2p-record v0.1.3 // indirect
+	github.com/libp2p/go-libp2p-swarm v0.9.0 // indirect
+	github.com/libp2p/go-libp2p-transport-upgrader v0.6.0 // indirect
+	github.com/libp2p/go-libp2p-yamux v0.7.0 // indirect
+	github.com/libp2p/go-maddr-filter v0.1.0 // indirect
+	github.com/libp2p/go-mplex v0.3.0 // indirect
+	github.com/libp2p/go-msgio v0.1.0 // indirect
+	github.com/libp2p/go-nat v0.1.0 // indirect
+	github.com/libp2p/go-netroute v0.1.6 // indirect
+	github.com/libp2p/go-openssl v0.0.7 // indirect
+	github.com/libp2p/go-reuseport v0.1.0 // indirect
+	github.com/libp2p/go-reuseport-transport v0.1.0 // indirect
+	github.com/libp2p/go-sockaddr v0.1.1 // indirect
+	github.com/libp2p/go-stream-muxer-multistream v0.3.0 // indirect
+	github.com/libp2p/go-tcp-transport v0.4.0 // indirect
+	github.com/libp2p/go-ws-transport v0.5.0 // indirect
+	github.com/libp2p/go-yamux/v2 v2.3.0 // indirect
+	github.com/libp2p/zeroconf/v2 v2.1.1 // indirect
 )
 
 replace github.com/vishvananda/netlink => github.com/stv0g/netlink v1.1.1-gont
