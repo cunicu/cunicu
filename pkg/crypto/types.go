@@ -3,35 +3,52 @@ package crypto
 import (
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/base64"
 	"net"
 
 	"github.com/aead/siphash"
 	"github.com/pion/dtls/v2/pkg/crypto/hash"
+	"golang.org/x/crypto/pbkdf2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 // Keys
 
 const (
-	NonceLength     = 64
 	KeyLength       = 32
 	SignatureLength = 64
+
+	pbkdf2Iterations = 4096
 )
 
 var (
 	// A WICE specific key for siphash to generate unique IPv6 addresses from the
 	// interfaces public key
-	addrHashKey = []byte{0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97}
+	addrHashKey = [...]byte{0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97}
+
+	pbkdf2Salt = [...]byte{0x77, 0x31, 0x63, 0x33, 0x63, 0x30, 0x6e, 0x6e, 0x33, 0x63, 0x74, 0x73, 0x33, 0x76, 0x65, 0x72, 0x79, 0x62, 0x30, 0x64, 0x79}
 )
 
-type Nonce [NonceLength]byte
+type Nonce []byte
 type Key [KeyLength]byte
 type Signature [SignatureLength]byte
 
 type KeyPair struct {
 	Ours   Key `json:"ours"`
 	Theirs Key `json:"theirs"`
+}
+
+func GenerateKeyFromPassword(pw string) Key {
+	key := pbkdf2.Key([]byte(pw), pbkdf2Salt[:], pbkdf2Iterations, KeyLength, sha512.New)
+
+	// Modify random bytes using algorithm described at:
+	// https://cr.yp.to/ecdh.html.
+	key[0] &= 248
+	key[31] &= 127
+	key[31] |= 64
+
+	return *(*Key)(key)
 }
 
 func GenerateKey() (Key, error) {
@@ -92,7 +109,7 @@ func (k Key) Bytes() []byte {
 func (k Key) IPv6Address() *net.IPNet {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
-	hash, _ := siphash.New64(addrHashKey)
+	hash, _ := siphash.New64(addrHashKey[:])
 	hash.Write(k[:])
 
 	// Append interface identifier from the hash function
@@ -134,10 +151,10 @@ func (kp KeyPair) Shared() Key {
 	return shared
 }
 
-func GetNonce() (Nonce, error) {
-	var nonce Nonce
+func GetNonce(len int) (Nonce, error) {
+	var nonce = make(Nonce, len)
 
-	_, err := rand.Reader.Read(nonce[:])
+	_, err := rand.Reader.Read(nonce)
 	if err != nil {
 		return nonce, err
 	}

@@ -108,3 +108,16 @@ func TestIsSet(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestGeneratePrivateKeyFromPassword(t *testing.T) {
+	sk := crypto.GenerateKeyFromPassword("test")
+
+	expectedSk, err := crypto.ParseKey("SAyMLIWTO+DSnTx/JDak+lRR5huci8m4JsEabkkIxFY=")
+	if err != nil {
+		t.FailNow()
+	}
+
+	if sk != expectedSk {
+		t.Fail()
+	}
+}
