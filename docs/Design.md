@@ -5,7 +5,7 @@
 - Support [Trickle ICE]
 - Support ICE restart
 - Support [ICE-TCP]
-- Sign and verify ICE offers with Wireguard keys (via [XEdDSA] signature scheme for Curve25519 key pairs)
+- Encrypt exchanged ICE offers with Wireguard keys
 - Seamless switch between ICE candidates and relays
 - Zero configuration
   - Eleviate users of exchaging endpoint IPs & ports
@@ -37,7 +37,6 @@
 
 [ICE-TCP]: https://datatracker.ietf.org/doc/html/rfc6544
 [Trickle ICE]: https://datatracker.ietf.org/doc/html/rfc8838
-[XEdDSA]: https://signal.org/docs/specifications/xeddsa/
 [ICE]: https://datatracker.ietf.org/doc/html/rfc8445
 [ICE-PAC]: https://datatracker.ietf.org/doc/html/rfc8863
 [ICE-SDP]: https://datatracker.ietf.org/doc/html/rfc8839

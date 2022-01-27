@@ -3,7 +3,6 @@ module riasc.eu/wice
 go 1.17
 
 require (
-	github.com/Scratch-net/vxeddsa v0.0.0-20180216190124-07c00d1c9bf7
 	github.com/aead/siphash v1.0.1
 	github.com/cilium/ebpf v0.8.0
 	github.com/fsnotify/fsnotify v1.5.1
@@ -207,3 +206,5 @@ require (
 )
 
 replace github.com/vishvananda/netlink => github.com/stv0g/netlink v1.1.1-gont
+
+replace github.com/stv0g/gont => ../gont

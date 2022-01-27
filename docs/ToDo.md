@@ -1,10 +1,8 @@
 # TODOs
 
-- [ ] Sign published candidates with XEdDSA signatures
+- [ ] Encrypt all signaling messages
 - [ ] Add peer discovery
 - [ ] Add libp2p backend
-- Separate code into multiple repos:
-  - [ ] XEdDSA
 - Contribute code into existing packages
   - wgctrl
     - [ ] Watch for interfaces
@@ -34,7 +32,6 @@
   - [Patch](https://lore.kernel.org/patchwork/patch/1366219/)
 - [ ] Use netlink multicast group RTMGRP_LINK to for notification of new Wireguard interfaces
 - [ ] Add links to code in README
-- [ ] Add `XEdDSA` and `VXEdDSA` signature schemes to [JOSE IANA alg registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms)
 - [ ] Add sub-commands for controlling `wice` deaemon:
   - `wice show [[INTF] [PEER]]`
   - `wice add INTF`
