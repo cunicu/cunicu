@@ -15,8 +15,13 @@ import (
 )
 
 const (
-	SO_ATTACH_BPF    int = 50
+	// Socket option to attach a classic BPF program to the socket for
+	// use as a filter of incoming packets.
 	SO_ATTACH_FILTER int = 26
+
+	// Socket option to attach an extended BPF program to the socket for
+	// use as a filter of incoming packets.
+	SO_ATTACH_BPF int = 50
 )
 
 // Filter represents a classic BPF filter program that can be applied to a socket
