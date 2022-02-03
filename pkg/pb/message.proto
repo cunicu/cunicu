@@ -3,11 +3,6 @@ package wice;
 
 option go_package = "riasc.eu/wice/pkg/pb";
 
-message SignedMessage {
-    bytes body = 1;
-    bytes signature = 2;
-}
-
 message EncryptedMessage {
     bytes body = 1;
     bytes nonce = 2;
