@@ -4,10 +4,29 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
 
-message PeerDescriptor {
-    bytes public_key = 1;
+message PeerDescription {
+    // Type of the Wireguard interface impelementation
+    enum InterfaceType {
+        UNKNOWN = 0;
+	    LINUX_KERNEL = 1;
+	    OPENBSD_KERNEL = 2;
+	    WINDOWS_KERNEL = 3;
+	    USERSPACE = 4;
+    }
+    
+    // Hostname of the node
     string hostname = 2;
+
+    // List of allowed IPs
     repeated string allowed_ips = 3;
+
+    // Wireguard endpoint address
+    string endpoint = 4;
+
+    // Version of WICE agent
+    string wice_version = 5;
+
+    InterfaceType interface_type = 6;
 }
 
 message Peer {
