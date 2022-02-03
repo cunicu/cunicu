@@ -9,6 +9,7 @@ import (
 
 	"github.com/aead/siphash"
 	"github.com/pion/dtls/v2/pkg/crypto/hash"
+	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -142,13 +143,8 @@ func (kp KeyPair) ID(key []byte) string {
 }
 
 func (kp KeyPair) Shared() Key {
-	shared := Key{}
-
-	for i := range kp.Ours {
-		shared[i] = kp.Ours[i] ^ kp.Theirs[i]
-	}
-
-	return shared
+	shared, _ := curve25519.X25519(kp.Ours[:], kp.Theirs[:])
+	return *(*Key)(shared)
 }
 
 func GetNonce(len int) (Nonce, error) {

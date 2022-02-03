@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SignalingClient interface {
-	SubscribeOffers(ctx context.Context, in *SubscribeOffersParams, opts ...grpc.CallOption) (Signaling_SubscribeOffersClient, error)
-	PublishOffer(ctx context.Context, in *PublishOffersParams, opts ...grpc.CallOption) (*Error, error)
+	Subscribe(ctx context.Context, in *SubscribeParams, opts ...grpc.CallOption) (Signaling_SubscribeClient, error)
+	Publish(ctx context.Context, in *SignalingEnvelope, opts ...grpc.CallOption) (*Error, error)
 }
 
 type signalingClient struct {
@@ -30,12 +30,12 @@ func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 	return &signalingClient{cc}
 }
 
-func (c *signalingClient) SubscribeOffers(ctx context.Context, in *SubscribeOffersParams, opts ...grpc.CallOption) (Signaling_SubscribeOffersClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Signaling_ServiceDesc.Streams[0], "/wice.Signaling/SubscribeOffers", opts...)
+func (c *signalingClient) Subscribe(ctx context.Context, in *SubscribeParams, opts ...grpc.CallOption) (Signaling_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Signaling_ServiceDesc.Streams[0], "/wice.Signaling/Subscribe", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &signalingSubscribeOffersClient{stream}
+	x := &signalingSubscribeClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -45,26 +45,26 @@ func (c *signalingClient) SubscribeOffers(ctx context.Context, in *SubscribeOffe
 	return x, nil
 }
 
-type Signaling_SubscribeOffersClient interface {
-	Recv() (*Offer, error)
+type Signaling_SubscribeClient interface {
+	Recv() (*SignalingEnvelope, error)
 	grpc.ClientStream
 }
 
-type signalingSubscribeOffersClient struct {
+type signalingSubscribeClient struct {
 	grpc.ClientStream
 }
 
-func (x *signalingSubscribeOffersClient) Recv() (*Offer, error) {
-	m := new(Offer)
+func (x *signalingSubscribeClient) Recv() (*SignalingEnvelope, error) {
+	m := new(SignalingEnvelope)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *signalingClient) PublishOffer(ctx context.Context, in *PublishOffersParams, opts ...grpc.CallOption) (*Error, error) {
+func (c *signalingClient) Publish(ctx context.Context, in *SignalingEnvelope, opts ...grpc.CallOption) (*Error, error) {
 	out := new(Error)
-	err := c.cc.Invoke(ctx, "/wice.Signaling/PublishOffer", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Signaling/Publish", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,8 @@ func (c *signalingClient) PublishOffer(ctx context.Context, in *PublishOffersPar
 // All implementations must embed UnimplementedSignalingServer
 // for forward compatibility
 type SignalingServer interface {
-	SubscribeOffers(*SubscribeOffersParams, Signaling_SubscribeOffersServer) error
-	PublishOffer(context.Context, *PublishOffersParams) (*Error, error)
+	Subscribe(*SubscribeParams, Signaling_SubscribeServer) error
+	Publish(context.Context, *SignalingEnvelope) (*Error, error)
 	mustEmbedUnimplementedSignalingServer()
 }
 
@@ -84,11 +84,11 @@ type SignalingServer interface {
 type UnimplementedSignalingServer struct {
 }
 
-func (UnimplementedSignalingServer) SubscribeOffers(*SubscribeOffersParams, Signaling_SubscribeOffersServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeOffers not implemented")
+func (UnimplementedSignalingServer) Subscribe(*SubscribeParams, Signaling_SubscribeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
-func (UnimplementedSignalingServer) PublishOffer(context.Context, *PublishOffersParams) (*Error, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PublishOffer not implemented")
+func (UnimplementedSignalingServer) Publish(context.Context, *SignalingEnvelope) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedSignalingServer) mustEmbedUnimplementedSignalingServer() {}
 
@@ -103,41 +103,41 @@ func RegisterSignalingServer(s grpc.ServiceRegistrar, srv SignalingServer) {
 	s.RegisterService(&Signaling_ServiceDesc, srv)
 }
 
-func _Signaling_SubscribeOffers_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SubscribeOffersParams)
+func _Signaling_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeParams)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SignalingServer).SubscribeOffers(m, &signalingSubscribeOffersServer{stream})
+	return srv.(SignalingServer).Subscribe(m, &signalingSubscribeServer{stream})
 }
 
-type Signaling_SubscribeOffersServer interface {
-	Send(*Offer) error
+type Signaling_SubscribeServer interface {
+	Send(*SignalingEnvelope) error
 	grpc.ServerStream
 }
 
-type signalingSubscribeOffersServer struct {
+type signalingSubscribeServer struct {
 	grpc.ServerStream
 }
 
-func (x *signalingSubscribeOffersServer) Send(m *Offer) error {
+func (x *signalingSubscribeServer) Send(m *SignalingEnvelope) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Signaling_PublishOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PublishOffersParams)
+func _Signaling_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignalingEnvelope)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SignalingServer).PublishOffer(ctx, in)
+		return srv.(SignalingServer).Publish(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Signaling/PublishOffer",
+		FullMethod: "/wice.Signaling/Publish",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SignalingServer).PublishOffer(ctx, req.(*PublishOffersParams))
+		return srv.(SignalingServer).Publish(ctx, req.(*SignalingEnvelope))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -150,14 +150,14 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SignalingServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PublishOffer",
-			Handler:    _Signaling_PublishOffer_Handler,
+			MethodName: "Publish",
+			Handler:    _Signaling_Publish_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "SubscribeOffers",
-			Handler:       _Signaling_SubscribeOffers_Handler,
+			StreamName:    "Subscribe",
+			Handler:       _Signaling_Subscribe_Handler,
 			ServerStreams: true,
 		},
 	},

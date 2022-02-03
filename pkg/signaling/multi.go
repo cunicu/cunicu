@@ -28,9 +28,9 @@ func NewMultiBackend(uris []*url.URL, events chan *pb.Event) (Backend, error) {
 	return mb, nil
 }
 
-func (m *MultiBackend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
+func (m *MultiBackend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	for _, b := range m.backends {
-		if err := b.PublishOffer(kp, offer); err != nil {
+		if err := b.Publish(kp, msg); err != nil {
 			return err
 		}
 	}
@@ -38,22 +38,18 @@ func (m *MultiBackend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
 	return nil
 }
 
-func (m *MultiBackend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
-	chans := []chan *pb.Offer{}
+func (m *MultiBackend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+	chans := []chan *pb.SignalingMessage{}
 
 	for _, b := range m.backends {
-		if ch, err := b.SubscribeOffers(kp); err != nil {
+		if ch, err := b.Subscribe(kp); err != nil {
 			return nil, err
 		} else {
 			chans = append(chans, ch)
 		}
 	}
 
-	return pumpOffers(chans), nil
-}
-
-func (m *MultiBackend) Tick() {
-
+	return pumpMessages(chans), nil
 }
 
 func (m *MultiBackend) Close() error {
@@ -66,14 +62,14 @@ func (m *MultiBackend) Close() error {
 	return nil
 }
 
-// pumpOffers reads offers from the secondary backends and pushes them into a common channel
-func pumpOffers(chans []chan *pb.Offer) chan *pb.Offer {
-	nch := make(chan *pb.Offer)
+// pumpMessages reads offers from the secondary backends and pushes them into a common channel
+func pumpMessages(chans []chan *pb.SignalingMessage) chan *pb.SignalingMessage {
+	nch := make(chan *pb.SignalingMessage)
 
 	for _, ch := range chans {
-		go func(ch chan *pb.Offer) {
-			for o := range ch {
-				nch <- o
+		go func(ch chan *pb.SignalingMessage) {
+			for m := range ch {
+				nch <- m
 			}
 		}(ch)
 	}

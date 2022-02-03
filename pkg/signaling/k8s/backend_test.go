@@ -1,14 +1,10 @@
 package k8s_test
 
 import (
-	"log"
-	"net/url"
 	"os"
 	"testing"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
-	"riasc.eu/wice/pkg/signaling/k8s"
+	"riasc.eu/wice/internal/test"
 )
 
 func TestBackend(t *testing.T) {
@@ -16,35 +12,5 @@ func TestBackend(t *testing.T) {
 		t.Skipf("Kubernetes tests are not yet supported in CI")
 	}
 
-	uri, err := url.Parse("k8s:?node=red")
-	if err != nil {
-		t.Errorf("failed to parse backend URL: %s", err)
-	}
-
-	events := make(chan *pb.Event, 100)
-
-	b, err := k8s.NewBackend(uri, events)
-	if err != nil {
-		t.Errorf("failed to create backend: %s", err)
-	}
-
-	ourSecretKey, _ := crypto.GeneratePrivateKey()
-	theirSecretKey, _ := crypto.GeneratePrivateKey()
-
-	kp := crypto.KeyPair{
-		Ours:   ourSecretKey.PublicKey(),
-		Theirs: theirSecretKey.PublicKey(),
-	}
-
-	o := &pb.Offer{}
-
-	ch, err := b.SubscribeOffers(kp)
-	if err != nil {
-		t.Errorf("failed to subscribe to offer")
-	}
-
-	b.PublishOffer(kp, o)
-
-	n := <-ch
-	log.Print(n)
+	test.TestBackend(t, "k8s:?node=red")
 }

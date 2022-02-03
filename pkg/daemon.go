@@ -120,8 +120,6 @@ out:
 			d.logger.Debug("Starting periodic interface sync")
 			d.SyncAllInterfaces()
 
-			d.Backend.Tick()
-
 		case <-d.stopSig:
 			d.logger.Info("Received stop request")
 			break out

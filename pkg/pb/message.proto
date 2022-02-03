@@ -10,4 +10,5 @@ message SignedMessage {
 
 message EncryptedMessage {
     bytes body = 1;
+    bytes nonce = 2;
 }

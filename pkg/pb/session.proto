@@ -1,0 +1,20 @@
+syntax = "proto3";
+package wice;
+
+option go_package = "riasc.eu/wice/pkg/pb";
+
+import "candidate.proto";
+
+// SDP-like session description
+// See: https://www.rfc-editor.org/rfc/rfc8866.html
+message SessionDescription {
+    // Session epoch, incremented with each offer
+    int64 epoch = 1;
+
+    bool lite = 2;
+
+    string Ufrag = 3;
+    string Pwd = 4;
+
+	repeated Candidate candidates = 5;
+}

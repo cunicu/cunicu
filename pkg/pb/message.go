@@ -1,7 +1,6 @@
 package pb
 
 import (
-	"crypto/rand"
 	"errors"
 	"fmt"
 
@@ -10,66 +9,31 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 )
 
-func (m *SignedMessage) Validate(pk crypto.Key) (bool, error) {
-	if len(m.Signature) != crypto.SignatureLength {
-		return false, errors.New("invalid signature length")
-	}
-
-	sig := *(*crypto.Signature)(m.Signature)
-
-	return pk.Verify(m.Body, sig), nil
-}
-
-func (s *SignedMessage) Marshal(msg proto.Message, sk crypto.Key) error {
-	var err error
-
-	s.Body, err = proto.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	nonce, err := crypto.GetNonce()
-	if err != nil {
-		return fmt.Errorf("failed to generate nonce: %s", err)
-	}
-
-	sig := sk.Sign(s.Body, nonce)
-
-	s.Signature = sig[:]
-
-	return nil
-}
-
-func (s *SignedMessage) Unmarshal(msg proto.Message, pk crypto.Key) error {
-	if ok, err := s.Validate(pk); err != nil {
-		return err
-	} else if !ok {
-		return errors.New("invalid signature")
-	} else {
-		return proto.Unmarshal(s.Body, msg)
-	}
-}
-
-func (s *EncryptedMessage) Marshal(msg proto.Message, pk crypto.Key) error {
+func (s *EncryptedMessage) Marshal(msg proto.Message, kp *crypto.KeyPair) error {
 	body, err := proto.Marshal(msg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal: %w", err)
 	}
 
-	s.Body, err = box.SealAnonymous([]byte{}, body, (*[32]byte)(&pk), rand.Reader)
+	s.Nonce, err = crypto.GetNonce(24)
 	if err != nil {
-		fmt.Errorf("failed to seal: %w", err)
+		return fmt.Errorf("failed to create nonce: %w", err)
+	}
+
+	s.Body = box.Seal([]byte{}, body, (*[24]byte)(s.Nonce), (*[32]byte)(&kp.Theirs), (*[32]byte)(&kp.Ours))
+	if err != nil {
+		return fmt.Errorf("failed to seal: %w", err)
 	}
 
 	return nil
 }
 
-func (s *EncryptedMessage) Unmarshal(msg proto.Message, sk crypto.Key) error {
-	body := []byte{}
+func (s *EncryptedMessage) Unmarshal(msg proto.Message, kp *crypto.KeyPair) error {
+	if len(s.Nonce) != 24 {
+		return errors.New("invalid nonce length")
+	}
 
-	pk := sk.PublicKey()
-
-	_, ok := box.OpenAnonymous(body, s.Body, (*[32]byte)(&pk), (*[32]byte)(&sk))
+	body, ok := box.Open([]byte{}, s.Body, (*[24]byte)(s.Nonce), (*[32]byte)(&kp.Theirs), (*[32]byte)(&kp.Ours))
 	if !ok {
 		return errors.New("failed to open")
 	}

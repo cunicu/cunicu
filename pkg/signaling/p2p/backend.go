@@ -74,6 +74,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 		p2p.UserAgent(userAgent),
 		p2p.DefaultTransports,
 		p2p.EnableNATService(),
+		p2p.EnableRelayService(),
 		p2p.Security(ptls.ID, ptls.New),
 		p2p.Security(noise.ID, noise.New),
 	}
@@ -209,25 +210,25 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	return b, nil
 }
 
-func (b *Backend) getPeer(kp crypto.KeyPair) (*Peer, error) {
+func (b *Backend) getPeer(kp *crypto.KeyPair) (*Peer, error) {
 	var err error
 
 	b.peersLock.Lock()
 	defer b.peersLock.Unlock()
 
-	p, ok := b.peers[kp]
+	p, ok := b.peers[*kp]
 	if !ok {
 		if p, err = b.NewPeer(kp); err != nil {
 			return nil, err
 		}
 
-		b.peers[kp] = p
+		b.peers[*kp] = p
 	}
 
 	return p, nil
 }
 
-func (b *Backend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
+func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	p, err := b.getPeer(kp)
@@ -235,16 +236,16 @@ func (b *Backend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
 		return nil, err
 	}
 
-	return p.Offers, nil
+	return p.Messages, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
+func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	p, err := b.getPeer(kp)
 	if err != nil {
 		return fmt.Errorf("failed to get peer: %w", err)
 	}
 
-	if err := p.publishOffer(offer); err != nil {
+	if err := p.publishMessage(msg); err != nil {
 		return err
 	}
 

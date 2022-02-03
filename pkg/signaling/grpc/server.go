@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"io"
-	"sync"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -12,11 +11,10 @@ import (
 )
 
 type Server struct {
+	topicRegistry
+
 	*grpc.Server
 	pb.SignalingServer
-
-	topics     map[crypto.Key]*topic
-	topicsLock sync.Mutex
 
 	logger *zap.Logger
 }
@@ -25,9 +23,11 @@ func NewServer() *Server {
 	logger := zap.L().Named("server")
 
 	s := &Server{
+		topicRegistry: topicRegistry{
+			topics: map[crypto.Key]*topic{},
+		},
 		Server: grpc.NewServer(),
 		logger: logger,
-		topics: map[crypto.Key]*topic{},
 	}
 
 	pb.RegisterSignalingServer(s, s)
@@ -35,42 +35,27 @@ func NewServer() *Server {
 	return s
 }
 
-func (s *Server) SubscribeOffers(params *pb.SubscribeOffersParams, stream pb.Signaling_SubscribeOffersServer) error {
-	sk := (*crypto.Key)(params.SharedKey)
-	top := s.getTopic(sk)
+func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_SubscribeServer) error {
+	pk := (*crypto.Key)(params.Key)
+	top := s.getTopic(pk)
 
 	ch := top.Subscribe()
-	for o := range ch {
-		err := stream.Send(o)
+	defer top.Unsubscribe(ch)
+
+	for env := range ch {
+		err := stream.Send(env)
 		if err != nil && err != io.EOF {
 			s.logger.Error("Failed to receive offer", zap.Error(err))
 		}
 	}
-	top.Unsubscribe(ch)
 
 	return nil
 }
 
-func (s *Server) PublishOffer(ctx context.Context, params *pb.PublishOffersParams) (*pb.Error, error) {
-	sk := (*crypto.Key)(params.SharedKey)
-	top := s.getTopic(sk)
+func (s *Server) Publish(ctx context.Context, env *pb.SignalingEnvelope) (*pb.Error, error) {
+	pk := (*crypto.Key)(env.Receipient)
 
-	top.Publish(params.Offer)
+	s.getTopic(pk).Publish(env)
 
 	return pb.Success, nil
-}
-
-func (s *Server) getTopic(sk *crypto.Key) *topic {
-	s.topicsLock.Lock()
-	defer s.topicsLock.Unlock()
-
-	top, ok := s.topics[*sk]
-	if ok {
-		return top
-	} else {
-		top := newTopic()
-		s.topics[*sk] = top
-
-		return top
-	}
 }

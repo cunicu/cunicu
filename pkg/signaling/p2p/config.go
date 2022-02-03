@@ -20,6 +20,8 @@ const (
 var defaultConfig = BackendConfig{
 	EnableDHTDiscovery:  true,
 	EnableMDNSDiscovery: true,
+	EnableRelay:         true,
+	EnableAutoRelay:     true,
 	MDNSServiceTag:      defaultMDNSServiceTag,
 	ListenAddresses:     make(multiAddressList, 0),
 	BootstrapPeers:      make(peerAddressList, 0),
@@ -126,13 +128,13 @@ func (c *BackendConfig) Parse(uri *url.URL) error {
 		}
 	}
 
-	if laStrs, ok := options["listen-addresses"]; ok {
+	if laStrs, ok := options["listen-address"]; ok {
 		if err := c.ListenAddresses.Set(laStrs); err != nil {
 			return fmt.Errorf("failed to parse listen-address option: %w", err)
 		}
 	}
 
-	if bpStrs, ok := options["bootstrap-peers"]; ok {
+	if bpStrs, ok := options["bootstrap-peer"]; ok {
 		if err := c.BootstrapPeers.Set(bpStrs); err != nil {
 			return fmt.Errorf("failed to parse listen-address option: %w", err)
 		}

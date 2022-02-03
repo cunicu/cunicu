@@ -13,25 +13,27 @@ import (
 )
 
 type Peer struct {
-	Offers chan *pb.Offer
+	Messages chan *pb.SignalingMessage
 
-	host  host.Host
-	topic *pubsub.Topic
-	sub   *pubsub.Subscription
+	keyPair *crypto.KeyPair
+	host    host.Host
+	topic   *pubsub.Topic
+	sub     *pubsub.Subscription
 
 	logger *zap.Logger
 
 	context context.Context
 }
 
-func (b *Backend) NewPeer(kp crypto.KeyPair) (*Peer, error) {
+func (b *Backend) NewPeer(kp *crypto.KeyPair) (*Peer, error) {
 	var err error
 
 	p := &Peer{
-		host:    b.host,
-		context: context.Background(),
-		logger:  b.logger.With(zap.Any("kp", kp)),
-		Offers:  make(chan *pb.Offer, 100),
+		keyPair:  kp,
+		host:     b.host,
+		context:  context.Background(),
+		logger:   b.logger.With(zap.Any("kp", kp)),
+		Messages: make(chan *pb.SignalingMessage, 100),
 	}
 
 	// topicFromPublicKeyPair derives a common topic name by XOR-ing the public keys of the peers
@@ -52,19 +54,19 @@ func (b *Backend) NewPeer(kp crypto.KeyPair) (*Peer, error) {
 	return p, nil
 }
 
-func (p *Peer) publishOffer(offer *pb.Offer) error {
+func (p *Peer) publishMessage(offer *pb.SignalingMessage) error {
 	payload, err := proto.Marshal(offer)
 	if err != nil {
 		return fmt.Errorf("failed to marshal offer: %w", err)
 	}
 
-	p.logger.Debug("Publishing offer to topic",
-		zap.Any("offer", offer),
-		zap.Any("topic", p.topic),
-	)
+	if err := p.topic.Publish(p.context, payload, pubsub.WithReadiness(pubsub.MinTopicSize(1))); err != nil {
+		return fmt.Errorf("failed to publish offer: %w", err)
+	}
 
-	return p.topic.Publish(p.context, payload,
-		pubsub.WithReadiness(pubsub.MinTopicSize(1)))
+	p.topic.Relay()
+
+	return nil
 }
 
 func (p *Peer) readLoop() {
@@ -74,7 +76,7 @@ func (p *Peer) readLoop() {
 	for {
 		if msg, err = p.sub.Next(p.context); err != nil {
 			p.logger.Error("Failed to receive offers", zap.Error(err))
-			close(p.Offers)
+			close(p.Messages)
 			return
 		}
 
@@ -82,19 +84,18 @@ func (p *Peer) readLoop() {
 			continue
 		}
 
-		offer := &pb.Offer{}
-		if err := proto.Unmarshal(msg.Data, offer); err != nil {
+		env := &pb.SignalingEnvelope{}
+		if err := proto.Unmarshal(msg.Data, env); err != nil {
 			p.logger.Error("Failed to unmarshal offer", zap.Error(err))
 			continue
 		}
 
-		p.logger.Debug("Received offer",
-			zap.Any("offer", offer),
-			zap.Any("topic", p.topic),
-			zap.Any("from", msg.ReceivedFrom),
-		)
+		msg := &pb.SignalingMessage{}
+		if err := env.Contents.Unmarshal(msg, p.keyPair); err != nil {
+			p.logger.Error("Failed to decrypt message", zap.Error(err))
+		}
 
 		// send valid messages onto the Messages channel
-		p.Offers <- offer
+		p.Messages <- msg
 	}
 }

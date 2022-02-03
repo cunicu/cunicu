@@ -31,7 +31,9 @@ type Backend struct {
 func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
 	var err error
 
-	b := &Backend{}
+	b := &Backend{
+		logger: zap.L().Named("grpc"),
+	}
 
 	if err := b.config.Parse(uri); err != nil {
 		return nil, fmt.Errorf("failed to parse backend configuration: %w", err)
@@ -46,22 +48,27 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 	return b, nil
 }
 
-func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error) {
-	params := &pb.SubscribeOffersParams{
-		SharedKey: kp.Shared().Bytes(),
+func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+	params := &pb.SubscribeParams{
+		Key: kp.Ours.PublicKey().Bytes(),
 	}
 
-	stream, err := b.client.SubscribeOffers(context.Background(), params)
+	stream, err := b.client.Subscribe(context.Background(), params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to subscribe to offers: %s", err)
 	}
 
-	ch := make(chan *pb.Offer)
+	ch := make(chan *pb.SignalingMessage)
 
 	go func() {
 		for {
-			if offer, err := stream.Recv(); err == nil {
-				ch <- offer
+			if env, err := stream.Recv(); err == nil {
+				if msg, err := env.Decrypt(kp); err == nil {
+					ch <- msg
+				} else {
+					b.logger.Error("Failed to decrypt message", zap.Error(err))
+					continue
+				}
 			} else {
 				b.logger.Error("Failed to receive offer", zap.Error(err))
 			}
@@ -71,14 +78,13 @@ func (b *Backend) SubscribeOffer(kp crypto.PublicKeyPair) (chan *pb.Offer, error
 	return ch, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.PublicKeyPair, offer *pb.Offer) error {
-	params := &pb.PublishOffersParams{
-		SharedKey: kp.Shared().Bytes(),
-		Offer:     offer,
+func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+	env, err := msg.Encrypt(kp)
+	if err != nil {
+		return fmt.Errorf("failed to encryt message: %w", err)
 	}
 
-	_, err := b.client.PublishOffer(context.Background(), params)
-	if err != nil {
+	if _, err = b.client.Publish(context.Background(), env); err != nil {
 		return fmt.Errorf("failed to publish offer: %w", err)
 	}
 
@@ -92,5 +98,3 @@ func (b *Backend) Close() error {
 
 	return nil
 }
-
-func (b *Backend) Tick() {}

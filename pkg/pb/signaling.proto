@@ -4,18 +4,29 @@ package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
-import "offer.proto";
+import "session.proto";
+import "message.proto";
 
-message SubscribeOffersParams {
-    bytes shared_key = 1;
+message SignalingEnvelope {
+    bytes sender = 1;
+    bytes receipient = 2;
+
+    EncryptedMessage contents = 3; // of type SignalingMessage
 }
 
-message PublishOffersParams {
-    bytes shared_key = 1;
-    Offer offer = 2;
+message SignalingMessage {
+    oneof msg {
+        SessionDescription offer = 1;
+        SessionDescription answer = 2;
+        SessionDescription candidates = 3;
+    }
+}
+
+message SubscribeParams {
+    bytes key = 1;
 }
 
 service Signaling {
-    rpc SubscribeOffers(SubscribeOffersParams) returns (stream Offer) {}
-    rpc PublishOffer(PublishOffersParams) returns (Error) {}
+    rpc Subscribe(SubscribeParams) returns (stream SignalingEnvelope) {}
+    rpc Publish(SignalingEnvelope) returns (Error) {}
 }
