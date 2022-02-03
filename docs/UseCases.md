@@ -12,4 +12,4 @@
 
 **Note:** Not implemented yet
 
-**Invocation:** `wice -discover -backend p2p://my_rendezvouz_phrase`
+**Invocation:** `wice --community my-community-passphrase --backend p2p`

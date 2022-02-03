@@ -13,13 +13,13 @@ Wireguard traffic is proxied by WICE between the local UDP and the ICE socket.
 
 ### RAW Sockets + BPF filter (Kernel)
 
-We allocate a single [Linux RAW socket] and assign a [eBPF] filter to this socket which will only match STUN traffic to a specific UDP port.
+We allocate a single [Linux RAW socket][raw-sockets] and assign a [eBPF][golang-bpf] filter to this socket which will only match STUN traffic to a specific UDP port.
 UDP headers are parsed/produced by WICE.
 WICE uses a UDPMux to mux all peers ICE Agents over this single RAW socket. 
 
 ### NFtables port-redirection (Kernel)
 
-Two [Nftables] (nft) rules are added to filter input & output chains respectivly.
+Two [Nftables][nftables] (nft) rules are added to filter input & output chains respectivly.
 The input rule will match all non-STUN traffic directed at the local port of the ICE candidate and rewrites the UDP destination port to the local listen port of the Wireguard interface.
 The output rule will mach all traffic originating from the listen port of the WG interface and directed to the port of the remote cadidate and rewrites the source port to the port of the local ICE candidate.  
 
@@ -63,6 +63,6 @@ No round-trip through the kernel stack is required.
 
 **Note:** This variant only works for the compiled-in version of wireguard-go in WICE.
 
-[Nftables]: https://www.netfilter.org/projects/nftables/manpage.html
-[Golang BPF]: https://riyazali.net/posts/berkeley-packet-filter-in-golang/
-[Linux Raw socket]: https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html
+[nftables]: https://www.netfilter.org/projects/nftables/manpage.html
+[golang-bpf]: https://riyazali.net/posts/berkeley-packet-filter-in-golang/
+[raw-sockets]: https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html
