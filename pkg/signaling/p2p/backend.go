@@ -3,7 +3,6 @@ package p2p
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"sync"
 
 	p2p "github.com/libp2p/go-libp2p"
@@ -54,7 +53,7 @@ type Backend struct {
 	events chan *pb.Event
 }
 
-func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
@@ -64,7 +63,7 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 		events: events,
 	}
 
-	if err := b.config.Parse(uri); err != nil {
+	if err := b.config.Parse(cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse backend options: %w", err)
 	}
 

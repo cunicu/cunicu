@@ -11,18 +11,19 @@ type MultiBackend struct {
 	backends []Backend
 }
 
-func NewMultiBackend(uris []*url.URL, events chan *pb.Event) (Backend, error) {
+func NewMultiBackend(uris []*url.URL, cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
 	mb := &MultiBackend{
 		backends: []Backend{},
 	}
 
 	for _, u := range uris {
-		b, err := NewBackend(u, events)
-		if err != nil {
+		cfg.URI = u
+
+		if b, err := NewBackend(cfg, events); err == nil {
+			mb.backends = append(mb.backends, b)
+		} else {
 			return nil, err
 		}
-
-		mb.backends = append(mb.backends, b)
 	}
 
 	return mb, nil

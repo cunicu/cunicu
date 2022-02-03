@@ -6,8 +6,9 @@ import (
 )
 
 type BackendConfig struct {
-	URI *url.URL
+	signaling.BackendConfig
 
+	Kubeconfig   string
 	NodeName            string
 	AnnotationOffers    string
 	AnnotationPublicKey string
@@ -18,7 +19,9 @@ var defaultConfig = BackendConfig{
 	AnnotationPublicKey: defaultAnnotationPublicKey,
 }
 
-func (c *BackendConfig) Parse(uri *url.URL) error {
+func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
+	c.BackendConfig = *cfg
+
 	options := uri.Query()
 
 	if str := options.Get("node"); str == "" {
@@ -33,8 +36,7 @@ func (c *BackendConfig) Parse(uri *url.URL) error {
 		c.AnnotationPublicKey = str
 	}
 
-	uri.RawQuery = ""
-	c.URI = uri
+	c.Kubeconfig = c.URI.Path
 
 	return nil
 }

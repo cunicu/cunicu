@@ -2,9 +2,7 @@ package k8s
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -50,7 +48,7 @@ func init() {
 	}
 }
 
-func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
 	var config *rest.Config
 	var err error
 
@@ -63,12 +61,11 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 		events:  events,
 	}
 
-	if err := b.config.Parse(uri); err != nil {
+	if err := b.config.Parse(cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
-	kubeconfig := uri.Path
-	if kubeconfig == "" {
+	if b.config.Kubeconfig == "" {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 		// if you want to change the loading rules (which files in which order), you can do so here
 
@@ -80,14 +77,12 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) 
 		if config, err = kubeConfig.ClientConfig(); err != nil {
 			return nil, fmt.Errorf("failed to load config: %w", err)
 		}
-	} else if kubeconfig == "incluster" {
-
+	} else if b.config.Kubeconfig == "incluster" {
 		if config, err = rest.InClusterConfig(); err != nil {
 			return nil, fmt.Errorf("failed to get incluster configuration: %w", err)
 		}
 	} else {
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
+		if config, err = clientcmd.BuildConfigFromFlags("", b.config.Kubeconfig); err != nil {
 			return nil, fmt.Errorf("failed to get configuration from flags: %w", err)
 		}
 	}

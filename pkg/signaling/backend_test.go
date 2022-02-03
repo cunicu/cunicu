@@ -17,7 +17,11 @@ func TestNewBackend(t *testing.T) {
 
 	events := make(chan *pb.Event, 100)
 
-	b, err := signaling.NewBackend(uri, events)
+	cfg := &signaling.BackendConfig{
+		URI: uri,
+	}
+
+	b, err := signaling.NewBackend(cfg, events)
 	if err != nil {
 		t.Fatalf("Failed to create new backend: %s", err)
 	}

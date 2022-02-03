@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -28,14 +27,14 @@ type Backend struct {
 	logger *zap.Logger
 }
 
-func NewBackend(uri *url.URL, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
 		logger: zap.L().Named("grpc"),
 	}
 
-	if err := b.config.Parse(uri); err != nil {
+	if err := b.config.Parse(cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse backend configuration: %w", err)
 	}
 

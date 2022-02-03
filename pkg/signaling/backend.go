@@ -16,11 +16,16 @@ var (
 
 type BackendType string // URL schemes
 
-type BackendFactory func(*url.URL, chan *pb.Event) (Backend, error)
+type BackendFactory func(*BackendConfig, chan *pb.Event) (Backend, error)
 
 type BackendPlugin struct {
 	New         BackendFactory
 	Description string
+}
+
+type BackendConfig struct {
+	URI       *url.URL
+	Community *crypto.Key
 }
 
 type Backend interface {
@@ -30,8 +35,8 @@ type Backend interface {
 	Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
 }
 
-func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
-	typs := strings.SplitN(uri.Scheme, "+", 2)
+func NewBackend(cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
+	typs := strings.SplitN(cfg.URI.Scheme, "+", 2)
 	typ := BackendType(typs[0])
 
 	p, ok := Backends[typ]
@@ -40,10 +45,10 @@ func NewBackend(uri *url.URL, events chan *pb.Event) (Backend, error) {
 	}
 
 	if len(typs) > 1 {
-		uri.Scheme = typs[1]
+		cfg.URI.Scheme = typs[1]
 	}
 
-	be, err := p.New(uri, events)
+	be, err := p.New(cfg, events)
 	if err != nil {
 		return nil, err
 	}

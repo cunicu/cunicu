@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"fmt"
-	"net/url"
 	"strconv"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -11,6 +10,7 @@ import (
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	maddr "github.com/multiformats/go-multiaddr"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 const (
@@ -31,7 +31,7 @@ type peerAddressList []peer.AddrInfo
 type multiAddressList []maddr.Multiaddr
 
 type BackendConfig struct {
-	URI *url.URL
+	signaling.BackendConfig
 
 	// Load some options
 	ListenAddresses multiAddressList
@@ -98,12 +98,12 @@ func (al *peerAddressList) Set(as []string) error {
 	return nil
 }
 
-func (c *BackendConfig) Parse(uri *url.URL) error {
+func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	var err error
 
-	c.RendezvousString = uri.Opaque
+	options := cfg.URI.Query()
 
-	options := uri.Query()
+	c.BackendConfig = *cfg
 
 	if pkStr := options.Get("private-key"); pkStr != "" {
 		pk, err := crypto.ConfigDecodeKey(pkStr)

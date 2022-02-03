@@ -2,24 +2,25 @@ package grpc
 
 import (
 	"errors"
-	"net/url"
 	"strconv"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 type BackendConfig struct {
-	URI *url.URL
+	signaling.BackendConfig
 
 	Target string
 
 	Options []grpc.DialOption
 }
 
-func (c *BackendConfig) Parse(uri *url.URL) error {
-	options := uri.Query()
+func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
+	c.BackendConfig = *cfg
 
+	options := c.URI.Query()
 	if str := options.Get("insecure"); str != "" {
 		if b, err := strconv.ParseBool(str); err == nil && b {
 			c.Options = append(c.Options, grpc.WithTransportCredentials(
@@ -28,13 +29,11 @@ func (c *BackendConfig) Parse(uri *url.URL) error {
 		}
 	}
 
-	c.URI = uri
-
-	if uri.Host == "" {
+	if c.URI.Host == "" {
 		return errors.New("missing gRPC server url")
 	}
 
-	c.Target = uri.Host
+	c.Target = c.URI.Host
 
 	return nil
 }

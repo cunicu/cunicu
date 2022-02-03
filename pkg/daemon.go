@@ -45,9 +45,11 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	// Create backend
 	var backend signaling.Backend
 	if len(cfg.Backends) == 1 {
-		backend, err = signaling.NewBackend(cfg.Backends[0], events)
+		backend, err = signaling.NewBackend(&signaling.BackendConfig{
+			URI: cfg.Backends[0],
+		}, events)
 	} else {
-		backend, err = signaling.NewMultiBackend(cfg.Backends, events)
+		backend, err = signaling.NewMultiBackend(cfg.Backends, &signaling.BackendConfig{}, events)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
