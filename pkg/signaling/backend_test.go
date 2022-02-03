@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/signaling/p2p"
 )
@@ -15,7 +15,7 @@ func TestNewBackend(t *testing.T) {
 		t.Fatalf("Failed to parse URL: %s", err)
 	}
 
-	events := make(chan *pb.Event, 100)
+	events := log.NewEventLogger()
 
 	cfg := &signaling.BackendConfig{
 		URI: uri,
