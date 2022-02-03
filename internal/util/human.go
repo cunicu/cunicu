@@ -53,9 +53,9 @@ func Ago(ts time.Time, colored bool) string {
 
 	if d < time.Second {
 		return "Now"
-	} else {
-		return PrettyDuration(d, colored) + " ago"
 	}
+
+	return PrettyDuration(d, colored) + " ago"
 }
 
 func Every(d time.Duration, color bool) string {
@@ -63,26 +63,23 @@ func Every(d time.Duration, color bool) string {
 }
 
 func PrettyBytes(b int64, color bool) string {
-
 	if b < 1024 {
 		if color {
 			return fmt.Sprintf("%d "+t.Color("B", t.FgCyan), b)
-		} else {
-			return fmt.Sprintf("%d B", b)
 		}
-	} else {
-		var suffices = []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
-		var f float32
-		var i int
-
-		for i, f = 0, float32(b); i < len(suffices) && f > 1024; i, f = i+1, f/1024 {
-		}
-
-		if color {
-			return fmt.Sprintf("%.2f "+t.Color("%ciB", t.FgCyan), f, suffices[i-1])
-		} else {
-			return fmt.Sprintf("%.2f %ciB", f, suffices[i-1])
-		}
-
+		return fmt.Sprintf("%d B", b)
 	}
+
+	var suffices = []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
+	var f float32
+	var i int
+
+	for i, f = 0, float32(b); i < len(suffices) && f > 1024; i, f = i+1, f/1024 {
+	}
+
+	if color {
+		return fmt.Sprintf("%.2f "+t.Color("%ciB", t.FgCyan), f, suffices[i-1])
+	}
+
+	return fmt.Sprintf("%.2f %ciB", f, suffices[i-1])
 }

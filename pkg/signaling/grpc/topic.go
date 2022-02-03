@@ -19,12 +19,13 @@ func (s *topicRegistry) getTopic(pk *crypto.Key) *topic {
 	top, ok := s.topics[*pk]
 	if ok {
 		return top
-	} else {
-		top := newTopic()
-		s.topics[*pk] = top
-
-		return top
 	}
+
+	top = newTopic()
+
+	s.topics[*pk] = top
+
+	return top
 }
 
 type topic struct {

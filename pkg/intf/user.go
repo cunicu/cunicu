@@ -43,19 +43,19 @@ func newLogger(log *zap.Logger) *device.Logger {
 
 func (i *UserDevice) Close() error {
 	if err := i.userAPI.Close(); err != nil {
-		return err
+		return fmt.Errorf("failed to close user API: %w", err)
 	}
 
 	i.userDevice.Close()
 
 	if err := i.BaseInterface.Close(); err != nil {
-		return err
+		return fmt.Errorf("failed to close interface: %w", err)
 	}
 
 	return nil
 }
 
-func (i *UserDevice) handleUserApi() {
+func (i *UserDevice) handleUserAPI() {
 	for {
 		conn, err := i.userAPI.Accept()
 		if err != nil {
@@ -98,7 +98,7 @@ func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.B
 		return nil, fmt.Errorf("UAPI listen error: %w", err)
 	}
 
-	var bind conn.Bind = nil
+	var bind conn.Bind
 	if bind == nil {
 		bind = conn.NewDefaultBind()
 	}
@@ -115,7 +115,7 @@ func CreateUserInterface(name string, client *wgctrl.Client, backend signaling.B
 	}
 
 	// Handle UApi requests
-	go dev.handleUserApi()
+	go dev.handleUserAPI()
 	logger.Debug("UAPI listener started for interface")
 
 	// Connect to UAPI

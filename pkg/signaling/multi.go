@@ -43,11 +43,12 @@ func (m *MultiBackend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage,
 	chans := []chan *pb.SignalingMessage{}
 
 	for _, b := range m.backends {
-		if ch, err := b.Subscribe(kp); err != nil {
+		ch, err := b.Subscribe(kp)
+		if err != nil {
 			return nil, err
-		} else {
-			chans = append(chans, ch)
 		}
+
+		chans = append(chans, ch)
 	}
 
 	return pumpMessages(chans), nil

@@ -39,9 +39,9 @@ func waitForSocket(path string) error {
 			tries--
 			if tries == 0 {
 				return fmt.Errorf("timed out")
-			} else {
-				time.Sleep(10 * time.Millisecond)
 			}
+
+			time.Sleep(10 * time.Millisecond)
 			continue
 		} else if err != nil {
 			return fmt.Errorf("failed stat: %w", err)

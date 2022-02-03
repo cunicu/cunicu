@@ -62,12 +62,12 @@ func TestMarshal(t *testing.T) {
 		Key: key,
 	}
 
-	objJson, err := json.Marshal(&obj1)
+	objJSON, err := json.Marshal(&obj1)
 	if err != nil {
 		t.Fail()
 	}
 
-	if err := json.Unmarshal(objJson, &obj2); err != nil {
+	if err := json.Unmarshal(objJSON, &obj2); err != nil {
 		t.Fail()
 	}
 

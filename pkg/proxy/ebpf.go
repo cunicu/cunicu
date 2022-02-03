@@ -89,6 +89,6 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 	return nil
 }
 
-func (bpf *EBPFProxy) Close() error {
+func (p *EBPFProxy) Close() error {
 	return nil
 }

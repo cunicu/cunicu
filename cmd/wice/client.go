@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	client   *socket.Client = nil
+	client   *socket.Client
 	sockPath string
 )
 
@@ -34,9 +34,5 @@ func connect(cmd *cobra.Command, args []string) error {
 }
 
 func disconnect(cmd *cobra.Command, args []string) error {
-	if err := client.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return client.Close()
 }

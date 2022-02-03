@@ -392,11 +392,7 @@ func (b *Backend) Close() error {
 		}
 	}
 
-	if err := b.host.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return b.host.Close()
 }
 
 // HandlePeerFound connects to peers discovered via mDNS. Once they're connected,

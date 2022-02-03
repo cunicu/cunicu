@@ -57,15 +57,15 @@ Every agent listens on incoming datagrams on the port for Protobuf encoded messa
 
 WICE assigns each node a link-local IPv6 address which is calucated by the following formular:
 
-```
-IPv6 link-local address = fe80:0:0:0 || SipHash64(X, k)
+    IPv6 link-local address = fe80:0:0:0 || SipHash64(X, k)
 
-where
+    where
 
-    X is the public key of the corresponding Wireguard interface
-    k is a the byte sequence 0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97
-```
+        X is the public key of the corresponding Wireguard interface
+        k is a the byte sequence 0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97
 
 [dlt]: https://en.wikipedia.org/wiki/Distributed_ledger
+
 [wot]: https://en.wikipedia.org/wiki/Web_of_trust
+
 [6deg-of-separation]: https://en.wikipedia.org/wiki/Six_degrees_of_separation

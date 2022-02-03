@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -23,11 +22,8 @@ var (
 			if err := docsMarkdown(cmd, args); err != nil {
 				return err
 			}
-			if err := docsManpage(cmd, args); err != nil {
-				return err
-			}
 
-			return nil
+			return docsManpage(cmd, args)
 		},
 	}
 
@@ -62,11 +58,7 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := doc.GenMarkdownTree(rootCmd, dir); err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
+	return doc.GenMarkdownTree(rootCmd, dir)
 }
 
 func docsManpage(cmd *cobra.Command, args []string) error {
@@ -87,9 +79,5 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 		Date:    &d,
 	}
 
-	if err := doc.GenManTree(rootCmd, header, dir); err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
+	return doc.GenManTree(rootCmd, header, dir)
 }

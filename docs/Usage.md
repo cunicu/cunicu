@@ -4,7 +4,7 @@
 
 For a detailed documentation of the `wice` commandline tool please have a look at the following page:
 
-- [`wice`](./usage/md/wice.md)
+-   [`wice`](./usage/md/wice.md)
 
 ## Daemon
 

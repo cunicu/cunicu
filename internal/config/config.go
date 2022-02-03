@@ -212,16 +212,16 @@ func (c *Config) Setup(args []string) {
 	}
 }
 
-func (a *Config) AgentConfig() (*ice.AgentConfig, error) {
+func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	cfg := &ice.AgentConfig{
-		InsecureSkipVerify: a.iceInsecureSkipVerify,
-		NetworkTypes:       a.iceNetworkTypes,
-		CandidateTypes:     a.iceCandidateTypes,
-		Urls:               a.iceURLs,
+		InsecureSkipVerify: c.iceInsecureSkipVerify,
+		NetworkTypes:       c.iceNetworkTypes,
+		CandidateTypes:     c.iceCandidateTypes,
+		Urls:               c.iceURLs,
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		return a.iceInterfaceFilter.Match([]byte(name))
+		return c.iceInterfaceFilter.Match([]byte(name))
 	}
 
 	// Add default STUN/TURN servers
@@ -230,51 +230,51 @@ func (a *Config) AgentConfig() (*ice.AgentConfig, error) {
 	} else {
 		// Set ICE credentials
 		for _, u := range cfg.Urls {
-			if a.iceUsername != "" {
-				u.Username = a.iceUsername
+			if c.iceUsername != "" {
+				u.Username = c.iceUsername
 			}
 
-			if a.icePassword != "" {
-				u.Password = a.icePassword
+			if c.icePassword != "" {
+				u.Password = c.icePassword
 			}
 		}
 	}
 
-	if a.iceMaxBindingRequests > 0 {
-		cfg.MaxBindingRequests = &a.iceMaxBindingRequests
+	if c.iceMaxBindingRequests > 0 {
+		cfg.MaxBindingRequests = &c.iceMaxBindingRequests
 	}
 
-	if a.iceMdns {
+	if c.iceMdns {
 		cfg.MulticastDNSMode = ice.MulticastDNSModeQueryAndGather
 	}
 
-	if a.iceDisconnectedTimeout > 0 {
-		cfg.DisconnectedTimeout = &a.iceDisconnectedTimeout
+	if c.iceDisconnectedTimeout > 0 {
+		cfg.DisconnectedTimeout = &c.iceDisconnectedTimeout
 	}
 
-	if a.iceFailedTimeout > 0 {
-		cfg.FailedTimeout = &a.iceFailedTimeout
+	if c.iceFailedTimeout > 0 {
+		cfg.FailedTimeout = &c.iceFailedTimeout
 	}
 
-	if a.iceKeepaliveInterval > 0 {
-		cfg.KeepaliveInterval = &a.iceKeepaliveInterval
+	if c.iceKeepaliveInterval > 0 {
+		cfg.KeepaliveInterval = &c.iceKeepaliveInterval
 	}
 
-	if a.iceCheckInterval > 0 {
-		cfg.CheckInterval = &a.iceCheckInterval
+	if c.iceCheckInterval > 0 {
+		cfg.CheckInterval = &c.iceCheckInterval
 	}
 
-	if len(a.iceNat1to1IPs) > 0 {
+	if len(c.iceNat1to1IPs) > 0 {
 		cfg.NAT1To1IPCandidateType = ice.CandidateTypeServerReflexive
 
 		cfg.NAT1To1IPs = []string{}
-		for _, i := range a.iceNat1to1IPs {
+		for _, i := range c.iceNat1to1IPs {
 			cfg.NAT1To1IPs = append(cfg.NAT1To1IPs, i.String())
 		}
 	}
 
 	// Default network types
-	if len(a.iceNetworkTypes) == 0 {
+	if len(c.iceNetworkTypes) == 0 {
 		cfg.NetworkTypes = append(cfg.NetworkTypes,
 			ice.NetworkTypeUDP4,
 			ice.NetworkTypeUDP6,

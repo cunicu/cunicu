@@ -168,7 +168,7 @@ out:
 
 func (d *Daemon) Close() error {
 	if err := d.Interfaces.Close(); err != nil {
-		return err
+		return fmt.Errorf("failed to close interface: %w", err)
 	}
 
 	return nil

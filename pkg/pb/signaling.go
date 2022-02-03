@@ -8,12 +8,12 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 )
 
-func (m *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, error) {
-	sender, err := crypto.ParseKeyBytes(m.Sender)
+func (e *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, error) {
+	sender, err := crypto.ParseKeyBytes(e.Sender)
 	if err != nil {
 		return nil, fmt.Errorf("invalid key: %w", err)
 	}
-	receipient, err := crypto.ParseKeyBytes(m.Receipient)
+	receipient, err := crypto.ParseKeyBytes(e.Receipient)
 	if err != nil {
 		return nil, fmt.Errorf("invalid key: %w", err)
 	}
@@ -27,20 +27,20 @@ func (m *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, erro
 	}
 
 	msg := &SignalingMessage{}
-	return msg, m.Contents.Unmarshal(msg, kp)
+	return msg, e.Contents.Unmarshal(msg, kp)
 }
 
-func (m *SignalingMessage) Encrypt(kp *crypto.KeyPair) (*SignalingEnvelope, error) {
+func (e *SignalingMessage) Encrypt(kp *crypto.KeyPair) (*SignalingEnvelope, error) {
 	envp := &SignalingEnvelope{
 		Sender:     kp.Ours.PublicKey().Bytes(),
 		Receipient: kp.Theirs.Bytes(),
 		Contents:   &EncryptedMessage{},
 	}
 
-	return envp, envp.Contents.Marshal(m, kp)
+	return envp, envp.Contents.Marshal(e, kp)
 }
 
-func (in *SignalingEnvelope) DeepCopyInto(out *SignalingEnvelope) {
-	p := proto.Clone(in).(*SignalingEnvelope)
+func (e *SignalingEnvelope) DeepCopyInto(out *SignalingEnvelope) {
+	p := proto.Clone(e).(*SignalingEnvelope)
 	*out = *p
 }

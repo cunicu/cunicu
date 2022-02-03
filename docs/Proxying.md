@@ -4,7 +4,7 @@ WICE implements multiple ways of running an ICE agent alongside Wireguard on the
 
 ## Kernel Wireguard module
 
-### Userspace Proxy
+### Userspace
 
 For each WG peer a new local UDP socket is opened.
 WICE will update the endpoint address of the peer to this the local address of the new sockets.
@@ -64,5 +64,7 @@ No round-trip through the kernel stack is required.
 **Note:** This variant only works for the compiled-in version of wireguard-go in WICE.
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
+
 [golang-bpf]: https://riyazali.net/posts/berkeley-packet-filter-in-golang/
+
 [raw-sockets]: https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html

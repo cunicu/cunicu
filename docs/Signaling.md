@@ -25,26 +25,31 @@ PA                         PB
 
 Agent will restart
 
-- if
-  - `last_recv.id` has been set
-  - `recv.id!=last_recv.id`
-  - `recv.version==0`
+-   if
+    -   `last_recv.id` has been set
+    -   `recv.id!=last_recv.id`
+    -   `recv.version==0`
 
-- then
-  - set
-    - `local.id=rand()`
-    - `local.version=0`
-    - `local.candidates=[]`
-  - publish new offer
-  - wait for first offer including candidates from remote
-  - (re)start agent
-  - add first received
-  - start gathering candidates
-    - send an offers for each candidate `c`:
-      - `candidates=local.candidates.append(c)`
-      - `id=local.id`
-      - `rid=local.rid`
-      - `version=local.version++`
+-   then
+    -   set
+        -   `local.id=rand()`
+        -   `local.version=0`
+        -   `local.candidates=[]`
+
+    -   publish new offer
+
+    -   wait for first offer including candidates from remote
+
+    -   (re)start agent
+
+    -   add first received
+
+    -   start gathering candidates
+        -   send an offers for each candidate `c`:
+            -   `candidates=local.candidates.append(c)`
+            -   `id=local.id`
+            -   `rid=local.rid`
+            -   `version=local.version++`
 
 ## Offer
 
