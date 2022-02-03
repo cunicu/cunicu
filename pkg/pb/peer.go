@@ -5,12 +5,7 @@ import (
 	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
 )
-
-func (p *Peer) Key() crypto.Key {
-	return *(*crypto.Key)(p.PublicKey)
-}
 
 func NewPeer(p wgtypes.Peer) *Peer {
 	allowedIPs := []string{}

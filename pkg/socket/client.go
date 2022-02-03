@@ -109,7 +109,12 @@ func (c *Client) streamEvents() {
 
 		if e.Type == pb.Event_PEER_CONNECTION_STATE_CHANGED {
 			if pcs, ok := e.Event.(*pb.Event_PeerConnectionStateChange); ok {
-				pk := *(*crypto.Key)(e.Peer)
+				pk, err := crypto.ParseKeyBytes(e.Peer)
+				if err != nil {
+					c.logger.Error("Invalid key", zap.Error(err))
+					continue
+				}
+
 				cs := pcs.PeerConnectionStateChange.NewState.ConnectionState()
 
 				c.connectionStatesLock.Lock()

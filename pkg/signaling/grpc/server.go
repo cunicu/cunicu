@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"go.uber.org/zap"
@@ -36,8 +37,12 @@ func NewServer() *Server {
 }
 
 func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_SubscribeServer) error {
-	pk := (*crypto.Key)(params.Key)
-	top := s.getTopic(pk)
+	pk, err := crypto.ParseKeyBytes(params.Key)
+	if err != nil {
+		return fmt.Errorf("invalid key: %w", err)
+	}
+
+	top := s.getTopic(&pk)
 
 	ch := top.Subscribe()
 	defer top.Unsubscribe(ch)
@@ -53,9 +58,12 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 }
 
 func (s *Server) Publish(ctx context.Context, env *pb.SignalingEnvelope) (*pb.Error, error) {
-	pk := (*crypto.Key)(env.Receipient)
+	pk, err := crypto.ParseKeyBytes(env.Receipient)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key: %w", err)
+	}
 
-	s.getTopic(pk).Publish(env)
+	s.getTopic(&pk).Publish(env)
 
 	return pb.Success, nil
 }

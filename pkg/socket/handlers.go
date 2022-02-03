@@ -2,6 +2,7 @@ package socket
 
 import (
 	"context"
+	"fmt"
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -89,7 +90,10 @@ func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) 
 		}, nil
 	}
 
-	pk := *(*crypto.Key)(params.Peer)
+	pk, err := crypto.ParseKeyBytes(params.Peer)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key: %w", err)
+	}
 
 	peer, ok := intf.Peers()[pk]
 	if !ok {

@@ -2,13 +2,20 @@ package pb
 
 import (
 	"errors"
+	"fmt"
 
 	"riasc.eu/wice/pkg/crypto"
 )
 
 func (m *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, error) {
-	var sender = *(*crypto.Key)(m.Sender)
-	var receipient = *(*crypto.Key)(m.Receipient)
+	sender, err := crypto.ParseKeyBytes(m.Sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key: %w", err)
+	}
+	receipient, err := crypto.ParseKeyBytes(m.Receipient)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key: %w", err)
+	}
 
 	if receipient != kp.Ours.PublicKey() {
 		return nil, errors.New("invalid receipient key")

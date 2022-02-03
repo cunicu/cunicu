@@ -18,7 +18,7 @@ func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
 	}
 
 	if e.Peer != nil {
-		pk := (*crypto.Key)(e.Peer)
+		pk, _ := crypto.ParseKeyBytes(e.Peer)
 		fields = append(fields, zap.Any("peer", pk))
 	}
 
