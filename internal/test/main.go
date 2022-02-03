@@ -10,7 +10,7 @@ import (
 
 func Main(m *testing.M) {
 	internal.SetupRand()
-	logger := internal.SetupLogging(zapcore.DebugLevel)
+	logger := internal.SetupLogging(zapcore.DebugLevel, "logs/test.log")
 	defer logger.Sync()
 
 	os.Exit(m.Run())

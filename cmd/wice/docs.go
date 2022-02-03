@@ -15,10 +15,10 @@ var (
 	outputDir string
 
 	docsCmd = &cobra.Command{
-		Use:   "docs",
-		Short: "Generate documentation for the wice commands",
-		// Hidden: true,
-		Args: cobra.NoArgs,
+		Use:    "docs",
+		Short:  "Generate documentation for the wice commands",
+		Hidden: true,
+		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := docsMarkdown(cmd, args); err != nil {
 				return err

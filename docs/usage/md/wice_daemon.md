@@ -20,7 +20,7 @@ wice daemon [interfaces...] [flags]
   -k, --ice-insecure-skip-verify           skip verification of TLS certificates for secure STUN/TURN servers
       --ice-interface-filter string        regex for filtering local interfaces for ICE candidate gathering (e.g. "eth[0-9]+") (default ".*")
       --ice-keepalive-interval duration    interval netween STUN keepalives (default 2s)
-  -l, --ice-lite                           lite agents do not perform connectivity check and only provide host candidates
+  -L, --ice-lite                           lite agents do not perform connectivity check and only provide host candidates
       --ice-max-binding-requests uint16    maximum number of binding request before considering a pair failed (default 7)
   -m, --ice-mdns                           enable local Multicast DNS discovery
       --ice-nat-1to1-ip ipSlice            IP addresses which will be added as local server reflexive candidates (default [])
@@ -44,6 +44,7 @@ wice daemon [interfaces...] [flags]
 ### Options inherited from parent commands
 
 ```
+  -l, --log-file string    path of a file to write logs to
   -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
 ```
 

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/pion/ice/v2"
-	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/proxy"
 )
 
@@ -142,16 +141,6 @@ func (pt *proxyType) Set(value string) error {
 	var err error
 	pt.ProxyType, err = proxy.ProxyTypeFromString(value)
 	return err
-}
-
-type logLevel struct{ zap.AtomicLevel }
-
-func (ll *logLevel) Type() string {
-	return "string"
-}
-
-func (ll *logLevel) Set(value string) error {
-	return ll.UnmarshalText([]byte(value))
 }
 
 type regex struct{ *regexp.Regexp }

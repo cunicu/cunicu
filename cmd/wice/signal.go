@@ -23,7 +23,7 @@ var (
 
 func init() {
 	pf := signalCmd.PersistentFlags()
-	pf.StringVarP(&listenAddress, "listen", "l", ":443", "listen address")
+	pf.StringVarP(&listenAddress, "listen", "L", ":443", "listen address")
 
 	rootCmd.AddCommand(signalCmd)
 }

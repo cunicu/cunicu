@@ -62,7 +62,7 @@ Start the daemon
 	interval netween STUN keepalives
 
 .PP
-\fB-l\fP, \fB--ice-lite\fP[=false]
+\fB-L\fP, \fB--ice-lite\fP[=false]
 	lite agents do not perform connectivity check and only provide host candidates
 
 .PP
@@ -139,6 +139,10 @@ Start the daemon
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
 	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")

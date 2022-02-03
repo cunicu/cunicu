@@ -19,13 +19,17 @@ import (
 	"riasc.eu/wice/internal/log"
 )
 
-func SetupLogging(level zapcore.Level) *zap.Logger {
+func SetupLogging(level zapcore.Level, file string) *zap.Logger {
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
 	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.99")
 	cfg.DisableCaller = true
 	cfg.DisableStacktrace = true
+
+	if file != "" {
+		cfg.OutputPaths = append(cfg.OutputPaths, file)
+	}
 
 	logger, err := cfg.Build()
 	if err != nil {
@@ -43,6 +47,7 @@ func SetupLogging(level zapcore.Level) *zap.Logger {
 	glogger := logger.Named("grpc")
 	grpclog.SetLoggerV2(log.NewGRPCLogger(glogger))
 
+	zap.RedirectStdLog(logger)
 	zap.ReplaceGlobals(logger)
 
 	return logger

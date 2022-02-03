@@ -153,7 +153,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	flags.Uint16Var(&cfg.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
 	flags.Uint16Var(&cfg.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
-	flags.BoolVarP(&cfg.iceLite, "ice-lite", "l", false, "lite agents do not perform connectivity check and only provide host candidates")
+	flags.BoolVarP(&cfg.iceLite, "ice-lite", "L", false, "lite agents do not perform connectivity check and only provide host candidates")
 	flags.BoolVarP(&cfg.iceMdns, "ice-mdns", "m", false, "enable local Multicast DNS discovery")
 	flags.Uint16Var(&cfg.iceMaxBindingRequests, "ice-max-binding-requests", defaultMaxBindingRequests, "maximum number of binding request before considering a pair failed")
 	flags.BoolVarP(&cfg.iceInsecureSkipVerify, "ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")

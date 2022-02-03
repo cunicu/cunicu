@@ -46,37 +46,40 @@ var (
 		Long:  "Wireguard Interactive Connectitivty Establishment",
 
 		// The main wice command is just an alias for "wice daemon"
-		Run: daemon,
+		Run:               daemon,
+		DisableAutoGenTag: true,
+		Version:           version,
 	}
 
 	version string //lint:ignore U1000 set via ldflags -X / goreleaser
 	commit  string //lint:ignore U1000 set via ldflags -X / goreleaser
 	date    string //lint:ignore U1000 set via ldflags -X / goreleaser
 
-	level = logLevel{zapcore.InfoLevel}
+	logLevel = level{zapcore.InfoLevel}
+	logFile  string
 )
 
-type logLevel struct {
+type level struct {
 	zapcore.Level
 }
 
-func (l *logLevel) Type() string {
+func (l *level) Type() string {
 	return "string"
 }
 
 func init() {
+	rootCmd.SetUsageTemplate(usageTemplate)
+
 	cobra.OnInitialize(
 		internal.SetupRand,
 		setupLogging,
 	)
 
-	rootCmd.Version = version
-	rootCmd.SetUsageTemplate(usageTemplate)
-
 	pf := rootCmd.PersistentFlags()
-	pf.VarP(&level, "log-level", "d", "log level (one of \"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", and \"fatal\")")
+	pf.VarP(&logLevel, "log-level", "d", "log level (one of \"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", and \"fatal\")")
+	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
 }
 
 func setupLogging() {
-	logger = internal.SetupLogging(level.Level)
+	logger = internal.SetupLogging(logLevel.Level, logFile)
 }

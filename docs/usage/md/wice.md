@@ -14,6 +14,7 @@ wice [flags]
 
 ```
   -h, --help               help for wice
+  -l, --log-file string    path of a file to write logs to
   -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
 ```
 
@@ -21,7 +22,9 @@ wice [flags]
 
 * [wice completion](wice_completion.md)	 - Generate the autocompletion script for the specified shell
 * [wice daemon](wice_daemon.md)	 - Start the daemon
+* [wice interface](wice_interface.md)	 - Manage Wireguard interfaces
 * [wice monitor](wice_monitor.md)	 - Monitor the WICE daemon for events
+* [wice peer](wice_peer.md)	 - Manage Wireguard peers
 * [wice signal](wice_signal.md)	 - Start gRPC signaling server
 * [wice stop](wice_stop.md)	 - Shutdown the WICE daemon
 * [wice sync](wice_sync.md)	 - Synchronize interfaces
