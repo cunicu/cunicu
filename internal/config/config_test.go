@@ -13,7 +13,7 @@ func TestParseArgsUser(t *testing.T) {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !*config.Userspace {
+	if !*config.WireguardUserspace {
 		t.Fail()
 	}
 }
@@ -91,11 +91,11 @@ func TestParseArgsInterfaceFilter(t *testing.T) {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !config.InterfaceFilter.Match([]byte("eth0")) {
+	if !config.WireguardInterfaceFilter.Match([]byte("eth0")) {
 		t.Fail()
 	}
 
-	if config.InterfaceFilter.Match([]byte("wifi0")) {
+	if config.WireguardInterfaceFilter.Match([]byte("wifi0")) {
 		t.Fail()
 	}
 }

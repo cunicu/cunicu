@@ -65,19 +65,19 @@ type Config struct {
 	SocketWait bool
 
 	Backends        backendURLList
-	Userspace       *bool
 	ProxyType       proxyType
-	ConfigSync      bool
-	ConfigPath      string
 	WatchInterval   time.Duration
 	RestartInterval time.Duration
 
-	Interfaces []string
-
-	InterfaceFilter    regex
-	InterfaceFilterICE regex
+	WireguardInterfaces      []string
+	WireguardInterfaceFilter regex
+	WireguardConfigSync      bool
+	WireguardConfigPath      string
+	WireguardUserspace       *bool
 
 	// for ice.AgentConfig
+	iceInterfaceFilter regex
+
 	iceURLs iceURLList
 
 	iceNat1to1IPs []net.IP
@@ -119,15 +119,15 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	matchAll, _ := regexp.Compile(".*")
 
 	cfg := &Config{
-		Backends:           backendURLList{},
-		iceCandidateTypes:  candidateTypeList{},
-		InterfaceFilterICE: regex{matchAll},
-		iceNat1to1IPs:      []net.IP{},
-		iceNetworkTypes:    networkTypeList{},
-		iceURLs:            iceURLList{},
-		InterfaceFilter:    regex{matchAll},
-		Interfaces:         []string{},
-		ProxyType:          proxyType{proxy.TypeAuto},
+		Backends:                 backendURLList{},
+		iceCandidateTypes:        candidateTypeList{},
+		iceInterfaceFilter:       regex{matchAll},
+		iceNat1to1IPs:            []net.IP{},
+		iceNetworkTypes:          networkTypeList{},
+		iceURLs:                  iceURLList{},
+		WireguardInterfaceFilter: regex{matchAll},
+		WireguardInterfaces:      []string{},
+		ProxyType:                proxyType{proxy.TypeAuto},
 
 		flags:  flags,
 		viper:  viper.New(),
@@ -138,12 +138,12 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringVarP(&cfg.File, "config", "c", "", "Path of configuration file")
 	flags.VarP(&cfg.Backends, "backend", "b", "backend types / URLs")
 	flags.VarP(&cfg.ProxyType, "proxy", "p", "proxy type to use")
-	flags.VarP(&cfg.InterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
+	flags.VarP(&cfg.WireguardInterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
 	flags.DurationVarP(&cfg.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
-	cfg.Userspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
-	flags.BoolVarP(&cfg.ConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
-	flags.StringVarP(&cfg.ConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
+	cfg.WireguardUserspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
+	flags.BoolVarP(&cfg.WireguardConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
+	flags.StringVarP(&cfg.WireguardConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
 
 	// ice.AgentConfig fields
 	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server addresses")
@@ -157,7 +157,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.BoolVarP(&cfg.iceMdns, "ice-mdns", "m", false, "enable local Multicast DNS discovery")
 	flags.Uint16Var(&cfg.iceMaxBindingRequests, "ice-max-binding-requests", defaultMaxBindingRequests, "maximum number of binding request before considering a pair failed")
 	flags.BoolVarP(&cfg.iceInsecureSkipVerify, "ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")
-	flags.Var(&cfg.InterfaceFilterICE, "ice-interface-filter", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
+	flags.Var(&cfg.iceInterfaceFilter, "ice-interface-filter", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
 	flags.DurationVar(&cfg.iceDisconnectedTimeout, "ice-disconnected-timout", defaultDisconnectedTimeout, "time till an Agent transitions disconnected")
 	flags.DurationVar(&cfg.iceFailedTimeout, "ice-failed-timeout", defaultFailedTimeout, "time until an Agent transitions to failed after disconnected")
 	flags.DurationVar(&cfg.iceKeepaliveInterval, "ice-keepalive-interval", defaultKeepaliveInterval, "interval netween STUN keepalives")
@@ -175,7 +175,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 }
 
 func (c *Config) Setup(args []string) {
-	c.Interfaces = args
+	c.WireguardInterfaces = args
 
 	// Find best proxy method
 	if c.ProxyType.ProxyType == proxy.TypeAuto {
@@ -218,6 +218,10 @@ func (a *Config) AgentConfig() (*ice.AgentConfig, error) {
 		NetworkTypes:       a.iceNetworkTypes,
 		CandidateTypes:     a.iceCandidateTypes,
 		Urls:               a.iceURLs,
+	}
+
+	cfg.InterfaceFilter = func(name string) bool {
+		return a.iceInterfaceFilter.Match([]byte(name))
 	}
 
 	// Add default STUN/TURN servers
@@ -284,20 +288,29 @@ func (c *Config) Dump(wr io.Writer) {
 	cfg, _ := c.AgentConfig()
 
 	fmt.Fprintln(wr, "Options:")
-	fmt.Fprintln(wr, "  URLs:")
+	fmt.Fprintf(wr, "  config file: %s\n", c.File)
+	fmt.Fprintf(wr, "  community: %s\n", c.Community)
+	fmt.Fprintf(wr, "  control socket: %s\n", c.Socket)
+	fmt.Fprintf(wr, "  wait for control socket: %s\n", strconv.FormatBool(c.SocketWait))
+	fmt.Fprintf(wr, "  userspace: %s\n", strconv.FormatBool(*c.WireguardUserspace))
+	fmt.Fprintf(wr, "  config sync: %s\n", strconv.FormatBool(c.WireguardConfigSync))
+	fmt.Fprintln(wr, "  urls:")
 	for _, u := range cfg.Urls {
 		fmt.Fprintf(wr, "    %s\n", u.String())
 	}
 
-	fmt.Fprintln(wr, "  Interfaces:")
-	for _, d := range c.Interfaces {
+	fmt.Fprintf(wr, "  interface filter: %s\n", c.WireguardInterfaceFilter)
+	fmt.Fprintf(wr, "  interface filter ice: %s\n", c.iceInterfaceFilter)
+	fmt.Fprintln(wr, "  interfaces:")
+	for _, d := range c.WireguardInterfaces {
 		fmt.Fprintf(wr, "    %s\n", d)
 	}
 
-	fmt.Fprintf(wr, "  User: %s\n", strconv.FormatBool(*c.Userspace))
-	fmt.Fprintf(wr, "  ProxyType: %s\n", c.ProxyType.String())
+	fmt.Fprintf(wr, "  restart interval: %s\n", c.RestartInterval)
+	fmt.Fprintf(wr, "  watch interval: %s\n", c.WatchInterval)
+	fmt.Fprintf(wr, "  proxy type: %s\n", c.ProxyType.String())
 
-	fmt.Fprintf(wr, "  Signaling Backends:\n")
+	fmt.Fprintf(wr, "  signaling backends:\n")
 	for _, b := range c.Backends {
 		fmt.Fprintf(wr, "    %s\n", b)
 	}

@@ -89,9 +89,9 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Check if Wireguard interface can be created by the kernel
-	if cfg.Userspace == nil {
+	if cfg.WireguardUserspace == nil {
 		u := !intf.WireguardModuleExists()
-		cfg.Userspace = &u
+		cfg.WireguardUserspace = &u
 	}
 
 	return d, nil
@@ -194,7 +194,7 @@ func (d *Daemon) SyncAllInterfaces() error {
 	keepInterfaces := intf.InterfaceList{}
 
 	for _, device := range devices {
-		if !d.Config.InterfaceFilter.Match([]byte(device.Name)) {
+		if !d.Config.WireguardInterfaceFilter.Match([]byte(device.Name)) {
 			continue // Skip interfaces which dont match the filter
 		}
 
@@ -258,7 +258,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		return err
 	}
 
-	for _, interfName := range d.Config.Interfaces {
+	for _, interfName := range d.Config.WireguardInterfaces {
 		dev := devs.GetByName(interfName)
 		if dev != nil {
 			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", interfName))
@@ -266,7 +266,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		}
 
 		var interf intf.Interface
-		if *d.Config.Userspace {
+		if *d.Config.WireguardUserspace {
 			interf, err = intf.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		} else {
 			interf, err = intf.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)

@@ -502,11 +502,6 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
 		Base: p.logger,
 	}
 
-	agentConfig.InterfaceFilter = func(name string) bool {
-		_, err := p.client.Device(name)
-		return p.config.InterfaceFilterICE.Match([]byte(name)) && err != nil
-	}
-
 	if i.config.ProxyType.ProxyType == proxy.TypeEBPF {
 		if err := proxy.SetupEBPFProxy(agentConfig, p.Interface.ListenPort); err != nil {
 			return nil, fmt.Errorf("failed to setup proxy: %w", err)
