@@ -3,12 +3,9 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -16,30 +13,32 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
+	wicev1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned"
+	informers "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions"
 )
 
 const (
-	annotationPrefix           string = "wice.riasc.eu"
-	defaultAnnotationOffers    string = annotationPrefix + "/offers"
-	defaultAnnotationPublicKey string = annotationPrefix + "/public-key"
+	cleanupInterval = 1 * time.Minute
+	cleanupMaxAge   = 10 * time.Minute
 )
 
 type Backend struct {
-	logger *zap.Logger
-	offers map[crypto.KeyPair]chan *pb.Offer
+	signaling.SubscriptionsRegistry
 
 	config BackendConfig
 
-	clientSet *kubernetes.Clientset
+	clientSet *wicev1.Clientset
 	informer  cache.SharedInformer
 
-	term    chan struct{}
-	updates chan NodeCallback
+	term chan struct{}
 
 	events chan *pb.Event
-}
 
-type OfferMap map[crypto.Key]*pb.Offer
+	logger *zap.Logger
+}
 
 func init() {
 	signaling.Backends["k8s"] = &signaling.BackendPlugin{
@@ -53,12 +52,11 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	var err error
 
 	b := Backend{
-		offers:  make(map[crypto.KeyPair]chan *pb.Offer),
-		logger:  zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
-		term:    make(chan struct{}),
-		updates: make(chan NodeCallback),
-		config:  defaultConfig,
-		events:  events,
+		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
+		term:                  make(chan struct{}),
+		config:                defaultConfig,
+		events:                events,
+		logger:                zap.L().Named("backend").With(zap.String("backend", cfg.URI.Scheme)),
 	}
 
 	if err := b.config.Parse(cfg); err != nil {
@@ -88,32 +86,28 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	}
 
 	// Create the clientset
-	b.clientSet, err = kubernetes.NewForConfig(config)
-	if err != nil {
+	if b.clientSet, err = wicev1.NewForConfig(config); err != nil {
 		return nil, fmt.Errorf("failed to create clientset: %w", err)
 	}
 
-	// Create the shared informer factory and use the client to connect to
-	// Kubernetes
-	factory := informers.NewSharedInformerFactoryWithOptions(b.clientSet, 0,
-		informers.WithTweakListOptions(func(options *metav1.ListOptions) {
-			// options.LabelSelector = b.config.AnnotationPublicKey
-		}))
+	// Create the shared informer factory and use the client to connect to Kubernetes
+	factory := informers.NewSharedInformerFactoryWithOptions(b.clientSet, 0, informers.WithNamespace(b.config.Namespace))
 
 	// Get the informer for the right resource, in this case a Pod
-	b.informer = factory.Core().V1().Nodes().Informer()
+	b.informer = factory.Wice().V1().SignalingEnvelopes().Informer()
 
 	b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    b.onNodeAdd,
-		UpdateFunc: b.onNodeUpdate,
-		DeleteFunc: b.onNodeDelete,
+		AddFunc:    b.onSignalingEnvelopeAdd,
+		UpdateFunc: b.onSessionDescriptionUpdate,
 	})
 
 	go b.informer.Run(b.term)
 	b.logger.Debug("Started watching node resources")
 
-	go b.applyUpdates()
-	b.logger.Debug("Started batched updates")
+	cache.WaitForNamedCacheSync("signalingenvelopes", b.term, b.informer.HasSynced)
+
+	go b.periodicCleanup()
+	b.logger.Debug("Started regular cleanup")
 
 	b.events <- &pb.Event{
 		Type: pb.Event_BACKEND_READY,
@@ -127,57 +121,50 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	return &b, nil
 }
 
-func (b *Backend) SubscribeOffers(kp crypto.KeyPair) (chan *pb.Offer, error) {
-	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
+func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+	b.logger.Info("Subscribe to messages from peer", zap.Any("kp", kp))
 
-	ch, ok := b.offers[kp]
-	if !ok {
-		ch = make(chan *pb.Offer, 100)
-		b.offers[kp] = ch
+	sub, err := b.NewSubscription(kp)
+	if err != nil {
+		return nil, fmt.Errorf("failed create subscription: %w", err)
 	}
 
-	// Process the node annotation at least once before we rely on the informer
-	node, err := b.getNodeByPublicKey(kp.Theirs)
-	if err == nil {
-		b.processNode(node)
+	// Process existing envelopes in cache
+	if err := b.processByKeyPair(kp); err != nil {
+		return nil, err
 	}
 
-	return ch, nil
+	return sub.Channel, nil
 }
 
-func (b *Backend) PublishOffer(kp crypto.KeyPair, offer *pb.Offer) error {
-	b.updateNode(func(node *corev1.Node) error {
-		offerMapJson, ok := node.ObjectMeta.Annotations[b.config.AnnotationOffers]
+func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+	var err error
 
-		// Unmarshal
-		var om OfferMap
-		if ok && offerMapJson != "" {
-			if err := json.Unmarshal([]byte(offerMapJson), &om); err != nil {
-				return err
-			}
-		} else {
-			om = OfferMap{}
-		}
-
-		// Update
-		om[kp.Theirs] = offer
-
-		// Marshal
-		offerMapJsonNew, err := json.Marshal(&om)
-		if err != nil {
-			return err
-		}
-
-		node.ObjectMeta.Annotations[b.config.AnnotationOffers] = string(offerMapJsonNew)
-		node.ObjectMeta.Annotations[b.config.AnnotationPublicKey] = kp.Ours.String()
-
-		return nil
-	})
-
-	b.logger.Debug("Published offer",
+	b.logger.Debug("Published signaling message",
 		zap.Any("kp", kp),
-		zap.Any("offer", offer),
+		zap.Any("msg", msg),
 	)
+
+	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+
+	pbEnv, err := msg.Encrypt(kp)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt message: %w", err)
+	}
+
+	env := &v1.SignalingEnvelope{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: b.config.GenerateName,
+		},
+	}
+
+	pbEnv.DeepCopyInto(&env.SignalingEnvelope)
+
+	if env, err = envs.Create(context.Background(), env, metav1.CreateOptions{}); err != nil {
+		return fmt.Errorf("failed to create envelope: %w", err)
+	}
+
+	b.logger.Debug("Created new SignalingEnvelope", zap.String("name", env.ObjectMeta.Name))
 
 	return nil
 }
@@ -188,22 +175,85 @@ func (b *Backend) Close() error {
 	return nil // TODO
 }
 
-func (b *Backend) Tick() {
+func (b *Backend) onSignalingEnvelopeAdd(obj interface{}) {
+	env := obj.(*v1.SignalingEnvelope)
 
+	b.logger.Debug("SignalingEnvelope added", zap.String("name", env.ObjectMeta.Name))
+	if err := b.process(env); err != nil {
+		b.logger.Error("Failed to process SignalEnvelope", zap.Error(err))
+	}
 }
 
-func (b *Backend) getNodeByPublicKey(pk crypto.Key) (*corev1.Node, error) {
-	coreV1 := b.clientSet.CoreV1()
-	nodes, err := coreV1.Nodes().List(context.TODO(), metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", b.config.AnnotationPublicKey, pk),
-	})
+func (b *Backend) onSessionDescriptionUpdate(_ interface{}, new interface{}) {
+	newEnv := new.(*v1.SignalingEnvelope)
+
+	b.logger.Debug("SignalingEnvelope updated", zap.String("name", newEnv.ObjectMeta.Name))
+	if err := b.process(newEnv); err != nil {
+		b.logger.Error("Failed to process SignalEnvelope", zap.Error(err))
+	}
+}
+
+func (b *Backend) process(env *v1.SignalingEnvelope) error {
+	sender, err := crypto.ParseKeyBytes(env.Sender)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("invalid key: %w", err)
 	}
 
-	if len(nodes.Items) != 1 {
-		return nil, fmt.Errorf("could not find node with public key: %s", pk)
+	sub, err := b.GetSubscription(&sender)
+	if err != nil {
+		return nil // ignore envelopes not addressed to us
 	}
 
-	return &nodes.Items[0], nil
+	if err := sub.NewMessage(&env.SignalingEnvelope); err != nil {
+		return err
+	}
+
+	// Delete envelope
+	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+	if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
+		b.logger.Warn("Failed to delete envelope", zap.Error(err))
+	} else {
+		b.logger.Debug("Deleted envelope", zap.String("envelope", env.ObjectMeta.Name))
+	}
+
+	return nil
+}
+
+func (b *Backend) processByKeyPair(kp *crypto.KeyPair) error {
+	store := b.informer.GetStore()
+	for _, obj := range store.List() {
+		if env, ok := obj.(*v1.SignalingEnvelope); ok {
+			if err := b.process(env); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (b *Backend) periodicCleanup() {
+	ticker := time.NewTicker(cleanupInterval)
+
+	b.cleanup()
+	for range ticker.C {
+		b.cleanup()
+	}
+}
+
+func (b *Backend) cleanup() {
+	store := b.informer.GetStore()
+	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+
+	for _, obj := range store.List() {
+		if env, ok := obj.(*v1.SignalingEnvelope); ok {
+			if time.Since(env.ObjectMeta.CreationTimestamp.Time) > cleanupMaxAge {
+				if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
+					b.logger.Error("Failed to delete envelope", zap.Any("name", env.ObjectMeta.Name), zap.Error(err))
+				} else {
+					b.logger.Debug("Deleted stale SignalingEnvelope", zap.String("name", env.ObjectMeta.Name))
+				}
+			}
+		}
+	}
 }

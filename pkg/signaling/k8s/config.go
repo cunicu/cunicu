@@ -1,40 +1,24 @@
 package k8s
 
 import (
-	"errors"
-	"net/url"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 type BackendConfig struct {
 	signaling.BackendConfig
 
 	Kubeconfig   string
-	NodeName            string
-	AnnotationOffers    string
-	AnnotationPublicKey string
+	Namespace    string
+	GenerateName string
 }
 
 var defaultConfig = BackendConfig{
-	AnnotationOffers:    defaultAnnotationOffers,
-	AnnotationPublicKey: defaultAnnotationPublicKey,
+	GenerateName: "wice-",
+	Namespace:    "riasc-system",
 }
 
 func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	c.BackendConfig = *cfg
-
-	options := uri.Query()
-
-	if str := options.Get("node"); str == "" {
-		return errors.New("missing backend option: node")
-	}
-
-	if str := options.Get("annotation-offers"); str != "" {
-		c.AnnotationOffers = str
-	}
-
-	if str := options.Get("annotation-public-key"); str != "" {
-		c.AnnotationPublicKey = str
-	}
 
 	c.Kubeconfig = c.URI.Path
 
