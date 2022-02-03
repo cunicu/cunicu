@@ -30,22 +30,20 @@ func (n *notifee) Connected(_ network.Network, c network.Conn) {
 
 func (n *notifee) Disconnected(_ network.Network, c network.Conn) {
 	n.logger.Debug("Disconnected from remote", zap.Any("remote", c.RemoteMultiaddr()))
-
 }
 
 func (n *notifee) OpenedStream(_ network.Network, s network.Stream) {
-	n.logger.Debug("Stream opened",
-		zap.Any("id", s.ID()),
-		zap.Any("remote", s.Conn().RemoteMultiaddr()),
-		zap.Any("protocol", s.Protocol()),
-	)
-
+	// n.logger.Debug("Stream opened",
+	// 	zap.Any("id", s.ID()),
+	// 	zap.Any("remote", s.Conn().RemoteMultiaddr()),
+	// 	zap.Any("protocol", s.Protocol()),
+	// )
 }
 
 func (n *notifee) ClosedStream(_ network.Network, s network.Stream) {
-	n.logger.Debug("Stream closed",
-		zap.Any("id", s.ID()),
-		zap.Any("remote", s.Conn().RemoteMultiaddr()),
-		zap.Any("protocol", s.Protocol()),
-	)
+	// n.logger.Debug("Stream closed",
+	// 	zap.Any("id", s.ID()),
+	// 	zap.Any("remote", s.Conn().RemoteMultiaddr()),
+	// 	zap.Any("protocol", s.Protocol()),
+	// )
 }

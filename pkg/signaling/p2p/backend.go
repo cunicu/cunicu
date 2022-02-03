@@ -3,6 +3,7 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 
 	p2p "github.com/libp2p/go-libp2p"
@@ -15,8 +16,9 @@ import (
 	ptls "github.com/libp2p/go-libp2p-tls"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
-	"github.com/multiformats/go-multiaddr"
+	ma "github.com/multiformats/go-multiaddr"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -37,19 +39,21 @@ func init() {
 }
 
 type Backend struct {
+	signaling.SubscriptionsRegistry
+
 	logger *zap.Logger
 	config BackendConfig
 
-	peers     map[crypto.KeyPair]*Peer
-	peersLock sync.Mutex
-
-	host host.Host
-
 	context context.Context
 
-	mdns   mdns.Service
+	host host.Host
+	mdns mdns.Service
+
 	dht    *dht.IpfsDHT
 	pubsub *pubsub.PubSub
+	topic  *pubsub.Topic
+	sub    *pubsub.Subscription
+
 	events chan *pb.Event
 }
 
@@ -57,8 +61,9 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	var err error
 
 	b := &Backend{
-		peers:  map[crypto.KeyPair]*Peer{},
-		logger: zap.L().Named("backend").With(zap.String("backend", uri.Scheme)),
+		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
+
+		logger: zap.L().Named("backend").With(zap.String("backend", cfg.URI.Scheme)),
 		config: defaultConfig,
 		events: events,
 	}
@@ -67,8 +72,76 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 		return nil, fmt.Errorf("failed to parse backend options: %w", err)
 	}
 
+	b.logger.Debug("Config", zap.Any("config", b.config))
+
 	b.context = context.Background()
 
+	opts := b.options()
+	if err = b.setupHost(opts...); err != nil {
+		return nil, err
+	}
+
+	if b.config.EnableDHTDiscovery {
+		if err := b.setupDHT(); err != nil {
+			return nil, fmt.Errorf("failed to setup DHT: %w", err)
+		}
+	}
+
+	if b.config.EnableMDNSDiscovery {
+		if err := b.setupMDNS(); err != nil {
+			return nil, fmt.Errorf("failed to setup MDNS: %w", err)
+		}
+	}
+
+	if !b.config.Private {
+		b.bootstrap()
+	}
+
+	if err := b.setupPubSub(); err != nil {
+		return nil, fmt.Errorf("failed to setup pubsub: %w", err)
+	}
+
+	b.logger.Info("Node libp2p adresses", zap.Strings("addresses", b.StringAddrs()))
+
+	b.events <- &pb.Event{
+		Type: pb.Event_BACKEND_READY,
+		Event: &pb.Event_BackendReady{
+			BackendReady: &pb.BackendReadyEvent{
+				Type:            pb.BackendReadyEvent_P2P,
+				Id:              b.host.ID().String(),
+				ListenAddresses: b.StringAddrs(),
+			},
+		},
+	}
+
+	return b, nil
+}
+
+func (b *Backend) StringAddrs() []string {
+	p2p, err := ma.NewMultiaddr(fmt.Sprintf("/p2p/%s", b.host.ID()))
+	if err != nil {
+		return nil
+	}
+
+	as := []string{}
+out:
+	for _, a := range b.host.Addrs() {
+		// Skip IPv4 and IPv6 loopback addresses
+		for _, prot := range []int{ma.P_IP4, ma.P_IP6} {
+			if val, err := a.ValueForProtocol(prot); err == nil {
+				if ip := net.ParseIP(val); ip.IsLoopback() {
+					continue out
+				}
+			}
+		}
+
+		a = a.Encapsulate(p2p)
+		as = append(as, a.String())
+	}
+	return as
+}
+
+func (b *Backend) options() []p2p.Option {
 	opts := []p2p.Option{
 		p2p.UserAgent(userAgent),
 		p2p.DefaultTransports,
@@ -79,7 +152,7 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	}
 
 	if len(b.config.ListenAddresses) > 0 {
-		opts = append(opts, p2p.ListenAddrs([]multiaddr.Multiaddr(b.config.ListenAddresses)...))
+		opts = append(opts, p2p.ListenAddrs([]ma.Multiaddr(b.config.ListenAddresses)...))
 	} else {
 		opts = append(opts, p2p.DefaultListenAddrs)
 	}
@@ -106,6 +179,10 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 		opts = append(opts, p2p.Identity(b.config.PrivateKey))
 	}
 
+	if b.config.PrivateCommunity {
+		opts = append(opts, p2p.PrivateNetwork(b.config.Community[:]))
+	}
+
 	// if b.config.EnableDHTDiscovery {
 	// 	opts = append(opts, p2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 	// 		b.dht, err = dht.New(b.context, h)
@@ -113,45 +190,42 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 	// 	}))
 	// }
 
-	// create host
-	if b.host, err = p2p.New(opts...); err != nil {
-		return nil, fmt.Errorf("failed to create host: %w", err)
+	return opts
+}
+
+func (b *Backend) setupHost(opts ...p2p.Option) error {
+	var err error
+
+	b.host, err = p2p.New(opts...)
+
+	if err != nil {
+		return fmt.Errorf("failed to create host: %w", err)
 	}
 	b.logger.Info("Host created",
 		zap.Any("id", b.host.ID()),
 		zap.Any("addrs", b.host.Addrs()),
 	)
 
+	// Setup logging and tracing
 	b.host.Network().Notify(newNotifee(b))
 
-	// setup local mDNS discovery
-	if b.config.EnableMDNSDiscovery {
-		b.logger.Debug("Setup mDNS discovery")
+	return nil
+}
 
-		b.mdns = mdns.NewMdnsService(b.host, b.config.MDNSServiceTag, b)
-		if err := b.mdns.Start(); err != nil {
-			return nil, fmt.Errorf("failed to start mDNS service: %w", err)
-		}
-	}
+func (b *Backend) setupDHT() error {
+	var err error
 
-	// setup DHT discovery
-	if b.config.EnableDHTDiscovery {
-		b.logger.Debug("Bootstrapping the DHT")
+	b.logger.Debug("Bootstrapping the DHT")
 
-		if b.dht, err = dht.New(b.context, b.host,
-			dht.Mode(dht.ModeServer),
-		); err != nil {
-			return nil, fmt.Errorf("failed to create DHT: %w", err)
-		}
-
-		if err = b.dht.Bootstrap(b.context); err != nil {
-			return nil, fmt.Errorf("failed to bootstrap DHT: %w", err)
-		}
+	if b.dht, err = dht.New(b.context, b.host,
+		dht.Mode(dht.ModeServer),
+	); err != nil {
+		return fmt.Errorf("failed to create DHT: %w", err)
 	}
 
 	rt := b.dht.RoutingTable()
 
-	// Add some handlers
+	// Register some event handlers
 	rt.PeerAdded = func(i peer.ID) {
 		b.logger.Debug("Peer added to routing table", zap.Any("peer", i))
 	}
@@ -160,6 +234,58 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 		b.logger.Debug("Peer removed from routing table", zap.Any("peer", i))
 	}
 
+	if err = b.dht.Bootstrap(b.context); err != nil {
+		return fmt.Errorf("failed to bootstrap DHT: %w", err)
+	}
+
+	return nil
+}
+
+func (b *Backend) setupMDNS() error {
+	b.logger.Debug("Setup mDNS discovery")
+
+	b.mdns = mdns.NewMdnsService(b.host, b.config.MDNSServiceTag, b)
+	if err := b.mdns.Start(); err != nil {
+		return fmt.Errorf("failed to start mDNS service: %w", err)
+	}
+
+	return nil
+}
+
+func (b *Backend) setupPubSub() error {
+	var err error
+
+	opts := []pubsub.Option{
+		pubsub.WithRawTracer(newTracer(b)),
+	}
+
+	if b.dht != nil {
+		rd := discovery.NewRoutingDiscovery(b.dht)
+		opts = append(opts, pubsub.WithDiscovery(rd))
+	}
+
+	// Setup PubSub service using the GossipSub router
+	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host, opts...); err != nil {
+		return fmt.Errorf("failed to create pubsub router: %w", err)
+	}
+
+	// Setup pubsub topic subscription
+	t := fmt.Sprintf("wice/%s", b.config.Community)
+
+	if b.topic, err = b.pubsub.Join(t); err != nil {
+		return fmt.Errorf("failed to join topic: %w", err)
+	}
+
+	if b.sub, err = b.topic.Subscribe(); err != nil {
+		return fmt.Errorf("failed to subscribe to topic: %w", err)
+	}
+
+	go b.subscriberLoop()
+
+	return nil
+}
+
+func (b *Backend) bootstrap() {
 	// Let's connect to the bootstrap nodes first. They will tell us about the
 	// other nodes in the network.
 	var wg sync.WaitGroup
@@ -178,84 +304,100 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 			}
 		}(pi)
 	}
+
 	wg.Wait() // TODO: can we run this asynchronously?
-
-	rd := discovery.NewRoutingDiscovery(b.dht)
-
-	// setup PubSub service using the GossipSub router
-	if b.pubsub, err = pubsub.NewGossipSub(b.context, b.host,
-		pubsub.WithDiscovery(rd),
-		pubsub.WithRawTracer(newTracer(b)),
-	); err != nil {
-		return nil, fmt.Errorf("failed to create pubsub router: %w", err)
-	}
-
-	as := []string{}
-	for _, a := range b.host.Addrs() {
-		as = append(as, a.String())
-	}
-
-	b.events <- &pb.Event{
-		Type: pb.Event_BACKEND_READY,
-		Event: &pb.Event_BackendReady{
-			BackendReady: &pb.BackendReadyEvent{
-				Type:            pb.BackendReadyEvent_P2P,
-				Id:              b.host.ID().String(),
-				ListenAddresses: as,
-			},
-		},
-	}
-
-	return b, nil
 }
 
-func (b *Backend) getPeer(kp *crypto.KeyPair) (*Peer, error) {
-	var err error
-
-	b.peersLock.Lock()
-	defer b.peersLock.Unlock()
-
-	p, ok := b.peers[*kp]
-	if !ok {
-		if p, err = b.NewPeer(kp); err != nil {
-			return nil, err
+func (b *Backend) subscriberLoop() {
+	for {
+		msg, err := b.sub.Next(b.context)
+		if err != nil {
+			b.logger.Error("Failed to receive offers", zap.Error(err))
+			return
 		}
 
-		b.peers[*kp] = p
-	}
+		// Skip our own data
+		if msg.ReceivedFrom == b.host.ID() {
+			continue
+		}
 
-	return p, nil
+		env := &pb.SignalingEnvelope{}
+		if err := proto.Unmarshal(msg.Data, env); err != nil {
+			b.logger.Error("Failed to unmarshal offer", zap.Error(err))
+			continue
+		}
+
+		sender, err := crypto.ParseKeyBytes(env.Sender)
+		if err != nil {
+			b.logger.Error("Invalid key", zap.Error(err))
+			continue
+		}
+
+		sub, err := b.GetSubscription(&sender)
+		if err != nil {
+			b.logger.Error("Failed to get subscription", zap.Error(err))
+			continue
+		}
+
+		sub.NewMessage(env)
+	}
 }
 
 func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
-	p, err := b.getPeer(kp)
+	sub, err := b.NewSubscription(kp)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.Messages, nil
+	return sub.Channel, nil
 }
 
 func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
-	p, err := b.getPeer(kp)
+	env, err := msg.Encrypt(kp)
 	if err != nil {
-		return fmt.Errorf("failed to get peer: %w", err)
+		return fmt.Errorf("failed to marshal offer: %w", err)
 	}
 
-	if err := p.publishMessage(msg); err != nil {
-		return err
+	payload, err := proto.Marshal(env)
+	if err != nil {
+		return fmt.Errorf("failed to marshal: %w", err)
+	}
+
+	opts := []pubsub.PubOpt{
+		pubsub.WithReadiness(pubsub.MinTopicSize(1)),
+	}
+
+	if err := b.topic.Publish(b.context, payload, opts...); err != nil {
+		return fmt.Errorf("failed to publish offer: %w", err)
+
 	}
 
 	return nil
 }
 
 func (b *Backend) Close() error {
-	return nil // TODO
-}
+	b.topic.Close()
 
-func (b *Backend) Tick() {}
+	if b.config.EnableDHTDiscovery {
+		if err := b.dht.Close(); err != nil {
+			return err
+		}
+	}
+
+	if b.config.EnableMDNSDiscovery {
+		if err := b.mdns.Close(); err != nil {
+			return err
+		}
+	}
+
+	if err := b.host.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // HandlePeerFound connects to peers discovered via mDNS. Once they're connected,
 // the PubSub system will automatically start interacting with them if they also
@@ -266,7 +408,8 @@ func (b *Backend) HandlePeerFound(pi peer.AddrInfo) {
 	}
 
 	b.logger.Info("Discovered new peer via mDNS",
-		zap.Any("peer", pi.ID))
+		zap.Any("peer", pi.ID),
+		zap.Any("remotes", pi.Addrs))
 
 	if err := b.host.Connect(b.context, pi); err != nil {
 		b.logger.Error("Failed connecting to peer",

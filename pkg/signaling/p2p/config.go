@@ -18,8 +18,10 @@ const (
 )
 
 var defaultConfig = BackendConfig{
+	Private:             false,
+	PrivateCommunity:    false,
 	EnableDHTDiscovery:  true,
-	EnableMDNSDiscovery: true,
+	EnableMDNSDiscovery: false,
 	EnableRelay:         true,
 	EnableAutoRelay:     true,
 	MDNSServiceTag:      defaultMDNSServiceTag,
@@ -38,8 +40,6 @@ type BackendConfig struct {
 
 	// BootstrapPeers is a list of peers to which we initially connect
 	BootstrapPeers peerAddressList
-
-	RendezvousString string
 
 	// PrivateKey is the private key used by the libp2p host.
 	PrivateKey crypto.PrivKey
@@ -70,6 +70,13 @@ type BackendConfig struct {
 
 	// EnableHolePunching enables NAT traversal by enabling NATT'd peers to both initiate and respond to hole punching attempts to create direct/NAT-traversed connections with other peers.
 	EnableHolePunching bool
+
+	// Do not connect to public bootstrap peers
+	Private bool
+
+	// Use a private libp2p network by using the community key as the
+	// networks PSK
+	PrivateCommunity bool
 }
 
 func (al *multiAddressList) Set(as []string) error {
@@ -140,10 +147,22 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 		}
 	}
 
+	if privateStrs, ok := options["private"]; ok {
+		if c.Private, err = strconv.ParseBool(privateStrs[0]); err != nil {
+			return fmt.Errorf("failed to parse %s as a boolean value: %w", privateStrs[0], err)
+		}
+	}
+
+	if privateCommunityStrs, ok := options["private"]; ok {
+		if c.PrivateCommunity, err = strconv.ParseBool(privateCommunityStrs[0]); err != nil {
+			return fmt.Errorf("failed to parse %s as a boolean value: %w", privateCommunityStrs[0], err)
+		}
+	}
+
 	// use the default set of bootstrap peers if none are provided
 	if len(c.BootstrapPeers) == 0 {
 		for _, s := range dht.DefaultBootstrapPeers {
-			if pi, err := peer.AddrInfoFromP2pAddr(s); err != nil {
+			if pi, err := peer.AddrInfoFromP2pAddr(s); err == nil {
 				c.BootstrapPeers = append(c.BootstrapPeers, *pi)
 			}
 		}
