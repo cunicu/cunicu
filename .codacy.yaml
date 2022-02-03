@@ -1,0 +1,4 @@
+---
+exclude_paths:
+- "docs/usage/**"
+- "pkg/pb/*.pb.go"
