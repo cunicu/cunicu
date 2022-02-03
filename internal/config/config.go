@@ -59,6 +59,8 @@ var (
 type Config struct {
 	File string
 
+	Community string
+
 	Socket     string
 	SocketWait bool
 
@@ -132,6 +134,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		logger: zap.L().Named("config"),
 	}
 
+	flags.StringVarP(&cfg.Community, "community", "x", "", "Community passphrase for discovering other peers")
 	flags.StringVarP(&cfg.File, "config", "c", "", "Path of configuration file")
 	flags.VarP(&cfg.Backends, "backend", "b", "backend types / URLs")
 	flags.VarP(&cfg.ProxyType, "proxy", "p", "proxy type to use")
