@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"google.golang.org/protobuf/proto"
 	"riasc.eu/wice/pkg/crypto"
 )
 
@@ -37,4 +38,9 @@ func (m *SignalingMessage) Encrypt(kp *crypto.KeyPair) (*SignalingEnvelope, erro
 	}
 
 	return envp, envp.Contents.Marshal(m, kp)
+}
+
+func (in *SignalingEnvelope) DeepCopyInto(out *SignalingEnvelope) {
+	p := proto.Clone(in).(*SignalingEnvelope)
+	*out = *p
 }
