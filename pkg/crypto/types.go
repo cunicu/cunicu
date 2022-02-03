@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"encoding/base64"
+	"errors"
 	"net"
 
 	"github.com/aead/siphash"
@@ -80,6 +81,14 @@ func ParseKey(str string) (Key, error) {
 	copy(key[:], k[:KeyLength])
 
 	return key, nil
+}
+
+func ParseKeyBytes(buf []byte) (Key, error) {
+	if len(buf) != KeyLength {
+		return Key{}, errors.New("invalid length")
+	}
+
+	return *(*Key)(buf), nil
 }
 
 func (k Key) String() string {
