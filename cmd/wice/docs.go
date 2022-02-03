@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -74,9 +75,16 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
+	d, err := time.Parse(time.RFC3339, date)
+	if err != nil {
+		return fmt.Errorf("failed to parse build date")
+	}
+
 	header := &doc.GenManHeader{
-		Title:   "MINE",
+		Title:   "WICE",
 		Section: "3",
+		Source:  "https://github.com/stv0g/wice",
+		Date:    &d,
 	}
 
 	if err := doc.GenManTree(rootCmd, header, dir); err != nil {
