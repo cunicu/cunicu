@@ -134,8 +134,9 @@ type Event struct {
 
 	Type Event_Type `protobuf:"varint,1,opt,name=type,proto3,enum=Event_Type" json:"type,omitempty"`
 	Time *Timestamp `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
-	// Originator
-	Peer      []byte `protobuf:"bytes,3,opt,name=peer,proto3" json:"peer,omitempty"`
+	// Public key of peer which triggerd the event
+	Peer []byte `protobuf:"bytes,3,opt,name=peer,proto3" json:"peer,omitempty"`
+	// Interface name which triggered the event
 	Interface string `protobuf:"bytes,4,opt,name=interface,proto3" json:"interface,omitempty"`
 	// Types that are assignable to Event:
 	//	*Event_PeerModified

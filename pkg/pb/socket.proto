@@ -26,15 +26,12 @@ message RestartPeerParams {
     bytes peer = 2;
 }
 
-message SyncInterfaceParams {
-    Key intf = 1;
-}
-
 message InterfaceConfigParams {
     string name = 1;
     InterfaceConfig interface = 2;
 }
 
+// Control socket
 service Socket {
     rpc GetStatus(Void) returns (Status) {}
     rpc StreamEvents(StreamEventsParams) returns (stream Event) {}

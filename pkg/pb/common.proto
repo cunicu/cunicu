@@ -4,7 +4,7 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 message Void {}
 
-// from pion/ice/ice.go
+// ICE Connection state from pion/ice/ice.go
 enum ConnectionState {
     NEW = 0;              // ConnectionStateNew ICE agent is gathering addresses
 	CHECKING = 1;         // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
@@ -15,13 +15,16 @@ enum ConnectionState {
 	CLOSED = 6;           // ConnectionStateClosed ICE agent has finished and is no longer handling requests
 }
 
+// An UNIX timestamp since 1970-01-01 (UTC)
 message Timestamp {
     int64 seconds = 1;
     int32 nanos = 2;
 }
 
+// A common error type used as return value for gRPC calls
 message Error {
-	// https://pubs.opengroup.org/onlinepubs/009696899/functions/xsh_chap02_03.html
+	// The Error code inspired by POSIX's errno
+	// See: https://pubs.opengroup.org/onlinepubs/009696899/functions/xsh_chap02_03.html
 	enum Code {
 		SUCCESS = 0;
 		EPERM = 1;
@@ -33,16 +36,10 @@ message Error {
 		EUNKNOWN = 255;
 	}
 
+	// The error code
 	Code code = 1;
+
+	// A human readable error message
     string message = 2;
 }
 
-message Key {
-	bytes key = 1;
-}
-
-message Address{
-	bytes ip = 1;
-	int32 prefix_len = 2;
-	int32 port = 3;
-}

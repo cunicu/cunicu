@@ -2,12 +2,21 @@ syntax = "proto3";
 
 option go_package = "riasc.eu/wice/pkg/pb";
 
+
+// The Related Address conveys transport addresses related to the candidate,
+// useful for diagnostics and other purposes.
+// See: https://datatracker.ietf.org/doc/html/rfc8839#section-5.1
 message RelatedAddress {
 	string address = 1;
 	int32  port = 2;
 }
 
+// An ICE Candidate contains a transport address for a candidate that can be used for connectivity checks.
+// See: https://datatracker.ietf.org/doc/html/rfc8839#section-5.1
 message Candidate {
+
+    // ICE Candidate types
+    // See: https://datatracker.ietf.org/doc/html/rfc8445#section-5.1.1
     enum Type {
         TYPE_UNSPECIFIED = 0;
         TYPE_HOST = 1;
@@ -23,6 +32,8 @@ message Candidate {
 		TCP6 = 3;
     }
 
+    // Type of TCP candidate
+    // See: https://datatracker.ietf.org/doc/html/rfc6544
     enum TCPType {
         TCP_TYPE_UNSPECIFIED = 0;
         TCP_TYPE_ACTIVE = 1;
@@ -30,13 +41,27 @@ message Candidate {
         TCP_TYPE_SIMULTANEOUS_OPEN = 3;
     }
     
+    // The type of candidate
     Type type = 1;
-    string foundation = 2;
-    int32 component = 3;
-    NetworkType network_type = 4;
-    int32 priority = 5;
-    string address = 6;
-    int32 port = 7;
-    TCPType tcp_type = 8;
+
+    NetworkType network_type = 2;
+    TCPType tcp_type = 3;
+
+    // An identifier that is equivalent for two candidates that are of the same type, share the same base, and come from the same STUN server.
+    string foundation = 4;
+
+    // A positive integer between 1 and 256 that identifies the specific component of the media stream for which this is a candidate.
+    int32 component = 5;
+
+    // A positive integer between 1 and (2**31 - 1).
+    int32 priority = 6;
+
+    // The IP address of the candidate.
+    string address = 7;
+
+    // The port of the candidate.
+    int32 port = 8;
+
+    // The related address conveys transport addresses related to the candidate, useful for diagnostics and other purposes.
     RelatedAddress related_address = 9;
 }

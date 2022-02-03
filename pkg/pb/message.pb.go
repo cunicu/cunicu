@@ -20,6 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// A container for an encrypted protobuf message
 type EncryptedMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

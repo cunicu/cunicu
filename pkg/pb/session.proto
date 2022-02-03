@@ -11,10 +11,15 @@ message SessionDescription {
     // Session epoch, incremented with each offer
     int64 epoch = 1;
 
+    // Indicates that an agent is a lite implementation.
     bool lite = 2;
 
-    string Ufrag = 3;
-    string Pwd = 4;
+    // ICE username fragment
+    string ufrag = 3;
 
+    // ICE password
+    string pwd = 4;
+
+    // List of ICE candidates used for connectivity checks 
 	repeated Candidate candidates = 5;
 }

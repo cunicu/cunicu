@@ -4,6 +4,8 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 import "peer.proto";
 
+// A Wireguard interface
+// See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#Device
 message Interface {
     enum Type {
         UNKNOWN = 0;

@@ -75,6 +75,8 @@ func (Interface_Type) EnumDescriptor() ([]byte, []int) {
 	return file_interface_proto_rawDescGZIP(), []int{0, 0}
 }
 
+// A Wireguard interface
+// See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#Device
 type Interface struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
