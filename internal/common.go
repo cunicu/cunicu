@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"syscall"
@@ -29,6 +30,10 @@ func SetupLogging(level zapcore.Level, file string) *zap.Logger {
 
 	if file != "" {
 		cfg.OutputPaths = append(cfg.OutputPaths, file)
+		path := filepath.Dir(file)
+		if err := os.MkdirAll(path, 0755); err != nil {
+			panic("failed to create log directory: " + err.Error())
+		}
 	}
 
 	logger, err := cfg.Build()
