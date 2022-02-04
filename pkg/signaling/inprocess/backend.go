@@ -22,9 +22,9 @@ type Backend struct {
 	logger *zap.Logger
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
 	b := &Backend{
-		logger: zap.L().Named("in-process"),
+		logger: logger,
 	}
 
 	return b, nil

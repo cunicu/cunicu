@@ -57,13 +57,13 @@ type Backend struct {
 	events chan *pb.Event
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
 
-		logger: zap.L().Named("backend").With(zap.String("backend", cfg.URI.Scheme)),
+		logger: logger,
 		config: defaultConfig,
 		events: events,
 	}

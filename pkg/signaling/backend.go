@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -16,7 +17,7 @@ var (
 
 type BackendType string // URL schemes
 
-type BackendFactory func(*BackendConfig, chan *pb.Event) (Backend, error)
+type BackendFactory func(*BackendConfig, chan *pb.Event, *zap.Logger) (Backend, error)
 
 type BackendPlugin struct {
 	New         BackendFactory
@@ -48,7 +49,10 @@ func NewBackend(cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
 		cfg.URI.Scheme = typs[1]
 	}
 
-	be, err := p.New(cfg, events)
+	loggerName := fmt.Sprintf("backend.%s", typ)
+	logger := zap.L().Named(loggerName).With(zap.Any("backend", cfg.URI))
+
+	be, err := p.New(cfg, events, logger)
 	if err != nil {
 		return nil, err
 	}

@@ -27,11 +27,11 @@ type Backend struct {
 	logger *zap.Logger
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
-		logger: zap.L().Named("grpc"),
+		logger: logger,
 	}
 
 	if err := b.config.Parse(cfg); err != nil {

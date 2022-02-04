@@ -47,7 +47,7 @@ func init() {
 	}
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
 	var config *rest.Config
 	var err error
 
@@ -56,7 +56,7 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event) (signaling.
 		term:                  make(chan struct{}),
 		config:                defaultConfig,
 		events:                events,
-		logger:                zap.L().Named("backend").With(zap.String("backend", cfg.URI.Scheme)),
+		logger:                logger,
 	}
 
 	if err := b.config.Parse(cfg); err != nil {
