@@ -24,6 +24,7 @@ type Backend struct {
 
 	config BackendConfig
 
+	events chan *pb.Event
 	logger *zap.Logger
 }
 
@@ -31,6 +32,7 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	var err error
 
 	b := &Backend{
+		events: events,
 		logger: logger,
 	}
 
@@ -43,6 +45,15 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	}
 
 	b.client = pb.NewSignalingClient(b.conn)
+
+	b.events <- &pb.Event{
+		Type: pb.Event_BACKEND_READY,
+		Event: &pb.Event_BackendReady{
+			BackendReady: &pb.BackendReadyEvent{
+				Type: pb.BackendReadyEvent_GRPC,
+			},
+		},
+	}
 
 	return b, nil
 }

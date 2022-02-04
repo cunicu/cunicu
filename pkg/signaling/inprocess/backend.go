@@ -20,11 +20,22 @@ func init() {
 
 type Backend struct {
 	logger *zap.Logger
+	events chan *pb.Event
 }
 
 func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
 	b := &Backend{
+		events: events,
 		logger: logger,
+	}
+
+	b.events <- &pb.Event{
+		Type: pb.Event_BACKEND_READY,
+		Event: &pb.Event_BackendReady{
+			BackendReady: &pb.BackendReadyEvent{
+				Type: pb.BackendReadyEvent_INPROCESS,
+			},
+		},
 	}
 
 	return b, nil

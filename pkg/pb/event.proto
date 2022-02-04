@@ -46,6 +46,8 @@ message BackendReadyEvent {
     enum Type {
         P2P = 0;
         K8S = 1;
+        GRPC = 2;
+        INPROCESS = 3;
     }
 
     Type type = 1;
