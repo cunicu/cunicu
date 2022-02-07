@@ -21,7 +21,7 @@ var defaultConfig = BackendConfig{
 	Private:             false,
 	PrivateCommunity:    false,
 	EnableDHTDiscovery:  true,
-	EnableMDNSDiscovery: false,
+	EnableMDNSDiscovery: true,
 	EnableRelay:         true,
 	EnableAutoRelay:     true,
 	MDNSServiceTag:      defaultMDNSServiceTag,
@@ -153,7 +153,7 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 		}
 	}
 
-	if privateCommunityStrs, ok := options["private"]; ok {
+	if privateCommunityStrs, ok := options["private-community"]; ok {
 		if c.PrivateCommunity, err = strconv.ParseBool(privateCommunityStrs[0]); err != nil {
 			return fmt.Errorf("failed to parse %s as a boolean value: %w", privateCommunityStrs[0], err)
 		}
