@@ -1,5 +1,5 @@
 build/
-test/logs/
+test/e2e/logs/
 .vscode/
 
 dist/

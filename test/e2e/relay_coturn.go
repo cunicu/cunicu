@@ -1,10 +1,9 @@
 //go:build linux
 
-package test
+package e2e
 
 import (
 	"fmt"
-	"io"
 	"net"
 	"os/exec"
 	"strconv"
@@ -18,26 +17,22 @@ const (
 	stunPort = 3478
 )
 
-type RelayNode struct {
+type CoturnNode struct {
 	*g.Host
 
 	Command *exec.Cmd
 
-	Config   map[string]string
-	Username string
-	Password string
+	Config map[string]string
 }
 
-func NewRelayNode(n *g.Network, name string) (*RelayNode, error) {
+func NewCoturnNode(n *g.Network, name string) (RelayNode, error) {
 	h, err := n.AddHost(name)
 	if err != nil {
 		return nil, err
 	}
 
-	t := &RelayNode{
-		Host:     h,
-		Username: "user1",
-		Password: "password1",
+	t := &CoturnNode{
+		Host: h,
 		Config: map[string]string{
 			"verbose":                  "",
 			"no-tls":                   "",
@@ -47,27 +42,33 @@ func NewRelayNode(n *g.Network, name string) (*RelayNode, error) {
 			"new-log-timestamp":        "",
 			"new-log-timestamp-format": "%H:%M:%S",
 			"log-binding":              "",
-			"log-file":                 "logs/relay.log",
+			"log-file":                 fmt.Sprintf("logs/%s.log", name),
 			"listening-port":           strconv.Itoa(stunPort),
 			"realm":                    "wice",
 			"cli-password":             "wice",
 		},
 	}
 
-	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username, t.Password)
+	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username(), t.Password())
 
 	return t, nil
 }
 
-func (t *RelayNode) Start() error {
-	var stdout, stderr io.Reader
+func (c *CoturnNode) Username() string {
+	return "user1"
+}
+
+func (c *CoturnNode) Password() string {
+	return "password1"
+}
+
+func (c *CoturnNode) Start(_ ...interface{}) error {
 	var err error
 	var args = []interface{}{
 		"-n",
 	}
-	var logPath = fmt.Sprintf("logs/%s.log", t.Name())
 
-	for key, value := range t.Config {
+	for key, value := range c.Config {
 		opt := fmt.Sprintf("--%s", key)
 		if value != "" {
 			opt += fmt.Sprintf("=%s", value)
@@ -76,33 +77,33 @@ func (t *RelayNode) Start() error {
 		args = append(args, opt)
 	}
 
-	if stdout, stderr, t.Command, err = t.Host.Start("turnserver", args...); err != nil {
+	if _, _, c.Command, err = c.Host.Start("turnserver", args...); err != nil {
 		return fmt.Errorf("failed to start turnserver: %w", err)
 	}
 
-	if _, err = FileWriter(logPath, stdout, stderr); err != nil {
-		return fmt.Errorf("failed to create logfile: %w", err)
+	if err := c.WaitReady(); err != nil {
+		return fmt.Errorf("failed to start turn server: %w", err)
 	}
 
-	return t.WaitReady()
+	return nil
 }
 
-func (t *RelayNode) Stop() error {
-	if t.Command == nil || t.Command.Process == nil {
+func (c *CoturnNode) Stop() error {
+	if c.Command == nil || c.Command.Process == nil {
 		return nil
 	}
 
-	return t.Command.Process.Kill()
+	return c.Command.Process.Kill()
 }
 
-func (t *RelayNode) Close() error {
-	return t.Stop()
+func (c *CoturnNode) Close() error {
+	return c.Stop()
 }
 
-func (t *RelayNode) IsReachable() bool {
+func (c *CoturnNode) IsReachable() bool {
 	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, stunPort)
 
-	return t.RunFunc(func() error {
+	return c.RunFunc(func() error {
 		conn, err := net.Dial("tcp6", hostPort)
 		if err != nil {
 			return err
@@ -112,8 +113,8 @@ func (t *RelayNode) IsReachable() bool {
 	}) == nil
 }
 
-func (t *RelayNode) WaitReady() error {
-	for tries := 10; !t.IsReachable(); tries-- {
+func (c *CoturnNode) WaitReady() error {
+	for tries := 10; !c.IsReachable(); tries-- {
 		if tries == 0 {
 			return fmt.Errorf("timed out")
 		}
@@ -124,8 +125,8 @@ func (t *RelayNode) WaitReady() error {
 	return nil
 }
 
-func (t *RelayNode) URLs() []*ice.URL {
-	host := t.Name()
+func (c *CoturnNode) URLs() []*ice.URL {
+	host := c.Name()
 
 	return []*ice.URL{
 		{
@@ -147,4 +148,9 @@ func (t *RelayNode) URLs() []*ice.URL {
 			Proto:  ice.ProtoTypeTCP,
 		},
 	}
+}
+
+// Options
+func (c *CoturnNode) Apply(i *g.Interface) {
+	i.Node = c.Host
 }
