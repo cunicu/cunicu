@@ -218,6 +218,9 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 		NetworkTypes:       c.iceNetworkTypes,
 		CandidateTypes:     c.iceCandidateTypes,
 		Urls:               c.iceURLs,
+		Lite:               c.iceLite,
+		PortMin:            c.icePortMin,
+		PortMax:            c.icePortMax,
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
