@@ -39,7 +39,7 @@ func TestDeviceConfig(t *testing.T) {
 	}
 
 	wr := &bytes.Buffer{}
-	if err := wg.DumpConfig(wr, cfg); err != nil {
+	if err := cfg.Dump(wr); err != nil {
 		t.Fatalf("failed to dump config: %s", err)
 	}
 

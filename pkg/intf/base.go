@@ -83,12 +83,9 @@ func (i *BaseInterface) Config() *wgtypes.Config {
 	return cfg
 }
 
-func (i *BaseInterface) DumpConfig(wr io.Writer) {
-	cfg := i.Config()
-
-	wg.DumpConfig(wr, &wg.Config{
-		Config: *cfg,
-	})
+func (i *BaseInterface) DumpConfig(wr io.Writer) error {
+	cfg := wg.Config{Config: *i.Config()}
+	return cfg.Dump(wr)
 }
 
 func (i *BaseInterface) Marshal() *pb.Interface {

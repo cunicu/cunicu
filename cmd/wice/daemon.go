@@ -64,8 +64,7 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 func daemon(cmd *cobra.Command, args []string) {
 
 	if logger.Core().Enabled(zap.DebugLevel) {
-		wr := &zapio.Writer{Log: logger}
-		cfg.Dump(wr)
+		cfg.Dump(&zapio.Writer{Log: logger})
 	}
 
 	// Create daemon

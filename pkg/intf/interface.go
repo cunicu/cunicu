@@ -12,7 +12,7 @@ type Interface interface {
 	io.Closer
 
 	Dump(wr io.Writer, color bool, hideKeys bool)
-	DumpConfig(wr io.Writer)
+	DumpConfig(wr io.Writer) error
 	SyncConfig(cfg string) error
 
 	AddPeer(peer wgtypes.Key) error

@@ -87,7 +87,7 @@ func parseIPs(ips []string) ([]net.IPAddr, error) {
 	return pips, nil
 }
 
-func DumpConfig(wr io.Writer, cfg *Config) error {
+func (cfg *Config) Dump(wr io.Writer) error {
 	iniCfg := &config{
 		Interface: interfaceConfig{
 			ListenPort: cfg.ListenPort,
