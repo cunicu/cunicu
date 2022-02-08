@@ -31,9 +31,9 @@ type config struct {
 }
 
 type interfaceConfig struct {
-	PrivateKey *string
-	ListenPort *int
-	FwMark     *int `ini:",omitempty"`
+	PrivateKey *string `ini:",omitempty"`
+	ListenPort *int    `ini:",omitempty"`
+	FwMark     *int    `ini:",omitempty"`
 
 	// Settings for wg-quick
 	Address    []string `ini:",omitempty" delim:", "`
@@ -48,7 +48,7 @@ type interfaceConfig struct {
 }
 
 type peerConfig struct {
-	PublicKey           string
+	PublicKey           string   `ini:",omitempty"`
 	PresharedKey        *string  `ini:",omitempty"`
 	AllowedIPs          []string `ini:",omitempty" delim:", "`
 	Endpoint            *string  `ini:",omitempty"`
@@ -169,11 +169,6 @@ func (cfg *Config) Dump(wr io.Writer) error {
 
 func ParseConfig(rd io.Reader, name string) (*Config, error) {
 	var err error
-	var cfg = &Config{
-		Config: wgtypes.Config{
-			Peers: []wgtypes.PeerConfig{},
-		},
-	}
 
 	iniFile, err := ini.LoadSources(ini.LoadOptions{
 		AllowNonUniqueSections: true,
@@ -188,11 +183,33 @@ func ParseConfig(rd io.Reader, name string) (*Config, error) {
 		return nil, fmt.Errorf("failed to parse Interface section: %s", err)
 	}
 
-	cfg.ListenPort = iniCfg.Interface.ListenPort
-	cfg.FirewallMark = iniCfg.Interface.FwMark
+	return iniCfg.Config()
+}
 
-	if iniCfg.Interface.PrivateKey != nil {
-		pk, err := wgtypes.ParseKey(*iniCfg.Interface.PrivateKey)
+func (c *config) Config() (*Config, error) {
+	var err error
+	var cfg = &Config{
+		Config: wgtypes.Config{
+			Peers:        []wgtypes.PeerConfig{},
+			ListenPort:   c.Interface.ListenPort,
+			FirewallMark: c.Interface.FwMark,
+		},
+	}
+
+	if c.Interface.Address != nil {
+		if cfg.Address, err = parseCIDRs(c.Interface.Address, true); err != nil {
+			return nil, err
+		}
+	}
+
+	if c.Interface.DNS != nil {
+		if cfg.DNS, err = parseIPs(c.Interface.DNS); err != nil {
+			return nil, err
+		}
+	}
+
+	if c.Interface.PrivateKey != nil {
+		pk, err := wgtypes.ParseKey(*c.Interface.PrivateKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse key: %w", err)
 		}
@@ -201,66 +218,64 @@ func ParseConfig(rd io.Reader, name string) (*Config, error) {
 	}
 
 	// wg-quick settings
-	cfg.MTU = iniCfg.Interface.MTU
-	cfg.Table = iniCfg.Interface.Table
-	cfg.PreUp = iniCfg.Interface.PreUp
-	cfg.PreDown = iniCfg.Interface.PreDown
-	cfg.PostUp = iniCfg.Interface.PostUp
-	cfg.PostDown = iniCfg.Interface.PostDown
-	cfg.SaveConfig = iniCfg.Interface.SaveConfig
+	cfg.MTU = c.Interface.MTU
+	cfg.Table = c.Interface.Table
+	cfg.PreUp = c.Interface.PreUp
+	cfg.PreDown = c.Interface.PreDown
+	cfg.PostUp = c.Interface.PostUp
+	cfg.PostDown = c.Interface.PostDown
+	cfg.SaveConfig = c.Interface.SaveConfig
 
-	if iniCfg.Interface.Address != nil {
-		if cfg.Address, err = parseCIDRs(iniCfg.Interface.Address, true); err != nil {
-			return nil, err
+	for _, pSection := range c.Peers {
+		peerCfg, err := pSection.Config()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse peer config: %w", err)
 		}
+
+		cfg.Peers = append(cfg.Peers, *peerCfg)
 	}
 
-	if iniCfg.Interface.DNS != nil {
-		if cfg.DNS, err = parseIPs(iniCfg.Interface.DNS); err != nil {
-			return nil, err
-		}
+	return cfg, nil
+}
+
+func (p *peerConfig) Config() (*wgtypes.PeerConfig, error) {
+	var err error
+
+	cfg := &wgtypes.PeerConfig{
+		AllowedIPs: []net.IPNet{},
 	}
 
-	for _, pSection := range iniCfg.Peers {
+	cfg.PublicKey, err = wgtypes.ParseKey(p.PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse key: %w", err)
+	}
 
-		peer := wgtypes.PeerConfig{
-			AllowedIPs: []net.IPNet{},
-		}
-
-		peer.PublicKey, err = wgtypes.ParseKey(pSection.PublicKey)
+	if p.PresharedKey != nil {
+		psk, err := wgtypes.ParseKey(*p.PresharedKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse key: %w", err)
 		}
 
-		if pSection.PresharedKey != nil {
-			psk, err := wgtypes.ParseKey(*pSection.PresharedKey)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse key: %w", err)
-			}
+		cfg.PresharedKey = &psk
+	}
 
-			peer.PresharedKey = &psk
+	if p.PersistentKeepalive != nil {
+		ka := time.Duration(*p.PersistentKeepalive) * time.Second
+		cfg.PersistentKeepaliveInterval = &ka
+	}
+
+	if p.Endpoint != nil {
+		addr, err := net.ResolveUDPAddr("udp", *p.Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve endpoint %s: %w", *p.Endpoint, err)
 		}
+		cfg.Endpoint = addr
+	}
 
-		if pSection.PersistentKeepalive != nil {
-			ka := time.Duration(*pSection.PersistentKeepalive) * time.Second
-			peer.PersistentKeepaliveInterval = &ka
+	if p.AllowedIPs != nil {
+		if cfg.AllowedIPs, err = parseCIDRs(p.AllowedIPs, false); err != nil {
+			return nil, fmt.Errorf("failed to parse allowed ips: %w", err)
 		}
-
-		if pSection.Endpoint != nil {
-			addr, err := net.ResolveUDPAddr("udp", *pSection.Endpoint)
-			if err != nil {
-				return nil, fmt.Errorf("failed to resolve endpoint %s: %w", *pSection.Endpoint, err)
-			}
-			peer.Endpoint = addr
-		}
-
-		if pSection.AllowedIPs != nil {
-			if peer.AllowedIPs, err = parseCIDRs(pSection.AllowedIPs, false); err != nil {
-				return nil, fmt.Errorf("failed to parse allowed ips: %w", err)
-			}
-		}
-
-		cfg.Peers = append(cfg.Peers, peer)
 	}
 
 	return cfg, nil
