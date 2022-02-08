@@ -39,7 +39,7 @@ jobs:
       run: |
         sudo --preserve-env \
           env "PATH=$PATH" \
-          go test -v ./...
+          go test -coverprofile coverage.out -v ./...
 
     - uses: reviewdog/action-staticcheck@v1
       with:
