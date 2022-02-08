@@ -49,7 +49,7 @@ func init() {
 	docsCmd.AddCommand(docsMarkdownCmd)
 
 	pf := docsCmd.PersistentFlags()
-	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documenation")
+	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documentation")
 }
 
 func docsMarkdown(cmd *cobra.Command, args []string) error {

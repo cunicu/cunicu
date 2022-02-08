@@ -37,7 +37,7 @@
 
 -   Add better proxy implementations for OpenBSD, FreeBSD, Android and Windows
 
--   Test co-existance of multipe `wice` instances
+-   Test co-existence of multipe `wice` instances
     -   nft tables might collide
 
 -   Use netlink multicast subscription for notification of Wireguard peer changes
