@@ -96,7 +96,7 @@ func (s *Subscription) NewMessage(env *pb.SignalingEnvelope) error {
 		return err
 	}
 
-	zap.L().Debug("Received signaling message", zap.Any("msg", msg), zap.Any("kp", s.kp))
+	zap.L().Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("kp", s.kp))
 
 	s.Channel <- msg
 

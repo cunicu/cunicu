@@ -72,8 +72,6 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 		return nil, fmt.Errorf("failed to parse backend options: %w", err)
 	}
 
-	b.logger.Debug("Config", zap.Any("config", b.config))
-
 	b.context = context.Background()
 
 	opts := b.options()

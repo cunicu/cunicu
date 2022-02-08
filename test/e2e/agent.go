@@ -40,6 +40,8 @@ type Agent struct {
 
 	ID              peer.ID
 	ListenAddresses []multiaddr.Multiaddr
+
+	logger zap.Logger
 }
 
 var (
@@ -61,6 +63,8 @@ func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Age
 
 		WireguardListenPort:    51822,
 		WireguardInterfaceName: "wg0",
+
+		logger: *zap.L().Named("agent." + name),
 	}
 
 	if err := a.RunFunc(func() error {
@@ -126,9 +130,14 @@ func (a *Agent) Start(directArgs ...interface{}) error {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}
 
-	if _, _, a.Command, err = a.Host.Start(cmd, args...); err != nil {
-		return err
-	}
+	go func() {
+		var out []byte
+		if out, a.Command, err = a.Host.Run(cmd, args...); err != nil {
+			a.logger.Error("Failed to start", zap.Error(err))
+		}
+
+		os.Stdout.Write(out)
+	}()
 
 	if a.Client, err = socket.Connect(sockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
@@ -285,16 +294,9 @@ func (a *Agent) WaitBackendReady() error {
 	return nil
 }
 
-func buildWICE(n *g.Network) (string, error) {
-	if wiceBinary != "" {
-		return wiceBinary, nil
-	}
+func (a *Agent) Dump() {
+	a.logger.Info("Details for agent")
 
-	wiceBinary := "/tmp/wice"
-
-	if out, _, err := n.HostNode.Run("go", "build", "-o", wiceBinary, "../../cmd/wice/"); err != nil {
-		return "", fmt.Errorf("failed to build wice: %w\n%s", err, out)
-	}
-
-	return wiceBinary, nil
+	a.DumpWireguardInterfaces()
+	a.Run("ip", "addr", "show")
 }

@@ -1,6 +1,7 @@
 package ice
 
 import (
+	"fmt"
 	"os"
 	"unicode"
 
@@ -78,9 +79,9 @@ func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 	var level zapcore.Level
 	level.UnmarshalText([]byte(levelStr))
 
-	logger := f.Base.Named("ice").WithOptions(
+	loggerName := fmt.Sprintf("ice.%s", scope)
+	logger := f.Base.Named(loggerName).WithOptions(
 		zap.Hooks(f.hook),
-		zap.Fields(zap.String("scope", scope)),
 		log.WithLevel(level),
 	)
 

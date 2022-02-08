@@ -10,7 +10,14 @@ import (
 
 func Main(m *testing.M) {
 	internal.SetupRand()
-	logger := internal.SetupLogging(zapcore.DebugLevel, "logs/test.log")
+
+	logPath := "logs/test.log"
+
+	if err := os.RemoveAll(logPath); err != nil {
+		panic(err)
+	}
+
+	logger := internal.SetupLogging(zapcore.DebugLevel, logPath)
 	defer logger.Sync()
 
 	os.Exit(m.Run())

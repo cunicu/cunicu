@@ -3,9 +3,11 @@ package e2e
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"os/exec"
 
 	g "github.com/stv0g/gont/pkg"
+	"go.uber.org/zap"
 )
 
 type GrpcSignalingNode struct {
@@ -14,6 +16,8 @@ type GrpcSignalingNode struct {
 	port int
 
 	Command *exec.Cmd
+
+	logger *zap.Logger
 }
 
 func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
@@ -23,8 +27,9 @@ func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
 	}
 
 	t := &GrpcSignalingNode{
-		Host: h,
-		port: 8080,
+		Host:   h,
+		port:   8080,
+		logger: zap.L().Named("signal." + name),
 	}
 
 	return t, nil
@@ -34,9 +39,14 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 	var err error
 	var logPath = fmt.Sprintf("logs/%s.log", s.Name())
 
+	if err := os.RemoveAll(logPath); err != nil {
+		return fmt.Errorf("failed to remove old log file: %w", err)
+	}
+
 	var args = []interface{}{
 		"signal",
 		"--log-level", "debug",
+		"--log-file", logPath,
 		"--log-file", logPath,
 		"--listen", fmt.Sprintf(":%d", s.port),
 	}
@@ -46,9 +56,14 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}
 
-	if _, _, s.Command, err = s.Host.Start(cmd, args...); err != nil {
-		return fmt.Errorf("failed to start wice: %w", err)
-	}
+	go func() {
+		var out []byte
+		if out, s.Command, err = s.Host.Run(cmd, args...); err != nil {
+			s.logger.Error("Failed to start", zap.Error(err))
+		}
+
+		os.Stdout.Write(out)
+	}()
 
 	return nil
 }
