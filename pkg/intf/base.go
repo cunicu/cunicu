@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -16,6 +17,7 @@ import (
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
 )
 
@@ -30,6 +32,7 @@ type BaseInterface struct {
 	config  *config.Config
 	client  *wgctrl.Client
 	events  chan *pb.Event
+	udpMux  ice.UDPMux
 
 	logger *zap.Logger
 }
@@ -186,6 +189,8 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 			zap.Any("new", newDev.ListenPort),
 		)
 		i.Device.ListenPort = newDev.ListenPort
+
+		// TODO: update proxy
 	}
 
 	sort.Slice(newDev.Peers, wg.LessPeers(newDev.Peers))
@@ -251,6 +256,13 @@ func (i *BaseInterface) SyncConfig(cfgFilename string) error {
 	}
 
 	// TODO: emulate wg-quick behaviour here?
+
+	newDev, err := i.client.Device(i.Name())
+	if err != nil {
+		return fmt.Errorf("failed to read new config: %w", err)
+	}
+
+	i.Device = wg.Device(*newDev)
 
 	i.logger.Debug("Synced configuration", zap.Any("config", cfg))
 
@@ -337,6 +349,8 @@ func (i *BaseInterface) addLinkLocalAddress() error {
 }
 
 func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.Backend, events chan *pb.Event, cfg *config.Config) (BaseInterface, error) {
+	var err error
+
 	logger := zap.L().Named("interface").With(
 		zap.String("intf", dev.Name),
 		zap.String("type", "kernel"),
@@ -362,7 +376,7 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		}
 	}
 
-	// Fixup device config
+	// Fixup Wireguard device configuration
 	if err := i.Fixup(); err != nil {
 		return BaseInterface{}, fmt.Errorf("failed to fix interface configuration: %w", err)
 	}
@@ -370,6 +384,13 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	// Add link local address
 	if err := i.addLinkLocalAddress(); err != nil {
 		return BaseInterface{}, fmt.Errorf("failed to assign link-local address: %w", err)
+	}
+
+	// Create per-interface UDPMux
+	if cfg.ProxyType.ProxyType == proxy.TypeEBPF {
+		if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil {
+			return BaseInterface{}, fmt.Errorf("failed to setup UDP mux: %w", err)
+		}
 	}
 
 	i.events <- &pb.Event{
@@ -409,8 +430,20 @@ func (i *BaseInterface) Fixup() error {
 		cfg.ListenPort = &port
 	}
 
-	if err := i.client.ConfigureDevice(i.Name(), cfg); err != nil {
-		return fmt.Errorf("failed to configure device: %w", err)
+	if cfg.ListenPort != nil || cfg.PrivateKey != nil {
+		if err := i.client.ConfigureDevice(i.Name(), cfg); err != nil {
+			return fmt.Errorf("failed to configure device: %w", err)
+		}
+
+		// Update internal state
+		if cfg.ListenPort != nil {
+			i.Device.ListenPort = *cfg.ListenPort
+		}
+
+		if cfg.PrivateKey != nil {
+			i.Device.PrivateKey = *cfg.PrivateKey
+			i.Device.PublicKey = cfg.PrivateKey.PublicKey()
+		}
 	}
 
 	return nil

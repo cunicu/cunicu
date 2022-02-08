@@ -9,7 +9,7 @@ import (
 	"github.com/pion/ice/v2"
 )
 
-func SetupEBPFProxy(cfg *ice.AgentConfig, port int) error {
+func CreateUDPMux(listPort int) (ice.UDPMux, error) {
 	return errors.New("the eBPF proxy mode is unsupported on this system")
 }
 

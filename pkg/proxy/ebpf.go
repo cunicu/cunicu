@@ -40,7 +40,7 @@ func (p *EBPFProxy) Type() ProxyType {
 	return TypeEBPF
 }
 
-func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
+func CreateUDPMux(listenPort int) (ice.UDPMux, error) {
 	addr := net.UDPAddr{
 		IP:   net.IPv4zero,
 		Port: listenPort,
@@ -48,7 +48,7 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 
 	conn, err := netx.NewFilteredUDPConn(addr)
 	if err != nil {
-		return fmt.Errorf("failed to create filtered UDP connection: %w", err)
+		return nil, fmt.Errorf("failed to create filtered UDP connection: %w", err)
 	}
 
 	spec := ebpf.ProgramSpec{
@@ -70,23 +70,21 @@ func SetupEBPFProxy(agentConfig *ice.AgentConfig, listenPort int) error {
 		LogLevel: 1, // TODO take configured log-level from args
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create BPF program: %w", err)
+		return nil, fmt.Errorf("failed to create BPF program: %w", err)
 	}
 
 	if err = conn.ApplyFilter(prog); err != nil {
-		return fmt.Errorf("failed to attach eBPF program to socket: %w", err)
+		return nil, fmt.Errorf("failed to attach eBPF program to socket: %w", err)
 	}
 
 	lf := &icex.LoggerFactory{
 		Base: zap.L(),
 	}
 
-	agentConfig.UDPMux = ice.NewUDPMuxDefault(ice.UDPMuxParams{
+	return ice.NewUDPMuxDefault(ice.UDPMuxParams{
 		UDPConn: conn,
 		Logger:  lf.NewLogger("udpmux"),
-	})
-
-	return nil
+	}), nil
 }
 
 func (p *EBPFProxy) Close() error {
