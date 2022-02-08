@@ -1,6 +1,8 @@
 package inprocess
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -41,7 +43,7 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	return b, nil
 }
 
-func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	sub, err := subs.NewSubscription(kp)
 	if err != nil {
 		return nil, err
@@ -50,7 +52,7 @@ func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, erro
 	return sub.Channel, nil
 }
 
-func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	_, err := subs.NewSubscription(kp)
 	if err != nil {
 		return err

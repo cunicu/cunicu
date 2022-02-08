@@ -1,6 +1,7 @@
 package signaling
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -32,8 +33,8 @@ type BackendConfig struct {
 type Backend interface {
 	io.Closer
 
-	Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error
-	Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+	Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error
+	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
 }
 
 func NewBackend(cfg *BackendConfig, events chan *pb.Event) (Backend, error) {

@@ -121,7 +121,7 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	return &b, nil
 }
 
-func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	b.logger.Info("Subscribe to messages from peer", zap.Any("kp", kp))
 
 	sub, err := b.NewSubscription(kp)
@@ -137,7 +137,7 @@ func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, erro
 	return sub.Channel, nil
 }
 
-func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	var err error
 
 	b.logger.Debug("Published signaling message",
@@ -160,7 +160,7 @@ func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 
 	pbEnv.DeepCopyInto(&env.SignalingEnvelope)
 
-	if env, err = envs.Create(context.Background(), env, metav1.CreateOptions{}); err != nil {
+	if env, err = envs.Create(ctx, env, metav1.CreateOptions{}); err != nil {
 		return fmt.Errorf("failed to create envelope: %w", err)
 	}
 

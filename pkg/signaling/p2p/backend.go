@@ -341,7 +341,7 @@ func (b *Backend) subscriberLoop() {
 	}
 }
 
-func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	b.logger.Info("Subscribe to offers from peer", zap.Any("kp", kp))
 
 	sub, err := b.NewSubscription(kp)
@@ -352,7 +352,7 @@ func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, erro
 	return sub.Channel, nil
 }
 
-func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	env, err := msg.Encrypt(kp)
 	if err != nil {
 		return fmt.Errorf("failed to marshal offer: %w", err)
@@ -367,7 +367,7 @@ func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 		pubsub.WithReadiness(pubsub.MinTopicSize(1)),
 	}
 
-	if err := b.topic.Publish(b.context, payload, opts...); err != nil {
+	if err := b.topic.Publish(ctx, payload, opts...); err != nil {
 		return fmt.Errorf("failed to publish offer: %w", err)
 
 	}

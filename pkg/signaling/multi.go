@@ -1,6 +1,7 @@
 package signaling
 
 import (
+	"context"
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
@@ -29,9 +30,9 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig, events chan *pb.Event)
 	return mb, nil
 }
 
-func (m *MultiBackend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (m *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	for _, b := range m.backends {
-		if err := b.Publish(kp, msg); err != nil {
+		if err := b.Publish(ctx, kp, msg); err != nil {
 			return err
 		}
 	}
@@ -39,11 +40,11 @@ func (m *MultiBackend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) err
 	return nil
 }
 
-func (m *MultiBackend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (m *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	chans := []chan *pb.SignalingMessage{}
 
 	for _, b := range m.backends {
-		ch, err := b.Subscribe(kp)
+		ch, err := b.Subscribe(ctx, kp)
 		if err != nil {
 			return nil, err
 		}

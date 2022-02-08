@@ -58,12 +58,12 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	return b, nil
 }
 
-func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	params := &pb.SubscribeParams{
 		Key: kp.Ours.PublicKey().Bytes(),
 	}
 
-	stream, err := b.client.Subscribe(context.Background(), params)
+	stream, err := b.client.Subscribe(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to subscribe to offers: %s", err)
 	}
@@ -88,13 +88,13 @@ func (b *Backend) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, erro
 	return ch, nil
 }
 
-func (b *Backend) Publish(kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	env, err := msg.Encrypt(kp)
 	if err != nil {
 		return fmt.Errorf("failed to encryt message: %w", err)
 	}
 
-	if _, err = b.client.Publish(context.Background(), env); err != nil {
+	if _, err = b.client.Publish(ctx, env); err != nil {
 		return fmt.Errorf("failed to publish offer: %w", err)
 	}
 
