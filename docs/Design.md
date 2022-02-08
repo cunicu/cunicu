@@ -2,6 +2,8 @@
 
 ## Objectives
 
+-   Use [WebRTC perfect negotiation pattern](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation)
+
 -   Support [Trickle ICE][rfc8838]
 
 -   Support [ICE restart][rfc8445-ice-restart]
