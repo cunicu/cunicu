@@ -22,9 +22,7 @@ wice [flags]
 
 * [wice completion](wice_completion.md)	 - Generate the autocompletion script for the specified shell
 * [wice daemon](wice_daemon.md)	 - Start the daemon
-* [wice interface](wice_interface.md)	 - Manage Wireguard interfaces
 * [wice monitor](wice_monitor.md)	 - Monitor the WICE daemon for events
-* [wice peer](wice_peer.md)	 - Manage Wireguard peers
 * [wice signal](wice_signal.md)	 - Start gRPC signaling server
 * [wice stop](wice_stop.md)	 - Shutdown the WICE daemon
 * [wice sync](wice_sync.md)	 - Synchronize interfaces
