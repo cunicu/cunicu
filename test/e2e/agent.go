@@ -44,11 +44,6 @@ type Agent struct {
 	logger zap.Logger
 }
 
-var (
-	// Singleton for compiled wice executable
-	wiceBinary string
-)
-
 func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Agent, error) {
 	h, err := m.AddHost(name, opts...)
 	if err != nil {
