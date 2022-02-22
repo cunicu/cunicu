@@ -30,6 +30,9 @@ const (
 	// defaultDisconnectedTimeout is the default time till an Agent transitions disconnected
 	defaultDisconnectedTimeout = 5 * time.Second
 
+	// defaultRestartInterval is the default time an Agent waits before it attempts an ICE restart
+	defaultRestartTimeout = 5 * time.Second
+
 	// defaultFailedTimeout is the default time till an Agent transitions to failed after disconnected
 	defaultFailedTimeout = 25 * time.Second
 
@@ -64,10 +67,10 @@ type Config struct {
 	Socket     string
 	SocketWait bool
 
-	Backends        backendURLList
-	ProxyType       proxyType
-	WatchInterval   time.Duration
-	RestartInterval time.Duration
+	Backends       backendURLList
+	ProxyType      proxyType
+	WatchInterval  time.Duration
+	RestartTimeout time.Duration
 
 	WireguardInterfaces      []string
 	WireguardInterfaceFilter regex
@@ -162,7 +165,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.DurationVar(&cfg.iceFailedTimeout, "ice-failed-timeout", defaultFailedTimeout, "time until an Agent transitions to failed after disconnected")
 	flags.DurationVar(&cfg.iceKeepaliveInterval, "ice-keepalive-interval", defaultKeepaliveInterval, "interval netween STUN keepalives")
 	flags.DurationVar(&cfg.iceCheckInterval, "ice-check-interval", defaultCheckInterval, "interval at which the agent performs candidate checks in the connecting phase")
-	flags.DurationVar(&cfg.RestartInterval, "ice-restart-interval", defaultDisconnectedTimeout, "time to wait before ICE restart")
+	flags.DurationVar(&cfg.RestartTimeout, "ice-restart-timeout", defaultRestartTimeout, "time to wait before ICE restart")
 	flags.StringVarP(&cfg.iceUsername, "ice-user", "U", "", "username for STUN/TURN credentials")
 	flags.StringVarP(&cfg.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
 
@@ -309,7 +312,7 @@ func (c *Config) Dump(wr io.Writer) {
 		fmt.Fprintf(wr, "    %s\n", d)
 	}
 
-	fmt.Fprintf(wr, "  restart interval: %s\n", c.RestartInterval)
+	fmt.Fprintf(wr, "  restart timeout: %s\n", c.RestartTimeout)
 	fmt.Fprintf(wr, "  watch interval: %s\n", c.WatchInterval)
 	fmt.Fprintf(wr, "  proxy type: %s\n", c.ProxyType.String())
 
