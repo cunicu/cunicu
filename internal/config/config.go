@@ -34,7 +34,7 @@ const (
 	defaultRestartTimeout = 5 * time.Second
 
 	// defaultFailedTimeout is the default time till an Agent transitions to failed after disconnected
-	defaultFailedTimeout = 25 * time.Second
+	defaultFailedTimeout = 5 * time.Second
 
 	// max binding request before considering a pair failed
 	defaultMaxBindingRequests = 7

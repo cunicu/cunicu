@@ -22,6 +22,15 @@ import (
 	"riasc.eu/wice/pkg/signaling"
 )
 
+const (
+	SignalingStateStable          SignalingState = iota
+	SignalingStateHaveLocalOffer                 = iota
+	SignalingStateHaveRemoteOffer                = iota
+	SignalingStateClosed                         = iota
+)
+
+type SignalingState int
+
 type Peer struct {
 	wgtypes.Peer
 
@@ -32,20 +41,83 @@ type Peer struct {
 	agent *ice.Agent
 	conn  *ice.Conn
 
-	localOffer   *pb.Offer
-	remoteOffers chan *pb.Offer
-
 	proxy   proxy.Proxy
 	backend signaling.Backend
 
-	client             *wgctrl.Client
-	config             *config.Config
-	events             chan *pb.Event
-	selectedCandidates chan ice.CandidatePair
+	localDescription  *pb.SessionDescription
+	remoteDescription *pb.SessionDescription
+
+	client         *wgctrl.Client
+	config         *config.Config
+	events         chan *pb.Event
+	messages       chan *pb.SignalingMessage
+	signalingState SignalingState
 
 	logger *zap.Logger
 }
 
+// NewPeer creates a peer and initiates a new ICE agent
+func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
+	logger := zap.L().Named("peer").With(
+		zap.String("intf", i.Name()),
+		zap.Any("peer", wgp.PublicKey),
+	)
+
+	p := &Peer{
+		Interface:      i,
+		Peer:           *wgp,
+		client:         i.client,
+		backend:        i.backend,
+		events:         i.events,
+		signalingState: SignalingStateStable,
+		config:         i.config,
+		logger:         logger,
+	}
+
+	// Add default link-local address as allowed IP
+	ap := net.IPNet{
+		IP:   p.PublicKey().IPv6Address().IP,
+		Mask: net.CIDRMask(128, 128),
+	}
+	if err := p.addAllowedIP(ap); err != nil {
+		return nil, fmt.Errorf("failed to add link-local IPv6 address to AllowedIPs")
+	}
+
+	// Setup new ICE Agent
+	agentConfig, err := p.config.AgentConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate ICE agent: %w", err)
+	}
+
+	agentConfig.UDPMux = i.udpMux
+	agentConfig.UDPMuxSrflx = i.udpMuxSrflx
+	agentConfig.LoggerFactory = &pice.LoggerFactory{Base: p.logger}
+
+	if p.agent, err = ice.NewAgent(agentConfig); err != nil {
+		return nil, fmt.Errorf("failed to create ICE agent: %w", err)
+	}
+
+	// When we have gathered a new ICE Candidate send it to the remote peer
+	if err := p.agent.OnCandidate(p.onCandidate); err != nil {
+		return nil, fmt.Errorf("failed to setup on candidate handler: %w", err)
+	}
+
+	// When selected candidate pair changes
+	if err := p.agent.OnSelectedCandidatePairChange(p.onSelectedCandidatePairChange); err != nil {
+		return nil, fmt.Errorf("failed to setup on selected candidate pair handler: %w", err)
+	}
+
+	// When ICE Connection state has change print to stdout
+	if err := p.agent.OnConnectionStateChange(p.onConnectionStateChange); err != nil {
+		return nil, fmt.Errorf("failed to setup on connection state handler: %w", err)
+	}
+
+	go p.start()
+
+	return p, nil
+}
+
+// Close destroys the peer as well as the ICE agent and proxies
 func (p *Peer) Close() error {
 	if err := p.agent.Close(); err != nil {
 		return fmt.Errorf("failed to close ICE agent: %w", err)
@@ -62,38 +134,128 @@ func (p *Peer) Close() error {
 	return nil
 }
 
+// Getters
+
+// String returns the peers public key as a base64-encoded string
 func (p *Peer) String() string {
 	return p.PublicKey().String()
 }
 
-func (p *Peer) updateEndpoint(addr *net.UDPAddr) error {
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				PublicKey:         p.Peer.PublicKey,
-				UpdateOnly:        true,
-				ReplaceAllowedIPs: false,
-				Endpoint:          addr,
-			},
-		},
+// PublicKey returns the Curve25199 public key of the Wireguard peer
+func (p *Peer) PublicKey() crypto.Key {
+	return crypto.Key(p.Peer.PublicKey)
+}
+
+// PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
+func (p *Peer) PublicKeyPair() *crypto.KeyPair {
+	return &crypto.KeyPair{
+		Ours:   p.Interface.PublicKey(),
+		Theirs: p.PublicKey(),
+	}
+}
+
+// PublicPrivateKeyPair returns both the public key of the local (our) and remote peer (theirs)
+func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
+	return &crypto.KeyPair{
+		Ours:   p.Interface.PrivateKey(),
+		Theirs: p.PublicKey(),
+	}
+}
+
+// Config return the Wireguard peer configuration
+func (p *Peer) Config() *wgtypes.PeerConfig {
+	cfg := &wgtypes.PeerConfig{
+		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
+		Endpoint:   p.Endpoint,
+		AllowedIPs: p.Peer.AllowedIPs,
 	}
 
-	if err := p.client.ConfigureDevice(p.Interface.Name(), cfg); err != nil {
-		return fmt.Errorf("failed to update peer endpoint: %w", err)
+	if crypto.Key(p.PresharedKey).IsSet() {
+		cfg.PresharedKey = &p.PresharedKey
 	}
 
-	p.logger.Debug("Peer endpoint updated", zap.String("endpoint", addr.String()))
+	if p.PersistentKeepaliveInterval > 0 {
+		cfg.PersistentKeepaliveInterval = &p.PersistentKeepaliveInterval
+	}
 
-	// if err := p.ensureHandshake(); err != nil {
-	// 	return fmt.Errorf("failed to initiate handshake: %w", err)
-	// }
+	return cfg
+}
+
+// Restart performs an ICE restart
+//
+// This is usually triggered by a failed ICE connection state (onConnectionStateChange())
+func (p *Peer) Restart() error {
+	// TODO
+	p.logger.Error("Restart not implemented yet!")
 
 	return nil
 }
 
-// isControlling determines if the peer is controlling the ICE session
+// start starts the ICE agent
+// See: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
+func (p *Peer) start() {
+	var err error
+
+	// Initialize signaling channel
+	if p.messages, err = p.backend.Subscribe(context.Background(), p.PublicPrivateKeyPair()); err != nil {
+		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
+	}
+
+	p.logger.Info("Starting gathering local ICE candidates")
+	if err := p.agent.GatherCandidates(); err != nil {
+		p.logger.Fatal("Failed to gather candidates", zap.Error(err))
+	}
+
+	if err := p.sendOffer(); err != nil {
+		p.logger.Fatal("Failed to send offer", zap.Error(err))
+	}
+
+	p.signalingState = SignalingStateHaveLocalOffer
+
+	for msg := range p.messages {
+		p.onMessage(msg)
+	}
+}
+
+// ident provides a unique string which identifies the peer
+func (p *Peer) ident() string {
+	return base64.StdEncoding.EncodeToString(p.Peer.PublicKey[:16])
+}
+
+func (p *Peer) sendOffer() error {
+	p.localDescription = p.newOffer()
+	msg := &pb.SignalingMessage{
+		Type:        pb.SignalingMessage_OFFER,
+		Description: p.localDescription,
+	}
+
+	if err := p.backend.Publish(context.Background(), p.PublicPrivateKeyPair(), msg); err != nil {
+		return err
+	}
+
+	p.logger.Debug("Send offer", zap.Any("offer", p.localDescription))
+
+	return nil
+}
+
+// newOffer initializes a new offer before it gets send via the signaling channel
+func (p *Peer) newOffer() *pb.SessionDescription {
+	ufrag, pwd, err := p.agent.GetLocalUserCredentials()
+	if err != nil {
+		p.logger.Error("Failed to get local user credentials", zap.Error(err))
+	}
+
+	return &pb.SessionDescription{
+		Epoch:      1,
+		Ufrag:      ufrag,
+		Pwd:        pwd,
+		Candidates: []*pb.Candidate{},
+	}
+}
+
+// isPolite determines if the peer is controlling the ICE session
 // by selecting the peer which has the smaller public key
-func (p *Peer) isControlling() bool {
+func (p *Peer) isPolite() bool {
 	var pkOur, pkTheir big.Int
 	pkOur.SetBytes(p.Interface.Device.PublicKey[:])
 	pkTheir.SetBytes(p.Peer.PublicKey[:])
@@ -122,21 +284,32 @@ func (p *Peer) OnModified(new *wgtypes.Peer, modified PeerModifier) {
 	}
 }
 
+func (p *Peer) sendCandidates() {
+	p.localDescription.Epoch++
+
+	msg := &pb.SignalingMessage{
+		Type:        pb.SignalingMessage_CANDIDATE,
+		Description: p.localDescription,
+	}
+
+	if err := p.backend.Publish(context.Background(), p.PublicPrivateKeyPair(), msg); err != nil {
+		p.logger.Error("Failed to publish offer", zap.Error(err))
+	}
+}
+
 // onCandidate is a callback which gets called for each discovered local ICE candidate
 func (p *Peer) onCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
 		return
-	} else {
-		p.logger.Info("Found new local candidate", zap.Any("candidate", c))
-
-		p.localOffer.Candidates = append(p.localOffer.Candidates, pb.NewCandidate(c))
 	}
 
-	p.localOffer.Epoch++
+	p.logger.Info("Found new local candidate", zap.Any("candidate", c))
 
-	if err := p.backend.PublishOffer(p.PublicKeyPair(), p.localOffer); err != nil {
-		p.logger.Error("Failed to publish offer", zap.Error(err))
+	p.localDescription.Candidates = append(p.localDescription.Candidates, pb.NewCandidate(c))
+
+	if p.signalingState == SignalingStateHaveLocalOffer || p.signalingState == SignalingStateHaveRemoteOffer {
+		p.sendCandidates()
 	}
 }
 
@@ -164,7 +337,7 @@ func (p *Peer) onConnectionStateChange(state ice.ConnectionState) {
 
 	if state == ice.ConnectionStateFailed {
 		go func() {
-			time.Sleep(p.config.RestartInterval)
+			time.Sleep(p.config.RestartTimeout)
 			p.Restart()
 		}()
 	}
@@ -177,15 +350,10 @@ func (p *Peer) onSelectedCandidatePairChange(local, remote ice.Candidate) {
 		zap.Any("local", local),
 		zap.Any("remote", remote),
 	)
-
-	p.selectedCandidates <- ice.CandidatePair{
-		Local:  local,
-		Remote: remote,
-	}
 }
 
 // proxyType determines a usable proxy type for the given candidate pair
-func (p *Peer) proxyType(cp ice.CandidatePair) proxy.ProxyType {
+func (p *Peer) proxyType(cp *ice.CandidatePair) proxy.ProxyType {
 	// TODO handle userspace device
 
 	if cp.Local.Type() == ice.CandidateTypeRelay {
@@ -195,8 +363,13 @@ func (p *Peer) proxyType(cp ice.CandidatePair) proxy.ProxyType {
 	}
 }
 
-func (p *Peer) updateProxy(cp ice.CandidatePair) error {
+func (p *Peer) updateProxy() error {
 	var err error
+
+	cp, err := p.agent.GetSelectedCandidatePair()
+	if err != nil {
+		return fmt.Errorf("failed to get selected candidate pair: %w", err)
+	}
 
 	pt := p.proxyType(cp)
 
@@ -217,9 +390,52 @@ func (p *Peer) updateProxy(cp ice.CandidatePair) error {
 	return nil
 }
 
-// isRestartingOffer checks if a received offer should restart the
+// updateEndpoint sets a new endpoint for the Wireguard peer
+func (p *Peer) updateEndpoint(addr *net.UDPAddr) error {
+	cfg := wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				PublicKey:         p.Peer.PublicKey,
+				UpdateOnly:        true,
+				ReplaceAllowedIPs: false,
+				Endpoint:          addr,
+			},
+		},
+	}
+
+	if err := p.client.ConfigureDevice(p.Interface.Name(), cfg); err != nil {
+		return fmt.Errorf("failed to update peer endpoint: %w", err)
+	}
+
+	p.logger.Debug("Peer endpoint updated", zap.String("endpoint", addr.String()))
+
+	// if err := p.ensureHandshake(); err != nil {
+	// 	return fmt.Errorf("failed to initiate handshake: %w", err)
+	// }
+
+	return nil
+}
+
+// addAllowedIP adds a new IP network to the allowed ip list of the Wireguard peer
+func (p *Peer) addAllowedIP(a net.IPNet) error {
+	cfg := wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				UpdateOnly: true,
+				PublicKey:  wgtypes.Key(p.PublicKey()),
+				AllowedIPs: []net.IPNet{a},
+			},
+		},
+	}
+
+	p.logger.Debug("Adding new allowed IP", zap.String("ip", a.String()))
+
+	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
+}
+
+// isSessionRestart checks if a received offer should restart the
 // ICE session by comparing ufrag & pwd with previously used values.
-func (p *Peer) isRestartingOffer(o *pb.Offer) bool {
+func (p *Peer) isSessionRestart(o *pb.SessionDescription) bool {
 	ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
 	if err != nil {
 		p.logger.Error("Failed to get local credentials", zap.Error(err))
@@ -230,23 +446,173 @@ func (p *Peer) isRestartingOffer(o *pb.Offer) bool {
 	return p.conn != nil && credsChanged
 }
 
-// onOffer is a callback which gets called for each newly received offer
-// from the remote
-func (p *Peer) onOffer(o *pb.Offer) {
-	p.logger.Debug("Received offer", zap.Any("offer", o))
+func (p *Peer) handleOffer(sd *pb.SessionDescription) error {
+	var err error
 
-	if p.isRestartingOffer(o) {
-		p.logger.Info("Session restart triggered by remote")
-
-		p.restart()
-
-		if err := p.agent.SetRemoteCredentials(o.Ufrag, o.Pwd); err != nil {
-			p.logger.Error("Failed to set remote creds", zap.Error(err))
-			return
-		}
+	if err := p.agent.SetRemoteCredentials(sd.Ufrag, sd.Pwd); err != nil {
+		return fmt.Errorf("failed to set remote credentials: %w", err)
 	}
 
-	for _, c := range o.Candidates {
+	answer := &pb.SignalingMessage{
+		Type:        pb.SignalingMessage_ANSWER,
+		Description: p.localDescription,
+	}
+
+	if err := p.backend.Publish(context.Background(), p.PublicPrivateKeyPair(), answer); err != nil {
+		return fmt.Errorf("failed to publish answer: %w", err)
+	}
+
+	p.logger.Debug("Send answer", zap.Any("answer", p.localDescription))
+
+	if p.conn, err = p.agent.Accept(context.Background(), sd.Ufrag, sd.Pwd); err != nil {
+		return fmt.Errorf("failed to accept ICE connection: %w", err)
+	}
+
+	if err := p.updateProxy(); err != nil {
+		return fmt.Errorf("failed to update proxy: %w", err)
+	}
+
+	return nil
+}
+
+func (p *Peer) handleAnswer(sd *pb.SessionDescription) error {
+	var err error
+
+	if err := p.agent.SetRemoteCredentials(sd.Ufrag, sd.Pwd); err != nil {
+		return fmt.Errorf("failed to set remote credentials: %w", err)
+	}
+
+	if p.conn, err = p.agent.Dial(context.Background(), sd.Ufrag, sd.Pwd); err != nil {
+		return fmt.Errorf("failed to dial ICE connection: %w", err)
+	}
+
+	if err := p.updateProxy(); err != nil {
+		return fmt.Errorf("failed to update proxy: %w", err)
+	}
+
+	return nil
+}
+
+// handleRestart is a handler for an remotly-initiated ICE restart
+func (p *Peer) handleRestart(sd *pb.SessionDescription) error {
+	if err := p.agent.Restart("", ""); err != nil {
+		return fmt.Errorf("failed to restart ICE session: %w", err)
+	}
+
+	p.signalingState = SignalingStateHaveRemoteOffer
+	p.localDescription = p.newOffer()
+
+	if err := p.agent.GatherCandidates(); err != nil {
+		return fmt.Errorf("failed to gather candidates: %w", err)
+	}
+
+	return p.handleOffer(sd)
+}
+
+// onOffer is a handler called for each received offer via the signaling channel
+func (p *Peer) onOffer(sd *pb.SessionDescription) {
+	logger := p.logger.With(zap.Any("offer", sd))
+
+	switch p.signalingState {
+
+	case SignalingStateStable:
+		logger.Info("Received offer")
+
+		p.signalingState = SignalingStateHaveRemoteOffer
+
+		go func() {
+			if err := p.handleOffer(sd); err != nil {
+				p.logger.Error("Failed to handle offer", zap.Error(err))
+			}
+		}()
+
+	case SignalingStateHaveLocalOffer:
+		logger.Debug("Received offer while waiting for answer")
+
+		if p.isPolite() {
+			p.signalingState = SignalingStateHaveRemoteOffer
+
+			logger.Debug("We are polite. Accepting offer...")
+
+			go func() {
+				if err := p.handleOffer(sd); err != nil {
+					logger.Error("Failed to handle offer", zap.Error(err))
+				}
+			}()
+		} else {
+			logger.Debug("We are not polite. Ignoring offer...")
+
+			if err := p.sendOffer(); err != nil {
+				logger.Error("Failed to send offer", zap.Error(err))
+			}
+		}
+
+	case SignalingStateHaveRemoteOffer:
+		logger.Error("Received another offer from remote")
+
+		if p.isSessionRestart(sd) {
+			logger.Info("Session restart triggered by remote")
+
+			go func() {
+				if err := p.handleRestart(sd); err != nil {
+					logger.Error("Failed to handle restarting offer")
+				}
+			}()
+		}
+	}
+}
+
+// onAnswer is a handler called for each received answer via the signaling channel
+func (p *Peer) onAnswer(sd *pb.SessionDescription) {
+	logger := p.logger.With(zap.Any("answer", sd))
+
+	switch p.signalingState {
+
+	case SignalingStateStable:
+		logger.Error("Received answer while not waiting for one. Ignoring...")
+
+	case SignalingStateHaveLocalOffer:
+		logger.Info("Received answer to our offer")
+
+		p.signalingState = SignalingStateStable
+
+		go func() {
+			if err := p.handleAnswer(sd); err != nil {
+				p.logger.Error("Failed to handle answer", zap.Error(err))
+			}
+		}()
+
+	case SignalingStateHaveRemoteOffer:
+		logger.Error("Received answer while not waiting for one. Ignoring...")
+	}
+}
+
+// onMessage is called for each received message from the signaling backend
+//
+// Most of the negotation logic is happening here
+func (p *Peer) onMessage(msg *pb.SignalingMessage) {
+	switch msg.Type {
+
+	case pb.SignalingMessage_OFFER:
+		p.onOffer(msg.Description)
+
+	case pb.SignalingMessage_ANSWER:
+		p.onAnswer(msg.Description)
+
+	case pb.SignalingMessage_CANDIDATE:
+
+	}
+
+	// We learn new candidates from ALL message types!
+	if err := p.addCandidates(msg.Description.Candidates); err != nil {
+		p.logger.Error("Failed to add candidates", zap.Error(err))
+	}
+}
+
+// addCandidates deserializes a list of ICE candidates from a protobuf message
+// and adds them to the ICE agent
+func (p *Peer) addCandidates(cands []*pb.Candidate) error {
+	for _, c := range cands {
 		ic, err := c.ICECandidate()
 		if err != nil {
 			p.logger.Error("Failed to decode offer. Ignoring...", zap.Error(err))
@@ -254,122 +620,16 @@ func (p *Peer) onOffer(o *pb.Offer) {
 		}
 
 		if err := p.agent.AddRemoteCandidate(ic); err != nil {
-			p.logger.Fatal("Failed to add remote candidate", zap.Error(err))
+			return fmt.Errorf("failed to add remote candidate: %w", err)
 		}
+
 		p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
 	}
-}
-
-// restartLocal restarts the ICE session because of a broken ICE connection
-func (p *Peer) Restart() error {
-	p.logger.Info("Session restart triggered locally")
-
-	p.restart()
 
 	return nil
 }
 
-// restart performs an ICE restart
-//
-// This restart can either be triggered by a failed
-// ICE connection state (onConnectionState())
-// or by a remote offer which indicates a restart by changed ufrag/pwd's (onOffer())
-func (p *Peer) restart() {
-	if err := p.agent.Restart("", ""); err != nil {
-		p.logger.Error("Failed to restart ICE session", zap.Error(err))
-		return
-	}
-
-	p.localOffer = p.newOffer()
-
-	if err := p.agent.GatherCandidates(); err != nil {
-		p.logger.Error("Failed to gather candidates", zap.Error(err))
-		return
-	}
-}
-
-func (p *Peer) start() {
-	var err error
-
-	p.logger.Info("Starting new ICE session")
-
-	p.logger.Info("Gathering local candidates")
-	if err := p.agent.GatherCandidates(); err != nil {
-		p.logger.Fatal("Failed to gather candidates", zap.Error(err))
-	}
-
-	p.remoteOffers, err = p.backend.SubscribeOffers(p.PublicKeyPair())
-	if err != nil {
-		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
-	}
-
-	// Wait for first offer from remote agent before creating ICE connection
-	o := <-p.remoteOffers
-	p.onOffer(o)
-
-	// Start the ICE Agent. One side must be controlled, and the other must be controlling
-	if p.isControlling() {
-		p.conn, err = p.agent.Dial(context.Background(), o.Ufrag, o.Pwd)
-	} else {
-		p.conn, err = p.agent.Accept(context.Background(), o.Ufrag, o.Pwd)
-	}
-	if err != nil {
-		p.logger.Fatal("Failed to establish ICE connection", zap.Error(err))
-	}
-
-	p.logger.Info("Connected")
-
-	// Process more offers which are trickeling in
-	for {
-		select {
-		case o := <-p.remoteOffers:
-			if err := p.agent.SetRemoteCredentials(o.Ufrag, o.Pwd); err != nil {
-				p.logger.Error("Failed to set remote creds", zap.Error(err))
-				return
-			}
-
-			p.onOffer(o)
-
-		case cp := <-p.selectedCandidates:
-			if err := p.updateProxy(cp); err != nil {
-				p.logger.Fatal("Failed to update proxy", zap.Error(err))
-			}
-		}
-	}
-}
-
-// ident provides a unique string which identifies the peer
-func (p *Peer) ident() string {
-	return base64.StdEncoding.EncodeToString(p.Peer.PublicKey[:16])
-}
-
-// newOffer initializes a new offer before it gets send to the remote via
-// the signaling backend
-func (p *Peer) newOffer() *pb.Offer {
-	var role pb.Offer_Role
-	if p.isControlling() {
-		role = pb.Offer_CONTROLLING
-	} else {
-		role = pb.Offer_CONTROLLED
-	}
-
-	ufrag, pwd, err := p.agent.GetLocalUserCredentials()
-	if err != nil {
-		p.logger.Error("Failed to get local user credentials", zap.Error(err))
-	}
-
-	return &pb.Offer{
-		Version:        pb.OfferVersion,
-		Type:           pb.Offer_OFFER,
-		Implementation: pb.Offer_FULL,
-		Role:           role,
-		Epoch:          0,
-		Ufrag:          ufrag,
-		Pwd:            pwd,
-		Candidates:     []*pb.Candidate{},
-	}
-}
-
+// ensureHandshake initiated a new Wireguard handshake if the last one is older than 5 seconds
 func (p *Peer) ensureHandshake() error {
 	// Return if the last handshake happed within the last 5 seconds
 	if time.Since(p.LastHandshakeTime) < 5*time.Second {
@@ -408,134 +668,4 @@ func (p *Peer) initiateHandshake() error {
 	}
 
 	return nil
-}
-
-func (p *Peer) addAllowedIP(a net.IPNet) error {
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				UpdateOnly: true,
-				PublicKey:  wgtypes.Key(p.PublicKey()),
-				AllowedIPs: []net.IPNet{a},
-			},
-		},
-	}
-
-	p.logger.Debug("Adding new allowed IP", zap.String("ip", a.String()))
-
-	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
-}
-
-// PublicKey returns the Curve25199 public key of the Wireguard peer
-func (p *Peer) PublicKey() crypto.Key {
-	return crypto.Key(p.Peer.PublicKey)
-}
-
-// PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
-func (p *Peer) PublicKeyPair() crypto.KeyPair {
-	return crypto.KeyPair{
-		Ours:   p.Interface.PublicKey(),
-		Theirs: p.PublicKey(),
-	}
-}
-
-// PublicPrivateKeyPair returns both the public key of the local (our) and remote peer (theirs)
-func (p *Peer) PublicPrivateKeyPair() crypto.KeyPair {
-	return crypto.KeyPair{
-		Ours:   p.Interface.PrivateKey(),
-		Theirs: p.PublicKey(),
-	}
-}
-
-func (p *Peer) Config() *wgtypes.PeerConfig {
-	cfg := &wgtypes.PeerConfig{
-		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
-		Endpoint:   p.Endpoint,
-		AllowedIPs: p.Peer.AllowedIPs,
-	}
-
-	if crypto.Key(p.PresharedKey).IsSet() {
-		cfg.PresharedKey = &p.PresharedKey
-	}
-
-	if p.PersistentKeepaliveInterval > 0 {
-		cfg.PersistentKeepaliveInterval = &p.PersistentKeepaliveInterval
-	}
-
-	return cfg
-}
-
-// NewPeer creates a new peer and ICE session
-func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
-	logger := zap.L().Named("peer").With(
-		zap.String("intf", i.Name()),
-		zap.Any("peer", wgp.PublicKey),
-	)
-
-	p := &Peer{
-		Interface:          i,
-		Peer:               *wgp,
-		client:             i.client,
-		backend:            i.backend,
-		events:             i.events,
-		selectedCandidates: make(chan ice.CandidatePair),
-		config:             i.config,
-		logger:             logger,
-	}
-
-	// Add default link-local address as allowed IP
-	ap := net.IPNet{
-		IP:   p.PublicKey().IPv6Address().IP,
-		Mask: net.CIDRMask(128, 128),
-	}
-	if err := p.addAllowedIP(ap); err != nil {
-		return nil, fmt.Errorf("failed to add link-local IPv6 address to AllowedIPs")
-	}
-
-	// Setup new ICE Agent
-	agentConfig, err := p.config.AgentConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate ICE agent: %w", err)
-	}
-
-	agentConfig.LoggerFactory = &pice.LoggerFactory{
-		Base: p.logger,
-	}
-
-	if i.config.ProxyType.ProxyType == proxy.TypeEBPF {
-		if err := proxy.SetupEBPFProxy(agentConfig, p.Interface.ListenPort); err != nil {
-			return nil, fmt.Errorf("failed to setup proxy: %w", err)
-		}
-	}
-
-	if p.agent, err = ice.NewAgent(agentConfig); err != nil {
-		return nil, fmt.Errorf("failed to create ICE agent: %w", err)
-	}
-
-	// create initial offer using freshly generated creds
-	p.localOffer = p.newOffer()
-
-	p.logger.Debug("Peer credentials",
-		zap.String("ufrag", p.localOffer.Ufrag),
-		zap.String("pwd", p.localOffer.Ufrag),
-	)
-
-	// When we have gathered a new ICE Candidate send it to the remote peer
-	if err := p.agent.OnCandidate(p.onCandidate); err != nil {
-		return nil, fmt.Errorf("failed to setup on candidate handler: %w", err)
-	}
-
-	// When selected candidate pair changes
-	if err := p.agent.OnSelectedCandidatePairChange(p.onSelectedCandidatePairChange); err != nil {
-		return nil, fmt.Errorf("failed to setup on selected candidate pair handler: %w", err)
-	}
-
-	// When ICE Connection state has change print to stdout
-	if err := p.agent.OnConnectionStateChange(p.onConnectionStateChange); err != nil {
-		return nil, fmt.Errorf("failed to setup on connection state handler: %w", err)
-	}
-
-	go p.start()
-
-	return p, nil
 }
