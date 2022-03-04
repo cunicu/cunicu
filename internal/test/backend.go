@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/url"
 	"strings"
 	"testing"
@@ -49,12 +50,12 @@ func TestBackend(t *testing.T, u string) {
 		t.Fatalf("Failed to generate keypairs: %s", err)
 	}
 
-	ch, err := theirBackend.Subscribe(theirKP)
+	ch, err := theirBackend.Subscribe(context.Background(), theirKP)
 	if err != nil {
 		t.Fatalf("Failed to subscribe to signaling messages: %s", err)
 	}
 
-	if err := ourBackend.Publish(ourKP, sentMsg); err != nil {
+	if err := ourBackend.Publish(context.Background(), ourKP, sentMsg); err != nil {
 		t.Fatalf("Failed to publish signaling message: %s", err)
 	}
 
