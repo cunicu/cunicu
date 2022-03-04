@@ -1,6 +1,5 @@
 build/
-test/e2e/logs/
 .vscode/
-
 dist/
 /wice
+*.log
