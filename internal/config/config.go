@@ -121,7 +121,7 @@ func Parse(args ...string) (*Config, error) {
 func NewConfig(flags *pflag.FlagSet) *Config {
 	matchAll, _ := regexp.Compile(".*")
 
-	cfg := &Config{
+	c := &Config{
 		Backends:                 backendURLList{},
 		iceCandidateTypes:        candidateTypeList{},
 		iceInterfaceFilter:       regex{matchAll},
@@ -137,44 +137,44 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		logger: zap.L().Named("config"),
 	}
 
-	flags.StringVarP(&cfg.Community, "community", "x", "", "Community passphrase for discovering other peers")
-	flags.StringVarP(&cfg.File, "config", "c", "", "Path of configuration file")
-	flags.VarP(&cfg.Backends, "backend", "b", "backend types / URLs")
-	flags.VarP(&cfg.ProxyType, "proxy", "p", "proxy type to use")
-	flags.VarP(&cfg.WireguardInterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
-	flags.DurationVarP(&cfg.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
+	flags.StringVarP(&c.Community, "community", "x", "", "Community passphrase for discovering other peers")
+	flags.StringVarP(&c.File, "config", "c", "", "Path of configuration file")
+	flags.VarP(&c.Backends, "backend", "b", "backend types / URLs")
+	flags.VarP(&c.ProxyType, "proxy", "p", "proxy type to use")
+	flags.VarP(&c.WireguardInterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
+	flags.DurationVarP(&c.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
 
-	cfg.WireguardUserspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
-	flags.BoolVarP(&cfg.WireguardConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
-	flags.StringVarP(&cfg.WireguardConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
+	c.WireguardUserspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
+	flags.BoolVarP(&c.WireguardConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
+	flags.StringVarP(&c.WireguardConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
 
 	// ice.AgentConfig fields
-	flags.VarP(&cfg.iceURLs, "url", "a", "STUN and/or TURN server addresses")
-	flags.Var(&cfg.iceCandidateTypes, "ice-candidate-type", "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
-	flags.Var(&cfg.iceNetworkTypes, "ice-network-type", "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
-	flags.IPSliceVar(&cfg.iceNat1to1IPs, "ice-nat-1to1-ip", []net.IP{}, "IP addresses which will be added as local server reflexive candidates")
+	flags.VarP(&c.iceURLs, "url", "a", "STUN and/or TURN server addresses")
+	flags.Var(&c.iceCandidateTypes, "ice-candidate-type", "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
+	flags.Var(&c.iceNetworkTypes, "ice-network-type", "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
+	flags.IPSliceVar(&c.iceNat1to1IPs, "ice-nat-1to1-ip", []net.IP{}, "IP addresses which will be added as local server reflexive candidates")
 
-	flags.Uint16Var(&cfg.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
-	flags.Uint16Var(&cfg.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
-	flags.BoolVarP(&cfg.iceLite, "ice-lite", "L", false, "lite agents do not perform connectivity check and only provide host candidates")
-	flags.BoolVarP(&cfg.iceMdns, "ice-mdns", "m", false, "enable local Multicast DNS discovery")
-	flags.Uint16Var(&cfg.iceMaxBindingRequests, "ice-max-binding-requests", defaultMaxBindingRequests, "maximum number of binding request before considering a pair failed")
-	flags.BoolVarP(&cfg.iceInsecureSkipVerify, "ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")
-	flags.Var(&cfg.iceInterfaceFilter, "ice-interface-filter", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
-	flags.DurationVar(&cfg.iceDisconnectedTimeout, "ice-disconnected-timout", defaultDisconnectedTimeout, "time till an Agent transitions disconnected")
-	flags.DurationVar(&cfg.iceFailedTimeout, "ice-failed-timeout", defaultFailedTimeout, "time until an Agent transitions to failed after disconnected")
-	flags.DurationVar(&cfg.iceKeepaliveInterval, "ice-keepalive-interval", defaultKeepaliveInterval, "interval netween STUN keepalives")
-	flags.DurationVar(&cfg.iceCheckInterval, "ice-check-interval", defaultCheckInterval, "interval at which the agent performs candidate checks in the connecting phase")
-	flags.DurationVar(&cfg.RestartTimeout, "ice-restart-timeout", defaultRestartTimeout, "time to wait before ICE restart")
-	flags.StringVarP(&cfg.iceUsername, "ice-user", "U", "", "username for STUN/TURN credentials")
-	flags.StringVarP(&cfg.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
+	flags.Uint16Var(&c.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
+	flags.Uint16Var(&c.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
+	flags.BoolVarP(&c.iceLite, "ice-lite", "L", false, "lite agents do not perform connectivity check and only provide host candidates")
+	flags.BoolVarP(&c.iceMdns, "ice-mdns", "m", false, "enable local Multicast DNS discovery")
+	flags.Uint16Var(&c.iceMaxBindingRequests, "ice-max-binding-requests", defaultMaxBindingRequests, "maximum number of binding request before considering a pair failed")
+	flags.BoolVarP(&c.iceInsecureSkipVerify, "ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")
+	flags.Var(&c.iceInterfaceFilter, "ice-interface-filter", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
+	flags.DurationVar(&c.iceDisconnectedTimeout, "ice-disconnected-timout", defaultDisconnectedTimeout, "time till an Agent transitions disconnected")
+	flags.DurationVar(&c.iceFailedTimeout, "ice-failed-timeout", defaultFailedTimeout, "time until an Agent transitions to failed after disconnected")
+	flags.DurationVar(&c.iceKeepaliveInterval, "ice-keepalive-interval", defaultKeepaliveInterval, "interval netween STUN keepalives")
+	flags.DurationVar(&c.iceCheckInterval, "ice-check-interval", defaultCheckInterval, "interval at which the agent performs candidate checks in the connecting phase")
+	flags.DurationVar(&c.RestartTimeout, "ice-restart-timeout", defaultRestartTimeout, "time to wait before ICE restart")
+	flags.StringVarP(&c.iceUsername, "ice-user", "U", "", "username for STUN/TURN credentials")
+	flags.StringVarP(&c.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
 
-	flags.StringVarP(&cfg.Socket, "socket", "s", DefaultSocketPath, "Unix control and monitoring socket")
-	flags.BoolVar(&cfg.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
+	flags.StringVarP(&c.Socket, "socket", "s", DefaultSocketPath, "Unix control and monitoring socket")
+	flags.BoolVar(&c.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
 
-	cfg.viper.BindPFlags(flags)
+	c.viper.BindPFlags(flags)
 
-	return cfg
+	return c
 }
 
 func (c *Config) Setup(args []string) {
