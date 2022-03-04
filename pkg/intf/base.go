@@ -32,7 +32,9 @@ type BaseInterface struct {
 	config  *config.Config
 	client  *wgctrl.Client
 	events  chan *pb.Event
-	udpMux  ice.UDPMux
+
+	udpMux      ice.UDPMux
+	udpMuxSrflx ice.UniversalUDPMux
 
 	logger *zap.Logger
 }
@@ -383,11 +385,13 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		return BaseInterface{}, fmt.Errorf("failed to assign link-local address: %w", err)
 	}
 
-	// Create per-interface UDPMux
-	if cfg.ProxyType.ProxyType == proxy.TypeEBPF {
-		if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil {
-			return BaseInterface{}, fmt.Errorf("failed to setup UDP mux: %w", err)
-		}
+	// Create per-interface UDPMuxes
+	if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil {
+		return BaseInterface{}, fmt.Errorf("failed to setup UDP mux: %w", err)
+	}
+
+	if i.udpMuxSrflx, err = proxy.CreateUDPMuxSrflx(i.ListenPort + 1); err != nil {
+		return BaseInterface{}, fmt.Errorf("Failed to setup UDPSrflx mux: %w", err)
 	}
 
 	i.events <- &pb.Event{
@@ -398,7 +402,9 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 
 	// We remove all peers here so that they get added by the following sync
 	i.Device.Peers = nil
-	i.Sync(dev)
+	if err := i.Sync(dev); err != nil {
+		return BaseInterface{}, err
+	}
 
 	return i, nil
 }
