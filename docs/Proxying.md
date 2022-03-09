@@ -61,7 +61,12 @@ Wireguard traffic is proxied by ɯice between the local UDP and the ICE socket.
 Wireguard traffic is passed directly between `conn.Bind` and Pion's `ice.Conn`.
 No round-trip through the kernel stack is required.
 
+
 **Note:** This variant only works for the compiled-in version of wireguard-go in ɯice.
+
+## Flowchart
+
+![](./wice_proxy.svg)
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 
