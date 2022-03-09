@@ -6,6 +6,16 @@ before:
   - go mod tidy
   - go generate ./...
 
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+signs:
+- artifacts: checksum
+  signature: "${artifact}.asc"
+  cmd: gpg
+  args: ["-u", "09BE3BAE8D55D4CD8579285A9675EAC34897E6E2", "--output", "${signature}", "--detach-sign", "${artifact}"]
+
 builds:
 - id: wice
   main: ./cmd/wice
@@ -27,15 +37,11 @@ archives:
 - builds:
   - wice
 
+  format: bz2
+
   format_overrides:
   - goos: windows
     format: zip
-
-  files:
-  - src: contrib/wice.service
-    dst: contrib
-  - src: docs/**
-    dst: docs
 
 nfpms:
 - vendor: stv0g
@@ -49,8 +55,8 @@ nfpms:
   contents:
   - src: "./contrib/wice.service"
     dst: "/usr/lib/systemd/system"
-  - src: "./docs/usage/man/*.1"
-    dst: "/usr/share/man/man1"
+  - src: "./docs/usage/man/*.3"
+    dst: "/usr/share/man/man3"
 
 dockers:
 - use: buildx
@@ -143,9 +149,6 @@ docker_manifests:
   - stv0g/{{ .ProjectName }}:{{ .Version }}-armv7
   - stv0g/{{ .ProjectName }}:{{ .Version }}-arm64v8
 
-checksum:
-  name_template: 'checksums.txt'
-
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
@@ -155,3 +158,11 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+
+release:
+  github:
+    owner: stv0g
+    name: wice
+
+  draft:  true
+  prerelease: auto
