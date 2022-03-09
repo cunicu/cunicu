@@ -42,7 +42,7 @@ Website:
 var (
 	rootCmd = &cobra.Command{
 		Use:   "wice",
-		Short: "WICE",
+		Short: "ɯice",
 		Long:  "Wireguard Interactive Connectitivty Establishment",
 
 		// The main wice command is just an alias for "wice daemon"

@@ -66,10 +66,10 @@
 
 -   Use RTT & packet loss for selecting ICE relay candidates
 
--   Embed TURN/STUN server into WICE
+-   Embed TURN/STUN server into ɯice
     -   Checkout pion/stun & pion/turn
 
--   Embed routing daemon into WICE
+-   Embed routing daemon into ɯice
     -   Facilitates reachability for non-directly connected peers
 
     -   Candidates:

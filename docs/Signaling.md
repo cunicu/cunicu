@@ -59,7 +59,7 @@ Checkout the [`pkg/pb/offer.proto`](../pkg/pb/offer.proto) for details.
 
 ## Backends
 
-WICE can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
+ɯice can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
 
 ### Available backends
 

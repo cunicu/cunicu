@@ -1,21 +1,21 @@
 # Proxying
 
-WICE implements multiple ways of running an ICE agent alongside Wireguard on the same UDP ports.
+ɯice implements multiple ways of running an ICE agent alongside Wireguard on the same UDP ports.
 
 ## Kernel Wireguard module
 
 ### Userspace
 
 For each WG peer a new local UDP socket is opened.
-WICE will update the endpoint address of the peer to this the local address of the new sockets.
+ɯice will update the endpoint address of the peer to this the local address of the new sockets.
 
-Wireguard traffic is proxied by WICE between the local UDP and the ICE socket.
+Wireguard traffic is proxied by ɯice between the local UDP and the ICE socket.
 
 ### RAW Sockets + BPF filter (Kernel)
 
 We allocate a single [Linux RAW socket][raw-sockets] and assign a [eBPF][golang-bpf] filter to this socket which will only match STUN traffic to a specific UDP port.
-UDP headers are parsed/produced by WICE.
-WICE uses a UDPMux to mux all peers ICE Agents over this single RAW socket. 
+UDP headers are parsed/produced by ɯice.
+ɯice uses a UDPMux to mux all peers ICE Agents over this single RAW socket. 
 
 ### NFtables port-redirection (Kernel)
 
@@ -24,7 +24,7 @@ The input rule will match all non-STUN traffic directed at the local port of the
 The output rule will mach all traffic originating from the listen port of the WG interface and directed to the port of the remote cadidate and rewrites the source port to the port of the local ICE candidate.  
 
 Wireguard traffic passes only through the Netfilter chains and remains inside the kernel.
-Only STUN binding requests are passed to WICE.
+Only STUN binding requests are passed to ɯice.
 
 ```bash
 $ sudo nft list ruleset
@@ -50,18 +50,18 @@ Similar to NFTables port-natting by using the legacy IPTables API.
 ### Userspace Proxy
 
 Just like for the Kernel Wireguard module, a dedicated UDP socket for each WG peer is created.
-WICE will update the endpoint address of the peer to this the local address of the new sockets.
+ɯice will update the endpoint address of the peer to this the local address of the new sockets.
 
-Wireguard traffic is proxied by WICE between the local UDP and the ICE socket.
+Wireguard traffic is proxied by ɯice between the local UDP and the ICE socket.
 
 ### In-process socket
 
-WICE implements wireguard-go's `conn.Bind` interface to handle Wireguard's network IO.
+ɯice implements wireguard-go's `conn.Bind` interface to handle Wireguard's network IO.
 
 Wireguard traffic is passed directly between `conn.Bind` and Pion's `ice.Conn`.
 No round-trip through the kernel stack is required.
 
-**Note:** This variant only works for the compiled-in version of wireguard-go in WICE.
+**Note:** This variant only works for the compiled-in version of wireguard-go in ɯice.
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 

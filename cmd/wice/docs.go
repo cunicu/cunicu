@@ -73,7 +73,7 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 	}
 
 	header := &doc.GenManHeader{
-		Title:   "WICE",
+		Title:   "ɯice",
 		Section: "3",
 		Source:  "https://github.com/stv0g/wice",
 		Date:    &d,

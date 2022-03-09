@@ -8,7 +8,7 @@ import (
 
 var monitorCmd = &cobra.Command{
 	Use:   "monitor",
-	Short: "Monitor the WICE daemon for events",
+	Short: "Monitor the ɯice daemon for events",
 	RunE:  monitor,
 	Args:  cobra.NoArgs,
 }
