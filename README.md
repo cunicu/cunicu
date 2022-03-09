@@ -1,4 +1,4 @@
-# WICE - Wireguard Interactive Connectivity Establishment
+# <img style="height: 1em" src="docs/wice_icon.svg" /> ɯice - Wireguard Interactive Connectivity Establishment
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/stv0g/wice/build?style=flat-square)](https://github.com/stv0g/wice/actions)
 [![goreportcard](https://goreportcard.com/badge/github.com/stv0g/wice?style=flat-square)](https://goreportcard.com/report/riasc.eu/wice)
@@ -11,7 +11,9 @@
 
 <!-- [![DOI](https://zenodo.org/badge/413409974.svg)](https://zenodo.org/badge/latestdoi/413409974) -->
 
-## 🚧 WICE is currently still in an Alpha state and not usable yet
+<p align="center">
+    <img style="width: 50%; margin: 4em 0" src="docs/wice_logo.svg" alt="wice logo" />
+</p>
 
 WICE is a userspace daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
