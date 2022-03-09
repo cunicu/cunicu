@@ -44,6 +44,10 @@ Documentation of ɯice can be found in the [`docs/`](./docs) directory.
 
 -   Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
 
+## Join us
+
+Please feel free to [join our Slack channel](https://join.slack.com/t/gophers/shared_invite/zt-1447h1rgj-s9W5BcyRzBxUwNAZJUKmaQ) `#wice` in the [Gophers workspace](https://gophers.slack.com/) and say 👋.
+
 ## Funding acknowledgement
 
 <img alt="European Flag" src="./docs/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of `k8s-netem`  has been supported by the [ERIGrid 2.0](https://erigrid2.eu) project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
