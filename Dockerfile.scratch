@@ -1,0 +1,3 @@
+FROM scratch
+ENTRYPOINT ["/wice"]
+COPY wice /
