@@ -15,6 +15,8 @@
     <img style="width: 50%; margin: 4em 0" src="docs/wice_logo.svg" alt="wice logo" />
 </p>
 
+## 🚧 ɯice is currently still in an Alpha state and not usable yet
+
 WICE is a userspace daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go userspace implementation of Wiguard in a single binary for environments in which Wireguard kernel support has not landed yet.
