@@ -1,4 +1,7 @@
-# <img style="height: 1em" src="docs/wice_icon.svg" /> ɯice - Wireguard Interactive Connectivity Establishment
+<p align="center" >
+    <img style="width: 50%; margin: 4em 0" src="docs/wice_logo.svg" alt="wice logo" />
+    <h1 align="center">Wireguard Interactive Connectivity Establishment</h1>
+</p>
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/stv0g/wice/build?style=flat-square)](https://github.com/stv0g/wice/actions)
 [![goreportcard](https://goreportcard.com/badge/github.com/stv0g/wice?style=flat-square)](https://goreportcard.com/report/riasc.eu/wice)
@@ -11,11 +14,7 @@
 
 <!-- [![DOI](https://zenodo.org/badge/413409974.svg)](https://zenodo.org/badge/latestdoi/413409974) -->
 
-<p align="center">
-    <img style="width: 50%; margin: 4em 0" src="docs/wice_logo.svg" alt="wice logo" />
-</p>
-
-## 🚧 ɯice is currently still in an Alpha state and not usable yet
+**🚧 ɯice is currently still in an Alpha state and not usable yet**
 
 ɯice is a userspace daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
