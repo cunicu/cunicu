@@ -1,18 +1,20 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/proxy"
+	"gopkg.in/yaml.v3"
+	icex "riasc.eu/wice/internal/ice"
 
 	"github.com/pion/ice/v2"
 	"github.com/spf13/pflag"
@@ -39,285 +41,346 @@ const (
 	// max binding request before considering a pair failed
 	defaultMaxBindingRequests = 7
 
+	defaultWatchInterval = time.Second
+
 	DefaultSocketPath = "/var/run/wice.sock"
-)
 
-var (
-	defaultICEUrls = []*ice.URL{
-		{
-			Scheme: ice.SchemeTypeSTUN,
-			Host:   "stun.l.google.com",
-			Port:   19302,
-			Proto:  ice.ProtoTypeUDP,
-		},
-	}
-
-	defaultBackendURLs = []*url.URL{
-		{
-			Scheme: "p2p",
-		},
-	}
+	defaultWireguardConfigPath = "/etc/wireguard"
 )
 
 type Config struct {
-	File string
-
-	Community string
-
-	Socket     string
-	SocketWait bool
-
-	Backends       backendURLList
-	ProxyType      proxyType
-	WatchInterval  time.Duration
-	RestartTimeout time.Duration
-
-	WireguardInterfaces      []string
-	WireguardInterfaceFilter regex
-	WireguardConfigSync      bool
-	WireguardConfigPath      string
-	WireguardUserspace       *bool
-
-	// for ice.AgentConfig
-	iceInterfaceFilter regex
-
-	iceURLs iceURLList
-
-	iceNat1to1IPs []net.IP
-
-	iceInsecureSkipVerify bool
-
-	iceCandidateTypes candidateTypeList
-	iceNetworkTypes   networkTypeList
-
-	iceDisconnectedTimeout time.Duration
-	iceFailedTimeout       time.Duration
-	iceKeepaliveInterval   time.Duration
-	iceCheckInterval       time.Duration
-
-	iceUsername string
-	icePassword string
-
-	icePortMin uint16
-	icePortMax uint16
-
-	iceMdns bool
-	iceLite bool
-
-	iceMaxBindingRequests uint16
+	*viper.Viper
 
 	flags  *pflag.FlagSet
-	viper  *viper.Viper
 	logger *zap.Logger
+
+	WireguardInterfaces []string
+	ConfigFiles         []string
+
+	Backends []*url.URL
 }
 
 func Parse(args ...string) (*Config, error) {
 	f := pflag.NewFlagSet("", pflag.ContinueOnError)
 	c := NewConfig(f)
 
-	return c, c.flags.Parse(args)
+	if err := c.flags.Parse(args); err != nil {
+		return nil, err
+	}
+
+	if err := c.Setup(args); err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func NewConfig(flags *pflag.FlagSet) *Config {
-	matchAll, _ := regexp.Compile(".*")
-
 	c := &Config{
-		Backends:                 backendURLList{},
-		iceCandidateTypes:        candidateTypeList{},
-		iceInterfaceFilter:       regex{matchAll},
-		iceNat1to1IPs:            []net.IP{},
-		iceNetworkTypes:          networkTypeList{},
-		iceURLs:                  iceURLList{},
-		WireguardInterfaceFilter: regex{matchAll},
-		WireguardInterfaces:      []string{},
-		ProxyType:                proxyType{proxy.TypeAuto},
+		Viper:       viper.New(),
+		ConfigFiles: []string{},
 
-		flags:  flags,
-		viper:  viper.New(),
-		logger: zap.L().Named("config"),
+		flags: flags,
 	}
 
-	flags.StringVarP(&c.Community, "community", "x", "", "Community passphrase for discovering other peers")
-	flags.StringVarP(&c.File, "config", "c", "", "Path of configuration file")
-	flags.VarP(&c.Backends, "backend", "b", "backend types / URLs")
-	flags.VarP(&c.ProxyType, "proxy", "p", "proxy type to use")
-	flags.VarP(&c.WireguardInterfaceFilter, "interface-filter", "f", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
-	flags.DurationVarP(&c.WatchInterval, "watch-interval", "i", time.Second, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
+	c.SetDefault("ice.urls", []string{"stun:l.google.com:19302"})
+	c.SetDefault("backends", []string{"p2p"})
+	c.SetDefault("watch_interval", defaultWatchInterval)
 
-	c.WireguardUserspace = flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
-	flags.BoolVarP(&c.WireguardConfigSync, "wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
-	flags.StringVarP(&c.WireguardConfigPath, "wg-config-path", "w", "/etc/wireguard", "base path to search for Wireguard configuration files")
+	c.SetDefault("socket.path", DefaultSocketPath)
+
+	c.SetDefault("ice.max_binding_requests", defaultMaxBindingRequests)
+
+	c.SetDefault("ice.check_interval", defaultCheckInterval)
+	c.SetDefault("ice.disconnected_timout", defaultDisconnectedTimeout)
+	c.SetDefault("ice.failed_timeout", defaultFailedTimeout)
+	c.SetDefault("ice.restart_timeout", defaultRestartTimeout)
+	c.SetDefault("ice.keepalive_interval", defaultKeepaliveInterval)
+	c.SetDefault("ice.nat_1to1_ips", []net.IP{})
+
+	c.SetDefault("wg.config.path", defaultWireguardConfigPath)
+
+	flags.StringP("config-domain", "A", "", "Perform auto-configuration via DNS")
+	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "Path of configuration files")
+
+	flags.StringP("community", "x", "", "Community passphrase for discovering other peers")
+	flags.StringSliceP("backend", "b", []string{}, "backend types / URLs")
+	flags.StringP("interface-filter", "f", ".*", "regex for filtering Wireguard interfaces (e.g. \"wg-.*\")")
+	flags.DurationP("watch-interval", "i", 0, "interval at which we are polling the kernel for updates on the Wireguard interfaces")
+
+	flags.BoolP("wg-userspace", "u", false, "start userspace Wireguard daemon")
+	flags.BoolP("wg-config-sync", "S", false, "sync Wireguard interface with configuration file (see \"wg synconf\")")
+	flags.StringP("wg-config-path", "w", "", "base path to search for Wireguard configuration files")
 
 	// ice.AgentConfig fields
-	flags.VarP(&c.iceURLs, "url", "a", "STUN and/or TURN server addresses")
-	flags.Var(&c.iceCandidateTypes, "ice-candidate-type", "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
-	flags.Var(&c.iceNetworkTypes, "ice-network-type", "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
-	flags.IPSliceVar(&c.iceNat1to1IPs, "ice-nat-1to1-ip", []net.IP{}, "IP addresses which will be added as local server reflexive candidates")
+	flags.StringSliceP("url", "a", []string{}, "STUN and/or TURN server addresses")
+	flags.StringSlice("ice-candidate-type", []string{}, "usable candidate types (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
+	flags.StringSlice("ice-network-type", []string{}, "usable network types (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
+	flags.StringSlice("ice-nat-1to1-ip", []string{}, "IP addresses which will be added as local server reflexive candidates")
 
-	flags.Uint16Var(&c.icePortMin, "ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
-	flags.Uint16Var(&c.icePortMax, "ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
-	flags.BoolVarP(&c.iceLite, "ice-lite", "L", false, "lite agents do not perform connectivity check and only provide host candidates")
-	flags.BoolVarP(&c.iceMdns, "ice-mdns", "m", false, "enable local Multicast DNS discovery")
-	flags.Uint16Var(&c.iceMaxBindingRequests, "ice-max-binding-requests", defaultMaxBindingRequests, "maximum number of binding request before considering a pair failed")
-	flags.BoolVarP(&c.iceInsecureSkipVerify, "ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")
-	flags.Var(&c.iceInterfaceFilter, "ice-interface-filter", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
-	flags.DurationVar(&c.iceDisconnectedTimeout, "ice-disconnected-timout", defaultDisconnectedTimeout, "time till an Agent transitions disconnected")
-	flags.DurationVar(&c.iceFailedTimeout, "ice-failed-timeout", defaultFailedTimeout, "time until an Agent transitions to failed after disconnected")
-	flags.DurationVar(&c.iceKeepaliveInterval, "ice-keepalive-interval", defaultKeepaliveInterval, "interval netween STUN keepalives")
-	flags.DurationVar(&c.iceCheckInterval, "ice-check-interval", defaultCheckInterval, "interval at which the agent performs candidate checks in the connecting phase")
-	flags.DurationVar(&c.RestartTimeout, "ice-restart-timeout", defaultRestartTimeout, "time to wait before ICE restart")
-	flags.StringVarP(&c.iceUsername, "ice-user", "U", "", "username for STUN/TURN credentials")
-	flags.StringVarP(&c.icePassword, "ice-pass", "P", "", "password for STUN/TURN credentials")
+	flags.Uint16("ice-port-min", 0, "minimum port for allocation policy (range: 0-65535)")
+	flags.Uint16("ice-port-max", 0, "maximum port for allocation policy (range: 0-65535)")
+	flags.BoolP("ice-lite", "L", false, "lite agents do not perform connectivity check and only provide host candidates")
+	flags.BoolP("ice-mdns", "m", false, "enable local Multicast DNS discovery")
+	flags.Uint16("ice-max-binding-requests", 0, "maximum number of binding request before considering a pair failed")
+	flags.BoolP("ice-insecure-skip-verify", "k", false, "skip verification of TLS certificates for secure STUN/TURN servers")
+	flags.String("ice-interface-filter", ".*", "regex for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
+	flags.Duration("ice-disconnected-timout", 0, "time till an Agent transitions disconnected")
+	flags.Duration("ice-failed-timeout", 0, "time until an Agent transitions to failed after disconnected")
+	flags.Duration("ice-keepalive-interval", 0, "interval netween STUN keepalives")
+	flags.Duration("ice-check-interval", 0, "interval at which the agent performs candidate checks in the connecting phase")
+	flags.Duration("ice-restart-timeout", 0, "time to wait before ICE restart")
+	flags.StringP("ice-user", "U", "", "username for STUN/TURN credentials")
+	flags.StringP("ice-pass", "P", "", "password for STUN/TURN credentials")
 
-	flags.StringVarP(&c.Socket, "socket", "s", DefaultSocketPath, "Unix control and monitoring socket")
-	flags.BoolVar(&c.SocketWait, "socket-wait", false, "wait until first client connected to control socket before continuing start")
+	flags.StringP("socket", "s", "", "Unix control and monitoring socket")
+	flags.Bool("socket-wait", false, "wait until first client connected to control socket before continuing start")
 
-	c.viper.BindPFlags(flags)
+	flagMap := map[string]string{
+		"config-domain":            "domain",
+		"wg-userspace":             "wg.userspace",
+		"community":                "community",
+		"backend":                  "backends",
+		"interface-filter":         "wg.interface_filter",
+		"watch-interval":           "watch_interval",
+		"wg-config-sync":           "wg.config_sync",
+		"wg-config-path":           "wg.config_path",
+		"url":                      "ice.urls",
+		"ice-candidate-type":       "ice.candidate_types",
+		"ice-network-type":         "ice.network_types",
+		"ice-nat-1to1-ip":          "ice.nat_1to1_ips",
+		"ice-port-min":             "ice.port_min",
+		"ice-port-max":             "ice.port_max",
+		"ice-lite":                 "ice.lite",
+		"ice-mdns":                 "ice.mdns",
+		"ice-max-binding-requests": "ice.max_binding_requests",
+		"ice-insecure-skip-verify": "ice.insecure_skip_verify",
+		"ice-interface-filter":     "ice.interface_filter",
+		"ice-disconnected-timout":  "ice.disconnected_timout",
+		"ice-failed-timeout":       "ice.failed_timeout",
+		"ice-keepalive-interval":   "ice.keepalive_interval",
+		"ice-check-interval":       "ice.check_interval",
+		"ice-restart-timeout":      "ice.restart_timeout",
+		"ice-user":                 "ice.username",
+		"ice-pass":                 "ice.password",
+		"socket":                   "socket.path",
+		"socket-wait":              "socket.wait",
+	}
+
+	flags.VisitAll(func(flag *pflag.Flag) {
+		name := flag.Name
+		if newName, ok := flagMap[name]; ok {
+			c.BindPFlag(newName, flag)
+		}
+	})
 
 	return c
 }
 
-func (c *Config) Setup(args []string) {
+func (c *Config) Setup(args []string) error {
+	c.logger = zap.L().Named("config")
+
 	c.WireguardInterfaces = args
 
-	// Find best proxy method
-	if c.ProxyType.ProxyType == proxy.TypeAuto {
-		c.ProxyType.ProxyType = proxy.AutoProxy()
+	// First lookup settings via DNS
+	if c.IsSet("domain") {
+		domain := c.GetString("domain")
+		if err := c.Lookup(domain); err != nil {
+			return fmt.Errorf("DNS autoconfiguration failed: %w", err)
+		}
 	}
 
-	// Add default backend
-	if len(c.Backends) == 0 {
-		c.Backends = defaultBackendURLs
-	}
+	if len(c.ConfigFiles) > 0 {
+		// Merge config files from the flags.
+		for _, file := range c.ConfigFiles {
+			if u, err := url.Parse(file); err == nil && u.Scheme != "" {
+				if err := c.MergeRemoteConfig(u); err != nil {
+					return fmt.Errorf("failed to load remote config: %w", err)
+				}
 
-	if c.File != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(c.File)
+				c.logger.Debug("Using remote configuration file", zap.Any("url", u))
+			} else {
+				c.SetConfigFile(file)
+				if err := c.MergeInConfig(); err != nil {
+					return fmt.Errorf("failed to merge configurations: %w", err)
+				}
+
+				c.logger.Debug("Using configuration file", zap.String("file", c.ConfigFileUsed()))
+			}
+		}
 	} else {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			c.logger.Warn("Failed to determine home directory", zap.Error(err))
-		} else {
-			viper.AddConfigPath(filepath.Join(home, ".config", "wice"))
+		c.AddConfigPath("/etc")
+		c.AddConfigPath(filepath.Join("$HOME", ".config"))
+		c.AddConfigPath(".")
+		c.SetConfigName("wice")
+
+		if err := c.MergeInConfig(); err == nil {
+			c.logger.Debug("Using configuration file", zap.String("file", c.ConfigFileUsed()))
+		} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("failed to merge configurations: %w", err)
+		}
+	}
+
+	c.SetEnvPrefix("wice")
+	c.AutomaticEnv()
+	c.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	if err := c.Load(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) MergeRemoteConfig(url *url.URL) error {
+	if url.Scheme != "https" {
+		host, _, _ := net.SplitHostPort(url.Host)
+		ip, err := net.ResolveIPAddr("ip", host)
+		if err != nil || !ip.IP.IsLoopback() {
+			return errors.New("remote configuration must by provided via HTTPS")
+		}
+	}
+
+	resp, err := http.DefaultClient.Get(url.String())
+	if err != nil {
+		return fmt.Errorf("failed to fetch %s: %w", url, err)
+	} else if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to fetch: %s: %s", url, resp.Status)
+	}
+
+	return c.MergeConfig(resp.Body)
+}
+
+func (c *Config) Load() error {
+
+	// Backends
+	c.Backends = []*url.URL{}
+	for _, u := range c.GetStringSlice("backends") {
+		// Allow the user to specify just the backend type as a valid url.
+		// E.g. "p2p" instead of "p2p:"
+		if !strings.Contains(u, ":") {
+			u += ":"
 		}
 
-		viper.AddConfigPath("/etc/wice")
+		u, err := url.Parse(u)
+		if err != nil {
+			return fmt.Errorf("invalid backend URI: %w", err)
+		}
 
-		viper.SetConfigType("ini")
-		viper.SetConfigName("wicerc")
+		c.Backends = append(c.Backends, u)
 	}
 
-	c.viper.SetEnvPrefix("wice")
-	c.viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		c.logger.Debug("Using config file", zap.String("file", viper.ConfigFileUsed()))
-	}
+	return nil
 }
 
 func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	cfg := &ice.AgentConfig{
-		InsecureSkipVerify: c.iceInsecureSkipVerify,
-		NetworkTypes:       c.iceNetworkTypes,
-		CandidateTypes:     c.iceCandidateTypes,
-		Urls:               c.iceURLs,
-		Lite:               c.iceLite,
-		PortMin:            c.icePortMin,
-		PortMax:            c.icePortMax,
+		InsecureSkipVerify: c.GetBool("ice.insecure_skip_verify"),
+		Lite:               c.GetBool("ice.lite"),
+		PortMin:            uint16(c.GetUint("ice.port.min")),
+		PortMax:            uint16(c.GetUint("ice.port.max")),
+	}
+
+	interfaceFilterRegex, err := regexp.Compile(c.GetString("ice.interface_filter"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid ice.interface_filter config: %w", err)
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		return c.iceInterfaceFilter.Match([]byte(name))
+		return interfaceFilterRegex.Match([]byte(name))
+	}
+
+	// ICE URLS
+	cfg.Urls = []*ice.URL{}
+	for _, u := range c.GetStringSlice("ice.urls") {
+		up, err := ice.ParseURL(u)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse ice.url: %s: %w", u, err)
+		}
+
+		cfg.Urls = append(cfg.Urls, up)
 	}
 
 	// Add default STUN/TURN servers
-	if len(cfg.Urls) == 0 {
-		cfg.Urls = defaultICEUrls
-	} else {
-		// Set ICE credentials
-		for _, u := range cfg.Urls {
-			if c.iceUsername != "" {
-				u.Username = c.iceUsername
-			}
+	// Set ICE credentials
+	u := c.GetString("ice.username")
+	p := c.GetString("ice.password")
+	for _, q := range cfg.Urls {
+		if u != "" {
+			q.Username = u
+		}
 
-			if c.icePassword != "" {
-				u.Password = c.icePassword
-			}
+		if p != "" {
+			q.Password = p
 		}
 	}
 
-	if c.iceMaxBindingRequests > 0 {
-		cfg.MaxBindingRequests = &c.iceMaxBindingRequests
+	if c.IsSet("ice.nat_1to1_ips") {
+		cfg.NAT1To1IPs = c.GetStringSlice("ice.nat_1to1_ips")
 	}
 
-	if c.iceMdns {
+	if c.IsSet("ice.max_binding_requests") {
+		i := uint16(c.GetInt("ice.max_binding_requests"))
+		cfg.MaxBindingRequests = &i
+	}
+
+	if c.GetBool("ice.mdns") {
 		cfg.MulticastDNSMode = ice.MulticastDNSModeQueryAndGather
 	}
 
-	if c.iceDisconnectedTimeout > 0 {
-		cfg.DisconnectedTimeout = &c.iceDisconnectedTimeout
+	if c.IsSet("ice.disconnected_timeout") {
+		to := c.GetDuration("ice.disconnected_timeout")
+		cfg.DisconnectedTimeout = &to
 	}
 
-	if c.iceFailedTimeout > 0 {
-		cfg.FailedTimeout = &c.iceFailedTimeout
+	if c.IsSet("ice.failed_timeout") {
+		to := c.GetDuration("ice.failed_timeout")
+		cfg.FailedTimeout = &to
 	}
 
-	if c.iceKeepaliveInterval > 0 {
-		cfg.KeepaliveInterval = &c.iceKeepaliveInterval
+	if c.IsSet("ice.keepalive_interval") {
+		to := c.GetDuration("ice.keepalive_interval")
+		cfg.KeepaliveInterval = &to
 	}
 
-	if c.iceCheckInterval > 0 {
-		cfg.CheckInterval = &c.iceCheckInterval
+	if c.IsSet("ice.check_interval") {
+		to := c.GetDuration("ice.check_interval")
+		cfg.CheckInterval = &to
 	}
 
-	if len(c.iceNat1to1IPs) > 0 {
-		cfg.NAT1To1IPCandidateType = ice.CandidateTypeServerReflexive
-
-		cfg.NAT1To1IPs = []string{}
-		for _, i := range c.iceNat1to1IPs {
-			cfg.NAT1To1IPs = append(cfg.NAT1To1IPs, i.String())
+	// Filter candidate types
+	candidateTypes := []ice.CandidateType{}
+	for _, value := range c.GetStringSlice("ice.candidate_types") {
+		ct, err := icex.CandidateTypeFromString(value)
+		if err != nil {
+			return nil, err
 		}
+
+		candidateTypes = append(candidateTypes, ct)
 	}
 
-	// Default network types
-	if len(c.iceNetworkTypes) == 0 {
-		cfg.NetworkTypes = append(cfg.NetworkTypes,
-			ice.NetworkTypeUDP4,
-			ice.NetworkTypeUDP6,
-		)
+	if len(candidateTypes) > 0 {
+		cfg.CandidateTypes = candidateTypes
+	}
+
+	// Filter network types
+	networkTypes := []ice.NetworkType{}
+	for _, value := range c.GetStringSlice("ice.network_types") {
+		ct, err := icex.NetworkTypeFromString(value)
+		if err != nil {
+			return nil, err
+		}
+
+		networkTypes = append(networkTypes, ct)
+	}
+
+	if len(networkTypes) > 0 {
+		cfg.NetworkTypes = networkTypes
 	}
 
 	return cfg, nil
 }
 
-func (c *Config) Dump(wr io.Writer) {
-	cfg, _ := c.AgentConfig()
-
-	fmt.Fprintln(wr, "Options:")
-	fmt.Fprintf(wr, "  config file: %s\n", c.File)
-	fmt.Fprintf(wr, "  community: %s\n", c.Community)
-	fmt.Fprintf(wr, "  control socket: %s\n", c.Socket)
-	fmt.Fprintf(wr, "  wait for control socket: %s\n", strconv.FormatBool(c.SocketWait))
-	fmt.Fprintf(wr, "  userspace: %s\n", strconv.FormatBool(*c.WireguardUserspace))
-	fmt.Fprintf(wr, "  config sync: %s\n", strconv.FormatBool(c.WireguardConfigSync))
-	fmt.Fprintln(wr, "  urls:")
-	for _, u := range cfg.Urls {
-		fmt.Fprintf(wr, "    %s\n", u.String())
-	}
-
-	fmt.Fprintf(wr, "  interface filter: %s\n", c.WireguardInterfaceFilter)
-	fmt.Fprintf(wr, "  interface filter ice: %s\n", c.iceInterfaceFilter)
-	fmt.Fprintln(wr, "  interfaces:")
-	for _, d := range c.WireguardInterfaces {
-		fmt.Fprintf(wr, "    %s\n", d)
-	}
-
-	fmt.Fprintf(wr, "  restart timeout: %s\n", c.RestartTimeout)
-	fmt.Fprintf(wr, "  watch interval: %s\n", c.WatchInterval)
-	fmt.Fprintf(wr, "  proxy type: %s\n", c.ProxyType.String())
-
-	fmt.Fprintf(wr, "  signaling backends:\n")
-	for _, b := range c.Backends {
-		fmt.Fprintf(wr, "    %s\n", b)
-	}
+func (c *Config) Dump(wr io.Writer) error {
+	return yaml.NewEncoder(wr).Encode(c.AllSettings())
 }

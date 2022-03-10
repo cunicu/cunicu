@@ -8,23 +8,33 @@ import (
 )
 
 func TestParseArgsUser(t *testing.T) {
-	config, err := config.Parse("--wg-user")
+	config, err := config.Parse("--wg-userspace")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !*config.WireguardUserspace {
+	if !config.GetBool("wg.userspace") {
 		t.Fail()
 	}
 }
 
 func TestParseArgsBackend(t *testing.T) {
-	config, err := config.Parse("--backend", "k8s")
+	config, err := config.Parse("--backend", "k8s", "--backend", "p2p")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
+	if len(config.Backends) != 2 {
+		t.FailNow()
+	}
+
+	t.Logf("Backends: %+#v", config.Backends)
+
 	if config.Backends[0].Scheme != "k8s" {
+		t.Fail()
+	}
+
+	if config.Backends[1].Scheme != "p2p" {
 		t.Fail()
 	}
 }
@@ -69,7 +79,7 @@ func TestParseArgsCandidateTypes(t *testing.T) {
 
 	agentConfig, err := config.AgentConfig()
 	if err != nil {
-		t.FailNow()
+		t.Errorf("Failed to get agent config: %s", err)
 	}
 
 	if len(agentConfig.CandidateTypes) != 2 {
@@ -86,22 +96,32 @@ func TestParseArgsCandidateTypes(t *testing.T) {
 }
 
 func TestParseArgsInterfaceFilter(t *testing.T) {
-	config, err := config.Parse("--interface-filter", "eth\\d+")
+	config, err := config.Parse("--ice-interface-filter", "eth\\d+")
 	if err != nil {
 		t.Errorf("err got %v, want nil", err)
 	}
 
-	if !config.WireguardInterfaceFilter.Match([]byte("eth0")) {
+	agentConfig, err := config.AgentConfig()
+	if err != nil {
+		t.Errorf("Failed to get agent config: %s", err)
+	}
+
+	if !agentConfig.InterfaceFilter("eth0") {
 		t.Fail()
 	}
 
-	if config.WireguardInterfaceFilter.Match([]byte("wifi0")) {
+	if agentConfig.InterfaceFilter("wifi0") {
 		t.Fail()
 	}
 }
 
 func TestParseArgsInterfaceFilterFail(t *testing.T) {
-	_, err := config.Parse("--interface-filter", "eth(")
+	config, err := config.Parse("--ice-interface-filter", "eth(")
+	if err != nil {
+		t.Fail()
+	}
+
+	_, err = config.AgentConfig()
 	if err == nil {
 		t.Fail()
 	}

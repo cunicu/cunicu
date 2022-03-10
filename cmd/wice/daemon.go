@@ -15,7 +15,6 @@ var (
 		Use:               "daemon [interfaces...]",
 		Short:             "Start the daemon",
 		Run:               daemon,
-		PreRun:            daemonPre,
 		ValidArgsFunction: daemonCompletionArgs,
 	}
 
@@ -27,10 +26,6 @@ func init() {
 	cfg = config.NewConfig(pf)
 
 	rootCmd.AddCommand(daemonCmd)
-}
-
-func daemonPre(cmd *cobra.Command, args []string) {
-	cfg.Setup(args)
 }
 
 func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -62,6 +57,9 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 }
 
 func daemon(cmd *cobra.Command, args []string) {
+	if err := cfg.Setup(args); err != nil {
+		zap.L().Fatal("Failed to parse configuration", zap.Error(err))
+	}
 
 	if logger.Core().Enabled(zap.DebugLevel) {
 		cfg.Dump(&zapio.Writer{Log: logger})
@@ -74,7 +72,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create control socket server to manage daemon
-	_, err = socket.Listen("unix", cfg.Socket, cfg.SocketWait, daemon)
+	_, err = socket.Listen("unix", cfg.GetString("socket"), cfg.GetBool("socket-wait"), daemon)
 	if err != nil {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}

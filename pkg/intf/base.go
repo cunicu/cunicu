@@ -368,8 +368,8 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	i.logger.Info("Creating new interface")
 
 	// Sync Wireguard device configuration with configuration file
-	if i.config.WireguardConfigSync {
-		cfg := fmt.Sprintf("%s/%s.conf", i.config.WireguardConfigPath, i.Name())
+	if i.config.GetBool("wg.config_sync") {
+		cfg := fmt.Sprintf("%s/%s.conf", i.config.Get("wg.config_path"), i.Name())
 		if err := i.SyncConfig(cfg); err != nil {
 			return BaseInterface{}, fmt.Errorf("failed to sync interface configuration: %w", err)
 		}

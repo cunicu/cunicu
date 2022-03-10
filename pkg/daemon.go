@@ -45,7 +45,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Create backend
 	var backend signaling.Backend
-	var community = crypto.GenerateKeyFromPassword(cfg.Community)
+	var community = crypto.GenerateKeyFromPassword(cfg.GetString("community"))
 
 	if len(cfg.Backends) == 1 {
 		backend, err = signaling.NewBackend(&signaling.BackendConfig{
@@ -89,9 +89,8 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Check if Wireguard interface can be created by the kernel
-	if cfg.WireguardUserspace == nil {
-		u := !intf.WireguardModuleExists()
-		cfg.WireguardUserspace = &u
+	if !cfg.IsSet("wg.userspace") {
+		cfg.Set("wg.userspace", !intf.WireguardModuleExists())
 	}
 
 	return d, nil
@@ -117,7 +116,7 @@ func (d *Daemon) Run() error {
 	d.logger.Debug("Starting initial interface sync")
 	d.SyncAllInterfaces()
 
-	ticker := time.NewTicker(d.Config.WatchInterval)
+	ticker := time.NewTicker(d.Config.GetDuration("watch_interval"))
 
 out:
 	for {
@@ -266,7 +265,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		}
 
 		var interf intf.Interface
-		if *d.Config.WireguardUserspace {
+		if d.Config.GetBool("wg.userspace") {
 			interf, err = intf.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		} else {
 			interf, err = intf.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
