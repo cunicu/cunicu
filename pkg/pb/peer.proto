@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
@@ -23,7 +24,7 @@ message PeerDescription {
     // Wireguard endpoint address
     string endpoint = 4;
 
-    // Version of WICE agent
+    // Version of ɯice agent
     string wice_version = 5;
 
     InterfaceType interface_type = 6;

@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
@@ -27,10 +28,10 @@ message Event {
     string interface = 4;
 
     oneof event {
-        PeerModifiedEvent peer_modified = 10;
-        PeerConnectionStateChangeEvent peer_connection_state_change = 11;
+        BackendReadyEvent backend_ready = 100;
 
-        BackendReadyEvent backend_ready = 30;
+        PeerModifiedEvent peer_modified = 122;
+        PeerConnectionStateChangeEvent peer_connection_state_change = 123;
     }
 }
 

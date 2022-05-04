@@ -1,6 +1,6 @@
 syntax = "proto3";
-package wice;
 
+package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 // A container for an encrypted protobuf message

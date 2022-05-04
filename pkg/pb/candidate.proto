@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 
@@ -26,10 +27,11 @@ message Candidate {
     }
 
     enum NetworkType {
-        UDP4 = 0;
-		UDP6 = 1;
-		TCP4 = 2;
-		TCP6 = 3;
+        NETWORK_TYPE_UNSPECIFIED = 0;
+        NETWORK_TYPE_UDP4 = 1;
+		NETWORK_TYPE_UDP6 = 2;
+		NETWORK_TYPE_TCP4 = 3;
+		NETWORK_TYPE_TCP6 = 4;
     }
 
     // Type of TCP candidate
