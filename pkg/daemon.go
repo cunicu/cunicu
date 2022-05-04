@@ -32,7 +32,7 @@ type Daemon struct {
 	eventListeners     map[chan *pb.Event]interface{}
 	eventListenersLock sync.Mutex
 
-	stopSig chan interface{}
+	stop chan interface{}
 
 	logger *zap.Logger
 }
@@ -83,7 +83,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Events:         events,
 		eventListeners: map[chan *pb.Event]interface{}{},
 
-		stopSig: make(chan interface{}),
+		stop: make(chan interface{}),
 
 		logger: logger,
 	}
@@ -127,7 +127,7 @@ out:
 			d.logger.Debug("Starting periodic interface sync")
 			d.SyncAllInterfaces()
 
-		case <-d.stopSig:
+		case <-d.stop:
 			d.logger.Info("Received stop request")
 			break out
 
@@ -286,7 +286,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 }
 
 func (d *Daemon) Stop() error {
-	close(d.stopSig)
+	close(d.stop)
 
 	return nil
 }
