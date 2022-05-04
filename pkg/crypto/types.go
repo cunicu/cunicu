@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"crypto/hmac"
-	"crypto/rand"
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
@@ -35,11 +34,6 @@ var (
 type Nonce []byte
 type Key [KeyLength]byte
 type Signature [SignatureLength]byte
-
-type KeyPair struct {
-	Ours   Key `json:"ours"`
-	Theirs Key `json:"theirs"`
-}
 
 func GenerateKeyFromPassword(pw string) Key {
 	key := pbkdf2.Key([]byte(pw), pbkdf2Salt[:], pbkdf2Iterations, KeyLength, sha512.New)
@@ -140,7 +134,18 @@ func (k Signature) String() string {
 	return base64.StdEncoding.EncodeToString(k[:])
 }
 
+type KeyPair struct {
+	Ours   Key `json:"ours"`
+	Theirs Key `json:"theirs"`
+}
+
+type PublicKeyPair KeyPair
+
 func (kp KeyPair) ID(key []byte) string {
+	if key == nil {
+		key = []byte{}
+	}
+
 	ctx := hmac.New(hash.SHA512.CryptoHash().HashFunc().New, key)
 
 	ctx.Write(kp.Ours[:])
@@ -156,13 +161,9 @@ func (kp KeyPair) Shared() Key {
 	return *(*Key)(shared)
 }
 
-func GetNonce(len int) (Nonce, error) {
-	var nonce = make(Nonce, len)
-
-	_, err := rand.Reader.Read(nonce)
-	if err != nil {
-		return nonce, err
+func (kp KeyPair) Public() PublicKeyPair {
+	return PublicKeyPair{
+		Ours:   kp.Ours.PublicKey(),
+		Theirs: kp.Theirs,
 	}
-
-	return nonce, nil
 }
