@@ -193,7 +193,7 @@ func (d *Daemon) SyncAllInterfaces() error {
 	keepInterfaces := intf.InterfaceList{}
 
 	for _, device := range devices {
-		if !d.Config.WireguardInterfaceFilter.Match([]byte(device.Name)) {
+		if !d.Config.WireguardInterfaceFilter.MatchString(device.Name) {
 			continue // Skip interfaces which dont match the filter
 		}
 

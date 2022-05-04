@@ -73,7 +73,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create control socket server to manage daemon
-	_, err = socket.Listen("unix", cfg.GetString("socket"), cfg.GetBool("socket-wait"), daemon)
+	_, err = socket.Listen("unix", cfg.GetString("socket.path"), cfg.GetBool("socket.wait"), daemon)
 	if err != nil {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}
