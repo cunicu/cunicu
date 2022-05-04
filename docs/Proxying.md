@@ -4,7 +4,7 @@
 
 ## Kernel Wireguard module
 
-### Userspace
+### User-space
 
 For each WG peer a new local UDP socket is opened.
 ɯice will update the endpoint address of the peer to this the local address of the new sockets.
@@ -19,9 +19,9 @@ UDP headers are parsed/produced by ɯice.
 
 ### NFtables port-redirection (Kernel)
 
-Two [Nftables][nftables] (nft) rules are added to filter input & output chains respectivly.
+Two [Nftables][nftables] (nft) rules are added to filter input & output chains respectively.
 The input rule will match all non-STUN traffic directed at the local port of the ICE candidate and rewrites the UDP destination port to the local listen port of the Wireguard interface.
-The output rule will mach all traffic originating from the listen port of the WG interface and directed to the port of the remote cadidate and rewrites the source port to the port of the local ICE candidate.  
+The output rule will mach all traffic originating from the listen port of the WG interface and directed to the port of the remote candidate and rewrites the source port to the port of the local ICE candidate.  
 
 Wireguard traffic passes only through the Netfilter chains and remains inside the kernel.
 Only STUN binding requests are passed to ɯice.
@@ -45,9 +45,9 @@ table inet wice {
 
 Similar to NFTables port-natting by using the legacy IPTables API.
 
-## Userspace Wireguard implementation
+## User-space Wireguard implementation
 
-### Userspace Proxy
+### User-space Proxy
 
 Just like for the Kernel Wireguard module, a dedicated UDP socket for each WG peer is created.
 ɯice will update the endpoint address of the peer to this the local address of the new sockets.
@@ -60,7 +60,6 @@ Wireguard traffic is proxied by ɯice between the local UDP and the ICE socket.
 
 Wireguard traffic is passed directly between `conn.Bind` and Pion's `ice.Conn`.
 No round-trip through the kernel stack is required.
-
 
 **Note:** This variant only works for the compiled-in version of wireguard-go in ɯice.
 

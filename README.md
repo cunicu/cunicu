@@ -16,9 +16,9 @@
 
 **🚧 ɯice is currently still in an Alpha state and not usable yet**
 
-ɯice is a userspace daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
+ɯice is a user-space daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
-It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go userspace implementation of Wireguard in a single binary for environments in which Wireguard kernel support has not landed yet.
+It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of Wireguard in a single binary for environments in which Wireguard kernel support has not landed yet.
 
 ## Getting started
 

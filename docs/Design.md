@@ -15,22 +15,22 @@
 -   Seamless switch between ICE candidates and relays
 
 -   Zero configuration
-    -   Eleviate users of exchaging endpoint IPs & ports
+    -   Alleviate users of exchanging endpoint IPs & ports
 
 -   Enables direct communication of Wireguard peers behind NAT / UDP-blocking firewalls
 
 -   Single-binary, zero dependency installation
-    -   Bundled ICE agent & [Wireguard userspace daemon][wireguard-go]
-    -   Portablilty
+    -   Bundled ICE agent & [Wireguard user-space daemon][wireguard-go]
+    -   Portability
 
 -   Support for user and kernel-space Wireguard implementations
 
 -   Zero performance impact
     -   Kernel-side filtering / redirection of Wireguard traffic
-    -   Fallback to userspace proxying only if no Kernel features are available 
+    -   Fallback to user-space proxying only if no Kernel features are available 
 
 -   Minimized attack surface
-    -   Drop privileges after inital configuration
+    -   Drop privileges after initial configuration
 
 -   Compatible with existing Wireguard configuration utilities like:
     -   [NetworkManager][network-manager]

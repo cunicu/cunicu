@@ -44,7 +44,7 @@ ice:
         min: 0
 
     check_interval: 200ms
-    disconnected_timout: 5s
+    disconnected_timeout: 5s
     failed_timeout: 5s
     restart_timeout: 5s
     keepalive_interval: 2s
@@ -63,13 +63,13 @@ All the settings from the configuration file can also be passed via environment 
 
 - Convert the setting name to uppercase
 - Prefixing the setting name with `WICE_`
-- Nested settings are seperated by underscores
+- Nested settings are separated by underscores
 
 **Example:** The setting `ice.max_binding_requests` can be set by the environment variable `WICE_ICE_MAX_BINDING_REQUESTS`
 
 **Note:** Setting lists such as `ice.urls` or `backends` can currently not be set via environment variables.
 
-## DNS Autoconfiguration
+## DNS Auto-configuration
 
 ɯice als supports retrieving parts of the configuration via DNS lookups.
 
@@ -97,7 +97,7 @@ example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
 When `wice daemon` can be started with `--config` options pointing to HTTPS URIs.
 ɯice will download all configuration files in the order they are specified on the command line and merge them subsequently.
 
-This feature can be combined with the DNS autoconfiguration method by providing a TXT record pointing to the configuration file:
+This feature can be combined with the DNS auto-configuration method by providing a TXT record pointing to the configuration file:
 
 ```
 example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
