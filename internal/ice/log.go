@@ -8,7 +8,6 @@ import (
 	"github.com/pion/logging"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"riasc.eu/wice/internal/log"
 )
 
 type LoggerFactory struct {
@@ -18,50 +17,87 @@ type LoggerFactory struct {
 type LeveledLogger struct {
 	logging.LeveledLogger
 
-	logger *zap.SugaredLogger
+	*zap.SugaredLogger
 }
 
 func (l *LeveledLogger) Trace(msg string) {
-	l.logger.Debug(msg)
+	l.SugaredLogger.Debug(msg)
 }
 
 func (l *LeveledLogger) Tracef(format string, args ...interface{}) {
-	l.logger.Debugf(format, args...)
+	l.SugaredLogger.Debugf(format, args...)
 }
 
 func (l *LeveledLogger) Debug(msg string) {
-	l.logger.Debug(msg)
+	l.SugaredLogger.Debug(msg)
 }
 
 func (l *LeveledLogger) Debugf(format string, args ...interface{}) {
-	l.logger.Debugf(format, args...)
+	l.SugaredLogger.Debugf(format, args...)
 }
 
 func (l *LeveledLogger) Info(msg string) {
-	l.logger.Info(msg)
+	l.SugaredLogger.Info(msg)
 }
 
 func (l *LeveledLogger) Infof(format string, args ...interface{}) {
-	l.logger.Infof(format, args...)
+	l.SugaredLogger.Infof(format, args...)
 }
 
 func (l *LeveledLogger) Warn(msg string) {
-	l.logger.Warn(msg)
+	l.SugaredLogger.Warn(msg)
 }
 
 func (l *LeveledLogger) Warnf(format string, args ...interface{}) {
-	l.logger.Warnf(format, args...)
+	l.SugaredLogger.Warnf(format, args...)
 }
 
 func (l *LeveledLogger) Error(msg string) {
-	l.logger.Error(msg)
+	l.SugaredLogger.Error(msg)
 }
 
 func (l *LeveledLogger) Errorf(format string, args ...interface{}) {
-	l.logger.Errorf(format, args...)
+	l.SugaredLogger.Errorf(format, args...)
 }
 
-func (f *LoggerFactory) hook(e zapcore.Entry) error {
+func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
+	var lvl zapcore.Level
+	if lvlStr := os.Getenv("PION_LOG"); lvlStr != "" {
+		lvl.UnmarshalText([]byte(lvlStr))
+	} else {
+		lvl = zapcore.DebugLevel
+	}
+
+	loggerName := "ice"
+	if scope != "ice" {
+		loggerName += fmt.Sprintf(".%s", scope)
+	}
+
+	logger := f.Base.Named(loggerName).WithOptions(
+		zap.WrapCore(func(c zapcore.Core) zapcore.Core {
+			return &pionCore{
+				Core:      c,
+				PionLevel: lvl,
+			}
+		}),
+	)
+
+	return &LeveledLogger{
+		SugaredLogger: logger.Sugar(),
+	}
+}
+
+func NewLogger(base *zap.Logger, scope string) logging.LeveledLogger {
+	lf := LoggerFactory{Base: base}
+	return lf.NewLogger(scope)
+}
+
+type pionCore struct {
+	zapcore.Core
+	PionLevel zapcore.Level
+}
+
+func (c *pionCore) Write(e zapcore.Entry, f []zapcore.Field) error {
 	runes := []rune(e.Message)
 
 	if len(runes) > 0 {
@@ -70,22 +106,13 @@ func (f *LoggerFactory) hook(e zapcore.Entry) error {
 
 	e.Message = string(runes)
 
-	return nil
+	return c.Core.Write(e, f)
 }
 
-func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
-	levelStr := os.Getenv("PION_LOG")
-
-	var level zapcore.Level
-	level.UnmarshalText([]byte(levelStr))
-
-	loggerName := fmt.Sprintf("ice.%s", scope)
-	logger := f.Base.Named(loggerName).WithOptions(
-		zap.Hooks(f.hook),
-		log.WithLevel(level),
-	)
-
-	return &LeveledLogger{
-		logger: logger.Sugar(),
+func (c *pionCore) Check(e zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+	if c.PionLevel.Enabled(e.Level) {
+		return ce.AddCore(e, c)
 	}
+
+	return ce
 }
