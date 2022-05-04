@@ -134,7 +134,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.S
 		return nil, err
 	}
 
-	return sub.Channel, nil
+	return sub.C, nil
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
@@ -194,12 +194,12 @@ func (b *Backend) onSessionDescriptionUpdate(_ interface{}, new interface{}) {
 }
 
 func (b *Backend) process(env *v1.SignalingEnvelope) error {
-	sender, err := crypto.ParseKeyBytes(env.Sender)
+	kp, err := env.PublicKeyPair()
 	if err != nil {
-		return fmt.Errorf("invalid key: %w", err)
+		return fmt.Errorf("failed to get keypair from envelope: %w", err)
 	}
 
-	sub, err := b.GetSubscription(&sender)
+	sub, err := b.GetSubscription(&kp)
 	if err != nil {
 		return nil // ignore envelopes not addressed to us
 	}

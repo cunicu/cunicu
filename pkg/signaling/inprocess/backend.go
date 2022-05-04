@@ -44,20 +44,10 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	sub, err := subs.NewSubscription(kp)
-	if err != nil {
-		return nil, err
-	}
-
-	return sub.Channel, nil
+	return subs.Subscribe(kp)
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
-	_, err := subs.NewSubscription(kp)
-	if err != nil {
-		return err
-	}
-
 	env, err := msg.Encrypt(kp)
 	if err != nil {
 		return err
@@ -67,6 +57,5 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.Signa
 }
 
 func (b *Backend) Close() error {
-
 	return nil
 }

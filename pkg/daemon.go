@@ -11,7 +11,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -45,17 +44,13 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Create backend
 	var backend signaling.Backend
-	var community = crypto.GenerateKeyFromPassword(cfg.GetString("community"))
 
 	if len(cfg.Backends) == 1 {
 		backend, err = signaling.NewBackend(&signaling.BackendConfig{
-			URI:       cfg.Backends[0],
-			Community: &community,
+			URI: cfg.Backends[0],
 		}, events)
 	} else {
-		backend, err = signaling.NewMultiBackend(cfg.Backends, &signaling.BackendConfig{
-			Community: &community,
-		}, events)
+		backend, err = signaling.NewMultiBackend(cfg.Backends, &signaling.BackendConfig{}, events)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)

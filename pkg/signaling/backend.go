@@ -26,14 +26,16 @@ type BackendPlugin struct {
 }
 
 type BackendConfig struct {
-	URI       *url.URL
-	Community *crypto.Key
+	URI *url.URL
 }
 
 type Backend interface {
 	io.Closer
 
+	// Publish a signaling message to a specific peer
 	Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error
+
+	// Get a stream of messages from a specific peer
 	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
 }
 
