@@ -4,15 +4,57 @@ import (
 	"context"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
 
-	"google.golang.org/protobuf/proto"
 	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
 
-func TestBackend(t *testing.T, u string) {
+type peer struct {
+	id       int64
+	backend  signaling.Backend
+	key      crypto.Key
+	events   chan *pb.Event
+	messages map[int64]chan *pb.SignalingMessage
+}
+
+func (p *peer) publish(t *testing.T, o *peer) {
+	if p.id == o.id {
+		return
+	}
+
+	kp := &crypto.KeyPair{
+		Ours:   p.key,
+		Theirs: o.key.PublicKey(),
+	}
+
+	sentMsg := &pb.SignalingMessage{
+		Description: &pb.SessionDescription{
+			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
+			// This should allow us to check against any mixed up message deliveries
+			Epoch: p.id,
+		},
+	}
+
+	if err := p.backend.Publish(context.Background(), kp, sentMsg); err != nil {
+		t.Fatalf("Failed to publish signaling message: %s", err)
+	}
+}
+
+func (p *peer) receive(t *testing.T, o *peer) {
+	recvMsg := <-p.messages[o.id]
+
+	if recvMsg.Description.Epoch != o.id {
+		t.Fatalf("Received invalid message")
+	}
+}
+
+// TestBackend creates n peers with separate connections to the signaling backend u
+// and exchanges a test message between each pair of backends
+func TestBackend(t *testing.T, u string, n int) {
 	if !strings.Contains(u, ":") {
 		u += ":"
 	}
@@ -22,46 +64,67 @@ func TestBackend(t *testing.T, u string) {
 		t.Fatalf("Failed to parse URL: %s", err)
 	}
 
-	com := crypto.GenerateKeyFromPassword("")
-
 	cfg := &signaling.BackendConfig{
-		URI:       uri,
-		Community: &com,
+		URI: uri,
 	}
 
-	events := log.NewEventLogger()
+	ps := []*peer{}
+	for i := 0; i < n; i++ {
+		p := &peer{
+			id:       int64(i),
+			events:   log.NewEventLogger(),
+			messages: map[int64]chan *pb.SignalingMessage{},
+		}
 
-	ourBackend, err := signaling.NewBackend(cfg, events)
-	if err != nil {
-		t.Fatalf("Failed to create backend: %s", err)
-	}
-	defer ourBackend.Close()
+		p.backend, err = signaling.NewBackend(cfg, p.events)
+		if err != nil {
+			t.Fatalf("Failed to create backend: %s", err)
+		}
+		defer p.backend.Close()
 
-	theirBackend, err := signaling.NewBackend(cfg, events)
-	if err != nil {
-		t.Fatalf("Failed to create backend: %s", err)
-	}
-	defer theirBackend.Close()
+		p.key, err = crypto.GeneratePrivateKey()
+		if err != nil {
+			t.Fatalf("Failed to generate private key: %s", err)
+		}
 
-	sentMsg := GenerateSignalingMessage()
-
-	ourKP, theirKP, err := GenerateKeyPairs()
-	if err != nil {
-		t.Fatalf("Failed to generate keypairs: %s", err)
-	}
-
-	ch, err := theirBackend.Subscribe(context.Background(), theirKP)
-	if err != nil {
-		t.Fatalf("Failed to subscribe to signaling messages: %s", err)
+		ps = append(ps, p)
 	}
 
-	if err := ourBackend.Publish(context.Background(), ourKP, sentMsg); err != nil {
-		t.Fatalf("Failed to publish signaling message: %s", err)
+	for _, p := range ps {
+		for _, o := range ps {
+			if p == o {
+				continue
+			}
+
+			kp := &crypto.KeyPair{
+				Ours:   p.key,
+				Theirs: o.key.PublicKey(),
+			}
+
+			p.messages[o.id], err = p.backend.Subscribe(context.Background(), kp)
+			if err != nil {
+				t.Fatalf("Failed to subscribe: %s", err)
+			}
+		}
 	}
 
-	recvMsg := <-ch
+	wg := sync.WaitGroup{}
+	wg.Add(n*n - n)
 
-	if !proto.Equal(recvMsg, sentMsg) {
-		t.Fatalf("Sent and received messages are not equal!\n%#+v\n%#+v", recvMsg, sentMsg)
+	for _, p := range ps {
+		for _, o := range ps {
+			if p.id == o.id {
+				continue
+			}
+
+			go func(p, o *peer) {
+				p.receive(t, o)
+				wg.Done()
+			}(p, o)
+
+			p.publish(t, o)
+		}
 	}
+
+	wg.Wait()
 }

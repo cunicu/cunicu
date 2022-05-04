@@ -19,5 +19,5 @@ func TestBackend(t *testing.T) {
 	go svr.Serve(l)
 	defer svr.Stop()
 
-	test.TestBackend(t, "grpc://127.0.0.1:8080?insecure=true")
+	test.TestBackend(t, "grpc://127.0.0.1:8080?insecure=true", 10)
 }

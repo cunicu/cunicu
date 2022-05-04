@@ -16,5 +16,5 @@ func TestBackend(t *testing.T) {
 		t.Skipf("Kubernetes tests are not yet supported in CI")
 	}
 
-	test.TestBackend(t, "k8s")
+	test.TestBackend(t, "k8s", 10)
 }

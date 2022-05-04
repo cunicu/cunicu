@@ -77,7 +77,6 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.S
 					ch <- msg
 				} else {
 					b.logger.Error("Failed to decrypt message", zap.Error(err))
-					continue
 				}
 			} else {
 				b.logger.Error("Failed to receive offer", zap.Error(err))

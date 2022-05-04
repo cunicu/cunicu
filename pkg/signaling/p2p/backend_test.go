@@ -11,5 +11,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestBackendP2P(t *testing.T) {
-	test.TestBackend(t, "p2p")
+	test.TestBackend(t, "p2p:?private=true&mdns=true", 2)
 }

@@ -9,5 +9,5 @@ import (
 )
 
 func TestBackendInProcess(t *testing.T) {
-	test.TestBackend(t, "inprocess")
+	test.TestBackend(t, "inprocess", 10)
 }
