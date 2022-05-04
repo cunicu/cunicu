@@ -9,6 +9,7 @@ message Event {
     enum Type {
         // Signaling Events
         BACKEND_READY = 0;
+        SIGNALING_MESSAGE = 1;
 
         // Core Events
         PEER_ADDED = 20;
