@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"riasc.eu/wice/internal/types"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -52,7 +53,7 @@ func (m *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan 
 		chans = append(chans, ch)
 	}
 
-	return pumpMessages(chans), nil
+	return types.FanIn(chans...), nil
 }
 
 func (m *MultiBackend) Close() error {
@@ -63,19 +64,4 @@ func (m *MultiBackend) Close() error {
 	}
 
 	return nil
-}
-
-// pumpMessages reads offers from the secondary backends and pushes them into a common channel
-func pumpMessages(chans []chan *pb.SignalingMessage) chan *pb.SignalingMessage {
-	nch := make(chan *pb.SignalingMessage)
-
-	for _, ch := range chans {
-		go func(ch chan *pb.SignalingMessage) {
-			for m := range ch {
-				nch <- m
-			}
-		}(ch)
-	}
-
-	return nch
 }
