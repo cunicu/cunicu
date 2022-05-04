@@ -17,7 +17,7 @@ Wireguard commands
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - WICE
+* [wice](wice.md)	 - ɯice
 * [wice wg genkey](wice_wg_genkey.md)	 - Generates a new private key and writes it to stdout
 * [wice wg genpsk](wice_wg_genpsk.md)	 - Generates a new preshared key and writes it to stdout
 * [wice wg pubkey](wice_wg_pubkey.md)	 - Reads a private key from stdin and writes a public key to stdout

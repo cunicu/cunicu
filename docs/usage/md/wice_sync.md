@@ -26,5 +26,5 @@ wice sync [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - WICE
+* [wice](wice.md)	 - ɯice
 

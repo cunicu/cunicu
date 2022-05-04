@@ -1,6 +1,6 @@
 ## wice monitor
 
-Monitor the WICE daemon for events
+Monitor the ɯice daemon for events
 
 ```
 wice monitor [flags]
@@ -22,5 +22,5 @@ wice monitor [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - WICE
+* [wice](wice.md)	 - ɯice
 

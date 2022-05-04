@@ -1,5 +1,5 @@
 .nh
-.TH "WICE" "3" "Feb 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -18,7 +18,7 @@ Start the daemon
 
 .SH OPTIONS
 .PP
-\fB-b\fP, \fB--backend\fP=
+\fB-b\fP, \fB--backend\fP=[]
 	backend types / URLs
 
 .PP
@@ -26,27 +26,31 @@ Start the daemon
 	Community passphrase for discovering other peers
 
 .PP
-\fB-c\fP, \fB--config\fP=""
-	Path of configuration file
+\fB-c\fP, \fB--config\fP=[]
+	Path of configuration files
+
+.PP
+\fB-A\fP, \fB--config-domain\fP=""
+	Perform auto-configuration via DNS
 
 .PP
 \fB-h\fP, \fB--help\fP[=false]
 	help for daemon
 
 .PP
-\fB--ice-candidate-type\fP=
+\fB--ice-candidate-type\fP=[]
 	usable candidate types (select from "host", "srflx", "prflx", "relay")
 
 .PP
-\fB--ice-check-interval\fP=200ms
+\fB--ice-check-interval\fP=0s
 	interval at which the agent performs candidate checks in the connecting phase
 
 .PP
-\fB--ice-disconnected-timout\fP=5s
+\fB--ice-disconnected-timout\fP=0s
 	time till an Agent transitions disconnected
 
 .PP
-\fB--ice-failed-timeout\fP=25s
+\fB--ice-failed-timeout\fP=0s
 	time until an Agent transitions to failed after disconnected
 
 .PP
@@ -58,7 +62,7 @@ Start the daemon
 	regex for filtering local interfaces for ICE candidate gathering (e.g. "eth[0-9]+")
 
 .PP
-\fB--ice-keepalive-interval\fP=2s
+\fB--ice-keepalive-interval\fP=0s
 	interval netween STUN keepalives
 
 .PP
@@ -66,7 +70,7 @@ Start the daemon
 	lite agents do not perform connectivity check and only provide host candidates
 
 .PP
-\fB--ice-max-binding-requests\fP=7
+\fB--ice-max-binding-requests\fP=0
 	maximum number of binding request before considering a pair failed
 
 .PP
@@ -78,7 +82,7 @@ Start the daemon
 	IP addresses which will be added as local server reflexive candidates
 
 .PP
-\fB--ice-network-type\fP=
+\fB--ice-network-type\fP=[]
 	usable network types (select from "udp4", "udp6", "tcp4", "tcp6")
 
 .PP
@@ -94,7 +98,7 @@ Start the daemon
 	minimum port for allocation policy (range: 0-65535)
 
 .PP
-\fB--ice-restart-interval\fP=5s
+\fB--ice-restart-timeout\fP=0s
 	time to wait before ICE restart
 
 .PP
@@ -106,11 +110,7 @@ Start the daemon
 	regex for filtering Wireguard interfaces (e.g. "wg-.\fP")
 
 .PP
-\fB-p\fP, \fB--proxy\fP="auto"
-	proxy type to use
-
-.PP
-\fB-s\fP, \fB--socket\fP="/var/run/wice.sock"
+\fB-s\fP, \fB--socket\fP=""
 	Unix control and monitoring socket
 
 .PP
@@ -118,15 +118,15 @@ Start the daemon
 	wait until first client connected to control socket before continuing start
 
 .PP
-\fB-a\fP, \fB--url\fP=
+\fB-a\fP, \fB--url\fP=[]
 	STUN and/or TURN server addresses
 
 .PP
-\fB-i\fP, \fB--watch-interval\fP=1s
+\fB-i\fP, \fB--watch-interval\fP=0s
 	interval at which we are polling the kernel for updates on the Wireguard interfaces
 
 .PP
-\fB-w\fP, \fB--wg-config-path\fP="/etc/wireguard"
+\fB-w\fP, \fB--wg-config-path\fP=""
 	base path to search for Wireguard configuration files
 
 .PP

@@ -3,27 +3,30 @@
 
 .SH NAME
 .PP
-wice-monitor - Monitor the ɯice daemon for events
+wice-self-update - Update the wice binary
 
 
 .SH SYNOPSIS
 .PP
-\fBwice monitor [flags]\fP
+\fBwice self-update [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Monitor the ɯice daemon for events
+The command "self-update" downloads the latest stable release of wice from
+GitHub and replaces the currently running binary. After download, the
+authenticity of the binary is verified using the GPG signature on the release
+files.
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for monitor
+	help for self-update
 
 .PP
-\fB-s\fP, \fB--socket\fP="/var/run/wice.sock"
-	Unix control and monitoring socket
+\fB--output\fP=""
+	Save the downloaded file as \fB\fCfilename\fR (default: running binary itself)
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS

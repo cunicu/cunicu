@@ -1,6 +1,6 @@
 ## wice stop
 
-Shutdown the WICE daemon
+Shutdown the ɯice daemon
 
 ```
 wice stop [flags]
@@ -22,5 +22,5 @@ wice stop [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - WICE
+* [wice](wice.md)	 - ɯice
 
