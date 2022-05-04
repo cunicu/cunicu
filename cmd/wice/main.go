@@ -8,7 +8,7 @@ import (
 	_ "riasc.eu/wice/pkg/signaling/grpc"
 	_ "riasc.eu/wice/pkg/signaling/inprocess"
 	_ "riasc.eu/wice/pkg/signaling/k8s"
-	_ "riasc.eu/wice/pkg/signaling/p2p"
+	// _ "riasc.eu/wice/pkg/signaling/p2p"
 )
 
 var (
