@@ -9,7 +9,7 @@ import (
 )
 
 func Filtered(p *NetworkParams) (*Network, error) {
-	// We are dropped packets between the WICE nodes to force ICE using the relay
+	// We are dropped packets between the ɯice nodes to force ICE using the relay
 	_, hostNetV4, err := net.ParseCIDR("10.0.1.0/24")
 	if err != nil {
 		return nil, err

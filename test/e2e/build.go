@@ -2,18 +2,23 @@ package e2e
 
 import (
 	"fmt"
+	"sync"
 
 	g "github.com/stv0g/gont/pkg"
 )
 
 var (
 	// Singleton for compiled wice executable
-	wiceBinary string
+	binary      string
+	binaryMutex sync.Mutex
 )
 
-func buildWICE(n *g.Network) (string, error) {
-	if wiceBinary != "" {
-		return wiceBinary, nil
+func buildBinary(n *g.Network) (string, error) {
+	binaryMutex.Lock()
+	defer binaryMutex.Unlock()
+
+	if binary != "" {
+		return binary, nil
 	}
 
 	wiceBinary := "/tmp/wice"

@@ -23,7 +23,7 @@ import (
 	"riasc.eu/wice/pkg/socket"
 )
 
-// Agent is a host running WICE
+// Agent is a host running ɯice
 type Agent struct {
 	*g.Host
 
@@ -120,7 +120,7 @@ func (a *Agent) Start(directArgs ...interface{}) error {
 		log.Fatal(err)
 	}
 
-	cmd, err := buildWICE(a.Network())
+	cmd, err := buildBinary(a.Network())
 	if err != nil {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}

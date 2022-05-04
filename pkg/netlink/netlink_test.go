@@ -32,6 +32,6 @@ func TestWireguardLink(t *testing.T) {
 	}
 
 	if err := netlink.LinkDel(l); err != nil {
-		t.Errorf("failed to delete Wireguard device: %w", err)
+		t.Errorf("failed to delete Wireguard device: %s", err)
 	}
 }

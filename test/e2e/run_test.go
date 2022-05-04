@@ -46,7 +46,7 @@ func RunTest(t *testing.T, factory net.NetworkFactory, p *net.NetworkParams, arg
 
 	logger.Info("Starting agent nodes", zap.Int("count", len(n.Agents)))
 	if err := n.Agents.Start(args...); err != nil {
-		t.Fatalf("Failed to start WICE: %s", err)
+		t.Fatalf("Failed to start ɯice: %s", err)
 	}
 	defer n.Agents.Stop()
 

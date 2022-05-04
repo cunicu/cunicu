@@ -64,7 +64,7 @@ func (i *BaseInterface) Close() error {
 
 	for _, p := range i.peers {
 		if err := p.Close(); err != nil {
-			return err
+			return fmt.Errorf("failed to close peer: %w", err)
 		}
 	}
 

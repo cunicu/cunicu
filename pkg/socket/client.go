@@ -55,7 +55,7 @@ func waitForSocket(path string) error {
 
 func Connect(path string) (*Client, error) {
 	if err := waitForSocket(path); err != nil {
-		return nil, fmt.Errorf("failed to wait for socket: %w", err)
+		return nil, fmt.Errorf("failed to wait for socket: %s: %w", path, err)
 	}
 
 	tgt := fmt.Sprintf("unix://%s", path)

@@ -69,7 +69,7 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 
 	d, err := time.Parse(time.RFC3339, date)
 	if err != nil {
-		return fmt.Errorf("failed to parse build date")
+		d = time.Now()
 	}
 
 	header := &doc.GenManHeader{

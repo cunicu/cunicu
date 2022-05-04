@@ -34,10 +34,6 @@ func CmpNet(a, b *net.IPNet) int {
 	return bytes.Compare(a.IP, b.IP)
 }
 
-// func lessNets(nets []net.IPNet) Less {
-// 	return func(i, j int) bool { return cmpNet(&nets[i], &nets[j]) < 0 }
-// }
-
 // GenerateRandomBytes returns securely generated random bytes.
 // It will return an error if the system's secure random
 // number generator fails to function correctly, in which
