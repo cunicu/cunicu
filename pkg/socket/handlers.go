@@ -110,3 +110,17 @@ func (s *Server) AddInterfaceConfig(ctx context.Context, params *pb.InterfaceCon
 func (s *Server) SetInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Error, error) {
 	return pb.NotSupported, nil
 }
+
+func (s *Server) GetSignalingMessage(ctx context.Context, params *pb.GetSignalingMessageParams) (*pb.GetSignalingMessageResp, error) {
+	// peer, pbErr, err := s.findPeer(params.Intf, params.Peer)
+	// if pbErr != nil || err != nil {
+	// 	return nil, err
+	// }
+
+	return &pb.GetSignalingMessageResp{}, nil
+}
+
+func (s *Server) PutSignalingMessage(ctx context.Context, params *pb.PutSignalingMessageParams) (*pb.Error, error) {
+
+	return pb.Success, nil
+}
