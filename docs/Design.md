@@ -2,7 +2,13 @@
 
 ## Objectives
 
--   Use [WebRTC perfect negotiation pattern](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation)
+-   Encrypt all signaling messages
+
+-   Plug-able signaling backends:
+    -   [libp2p](https://libp2p.io/)
+    -   GRPC
+    -   Kubernetes API-server
+    -   WebSocket
 
 -   Support [Trickle ICE][rfc8838]
 
