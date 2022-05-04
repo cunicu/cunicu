@@ -55,6 +55,8 @@ func (p *peer) receive(t *testing.T, o *peer) {
 // TestBackend creates n peers with separate connections to the signaling backend u
 // and exchanges a test message between each pair of backends
 func TestBackend(t *testing.T, u string, n int) {
+
+	// Add a color to make url.Parse succeed
 	if !strings.Contains(u, ":") {
 		u += ":"
 	}
@@ -93,7 +95,7 @@ func TestBackend(t *testing.T, u string, n int) {
 	for _, p := range ps {
 		for _, o := range ps {
 			if p == o {
-				continue
+				continue // Do not send messages to ourself
 			}
 
 			kp := &crypto.KeyPair{
@@ -114,7 +116,7 @@ func TestBackend(t *testing.T, u string, n int) {
 	for _, p := range ps {
 		for _, o := range ps {
 			if p.id == o.id {
-				continue
+				continue // Do not send messages to ourself
 			}
 
 			go func(p, o *peer) {
