@@ -2,9 +2,7 @@ package socket
 
 import (
 	"context"
-	"fmt"
 
-	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -82,30 +80,12 @@ func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, er
 }
 
 func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
-	intf := s.daemon.Interfaces.GetByName(params.Intf)
-	if intf == nil {
-		return &pb.Error{
-			Code:    pb.Error_ENOENT,
-			Message: "Interface not found",
-		}, nil
+	peer, pbErr, err := s.findPeer(params.Intf, params.Peer)
+	if pbErr != nil || err != nil {
+		return pbErr, err
 	}
 
-	pk, err := crypto.ParseKeyBytes(params.Peer)
-	if err != nil {
-		return nil, fmt.Errorf("invalid key: %w", err)
-	}
-
-	peer, ok := intf.Peers()[pk]
-	if !ok {
-		return &pb.Error{
-			Code:    pb.Error_ENOENT,
-			Message: "Peer not found",
-		}, nil
-	}
-
-	if err := peer.Restart(); err != nil {
-		return pb.NewError(err), nil
-	}
+	peer.Restart()
 
 	return pb.Success, nil
 }

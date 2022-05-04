@@ -1,12 +1,15 @@
 package socket
 
 import (
+	"fmt"
 	"sync"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"riasc.eu/wice/pkg"
+	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
 
 	"net"
@@ -60,4 +63,29 @@ func Listen(network string, address string, wait bool, daemon *pkg.Daemon) (*Ser
 	}
 
 	return s, nil
+}
+
+func (s *Server) findPeer(intfName string, peerPK []byte) (*intf.Peer, *pb.Error, error) {
+	intf := s.daemon.Interfaces.GetByName(intfName)
+	if intf == nil {
+		return nil, &pb.Error{
+			Code:    pb.Error_ENOENT,
+			Message: "Interface not found",
+		}, nil
+	}
+
+	pk, err := crypto.ParseKeyBytes(peerPK)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid key: %w", err)
+	}
+
+	peer, ok := intf.Peers()[pk]
+	if !ok {
+		return nil, &pb.Error{
+			Code:    pb.Error_ENOENT,
+			Message: "Peer not found",
+		}, nil
+	}
+
+	return peer, nil, nil
 }
