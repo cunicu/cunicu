@@ -48,9 +48,8 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 	defer top.Unsubscribe(ch)
 
 	for env := range ch {
-		err := stream.Send(env)
-		if err != nil && err != io.EOF {
-			s.logger.Error("Failed to receive offer", zap.Error(err))
+		if err := stream.Send(env); err != nil && err != io.EOF {
+			s.logger.Error("Failed to receive envelope", zap.Error(err))
 		}
 	}
 
@@ -58,12 +57,22 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 }
 
 func (s *Server) Publish(ctx context.Context, env *pb.SignalingEnvelope) (*pb.Error, error) {
-	pk, err := crypto.ParseKeyBytes(env.Receipient)
-	if err != nil {
-		return nil, fmt.Errorf("invalid key: %w", err)
+	var err error
+	var pkRecipient, pkSender crypto.Key
+
+	if pkRecipient, err = crypto.ParseKeyBytes(env.Recipient); err != nil {
+		return nil, fmt.Errorf("invalid recipient key: %w", err)
 	}
 
-	s.getTopic(&pk).Publish(env)
+	if pkSender, err = crypto.ParseKeyBytes(env.Sender); err != nil {
+		return nil, fmt.Errorf("invalid sender key: %w", err)
+	}
+
+	s.logger.Debug("Published envelope",
+		zap.Any("recipient", pkRecipient),
+		zap.Any("sender", pkSender))
+
+	s.getTopic(&pkRecipient).Publish(env)
 
 	return pb.Success, nil
 }

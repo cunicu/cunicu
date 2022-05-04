@@ -9,7 +9,7 @@ import "message.proto";
 
 message SignalingEnvelope {
     bytes sender = 1;
-    bytes receipient = 2;
+    bytes recipient = 2;
 
     EncryptedMessage contents = 3; // of type SignalingMessage
 }

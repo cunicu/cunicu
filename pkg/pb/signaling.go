@@ -32,9 +32,9 @@ func (e *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, erro
 
 func (e *SignalingMessage) Encrypt(kp *crypto.KeyPair) (*SignalingEnvelope, error) {
 	envp := &SignalingEnvelope{
-		Sender:     kp.Ours.PublicKey().Bytes(),
-		Receipient: kp.Theirs.Bytes(),
-		Contents:   &EncryptedMessage{},
+		Sender:    kp.Ours.PublicKey().Bytes(),
+		Recipient: kp.Theirs.Bytes(),
+		Contents:  &EncryptedMessage{},
 	}
 
 	return envp, envp.Contents.Marshal(e, kp)

@@ -74,9 +74,9 @@ type SignalingEnvelope struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Sender     []byte            `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Receipient []byte            `protobuf:"bytes,2,opt,name=receipient,proto3" json:"receipient,omitempty"`
-	Contents   *EncryptedMessage `protobuf:"bytes,3,opt,name=contents,proto3" json:"contents,omitempty"` // of type SignalingMessage
+	Sender    []byte            `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Recipient []byte            `protobuf:"bytes,2,opt,name=recipient,proto3" json:"recipient,omitempty"`
+	Contents  *EncryptedMessage `protobuf:"bytes,3,opt,name=contents,proto3" json:"contents,omitempty"` // of type SignalingMessage
 }
 
 func (x *SignalingEnvelope) Reset() {
@@ -118,9 +118,9 @@ func (x *SignalingEnvelope) GetSender() []byte {
 	return nil
 }
 
-func (x *SignalingEnvelope) GetReceipient() []byte {
+func (x *SignalingEnvelope) GetRecipient() []byte {
 	if x != nil {
-		return x.Receipient
+		return x.Recipient
 	}
 	return nil
 }

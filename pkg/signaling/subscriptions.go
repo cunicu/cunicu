@@ -34,13 +34,13 @@ func (s *SubscriptionsRegistry) NewMessage(env *pb.SignalingEnvelope) error {
 		return fmt.Errorf("invalid key: %w", err)
 	}
 
-	receipient, err := crypto.ParseKeyBytes(env.Receipient)
+	recipient, err := crypto.ParseKeyBytes(env.Recipient)
 	if err != nil {
 		return fmt.Errorf("invalid key: %w", err)
 	}
 
 	pkp := crypto.PublicKeyPair{
-		Ours:   receipient,
+		Ours:   recipient,
 		Theirs: sender,
 	}
 
