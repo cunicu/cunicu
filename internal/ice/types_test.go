@@ -5,7 +5,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	xice "riasc.eu/wice/internal/ice"
+	icex "riasc.eu/wice/internal/ice"
 )
 
 func TestCandidateTypeFromString(t *testing.T) {
@@ -15,7 +15,7 @@ func TestCandidateTypeFromString(t *testing.T) {
 		ice.CandidateTypePeerReflexive,
 		ice.CandidateTypeRelay,
 	} {
-		if ctp, err := xice.CandidateTypeFromString(ct.String()); err != nil || ctp != ct {
+		if ctp, err := icex.CandidateTypeFromString(ct.String()); err != nil || ctp != ct {
 			t.Fail()
 		}
 	}
@@ -28,7 +28,7 @@ func TestNetworkTypeFromString(t *testing.T) {
 		ice.NetworkTypeTCP4,
 		ice.NetworkTypeTCP6,
 	} {
-		if ntp, err := xice.NetworkTypeFromString(nt.String()); err != nil || ntp != nt {
+		if ntp, err := icex.NetworkTypeFromString(nt.String()); err != nil || ntp != nt {
 			t.Fail()
 		}
 	}
