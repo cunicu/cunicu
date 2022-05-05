@@ -45,7 +45,7 @@ func Simple(p *NetworkParams) (*Network, error) {
 			gopt.AddressIP("fc::1/64")),
 		gopt.Interface("eth0-r", sw),
 	); err != nil {
-		return nil, fmt.Errorf("fFailed to add link: %w", err)
+		return nil, fmt.Errorf("failed to add link: %w", err)
 	}
 
 	if err := n.AddLink(

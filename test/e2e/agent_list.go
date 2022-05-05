@@ -20,7 +20,7 @@ func (al AgentList) Start(args ...interface{}) error {
 	if err := al.ForEachAgent(func(a *Agent) error {
 		return a.Start(args...)
 	}); err != nil {
-		return fmt.Errorf("failed to start agent")
+		return fmt.Errorf("failed to start agent: %w", err)
 	}
 
 	return nil
