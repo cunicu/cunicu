@@ -1,6 +1,7 @@
-package ice
+package net
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net"
 	"time"
@@ -8,10 +9,11 @@ import (
 	"github.com/cilium/ebpf"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/mdlayher/socket"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
 	"golang.org/x/net/bpf"
-
-	"syscall"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -28,86 +30,159 @@ const (
 type Filter []bpf.Instruction
 
 type FilteredUDPConn struct {
-	fd int
+	conn4 *socket.Conn
+	conn6 *socket.Conn
 
-	localAddr net.UDPAddr
+	running4 bool
+	running6 bool
+
+	packets chan packet
+
+	localPort int
 
 	logger *zap.Logger
 }
 
-func (fuc *FilteredUDPConn) LocalAddr() net.Addr {
-	return &fuc.localAddr
+func (f *FilteredUDPConn) LocalAddr() net.Addr {
+	return &net.UDPAddr{
+		IP:   net.IPv4zero,
+		Port: f.localPort,
+	}
 }
 
-func (fuc *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err error) {
-	n, rAddr, err := syscall.Recvfrom(fuc.fd, buf, 0)
-	if err != nil {
+type packet struct {
+	N       int
+	Address unix.Sockaddr
+	Buffer  []byte
+	Error   error
+}
+
+func (f *FilteredUDPConn) read(conn *socket.Conn, running *bool) {
+	*running = true
+
+	for {
+		buf := make([]byte, 1500)
+		if n, ra, err := conn.Recvfrom(buf, 0); err == nil {
+			buf = buf[:n]
+			f.packets <- packet{n, ra, buf, err}
+		} else {
+			f.packets <- packet{n, ra, buf, err}
+			break
+		}
+	}
+
+	*running = false
+}
+
+func (f *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err error) {
+	// Wait for the next packet either from the IPv4/IPv6 connection
+	pkt := <-f.packets
+	if err, ok := pkt.Error.(net.Error); ok && err.Timeout() {
 		return -1, nil, err
 	}
 
-	rAddrIn4, ok := rAddr.(*syscall.SockaddrInet4)
-	if !ok {
-		return -1, nil, fmt.Errorf("invalid address type")
+	var ip net.IP
+	var decoder gopacket.Decoder
+
+	if sa, isIPv6 := pkt.Address.(*unix.SockaddrInet6); isIPv6 {
+		ip = sa.Addr[:]
+		decoder = layers.LayerTypeUDP
+	} else if sa, isIPv4 := pkt.Address.(*unix.SockaddrInet4); isIPv4 {
+		decoder = layers.LayerTypeIPv4
+		ip = sa.Addr[:]
+	} else {
+		return -1, nil, fmt.Errorf("received invalid address family")
 	}
 
-	packet := gopacket.NewPacket(buf[:n], layers.LayerTypeIPv4, gopacket.DecodeOptions{
+	f.logger.Debug("Received packet",
+		zap.Any("remote_address", ip),
+		zap.Any("buf", hex.EncodeToString(pkt.Buffer)),
+		zap.Any("decoder", decoder))
+
+	packet := gopacket.NewPacket(pkt.Buffer, decoder, gopacket.DecodeOptions{
 		Lazy:   true,
 		NoCopy: true,
 	})
+
+	logWr := zapio.Writer{
+		Log:   f.logger,
+		Level: zap.DebugLevel,
+	}
+	logWr.Write([]byte(packet.Dump()))
 
 	transport := packet.TransportLayer()
 	if transport == nil {
 		return -1, nil, fmt.Errorf("failed to decode packet")
 	}
+
 	udp, ok := transport.(*layers.UDP)
 	if !ok {
 		return -1, nil, fmt.Errorf("invalid layer type")
 	}
+
 	pl := packet.ApplicationLayer()
-
-	rUDPAddr := &net.UDPAddr{
-		IP:   rAddrIn4.Addr[:],
-		Port: int(udp.SrcPort),
-	}
-
 	n = len(pl.Payload())
 
 	copy(buf[:n], pl.Payload()[:])
 
-	// fuc.logger.Debug("Read data from socket",
-	// 	zap.Any("ra", rUDPAddr),
-	// 	zap.Int("len", n),
-	// 	zap.String("buf", hex.EncodeToString(buf[:n])),
-	// )
+	rUDPAddr := &net.UDPAddr{
+		IP:   ip,
+		Port: int(udp.SrcPort),
+	}
 
 	return n, rUDPAddr, nil
 }
 
-func (fuc *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error) {
+func (f *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error) {
+	f.logger.Info("helhelpdjklfhsdfkjhsldkfjghsdlkfgh")
+
 	rUDPAddr, ok := rAddr.(*net.UDPAddr)
 	if !ok {
 		return -1, fmt.Errorf("invalid address type")
 	}
 
-	rSockAddr := &syscall.SockaddrInet4{
-		Port: 0,
-	}
-	copy(rSockAddr.Addr[:], rUDPAddr.IP.To4())
-
 	buffer := gopacket.NewSerializeBuffer()
 	payload := gopacket.Payload(buf)
-	ip := &layers.IPv4{
-		Version:  4,
-		TTL:      64,
-		SrcIP:    fuc.localAddr.IP,
-		DstIP:    rUDPAddr.IP,
-		Protocol: layers.IPProtocolUDP,
-	}
+
 	udp := &layers.UDP{
-		SrcPort: layers.UDPPort(fuc.localAddr.Port),
+		SrcPort: layers.UDPPort(f.localPort),
 		DstPort: layers.UDPPort(rUDPAddr.Port),
 	}
-	udp.SetNetworkLayerForChecksum(ip)
+
+	var rSockAddr unix.Sockaddr
+	var nwLayer gopacket.NetworkLayer
+	var conn *socket.Conn
+
+	isIPv6 := rUDPAddr.IP.To4() == nil
+
+	f.logger.Info("Send packet", zap.String("addr", rUDPAddr.String()))
+
+	if isIPv6 {
+		sa := &unix.SockaddrInet6{}
+		copy(sa.Addr[:], rUDPAddr.IP.To16())
+
+		conn = f.conn6
+		rSockAddr = sa
+		nwLayer = &layers.IPv6{
+			SrcIP: net.IPv6zero,
+			DstIP: rUDPAddr.IP,
+		}
+	} else {
+		sa := &unix.SockaddrInet4{}
+		copy(sa.Addr[:], rUDPAddr.IP.To4())
+
+		conn = f.conn4
+		rSockAddr = sa
+		nwLayer = &layers.IPv4{
+			SrcIP: net.IPv4zero,
+			DstIP: rUDPAddr.IP,
+		}
+	}
+
+	if err := udp.SetNetworkLayerForChecksum(nwLayer); err != nil {
+		return -1, fmt.Errorf("failed to set network layer for checksum: %w", err)
+	}
+
 	seropts := gopacket.SerializeOptions{
 		ComputeChecksums: true,
 		FixLengths:       true,
@@ -116,57 +191,102 @@ func (fuc *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err erro
 		return -1, fmt.Errorf("failed serialize packet: %s", err)
 	}
 
-	syscall.Sendto(fuc.fd, buffer.Bytes(), 0, rSockAddr)
+	bufser := buffer.Bytes()
 
-	// fuc.logger.Debug("Written data to socket",
-	// 	zap.Any("ra", rUDPAddr),
-	// 	zap.Int("len", len(buf)),
-	// 	zap.String("buf", hex.EncodeToString(buf)),
-	// )
+	f.logger.Debug("Sending packet",
+		zap.Any("remote_address", rSockAddr),
+		zap.Any("buf", hex.EncodeToString(buf)))
 
-	return 0, nil
+	return 0, conn.Sendto(bufser, rSockAddr, 0)
 }
 
-func (fuc *FilteredUDPConn) ApplyFilter(prog *ebpf.Program) error {
+func (f *FilteredUDPConn) ApplyFilter(prog *ebpf.Program) error {
 	// Attach filter program
-	if err := syscall.SetsockoptInt(fuc.fd, syscall.SOL_SOCKET, SO_ATTACH_BPF, prog.FD()); err != nil {
+	if err := f.conn4.SetsockoptInt(unix.SOL_SOCKET, SO_ATTACH_BPF, prog.FD()); err != nil {
+		return fmt.Errorf("failed setsockopt(fd, SOL_SOCKET, SO_ATTACH_BPF): %w", err)
+	}
+
+	if err := f.conn6.SetsockoptInt(unix.SOL_SOCKET, SO_ATTACH_BPF, prog.FD()); err != nil {
 		return fmt.Errorf("failed setsockopt(fd, SOL_SOCKET, SO_ATTACH_BPF): %w", err)
 	}
 
 	return nil
 }
 
-func (fuc *FilteredUDPConn) SetDeadline(t time.Time) error {
-	// TODO
+func (f *FilteredUDPConn) setDeadlines(t time.Time, g func(*socket.Conn, time.Time) error) error {
+	if err := g(f.conn4, t); err != nil {
+		return fmt.Errorf("v4: %w", err)
+	}
+
+	if err := g(f.conn6, t); err != nil {
+		return fmt.Errorf("v6: %w", err)
+	}
+
+	if !f.running4 {
+		go f.read(f.conn4, &f.running4)
+	}
+
+	if !f.running6 {
+		go f.read(f.conn6, &f.running6)
+	}
+
 	return nil
 }
 
-func (fuc *FilteredUDPConn) SetReadDeadline(t time.Time) error {
-	// TODO
+func (f *FilteredUDPConn) SetDeadline(t time.Time) error {
+	return f.setDeadlines(t, (*socket.Conn).SetDeadline)
+}
+
+func (f *FilteredUDPConn) SetReadDeadline(t time.Time) error {
+	return f.setDeadlines(t, (*socket.Conn).SetReadDeadline)
+}
+
+func (f *FilteredUDPConn) SetWriteDeadline(t time.Time) error {
+	return f.setDeadlines(t, (*socket.Conn).SetWriteDeadline)
+}
+
+func (f *FilteredUDPConn) Close() error {
+	if err := f.conn4.Close(); err != nil {
+		return fmt.Errorf("v4: %w", err)
+	}
+
+	if err := f.conn6.Close(); err != nil {
+		return fmt.Errorf("v4: %w", err)
+	}
+
 	return nil
 }
 
-func (fuc *FilteredUDPConn) SetWriteDeadline(t time.Time) error {
-	// TODO
-	return nil
-}
+func NewFilteredUDPConn(lPort int) (*FilteredUDPConn, error) {
+	var err error
 
-func (fuc *FilteredUDPConn) Close() error {
-	// TODO
-	return nil
-}
-
-func NewFilteredUDPConn(lAddr net.UDPAddr) (fuc *FilteredUDPConn, err error) {
-	fuc = &FilteredUDPConn{
-		localAddr: lAddr,
+	f := &FilteredUDPConn{
+		localPort: lPort,
 		logger:    zap.L().Named("fuc"),
 	}
 
-	// Open a raw socket
-	fuc.fd, err = syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_UDP)
-	if err != nil {
-		panic(err)
+	// SOCK_RAW sockets on Linux can only listen on a single address family (IPv4/IPv6)
+	// This is different from normal SOCK_STREAM/SOCK_DGRAM sockets which for the case
+	// of AF_INET6 also automatically listen on AF_INET.
+	// Hence we need to open two independent sockets here.
+
+	if f.conn4, err = socket.Socket(unix.AF_INET, unix.SOCK_RAW, unix.IPPROTO_UDP, "raw_udp4", nil); err != nil {
+		return nil, fmt.Errorf("failed to open v4 raw socket: %w", err)
 	}
 
-	return fuc, nil
+	if f.conn6, err = socket.Socket(unix.AF_INET6, unix.SOCK_RAW, unix.IPPROTO_UDP, "raw_udp6", nil); err != nil {
+		return nil, fmt.Errorf("failed to open v6 raw socket: %w", err)
+	}
+
+	// fuc.conn4.Bind(&unix.SockaddrInet4{
+	// 	Port: fuc.localPort,
+	// 	Addr: ,
+	// })
+
+	f.packets = make(chan packet)
+
+	go f.read(f.conn4, &f.running4)
+	go f.read(f.conn6, &f.running6)
+
+	return f, nil
 }
