@@ -5,10 +5,10 @@ go 1.18
 require (
 	github.com/aead/siphash v1.0.1
 	github.com/cilium/ebpf v0.8.1
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/gopacket v1.1.19
-	github.com/google/nftables v0.0.0-20220221214239-211824995dcb
+	github.com/google/nftables v0.0.0-20220502152923-38a96768dbc6
 	github.com/ipfs/go-log/v2 v2.5.0
 	github.com/libp2p/go-libp2p v0.18.0
 	github.com/libp2p/go-libp2p-core v0.14.0
@@ -17,29 +17,29 @@ require (
 	github.com/libp2p/go-libp2p-tls v0.3.1 // indirect
 	github.com/multiformats/go-multiaddr v0.5.0
 	github.com/pion/dtls/v2 v2.1.3
-	github.com/pion/ice/v2 v2.2.2
+	github.com/pion/ice/v2 v2.2.6
 	github.com/pion/logging v0.2.2
 	github.com/pion/stun v0.3.5
 	github.com/pion/transport v0.13.0 // indirect
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.10.1
+	github.com/spf13/viper v1.11.0
 	github.com/stv0g/gont v0.3.0
-	github.com/vishvananda/netlink v1.1.1-0.20210924202909-187053b97868
+	github.com/vishvananda/netlink v1.2.0-beta
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	go.uber.org/zap v1.21.0
-	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
+	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
-	golang.zx2c4.com/wireguard v0.0.0-20220318042302-193cf8d6a5d6
-	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20220208144051-fde48d68ee68
-	google.golang.org/grpc v1.45.0
+	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
+	golang.zx2c4.com/wireguard v0.0.0-20220407013110-ef5c587f782d
+	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20220420130459-88a4932fb60b
+	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/ini.v1 v1.66.4
-	k8s.io/api v0.23.5 // indirect
-	k8s.io/apimachinery v0.23.5
-	k8s.io/client-go v0.23.5
+	k8s.io/api v0.24.0 // indirect
+	k8s.io/apimachinery v0.24.0
+	k8s.io/client-go v0.24.0
 	k8s.io/klog/v2 v2.60.1
 )
 
@@ -62,7 +62,6 @@ require (
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -168,20 +167,20 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
-	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
+	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	golang.org/x/tools v0.1.10 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	golang.zx2c4.com/wintun v0.0.0-20211104114900-415007cec224 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220322021311-435b647f9ef2 // indirect
+	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/kube-openapi v0.0.0-20220322033743-6a7b7046eec8 // indirect
+	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	kernel.org/pub/linux/libs/security/libcap/cap v1.2.63 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.63 // indirect
@@ -192,18 +191,28 @@ require (
 )
 
 require (
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
+	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
+	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/jsonreference v0.19.5 // indirect
+	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/gnostic v0.6.7 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/libp2p/go-libp2p-resource-manager v0.1.5 // indirect
 	github.com/libp2p/go-yamux/v3 v3.0.2 // indirect
+	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/marten-seemann/qtls-go1-18 v0.1.1 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/runtime-spec v1.0.2 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.0-beta.8 // indirect
 	github.com/raulk/clock v1.1.0 // indirect
 	github.com/raulk/go-watchdog v1.2.0 // indirect
 )
@@ -211,3 +220,5 @@ require (
 replace github.com/vishvananda/netlink => github.com/stv0g/netlink v1.1.1-gont
 
 replace github.com/stv0g/gont => ../gont
+
+replace github.com/pion/ice/v2 => ../pion/ice
