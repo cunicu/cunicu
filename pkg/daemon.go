@@ -3,11 +3,11 @@ package pkg
 import (
 	"fmt"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/cilium/ebpf/rlimit"
 	"go.uber.org/zap"
+	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/internal/config"
@@ -149,7 +149,7 @@ out:
 		case sig := <-signals:
 			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
 			switch sig {
-			case syscall.SIGUSR1:
+			case unix.SIGUSR1:
 				d.SyncAllInterfaces()
 			default:
 				break out

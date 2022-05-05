@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"runtime/pprof"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/go-logr/zapr"
 	glog "github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.org/x/sys/unix"
 	"google.golang.org/grpc/grpclog"
 	"k8s.io/klog/v2"
 	"riasc.eu/wice/internal/log"
@@ -64,7 +64,7 @@ func SetupRand() {
 
 func SetupSignals() chan os.Signal {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(ch, unix.SIGINT, unix.SIGTERM)
 
 	return ch
 }

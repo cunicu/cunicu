@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"syscall"
 
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
+	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal/config"
 	nl "riasc.eu/wice/pkg/netlink"
@@ -128,5 +128,5 @@ func WireguardModuleExists() bool {
 
 	err := netlink.LinkAdd(l)
 
-	return errors.Is(err, syscall.EINVAL)
+	return errors.Is(err, unix.EINVAL)
 }
