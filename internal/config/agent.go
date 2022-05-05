@@ -2,11 +2,9 @@ package config
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 
 	"github.com/pion/ice/v2"
-	"gopkg.in/yaml.v3"
 	icex "riasc.eu/wice/internal/ice"
 )
 
@@ -24,10 +22,10 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		return interfaceFilterRegex.Match([]byte(name))
+		return interfaceFilterRegex.MatchString(name)
 	}
 
-	// ICE URLS
+	// ICE URLs
 	cfg.Urls = []*ice.URL{}
 	for _, u := range c.GetStringSlice("ice.urls") {
 		up, err := ice.ParseURL(u)
@@ -113,13 +111,14 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 
 	if len(networkTypes) > 0 {
 		cfg.NetworkTypes = networkTypes
+	} else {
+		cfg.NetworkTypes = []ice.NetworkType{
+			ice.NetworkTypeTCP4,
+			ice.NetworkTypeUDP4,
+			ice.NetworkTypeTCP6,
+			ice.NetworkTypeUDP6,
+		}
 	}
 
 	return cfg, nil
-}
-
-func (c *Config) Dump(wr io.Writer) error {
-	enc := yaml.NewEncoder(wr)
-	enc.SetIndent(2)
-	return enc.Encode(c.AllSettings())
 }

@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -281,4 +283,10 @@ func (c *Config) Load() error {
 	}
 
 	return nil
+}
+
+func (c *Config) Dump(wr io.Writer) error {
+	enc := yaml.NewEncoder(wr)
+	enc.SetIndent(2)
+	return enc.Encode(c.AllSettings())
 }
