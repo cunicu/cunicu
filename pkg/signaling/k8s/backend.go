@@ -122,8 +122,6 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	b.logger.Info("Subscribe to messages from peer", zap.Any("kp", kp))
-
 	sub, err := b.NewSubscription(kp)
 	if err != nil {
 		return nil, fmt.Errorf("failed create subscription: %w", err)
