@@ -135,15 +135,16 @@ When `wice daemon` is started with a `--config-domain example.com` parameter it 
 STUN and TURN servers used for ICE are retrieved by SVR lookups and other ɯice settings are retrieved via TXT lookups: 
 
 ```
-_stun._udp.example.com.  3600 IN SRV 10 0 3478 stun.example.com
-_stuns._tcp.example.com. 3600 IN SRV 10 0 3478 stun.example.com
-_turn._udp.example.com.  3600 IN SRV 10 0 3478 turn.example.com
-_turns._tcp.example.com. 3600 IN SRV 10 0 5349 turn.example.com
+_stun._udp.example.com.  3600 IN SRV 10 0 3478 stun.example.com.
+_stuns._tcp.example.com. 3600 IN SRV 10 0 3478 stun.example.com.
+_turn._udp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
+_turn._tcp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
+_turns._tcp.example.com. 3600 IN SRV 10 0 5349 turn.example.com.
 
 example.com.             3600 IN TXT "wice-backend=p2p"
 example.com.             3600 IN TXT "wice-community=my-community-password"
 example.com.             3600 IN TXT "wice-ice-username=user1"
-example.com.             3600 IN TXT "wice-ice-passpassword=pass1"
+example.com.             3600 IN TXT "wice-ice-password=pass1"
 example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
 ```
 
