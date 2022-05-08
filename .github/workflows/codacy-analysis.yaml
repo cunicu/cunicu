@@ -29,6 +29,8 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
+          skip-uncommitted-files-check: true
+
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           upload: true
           
