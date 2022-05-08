@@ -2,7 +2,6 @@ package log
 
 import (
 	"github.com/go-logr/zapr"
-	glog "github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
@@ -39,9 +38,6 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 		}),
 	)
 	klog.SetLogger(zapr.NewLogger(klogger))
-
-	// Redirect libp2p / ipfs log to Zap
-	glog.SetPrimaryCore(logger.Core())
 
 	// Redirect gRPC log to Zap
 	glogger := logger.Named("grpc")

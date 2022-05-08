@@ -5,7 +5,6 @@ community: "some-common-password"
 backends:
 - grpc://localhost:8080?insecure=true
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
-- p2p:?mdns=true&dht=true&private=false&listen-address=/ip4/0.0.0.0/tcp/1234&bootstrap-peer=/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN&private-key=6MNeaexWoGcSKlpvJopeL0G39dqc6zrZUaZ3mbTEl1k=
 
 # Wireguard settings
 wg:

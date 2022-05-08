@@ -5,7 +5,6 @@
 -   Encrypt all signaling messages
 
 -   Plug-able signaling backends:
-    -   [libp2p](https://libp2p.io/)
     -   GRPC
     -   Kubernetes API-server
     -   WebSocket
