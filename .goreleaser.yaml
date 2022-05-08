@@ -64,10 +64,10 @@ dockers:
   goos: linux
   goarch: amd64
   image_templates:
-  - "stv0g/{{ .ProjectName }}:latest-amd64"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}-amd64"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-amd64"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-amd64"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-amd64"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-amd64"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
   build_flag_templates:
   - --platform=linux/amd64
   - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -84,10 +84,10 @@ dockers:
   goos: linux
   goarch: arm64
   image_templates:
-  - "stv0g/{{ .ProjectName }}:latest-arm64v8"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}-arm64v8"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-arm64v8"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-arm64v8"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-arm64v8"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
   build_flag_templates:
   - --platform=linux/arm64/v8
   - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -105,10 +105,10 @@ dockers:
   goarch: arm
   goarm: "6"
   image_templates:
-  - "stv0g/{{ .ProjectName }}:latest-armv6"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}-armv6"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv6"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv6"
+  - "ghcr.io/tv0g/{{ .ProjectName }}:latest-armv6"
+  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}-armv6"
+  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv6"
+  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv6"
   build_flag_templates:
   - --platform=linux/arm/v6
   - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -126,10 +126,10 @@ dockers:
   goarch: arm
   goarm: "7"
   image_templates:
-  - "stv0g/{{ .ProjectName }}:latest-armv7"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}-armv7"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv7"
-  - "stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv7"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-armv7"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-armv7"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv7"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv7"
   build_flag_templates:
   - --platform=linux/arm/v7
   - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -144,10 +144,10 @@ dockers:
 docker_manifests:
 - name_template: stv0g/{{ .ProjectName }}:{{ .Version }}
   image_templates:
-  - stv0g/{{ .ProjectName }}:{{ .Version }}-amd64
-  - stv0g/{{ .ProjectName }}:{{ .Version }}-armv6
-  - stv0g/{{ .ProjectName }}:{{ .Version }}-armv7
-  - stv0g/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - ghcr.io/stv0g/{{ .ProjectName }}:{{ .Version }}-amd64
+  - ghcr.io/stv0g/{{ .ProjectName }}:{{ .Version }}-armv6
+  - ghcr.io/stv0g/{{ .ProjectName }}:{{ .Version }}-armv7
+  - ghcr.io/stv0g/{{ .ProjectName }}:{{ .Version }}-arm64v8
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
