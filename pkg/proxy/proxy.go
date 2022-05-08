@@ -97,7 +97,7 @@ func (p *Proxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, err
 }
 
 func (p *Proxy) copy(dst io.Writer, src io.Reader) {
-	buf := make([]byte, 64*1024)
+	buf := make([]byte, maxSegmentSize)
 	for {
 		// if _, err := io.Copy(dst, src); err != nil {
 		// 	p.logger.Error("Failed copy", zap.Error(err))
@@ -109,7 +109,7 @@ func (p *Proxy) copy(dst io.Writer, src io.Reader) {
 			continue
 		}
 
-		n, err = dst.Write(buf[:n])
+		_, err = dst.Write(buf[:n])
 		if err != nil {
 			p.logger.Error("Failed to write", zap.Error(err))
 		}

@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-// ensureHandshake initiated a new Wireguard handshake if the last one is older than 5 seconds
-func (p *Peer) ensureHandshake() error {
+// EnsureHandshake initiated a new Wireguard handshake if the last one is older than 5 seconds
+func (p *Peer) EnsureHandshake() error {
 	// Return if the last handshake happed within the last 5 seconds
 	if time.Since(p.LastHandshakeTime) < 5*time.Second {
 		return nil
 	}
 
-	if err := p.initiateHandshake(); err != nil {
+	if err := p.InitiateHandshake(); err != nil {
 		return fmt.Errorf("failed to initiate handshake: %w", err)
 	}
 
 	return nil
 }
 
-// initiateHandshake sends a single packet towards the peer
+// InitiateHandshake sends a single packet towards the peer
 // which triggers Wireguard to initiate the handshake
-func (p *Peer) initiateHandshake() error {
+func (p *Peer) InitiateHandshake() error {
 	for time.Since(p.LastHandshakeTime) > 5*time.Second {
 		p.logger.Debug("Waiting for handshake")
 

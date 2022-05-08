@@ -23,7 +23,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Config Suite")
 }
 
-var logger = test.SetupLogging()
+var _ = test.SetupLogging()
 
 var _ = Describe("parse command line arguments", func() {
 	It("can parse a boolean argument like wg-userspace", func() {

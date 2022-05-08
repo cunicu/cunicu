@@ -22,11 +22,11 @@ jobs:
     
     - name: Install build and test dependencies
       run: |
-        go install golang.org/x/lint/golint@latest
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
         go install github.com/onsi/ginkgo/v2/ginkgo@latest
         go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+        go install honnef.co/go/tools/cmd/staticcheck@latest
 
     - name: Run wice build
       run: go build ./cmd/wice
@@ -34,21 +34,14 @@ jobs:
     - name: Run vet
       run: go vet --copylocks=false ./...
 
-    - name: Run lint
-      run: golint ./...
+    - name: Run staticcheck
+      run: staticcheck ./...
 
     - name: Run testing
       run: |
         sudo --preserve-env \
           env "PATH=$PATH" \
           make tests
-
-    - uses: reviewdog/action-staticcheck@v1
-      with:
-        github_token: ${{ secrets.github_token }}
-        reporter: github-pr-review
-        filter_mode: nofilter
-        fail_on_error: true
 
     - name: Run codacy-coverage-reporter
       uses: codacy/codacy-coverage-reporter-action@v1

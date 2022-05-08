@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 
+	//lint:ignore SA1019 We still need to find an alternative
 	"golang.org/x/crypto/openpgp"
 )
 

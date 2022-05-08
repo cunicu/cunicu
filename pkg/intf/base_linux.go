@@ -9,7 +9,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func (i *BaseInterface) addAddress(ip *net.IPNet) error {
+func (i *BaseInterface) AddAddress(ip *net.IPNet) error {
 	link := &netlink.Wireguard{
 		LinkAttrs: netlink.LinkAttrs{
 			Index: i.index,
@@ -29,7 +29,7 @@ func (i *BaseInterface) addAddress(ip *net.IPNet) error {
 	return nil
 }
 
-func (i *BaseInterface) addRoute(dst *net.IPNet) error {
+func (i *BaseInterface) AddRoute(dst *net.IPNet) error {
 	route := &netlink.Route{
 		LinkIndex: i.index,
 		Dst:       dst,

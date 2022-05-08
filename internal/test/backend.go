@@ -6,13 +6,11 @@ import (
 	"strings"
 	"sync"
 
+	g "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
-
-	// . "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 type peer struct {
@@ -42,13 +40,13 @@ func (p *peer) publish(o *peer) {
 	}
 
 	err := p.backend.Publish(context.Background(), kp, sentMsg)
-	Expect(err).To(Succeed(), "Failed to publish signaling message: %s", err)
+	g.Expect(err).To(g.Succeed(), "Failed to publish signaling message: %s", err)
 }
 
 func (p *peer) receive(o *peer) {
 	recvMsg := <-p.messages[o.id]
 
-	Expect(recvMsg.Description.Epoch).To(Equal(o.id), "Received invalid message")
+	g.Expect(recvMsg.Description.Epoch).To(g.Equal(o.id), "Received invalid message")
 }
 
 // TestBackend creates n peers with separate connections to the signaling backend u
@@ -60,7 +58,7 @@ func RunBackendTest(u string, n int) {
 	}
 
 	uri, err := url.Parse(u)
-	Expect(err).To(Succeed(), "Failed to parse URL: %s", err)
+	g.Expect(err).To(g.Succeed(), "Failed to parse URL: %s", err)
 
 	cfg := &signaling.BackendConfig{
 		URI: uri,
@@ -75,12 +73,12 @@ func RunBackendTest(u string, n int) {
 		}
 
 		p.backend, err = signaling.NewBackend(cfg, p.events)
-		Expect(err).To(Succeed(), "Failed to create backend: %s", err)
+		g.Expect(err).To(g.Succeed(), "Failed to create backend: %s", err)
 
 		defer p.backend.Close()
 
 		p.key, err = crypto.GeneratePrivateKey()
-		Expect(err).To(Succeed(), "Failed to generate private key: %s", err)
+		g.Expect(err).To(g.Succeed(), "Failed to generate private key: %s", err)
 
 		ps = append(ps, p)
 	}
@@ -97,7 +95,7 @@ func RunBackendTest(u string, n int) {
 			}
 
 			p.messages[o.id], err = p.backend.Subscribe(context.Background(), kp)
-			Expect(err).To(Succeed(), "Failed to subscribe: %s", err)
+			g.Expect(err).To(g.Succeed(), "Failed to subscribe: %s", err)
 		}
 	}
 

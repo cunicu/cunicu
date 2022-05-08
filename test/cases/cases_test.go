@@ -15,7 +15,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "E2E Test Case Suite")
 }
 
-var logger = test.SetupLogging()
+var _ = test.SetupLogging()
 
 var _ = BeforeSuite(func() {
 	if !util.HasCapabilities(cap.NET_ADMIN) {
