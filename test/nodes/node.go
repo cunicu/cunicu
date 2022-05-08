@@ -1,6 +1,6 @@
 //go:build linux
 
-package e2e
+package nodes
 
 import (
 	g "github.com/stv0g/gont/pkg"

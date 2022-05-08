@@ -1,4 +1,4 @@
-package e2e
+package nodes
 
 import (
 	"github.com/pion/ice/v2"
@@ -9,7 +9,6 @@ type RelayNode interface {
 	Node
 
 	WaitReady() error
-	IsReachable() bool
 	URLs() []*ice.URL
 	Username() string
 	Password() string

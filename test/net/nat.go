@@ -6,16 +6,16 @@ import (
 
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
-	"riasc.eu/wice/test/e2e"
+	"riasc.eu/wice/test/nodes"
 )
 
 func NAT(p *NetworkParams) (*Network, error) {
 	var (
 		n  *g.Network
 		sw *g.Switch
-		r  e2e.RelayNode
-		s  e2e.SignalingNode
-		al e2e.AgentList
+		r  nodes.RelayNode
+		s  nodes.SignalingNode
+		al nodes.AgentList
 
 		err error
 	)
@@ -28,15 +28,15 @@ func NAT(p *NetworkParams) (*Network, error) {
 		return nil, fmt.Errorf("failed to create switch: %w", err)
 	}
 
-	if r, err = e2e.NewCoturnNode(n, "r1"); err != nil {
+	if r, err = nodes.NewCoturnNode(n, "r1"); err != nil {
 		return nil, fmt.Errorf("failed to start relay: %w", err)
 	}
 
-	if s, err = e2e.NewGrpcSignalingNode(n, "s1"); err != nil {
+	if s, err = nodes.NewGrpcSignalingNode(n, "s1"); err != nil {
 		return nil, fmt.Errorf("fFailed to create signaling node: %w", err)
 	}
 
-	if al, err = e2e.NewAgents(n, p.NumAgents); err != nil {
+	if al, err = nodes.NewAgents(n, p.NumAgents); err != nil {
 		return nil, fmt.Errorf("failed to created nodes: %w", err)
 	}
 

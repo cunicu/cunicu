@@ -2,7 +2,7 @@ package net
 
 import (
 	g "github.com/stv0g/gont/pkg"
-	"riasc.eu/wice/test/e2e"
+	"riasc.eu/wice/test/nodes"
 )
 
 type NetworkFactory func(p *NetworkParams) (*Network, error)
@@ -18,9 +18,9 @@ type Network struct {
 	*g.Network
 
 	Switch         *g.Switch
-	SignalingNodes e2e.SignalingNodeList
-	Relays         e2e.RelayList
-	Agents         e2e.AgentList
+	SignalingNodes nodes.SignalingNodeList
+	Relays         nodes.RelayList
+	Agents         nodes.AgentList
 }
 
 func (n *Network) Close() error {

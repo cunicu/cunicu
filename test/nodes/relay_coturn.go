@@ -1,10 +1,11 @@
 //go:build linux
 
-package e2e
+package nodes
 
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"time"
@@ -64,6 +65,10 @@ func (c *CoturnNode) Password() string {
 
 func (c *CoturnNode) Start(_ ...interface{}) error {
 	var err error
+
+	// Delete previous log file
+	os.Remove(c.Config["log-file"])
+
 	var args = []interface{}{
 		"-n",
 	}
@@ -100,7 +105,7 @@ func (c *CoturnNode) Close() error {
 	return c.Stop()
 }
 
-func (c *CoturnNode) IsReachable() bool {
+func (c *CoturnNode) isReachable() bool {
 	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, stunPort)
 
 	return c.RunFunc(func() error {
@@ -114,12 +119,12 @@ func (c *CoturnNode) IsReachable() bool {
 }
 
 func (c *CoturnNode) WaitReady() error {
-	for tries := 10; !c.IsReachable(); tries-- {
+	for tries := 100; !c.isReachable(); tries-- {
 		if tries == 0 {
 			return fmt.Errorf("timed out")
 		}
 
-		time.Sleep(time.Second)
+		time.Sleep(20 * time.Millisecond)
 	}
 
 	return nil
@@ -135,12 +140,12 @@ func (c *CoturnNode) URLs() []*ice.URL {
 			Port:   stunPort,
 			Proto:  ice.ProtoTypeUDP,
 		},
-		{
-			Scheme: ice.SchemeTypeTURN,
-			Host:   host,
-			Port:   stunPort,
-			Proto:  ice.ProtoTypeUDP,
-		},
+		// {
+		// 	Scheme: ice.SchemeTypeTURN,
+		// 	Host:   host,
+		// 	Port:   stunPort,
+		// 	Proto:  ice.ProtoTypeUDP,
+		// },
 		{
 			Scheme: ice.SchemeTypeTURN,
 			Host:   host,

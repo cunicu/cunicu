@@ -1,14 +1,21 @@
-package e2e
+package nodes
 
 import (
 	"fmt"
+	"math/rand"
+	"net"
 	"net/url"
 	"os"
 	"os/exec"
+	"time"
 
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
+	"riasc.eu/wice/internal/test"
 )
+
+const portMin = 1<<15 + 1<<14
+const portMax = 1<<16 - 1
 
 type GrpcSignalingNode struct {
 	*g.Host
@@ -28,7 +35,7 @@ func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
 
 	t := &GrpcSignalingNode{
 		Host:   h,
-		port:   8080,
+		port:   rand.Intn(portMax-portMin) + portMin,
 		logger: zap.L().Named("signal." + name),
 	}
 
@@ -51,7 +58,7 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 		"--listen", fmt.Sprintf(":%d", s.port),
 	}
 
-	cmd, err := buildBinary(s.Network())
+	cmd, err := test.BuildBinary()
 	if err != nil {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}
@@ -80,12 +87,37 @@ func (s *GrpcSignalingNode) Close() error {
 	return s.Stop()
 }
 
-func (s *GrpcSignalingNode) URL() url.URL {
-	return url.URL{
+func (s *GrpcSignalingNode) URL() *url.URL {
+	return &url.URL{
 		Scheme:   "grpc",
-		Host:     fmt.Sprintf("127.0.0.1:%d", s.port),
+		Host:     fmt.Sprintf("%s:%d", s.Name(), s.port),
 		RawQuery: "insecure=true",
 	}
+}
+
+func (s *GrpcSignalingNode) isReachable() bool {
+	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, s.port)
+
+	return s.RunFunc(func() error {
+		conn, err := net.Dial("tcp6", hostPort)
+		if err != nil {
+			return err
+		}
+
+		return conn.Close()
+	}) == nil
+}
+
+func (s *GrpcSignalingNode) WaitReady() error {
+	for tries := 100; !s.isReachable(); tries-- {
+		if tries == 0 {
+			return fmt.Errorf("timed out")
+		}
+
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	return nil
 }
 
 // Options

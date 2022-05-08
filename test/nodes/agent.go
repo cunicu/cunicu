@@ -1,6 +1,6 @@
 //go:build linux
 
-package e2e
+package nodes
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
@@ -17,11 +16,16 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
+
+type AgentParams struct {
+	Arguments []interface{}
+}
 
 // Agent is a host running ɯice
 type Agent struct {
@@ -29,16 +33,14 @@ type Agent struct {
 
 	Address net.IPNet
 
-	ExtraArgs []interface{}
-	Command   *exec.Cmd
-	Client    *socket.Client
+	Command *exec.Cmd
+	Client  *socket.Client
 
 	WireguardPrivateKey    crypto.Key
 	WireguardClient        *wgctrl.Client
 	WireguardInterfaceName string
 	WireguardListenPort    int
 
-	ID              peer.ID
 	ListenAddresses []multiaddr.Multiaddr
 
 	logger zap.Logger
@@ -54,7 +56,6 @@ func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Age
 		Host:            h,
 		Address:         addr,
 		ListenAddresses: []multiaddr.Multiaddr{},
-		ExtraArgs:       []interface{}{},
 
 		WireguardListenPort:    51822,
 		WireguardInterfaceName: "wg0",
@@ -96,7 +97,7 @@ func NewAgents(n *g.Network, numNodes int, opts ...g.Option) (AgentList, error) 
 	return al, nil
 }
 
-func (a *Agent) Start(directArgs ...interface{}) error {
+func (a *Agent) Start(extraArgs []interface{}) error {
 	var err error
 
 	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
@@ -113,14 +114,13 @@ func (a *Agent) Start(directArgs ...interface{}) error {
 		"--log-file", logPath,
 		"--log-level", "debug",
 	}
-	args = append(args, directArgs...)
-	args = append(args, a.ExtraArgs...)
+	args = append(args, extraArgs...)
 
 	if err := os.RemoveAll(sockPath); err != nil {
 		log.Fatal(err)
 	}
 
-	cmd, err := buildBinary(a.Network())
+	cmd, err := test.BuildBinary()
 	if err != nil {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}
@@ -220,13 +220,47 @@ func (a *Agent) AddWireguardPeer(peer *Agent) error {
 }
 
 func (a *Agent) ConfigureWireguardInterface(cfg wgtypes.Config) error {
-	wgCfg := wg.Config{Config: cfg}
-	wgCfg.Dump(os.Stdout)
-
 	if err := a.RunFunc(func() error {
 		return a.WireguardClient.ConfigureDevice(a.WireguardInterfaceName, cfg)
 	}); err != nil {
 		return fmt.Errorf("failed to configure Wireguard link: %w", err)
+	}
+
+	return nil
+}
+
+func (a *Agent) WaitReady(p *Agent) error {
+	a.Client.WaitForPeerConnectionState(p.WireguardPrivateKey.PublicKey(), ice.ConnectionStateConnected)
+
+	return nil
+}
+
+func (a *Agent) PingWireguardPeer(peer *Agent) error {
+	os.Setenv("LC_ALL", "C") // fix issues with parsing of -W and -i options
+
+	if out, _, err := a.Run("ping", "-c", 2, "-w", 10, "-i", 0.5, peer.Address.IP); err != nil {
+		os.Stdout.Write(out)
+		os.Stdout.Sync()
+
+		return err
+	}
+
+	return nil
+}
+
+func (a *Agent) WaitBackendReady() error {
+	evt := a.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
+
+	if be, ok := evt.Event.(*pb.Event_BackendReady); ok {
+		for _, la := range be.BackendReady.ListenAddresses {
+			if ma, err := multiaddr.NewMultiaddr(la); err != nil {
+				return fmt.Errorf("failed to decode listen address: %w", err)
+			} else {
+				a.ListenAddresses = append(a.ListenAddresses, ma)
+			}
+		}
+	} else {
+		zap.L().Warn("Missing signaling details")
 	}
 
 	return nil
@@ -246,47 +280,6 @@ func (a *Agent) DumpWireguardInterfaces() error {
 
 		return nil
 	})
-}
-
-func (a *Agent) WaitReady(p *Agent) error {
-	a.Client.WaitForPeerConnectionState(p.WireguardPrivateKey.PublicKey(), ice.ConnectionStateConnected)
-
-	return nil
-}
-
-func (a *Agent) PingWireguardPeer(peer *Agent) error {
-	if out, _, err := a.Run("ping", "-c", 1, peer.Address.IP); err != nil {
-		os.Stdout.Write(out)
-
-		return err
-	}
-
-	return nil
-}
-
-func (a *Agent) WaitBackendReady() error {
-	var err error
-
-	evt := a.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
-
-	if be, ok := evt.Event.(*pb.Event_BackendReady); ok {
-		a.ID, err = peer.Decode(be.BackendReady.Id)
-		if err != nil {
-			return fmt.Errorf("failed to decode peer ID: %w", err)
-		}
-
-		for _, la := range be.BackendReady.ListenAddresses {
-			if ma, err := multiaddr.NewMultiaddr(la); err != nil {
-				return fmt.Errorf("failed to decode listen address: %w", err)
-			} else {
-				a.ListenAddresses = append(a.ListenAddresses, ma)
-			}
-		}
-	} else {
-		zap.L().Warn("Missing signaling details")
-	}
-
-	return nil
 }
 
 func (a *Agent) Dump() {

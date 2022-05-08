@@ -1,16 +1,14 @@
-package e2e
+package nodes
 
 import (
 	"fmt"
-	"net/url"
 
-	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.org/x/sync/errgroup"
 )
 
 type AgentList []*Agent
 
-func (al AgentList) Start(args ...interface{}) error {
+func (al AgentList) Start(args []interface{}) error {
 	if err := al.ForEachAgentPair(func(a, b *Agent) error {
 		return a.AddWireguardPeer(b)
 	}); err != nil {
@@ -18,7 +16,7 @@ func (al AgentList) Start(args ...interface{}) error {
 	}
 
 	if err := al.ForEachAgent(func(a *Agent) error {
-		return a.Start(args...)
+		return a.Start(args)
 	}); err != nil {
 		return fmt.Errorf("failed to start agent: %w", err)
 	}
@@ -75,31 +73,4 @@ func (al AgentList) PingPeers() error {
 	return al.ForEachAgentPair(func(a, b *Agent) error {
 		return a.PingWireguardPeer(b)
 	})
-}
-
-func (al AgentList) SignalingURL() (*url.URL, error) {
-	q := url.Values{}
-	// q.Add("dht", "false")
-	q.Add("mdns", "false")
-
-	for _, node := range al {
-		pi := &peer.AddrInfo{
-			ID:    node.ID,
-			Addrs: node.ListenAddresses,
-		}
-
-		mas, err := peer.AddrInfoToP2pAddrs(pi)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get p2p addresses")
-		}
-
-		for _, ma := range mas {
-			q.Add("bootstrap-peer", ma.String())
-		}
-	}
-
-	return &url.URL{
-		Scheme:   "p2p",
-		RawQuery: q.Encode(),
-	}, nil
 }

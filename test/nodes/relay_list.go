@@ -1,9 +1,8 @@
-package e2e
+package nodes
 
 import (
 	"fmt"
 
-	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
 )
 
@@ -42,14 +41,4 @@ func (nl *RelayList) Stop() error {
 	}
 
 	return nil
-}
-
-func (nl RelayList) URLs() []*ice.URL {
-	u := []*ice.URL{}
-
-	for _, r := range nl {
-		u = append(u, r.URLs()...)
-	}
-
-	return u
 }
