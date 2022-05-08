@@ -14,9 +14,9 @@
 
 <!-- [![DOI](https://zenodo.org/badge/413409974.svg)](https://zenodo.org/badge/latestdoi/413409974) -->
 
-**🚧 ɯice is currently still in an Alpha state and not usable yet**
+## 🚧 ɯice is currently still in an Alpha state and not usable yet
 
-ɯice is a user-space daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
+[ɯice][wice] is a user-space daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of Wireguard in a single binary for environments in which Wireguard kernel support has not landed yet.
 
@@ -55,7 +55,7 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 
 ## Funding acknowledgement
 
-<img alt="European Flag" src="./docs/images/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of `k8s-netem`  has been supported by the [ERIGrid 2.0](https://erigrid2.eu) project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
+<img alt="European Flag" src="./docs/images/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of `k8s-netem`  has been supported by the [ERIGrid 2.0][erigrid] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
 
 [wireguard]: https://wireguard.com
 
