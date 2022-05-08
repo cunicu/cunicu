@@ -5,58 +5,13 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"time"
 
-	"github.com/go-logr/zapr"
-	glog "github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
-	"google.golang.org/grpc/grpclog"
-	"k8s.io/klog/v2"
-	"riasc.eu/wice/internal/log"
 )
-
-func SetupLogging(level zapcore.Level, file string) *zap.Logger {
-	cfg := zap.NewDevelopmentConfig()
-
-	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.99")
-	cfg.DisableCaller = true
-	cfg.DisableStacktrace = true
-
-	if file != "" {
-		cfg.OutputPaths = append(cfg.OutputPaths, file)
-		path := filepath.Dir(file)
-		if err := os.MkdirAll(path, 0755); err != nil {
-			panic("failed to create log directory: " + err.Error())
-		}
-	}
-
-	logger, err := cfg.Build()
-	if err != nil {
-		panic(err)
-	}
-
-	// Redirect Kubernetes log to Zap
-	klogger := logger.Named("k8s")
-	klog.SetLogger(zapr.NewLogger(klogger))
-
-	// Redirect libp2p / ipfs log to Zap
-	glog.SetPrimaryCore(logger.Core())
-
-	// Redirect gRPC log to Zap
-	glogger := logger.Named("grpc")
-	grpclog.SetLoggerV2(log.NewGRPCLogger(glogger))
-
-	zap.RedirectStdLog(logger)
-	zap.ReplaceGlobals(logger)
-
-	return logger
-}
 
 func SetupRand() {
 	rand.Seed(time.Now().UTC().UnixNano())

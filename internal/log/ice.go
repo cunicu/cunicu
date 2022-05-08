@@ -1,4 +1,4 @@
-package ice
+package log
 
 import (
 	"fmt"
@@ -10,62 +10,62 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type LoggerFactory struct {
+type pionLoggerFactory struct {
 	Base *zap.Logger
 }
 
-type LeveledLogger struct {
+type pionLeveledLogger struct {
 	logging.LeveledLogger
 
 	*zap.SugaredLogger
 }
 
-func (l *LeveledLogger) Trace(msg string) {
+func (l *pionLeveledLogger) Trace(msg string) {
 	l.SugaredLogger.Debug(msg)
 }
 
-func (l *LeveledLogger) Tracef(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Tracef(format string, args ...interface{}) {
 	l.SugaredLogger.Debugf(format, args...)
 }
 
-func (l *LeveledLogger) Debug(msg string) {
+func (l *pionLeveledLogger) Debug(msg string) {
 	l.SugaredLogger.Debug(msg)
 }
 
-func (l *LeveledLogger) Debugf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Debugf(format string, args ...interface{}) {
 	l.SugaredLogger.Debugf(format, args...)
 }
 
-func (l *LeveledLogger) Info(msg string) {
+func (l *pionLeveledLogger) Info(msg string) {
 	l.SugaredLogger.Info(msg)
 }
 
-func (l *LeveledLogger) Infof(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Infof(format string, args ...interface{}) {
 	l.SugaredLogger.Infof(format, args...)
 }
 
-func (l *LeveledLogger) Warn(msg string) {
+func (l *pionLeveledLogger) Warn(msg string) {
 	l.SugaredLogger.Warn(msg)
 }
 
-func (l *LeveledLogger) Warnf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Warnf(format string, args ...interface{}) {
 	l.SugaredLogger.Warnf(format, args...)
 }
 
-func (l *LeveledLogger) Error(msg string) {
+func (l *pionLeveledLogger) Error(msg string) {
 	l.SugaredLogger.Error(msg)
 }
 
-func (l *LeveledLogger) Errorf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Errorf(format string, args ...interface{}) {
 	l.SugaredLogger.Errorf(format, args...)
 }
 
-func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
+func (f *pionLoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 	var lvl zapcore.Level
 	if lvlStr := os.Getenv("PION_LOG"); lvlStr != "" {
 		lvl.UnmarshalText([]byte(lvlStr))
 	} else {
-		lvl = zapcore.DebugLevel
+		lvl = zapcore.WarnLevel
 	}
 
 	loggerName := "ice"
@@ -82,14 +82,13 @@ func (f *LoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 		}),
 	)
 
-	return &LeveledLogger{
+	return &pionLeveledLogger{
 		SugaredLogger: logger.Sugar(),
 	}
 }
 
-func NewLogger(base *zap.Logger, scope string) logging.LeveledLogger {
-	lf := LoggerFactory{Base: base}
-	return lf.NewLogger(scope)
+func NewPionLoggerFactory(base *zap.Logger) *pionLoggerFactory {
+	return &pionLoggerFactory{Base: base}
 }
 
 type pionCore struct {

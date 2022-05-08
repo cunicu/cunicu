@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 	"riasc.eu/wice/internal"
+	"riasc.eu/wice/internal/log"
 )
 
 const (
@@ -84,5 +85,5 @@ func init() {
 }
 
 func setupLogging() {
-	logger = internal.SetupLogging(logLevel.Level, logFile)
+	logger = log.SetupLogging(logLevel.Level, []string{"stdout", logFile}, []string{"stderr", logFile})
 }
