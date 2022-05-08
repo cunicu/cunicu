@@ -3,13 +3,17 @@ package p2p_test
 import (
 	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/test"
+	_ "riasc.eu/wice/pkg/signaling/inprocess"
 )
 
-func TestMain(m *testing.M) {
-	test.Main(m)
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "LibP2P Backend Suite")
 }
 
-func TestBackendP2P(t *testing.T) {
-	test.TestBackend(t, "p2p:?private=true&mdns=true", 2)
-}
+var _ = Specify("libp2p backend", func() {
+	test.RunBackendTest("p2p:?private=true&mdns=true", 2)
+})
