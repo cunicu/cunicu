@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"os"
 	"sort"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/config"
+	"riasc.eu/wice/internal/errors"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
@@ -24,11 +26,14 @@ import (
 type BaseInterface struct {
 	wg.Device
 
+	index int
+
 	peers map[crypto.Key]*Peer
 
 	lastSync time.Time
 
 	backend signaling.Backend
+	nat     *proxy.NAT
 	config  *config.Config
 	client  *wgctrl.Client
 	events  chan *pb.Event
@@ -66,6 +71,10 @@ func (i *BaseInterface) Close() error {
 		if err := p.Close(); err != nil {
 			return fmt.Errorf("failed to close peer: %w", err)
 		}
+	}
+
+	if err := i.nat.Close(); err != nil {
+		return fmt.Errorf("failed to de-initialize NAT: %w", err)
 	}
 
 	return nil
@@ -189,7 +198,7 @@ func (i *BaseInterface) Sync(newDev *wgtypes.Device) error {
 		)
 		i.Device.ListenPort = newDev.ListenPort
 
-		// TODO: update proxy
+		i.onListenPortChange(i.ListenPort, newDev.ListenPort)
 	}
 
 	sort.Slice(newDev.Peers, wg.LessPeers(newDev.Peers))
@@ -254,7 +263,7 @@ func (i *BaseInterface) SyncConfig(cfgFilename string) error {
 		return fmt.Errorf("failed to sync interface config: %s", err)
 	}
 
-	// TODO: emulate wg-quick behaviour here?
+	// TODO: emulate wg-quick behavior here?
 
 	newDev, err := i.client.Device(i.Name())
 	if err != nil {
@@ -316,6 +325,10 @@ func (i *BaseInterface) onPeerModified(old, new *wgtypes.Peer, modified PeerModi
 	}
 }
 
+func (i *BaseInterface) onListenPortChange(old, new int) {
+	// TODO: update proxy: https://github.com/stv0g/wice/issues/13
+}
+
 func (i *BaseInterface) AddPeer(pk wgtypes.Key) error {
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
@@ -362,14 +375,22 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		events:  events,
 		config:  cfg,
 		logger:  logger,
-		peers:   make(map[crypto.Key]*Peer),
+		peers:   map[crypto.Key]*Peer{},
 	}
 
 	i.logger.Info("Creating new interface")
 
+	// Get immutable index of interface
+	gi, err := net.InterfaceByName(dev.Name)
+	if err != nil {
+		return BaseInterface{}, fmt.Errorf("failed to get interface: %w", err)
+	}
+
+	i.index = gi.Index
+
 	// Sync Wireguard device configuration with configuration file
-	if i.config.GetBool("wg.config_sync") {
-		cfg := fmt.Sprintf("%s/%s.conf", i.config.Get("wg.config_path"), i.Name())
+	if i.config.Wireguard.Config.Sync {
+		cfg := fmt.Sprintf("%s/%s.conf", i.config.Wireguard.Config.Path, i.Name())
 		if err := i.SyncConfig(cfg); err != nil {
 			return BaseInterface{}, fmt.Errorf("failed to sync interface configuration: %w", err)
 		}
@@ -385,13 +406,28 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 		return BaseInterface{}, fmt.Errorf("failed to assign link-local address: %w", err)
 	}
 
-	// Create per-interface UDPMuxes
-	if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil {
-		return BaseInterface{}, fmt.Errorf("failed to setup UDP mux: %w", err)
+	// Create per-interface UDPMux
+	if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil && err != errors.ErrNotSupported {
+		return BaseInterface{}, fmt.Errorf("failed to setup host UDP mux: %w", err)
 	}
 
-	if i.udpMuxSrflx, err = proxy.CreateUDPMuxSrflx(i.ListenPort + 1); err != nil {
-		return BaseInterface{}, fmt.Errorf("Failed to setup UDPSrflx mux: %w", err)
+	var lPort int
+	if i.udpMuxSrflx, lPort, err = proxy.CreateUDPMuxSrflx(); err != nil && err != errors.ErrNotSupported {
+		return BaseInterface{}, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
+	}
+
+	// Setup NAT
+	if i.config.Proxy.NFT {
+		ident := fmt.Sprintf("wice-if%d", i.index)
+		if i.nat, err = proxy.NewNAT(ident); err != nil && err != errors.ErrNotSupported {
+			return BaseInterface{}, fmt.Errorf("failed to setup NAT: %w", err)
+		}
+
+		// Redirect non-STUN traffic directed to UDPMuxSrfx to listen port
+		if err := i.nat.RedirectNonSTUN(lPort, i.ListenPort); err != nil {
+			return BaseInterface{}, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
+
+		}
 	}
 
 	i.events <- &pb.Event{

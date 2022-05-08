@@ -1,116 +1,76 @@
 package config
 
 import (
-	"fmt"
-	"regexp"
-
 	"github.com/pion/ice/v2"
-	icex "riasc.eu/wice/internal/ice"
 )
 
 func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	cfg := &ice.AgentConfig{
-		InsecureSkipVerify: c.GetBool("ice.insecure_skip_verify"),
-		Lite:               c.GetBool("ice.lite"),
-		PortMin:            uint16(c.GetUint("ice.port.min")),
-		PortMax:            uint16(c.GetUint("ice.port.max")),
-	}
-
-	interfaceFilterRegex, err := regexp.Compile(c.GetString("ice.interface_filter"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid ice.interface_filter config: %w", err)
+		InsecureSkipVerify: c.ICE.InsecureSkipVerify,
+		Lite:               c.ICE.Lite,
+		PortMin:            uint16(c.ICE.Port.Min),
+		PortMax:            uint16(c.ICE.Port.Max),
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		return interfaceFilterRegex.MatchString(name)
+		return c.ICE.InterfaceFilter.MatchString(name)
 	}
 
 	// ICE URLs
 	cfg.Urls = []*ice.URL{}
-	for _, u := range c.GetStringSlice("ice.urls") {
-		up, err := ice.ParseURL(u)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse ice.url: %s: %w", u, err)
+	for _, u := range c.ICE.URLs {
+		p := &u.URL
+
+		// Set ICE credentials for TURN/TURNS servers
+		if p.Scheme == ice.SchemeTypeTURN || p.Scheme == ice.SchemeTypeTURNS {
+			p.Username = c.ICE.Username
+			p.Password = c.ICE.Password
 		}
 
-		cfg.Urls = append(cfg.Urls, up)
+		cfg.Urls = append(cfg.Urls, p)
+
 	}
 
-	// Add default STUN/TURN servers
-	// Set ICE credentials
-	u := c.GetString("ice.username")
-	p := c.GetString("ice.password")
-	for _, q := range cfg.Urls {
-		if u != "" {
-			q.Username = u
-		}
-
-		if p != "" {
-			q.Password = p
-		}
+	if len(c.ICE.NAT1to1IPs) > 0 {
+		cfg.NAT1To1IPs = c.ICE.NAT1to1IPs
 	}
 
-	if c.IsSet("ice.nat_1to1_ips") {
-		cfg.NAT1To1IPs = c.GetStringSlice("ice.nat_1to1_ips")
+	if mbr := uint16(c.ICE.MaxBindingRequests); mbr > 0 {
+		cfg.MaxBindingRequests = &mbr
 	}
 
-	if c.IsSet("ice.max_binding_requests") {
-		i := uint16(c.GetInt("ice.max_binding_requests"))
-		cfg.MaxBindingRequests = &i
-	}
-
-	if c.GetBool("ice.mdns") {
+	if c.ICE.MDNS {
 		cfg.MulticastDNSMode = ice.MulticastDNSModeQueryAndGather
 	}
 
-	if c.IsSet("ice.disconnected_timeout") {
-		to := c.GetDuration("ice.disconnected_timeout")
+	if to := c.ICE.DisconnectedTimeout; to > 0 {
 		cfg.DisconnectedTimeout = &to
 	}
 
-	if c.IsSet("ice.failed_timeout") {
-		to := c.GetDuration("ice.failed_timeout")
+	if to := c.ICE.FailedTimeout; to > 0 {
 		cfg.FailedTimeout = &to
 	}
 
-	if c.IsSet("ice.keepalive_interval") {
-		to := c.GetDuration("ice.keepalive_interval")
+	if to := c.ICE.KeepaliveInterval; to > 0 {
 		cfg.KeepaliveInterval = &to
 	}
 
-	if c.IsSet("ice.check_interval") {
-		to := c.GetDuration("ice.check_interval")
+	if to := c.ICE.CheckInterval; to > 0 {
 		cfg.CheckInterval = &to
 	}
 
-	// Filter candidate types
-	candidateTypes := []ice.CandidateType{}
-	for _, value := range c.GetStringSlice("ice.candidate_types") {
-		ct, err := icex.CandidateTypeFromString(value)
-		if err != nil {
-			return nil, err
+	if len(c.ICE.CandidateTypes) > 0 {
+		cfg.CandidateTypes = []ice.CandidateType{}
+		for _, t := range c.ICE.CandidateTypes {
+			cfg.CandidateTypes = append(cfg.CandidateTypes, t.CandidateType)
 		}
-
-		candidateTypes = append(candidateTypes, ct)
 	}
 
-	if len(candidateTypes) > 0 {
-		cfg.CandidateTypes = candidateTypes
-	}
-
-	// Filter network types
-	networkTypes := []ice.NetworkType{}
-	for _, value := range c.GetStringSlice("ice.network_types") {
-		ct, err := icex.NetworkTypeFromString(value)
-		if err != nil {
-			return nil, err
+	if len(c.ICE.NetworkTypes) > 0 {
+		cfg.NetworkTypes = []ice.NetworkType{}
+		for _, t := range c.ICE.NetworkTypes {
+			cfg.NetworkTypes = append(cfg.NetworkTypes, t.NetworkType)
 		}
-
-		networkTypes = append(networkTypes, ct)
-	}
-
-	if len(networkTypes) > 0 {
-		cfg.NetworkTypes = networkTypes
 	} else {
 		cfg.NetworkTypes = []ice.NetworkType{
 			ice.NetworkTypeTCP4,

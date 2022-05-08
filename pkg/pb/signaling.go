@@ -8,22 +8,31 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 )
 
-func (e *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, error) {
+func (e *SignalingEnvelope) PublicKeyPair() (crypto.PublicKeyPair, error) {
 	sender, err := crypto.ParseKeyBytes(e.Sender)
 	if err != nil {
-		return nil, fmt.Errorf("invalid key: %w", err)
+		return crypto.PublicKeyPair{}, fmt.Errorf("invalid key: %w", err)
 	}
-	receipient, err := crypto.ParseKeyBytes(e.Receipient)
+
+	recipient, err := crypto.ParseKeyBytes(e.Recipient)
 	if err != nil {
-		return nil, fmt.Errorf("invalid key: %w", err)
+		return crypto.PublicKeyPair{}, fmt.Errorf("invalid key: %w", err)
 	}
 
-	if receipient != kp.Ours.PublicKey() {
-		return nil, errors.New("invalid receipient key")
+	return crypto.PublicKeyPair{
+		Ours:   recipient,
+		Theirs: sender,
+	}, nil
+}
+
+func (e *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, error) {
+	ekp, err := e.PublicKeyPair()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get keys from envelope: %w", err)
 	}
 
-	if sender != kp.Theirs {
-		return nil, errors.New("invalid sender key")
+	if ekp != kp.Public() {
+		return nil, errors.New("keypair mismatch")
 	}
 
 	msg := &SignalingMessage{}

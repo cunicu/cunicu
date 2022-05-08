@@ -1,33 +1,41 @@
 package proxy
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
-	icex "riasc.eu/wice/internal/ice"
+
+	"riasc.eu/wice/internal/log"
 )
 
-func CreateUDPMuxSrflx(listenPort int) (ice.UniversalUDPMux, error) {
-	addr := net.UDPAddr{
-		IP:   net.IPv4zero,
-		Port: listenPort,
-	}
-
-	conn, err := net.ListenUDP("udp", &addr)
+func CreateUDPMux(listenPort int) (ice.UDPMux, error) {
+	conn, err := createFilteredSTUNConnection(listenPort)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create filtered UDP connection: %w", err)
+		return nil, err
 	}
 
-	lf := &icex.LoggerFactory{
-		Base: zap.L(),
+	return ice.NewUDPMuxDefault(ice.UDPMuxParams{
+		UDPConn: conn,
+		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux"),
+	}), nil
+}
+
+func CreateUDPMuxSrflx() (ice.UniversalUDPMux, int, error) {
+	// We do not need a filtered connection here as we anyway need to redirect
+	// the non-STUN traffic via nftables
+
+	conn, err := net.ListenUDP("udp", nil)
+	if err != nil {
+		return nil, 0, err
 	}
+
+	lAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	mux := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: conn,
-		Logger:  lf.NewLogger("udpmux"),
+		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmuxsrflx"),
 	})
 
-	return mux, nil
+	return mux, lAddr.Port, nil
 }

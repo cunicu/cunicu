@@ -14,13 +14,17 @@ type BackendConfig struct {
 
 var defaultConfig = BackendConfig{
 	GenerateName: "wice-",
-	Namespace:    "riasc-system",
+	Namespace:    "wice",
 }
 
 func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	c.BackendConfig = *cfg
 
 	c.Kubeconfig = c.URI.Path
+
+	if ns := c.URI.Query().Get("namespace"); ns != "" {
+		c.Namespace = ns
+	}
 
 	return nil
 }

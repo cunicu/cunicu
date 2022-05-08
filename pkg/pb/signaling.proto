@@ -15,14 +15,7 @@ message SignalingEnvelope {
 }
 
 message SignalingMessage {
-    enum Type {
-        OFFER = 0;
-        ANSWER = 1;
-        CANDIDATE = 2;
-    }
-
-    Type type = 1;
-    SessionDescription description = 2;
+    SessionDescription description = 1;
 }
 
 message SubscribeParams {

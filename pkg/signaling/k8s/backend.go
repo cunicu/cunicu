@@ -132,7 +132,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.S
 		return nil, err
 	}
 
-	return sub.C, nil
+	return sub.Add(), nil
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {

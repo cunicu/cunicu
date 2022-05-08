@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"net/url"
 	"sync"
 	"time"
 
@@ -47,10 +48,15 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	if len(cfg.Backends) == 1 {
 		backend, err = signaling.NewBackend(&signaling.BackendConfig{
-			URI: cfg.Backends[0],
+			URI: &cfg.Backends[0].URL,
 		}, events)
 	} else {
-		backend, err = signaling.NewMultiBackend(cfg.Backends, &signaling.BackendConfig{}, events)
+		urls := []*url.URL{}
+		for _, u := range cfg.Backends {
+			urls = append(urls, &u.URL)
+		}
+
+		backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{}, events)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
@@ -84,8 +90,8 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Check if Wireguard interface can be created by the kernel
-	if !cfg.IsSet("wg.userspace") {
-		cfg.Set("wg.userspace", !intf.WireguardModuleExists())
+	if !cfg.Wireguard.Userspace {
+		cfg.Wireguard.Userspace = !intf.WireguardModuleExists()
 	}
 
 	return d, nil
@@ -109,9 +115,11 @@ func (d *Daemon) Run() error {
 	}
 
 	d.logger.Debug("Starting initial interface sync")
-	d.SyncAllInterfaces()
+	if err := d.SyncAllInterfaces(); err != nil {
+		return fmt.Errorf("initial sync failed: %w", err)
+	}
 
-	ticker := time.NewTicker(d.Config.GetDuration("watch_interval"))
+	ticker := time.NewTicker(d.Config.WatchInterval)
 
 out:
 	for {
@@ -188,8 +196,8 @@ func (d *Daemon) SyncAllInterfaces() error {
 	keepInterfaces := intf.InterfaceList{}
 
 	for _, device := range devices {
-		if !d.Config.WireguardInterfaceFilter.MatchString(device.Name) {
-			continue // Skip interfaces which dont match the filter
+		if !d.Config.Wireguard.InterfaceFilter.MatchString(device.Name) {
+			continue // Skip interfaces which do not match the filter
 		}
 
 		// Find matching interface
@@ -252,7 +260,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		return err
 	}
 
-	for _, interfName := range d.Config.WireguardInterfaces {
+	for _, interfName := range d.Config.Wireguard.Interfaces {
 		dev := devs.GetByName(interfName)
 		if dev != nil {
 			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", interfName))
@@ -260,7 +268,7 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		}
 
 		var interf intf.Interface
-		if d.Config.GetBool("wg.userspace") {
+		if d.Config.Wireguard.Userspace {
 			interf, err = intf.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		} else {
 			interf, err = intf.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)

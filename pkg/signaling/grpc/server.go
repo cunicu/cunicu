@@ -68,11 +68,18 @@ func (s *Server) Publish(ctx context.Context, env *pb.SignalingEnvelope) (*pb.Er
 		return nil, fmt.Errorf("invalid sender key: %w", err)
 	}
 
+	t := s.getTopic(&pkRecipient)
+
+	// Publishing a message to a topic in which we are the only subscriber is
+	// meaningless as the message will have no audience.
+	t.WaitForSubs(1)
+
+	t.Publish(env)
+
 	s.logger.Debug("Published envelope",
 		zap.Any("recipient", pkRecipient),
-		zap.Any("sender", pkSender))
-
-	s.getTopic(&pkRecipient).Publish(env)
+		zap.Any("sender", pkSender),
+		zap.Int("num_subs", len(t.subs)))
 
 	return pb.Success, nil
 }

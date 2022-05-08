@@ -3,6 +3,7 @@ package grpc
 import (
 	"sync"
 
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -31,12 +32,17 @@ func (s *topicRegistry) getTopic(pk *crypto.Key) *topic {
 type topic struct {
 	subs     map[chan *pb.SignalingEnvelope]bool
 	subsLock sync.RWMutex
+	subsCond *sync.Cond
 }
 
 func newTopic() *topic {
-	return &topic{
+	t := &topic{
 		subs: make(map[chan *pb.SignalingEnvelope]bool),
 	}
+
+	t.subsCond = sync.NewCond(&t.subsLock)
+
+	return t
 }
 
 func (t *topic) Publish(env *pb.SignalingEnvelope) {
@@ -56,6 +62,8 @@ func (t *topic) Subscribe() chan *pb.SignalingEnvelope {
 
 	t.subs[c] = true
 
+	t.subsCond.Broadcast()
+
 	return c
 }
 
@@ -65,4 +73,14 @@ func (t *topic) Unsubscribe(ch chan *pb.SignalingEnvelope) {
 
 	close(ch)
 	delete(t.subs, ch)
+}
+
+func (t *topic) WaitForSubs(num int) {
+	t.subsLock.Lock()
+	defer t.subsLock.Unlock()
+
+	for len(t.subs) < num {
+		zap.L().Info("Wait for subs", zap.Int("have", len(t.subs)), zap.Int("want", num))
+		t.subsCond.Wait()
+	}
 }

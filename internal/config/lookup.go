@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -10,39 +9,22 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func (c *Config) Lookup(name string) error {
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	g := errgroup.Group{}
 
-	haveError := false
-	errs := make(chan error)
+	g.Go(func() error { return c.lookupTXT(name) })
+	g.Go(func() error { return c.lookupSRV(name) })
 
-	go c.lookupTXT(name, errs, wg)
-	go c.lookupSRV(name, errs, wg)
-	go func() {
-		for err := range errs {
-			c.logger.Error("Failed to load autoconfig", zap.Error(err))
-			haveError = true
-		}
-	}()
-	wg.Wait()
-
-	if haveError {
-		return errors.New("failed to lookup configuration")
-	}
-
-	return nil
+	return g.Wait()
 }
 
-func (c *Config) lookupTXT(name string, errs chan error, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (c *Config) lookupTXT(name string) error {
 	rr, err := net.LookupTXT(name)
 	if err != nil {
-		errs <- err
-		return
+		return err
 	}
 
 	var re = regexp.MustCompile(`^(?m)wice-(.+?)=(.*)$`)
@@ -70,7 +52,14 @@ func (c *Config) lookupTXT(name string, errs chan error, wg *sync.WaitGroup) {
 	}
 
 	for txtName, settingName := range txtSettingMap {
-		c.setSingleTxtRecord(rrs, txtName, settingName)
+		if values, ok := rrs[txtName]; ok {
+			if len(values) > 1 {
+				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'wice-%s' as there are more than once records with this prefix", txtName))
+			} else {
+				// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
+				c.SetDefault(settingName, values[0])
+			}
+		}
 	}
 
 	if backends, ok := rrs["backend"]; ok {
@@ -81,19 +70,18 @@ func (c *Config) lookupTXT(name string, errs chan error, wg *sync.WaitGroup) {
 		for _, configFile := range configFiles {
 			if u, err := url.Parse(configFile); err == nil {
 				if err := c.MergeRemoteConfig(u); err != nil {
-					c.logger.Warn("Ignoring invalid URL in wice-config TXT record", zap.Error(err))
+					return fmt.Errorf("failed to fetch config file from URL in wice-config TXT record: %s", err)
 				}
 			} else {
-				c.logger.Warn("Ignoring invalid URL in wice-config TXT record", zap.Error(err))
-				return
+				return fmt.Errorf("failed to parse URL of config-file in wice-config TXT record: %s", err)
 			}
 		}
 	}
+
+	return nil
 }
 
-func (c *Config) lookupSRV(name string, errs chan error, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (c *Config) lookupSRV(name string) error {
 	svcs := map[string][]string{
 		"stun":  {"udp"},
 		"stuns": {"tcp"},
@@ -102,26 +90,37 @@ func (c *Config) lookupSRV(name string, errs chan error, wg *sync.WaitGroup) {
 	}
 
 	urls := []string{}
-	mu := &sync.Mutex{}
-	wg2 := &sync.WaitGroup{}
+	mu := sync.Mutex{}
+
+	g := errgroup.Group{}
+
+	reqs := 0
 	for svc, protos := range svcs {
 		for _, proto := range protos {
-			wg2.Add(1)
-			go func(svc, proto string) {
-				defer wg2.Done()
-				if us, err := lookupICEUrlSRV(name, svc, proto); err == nil {
+			reqs++
+			s := svc
+			p := proto
+			g.Go(func() error {
+				if us, err := lookupICEUrlSRV(name, s, p); err != nil {
+					return err
+				} else {
 					mu.Lock()
 					urls = append(urls, us...)
 					mu.Unlock()
+					return nil
 				}
-			}(svc, proto)
+			})
 		}
 	}
 
-	wg2.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
 
-	// We use SetDefault here as we dont want to overwrite user-provided settings with settings gathered via DNS
+	// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
 	c.SetDefault("ice.urls", urls)
+
+	return nil
 }
 
 func lookupICEUrlSRV(name, svc, proto string) ([]string, error) {
@@ -142,15 +141,4 @@ func lookupICEUrlSRV(name, svc, proto string) ([]string, error) {
 	}
 
 	return urls, nil
-}
-
-func (c *Config) setSingleTxtRecord(txtRecords map[string][]string, txtName string, settingName string) {
-	if values, ok := txtRecords[txtName]; ok {
-		if len(values) > 1 {
-			c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'wice-%s' as there are more than once records with this prefix", txtName))
-		} else {
-			// We use SetDefault here as we dont want to overwrite user-provided settings with settings gathered via DNS
-			c.SetDefault(settingName, values[0])
-		}
-	}
 }

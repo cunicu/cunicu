@@ -1,7 +1,6 @@
 package net
 
 import (
-	"encoding/hex"
 	"fmt"
 	"net"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/mdlayher/socket"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapio"
 	"golang.org/x/net/bpf"
 	"golang.org/x/sys/unix"
 )
@@ -94,21 +92,22 @@ func (f *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err error)
 		return -1, nil, fmt.Errorf("received invalid address family")
 	}
 
-	f.logger.Debug("Received packet",
-		zap.Any("remote_address", ip),
-		zap.Any("buf", hex.EncodeToString(pkt.Buffer)),
-		zap.Any("decoder", decoder))
-
 	packet := gopacket.NewPacket(pkt.Buffer, decoder, gopacket.DecodeOptions{
 		Lazy:   true,
 		NoCopy: true,
 	})
 
-	logWr := zapio.Writer{
-		Log:   f.logger,
-		Level: zap.DebugLevel,
-	}
-	logWr.Write([]byte(packet.Dump()))
+	// f.logger.Debug("Received packet",
+	// 	zap.Any("remote_address", ip),
+	// 	zap.Any("buf", hex.EncodeToString(pkt.Buffer)),
+	// 	zap.Any("decoder", decoder),
+	// )
+
+	// logWr := zapio.Writer{
+	// 	Log:   f.logger,
+	// 	Level: zap.DebugLevel,
+	// }
+	// logWr.Write([]byte(packet.Dump()))
 
 	transport := packet.TransportLayer()
 	if transport == nil {
@@ -134,8 +133,6 @@ func (f *FilteredUDPConn) ReadFrom(buf []byte) (n int, addr net.Addr, err error)
 }
 
 func (f *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error) {
-	f.logger.Info("helhelpdjklfhsdfkjhsldkfjghsdlkfgh")
-
 	rUDPAddr, ok := rAddr.(*net.UDPAddr)
 	if !ok {
 		return -1, fmt.Errorf("invalid address type")
@@ -154,8 +151,6 @@ func (f *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error)
 	var conn *socket.Conn
 
 	isIPv6 := rUDPAddr.IP.To4() == nil
-
-	f.logger.Info("Send packet", zap.String("addr", rUDPAddr.String()))
 
 	if isIPv6 {
 		sa := &unix.SockaddrInet6{}
@@ -193,9 +188,9 @@ func (f *FilteredUDPConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error)
 
 	bufser := buffer.Bytes()
 
-	f.logger.Debug("Sending packet",
-		zap.Any("remote_address", rSockAddr),
-		zap.Any("buf", hex.EncodeToString(buf)))
+	// f.logger.Debug("Sending packet",
+	// 	zap.Any("remote_address", rSockAddr),
+	// 	zap.Any("buf", hex.EncodeToString(buf)))
 
 	return 0, conn.Sendto(bufser, rSockAddr, 0)
 }

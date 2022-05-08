@@ -1,98 +1,141 @@
 package proxy
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net"
-	"runtime"
 
+	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 )
 
-type ProxyType int
-
-type UpdateEndpointCb func(addr *net.UDPAddr) error
-
 const (
-	TypeInvalid ProxyType = iota
-	TypeAuto
-	TypeUser
-	TypeNFTables
-	TypeEBPF
-
 	StunMagicCookie uint32 = 0x2112A442
+
+	maxSegmentSize = (1 << 16) - 1
 )
 
-type Proxy interface {
-	io.Closer
+type Proxy struct {
+	listenPort int
 
-	Type() ProxyType
+	nat *NAT
+
+	iceConn  *ice.Conn
+	userConn *net.UDPConn
+
+	withEBPF bool
+	withNFT  bool
+
+	logger *zap.Logger
 }
 
-type BaseProxy struct {
-	ListenPort int
-	Ident      string
-	logger     *zap.Logger
-}
-
-func CheckNFTablesSupport() bool {
-	return runtime.GOOS == "linux"
-}
-
-func CheckEBPFSupport() bool {
-	return runtime.GOOS == "linux"
-}
-
-func ProxyTypeFromString(typ string) (ProxyType, error) {
-	switch typ {
-	case "auto":
-		return TypeAuto, nil
-	case "user":
-		return TypeUser, nil
-	case "nftables":
-		return TypeNFTables, nil
-	case "ebpf":
-		return TypeEBPF, nil
-	default:
-		return -1, fmt.Errorf("invalid proxy type: %s", typ)
-	}
-}
-
-func (pt ProxyType) String() string {
-	switch pt {
-	case TypeAuto:
-		return "auto"
-	case TypeUser:
-		return "user"
-	case TypeNFTables:
-		return "nftables"
-	case TypeEBPF:
-		return "ebpf"
+func NewProxy(nat *NAT, listenPort int, withEBPF, withNFT bool) (*Proxy, error) {
+	p := &Proxy{
+		nat:        nat,
+		listenPort: listenPort,
+		withEBPF:   withEBPF,
+		withNFT:    withNFT,
+		logger:     zap.L().Named("proxy"),
 	}
 
-	return "invalid"
+	return p, nil
 }
 
-func AutoProxy() ProxyType {
-	if CheckEBPFSupport() {
-		return TypeEBPF
-	} else if CheckNFTablesSupport() {
-		return TypeNFTables
+func (p *Proxy) Close() error {
+	if p.userConn != nil {
+		if err := p.userConn.Close(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *Proxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
+	// By default we proxy through the userspace
+	var ep *net.UDPAddr = nil
+
+	if cp.Local.Type() == ice.CandidateTypeHost && p.withEBPF {
+		ep = &net.UDPAddr{
+			IP:   net.ParseIP(cp.Remote.Address()),
+			Port: cp.Remote.Port(),
+		}
+	} else if cp.Local.Type() == ice.CandidateTypeServerReflexive && p.withNFT {
+		ep = &net.UDPAddr{
+			IP:   net.ParseIP(cp.Remote.Address()),
+			Port: cp.Remote.Port(),
+		}
+
+		// Update SNAT set for UDPMuxSrflx
+		if err := p.nat.MasqueradeSourcePort(p.listenPort, cp.Local.Port(), ep); err != nil {
+			return nil, err
+		}
 	} else {
-		return TypeUser
+		// We cant to anything for prfx and relay candidates.
+		// Let them pass through the userspace connection
+
+		// We create the user connection only on demand to avoid opening unused sockets
+		if p.userConn == nil {
+			if err := p.setupUserConn(conn); err != nil {
+				return nil, fmt.Errorf("failed to setup user connection: %w", err)
+			}
+		}
+
+		// Start copying if the underlying ice.Conn has changed
+		if conn != p.iceConn {
+			p.iceConn = conn
+
+			// Bi-directional copy between ICE and loopback UDP sockets
+			go p.copy(conn, p.userConn)
+			go p.copy(p.userConn, conn)
+		}
+
+		ep = p.userConn.LocalAddr().(*net.UDPAddr)
+	}
+
+	return ep, nil
+}
+
+func (p *Proxy) copy(dst io.Writer, src io.Reader) {
+	buf := make([]byte, 64*1024)
+	for {
+		// if _, err := io.Copy(dst, src); err != nil {
+		// 	p.logger.Error("Failed copy", zap.Error(err))
+		// }
+
+		n, err := src.Read(buf)
+		if err != nil {
+			p.logger.Error("Failed to read", zap.Error(err))
+			continue
+		}
+
+		n, err = dst.Write(buf[:n])
+		if err != nil {
+			p.logger.Error("Failed to write", zap.Error(err))
+		}
 	}
 }
 
-func NewProxy(pt ProxyType, ident string, listenPort int, cb UpdateEndpointCb, conn net.Conn) (Proxy, error) {
-	switch pt {
-	case TypeUser:
-		return NewUserProxy(ident, listenPort, cb, conn)
-	case TypeNFTables:
-		return NewNFTablesProxy(ident, listenPort, cb, conn)
-	case TypeEBPF:
-		return NewEBPFProxy(ident, listenPort, cb, conn)
+func (p *Proxy) setupUserConn(iceConn *ice.Conn) error {
+	var err error
+
+	// User-space proxying
+	rAddr := net.UDPAddr{
+		IP:   net.IPv6loopback,
+		Port: int(p.listenPort),
+	}
+	lAddr := net.UDPAddr{
+		IP:   net.IPv6loopback,
+		Port: 0, // choose randomly
 	}
 
-	return nil, errors.New("unknown proxy type")
+	if p.userConn, err = net.DialUDP("udp", &lAddr, &rAddr); err != nil {
+		return err
+	}
+
+	p.logger.Info("Setup user-space proxy",
+		zap.Any("localAddress", p.userConn.LocalAddr()),
+		zap.Any("remoteAddress", p.userConn.RemoteAddr()))
+
+	return nil
 }
