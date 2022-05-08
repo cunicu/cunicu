@@ -90,7 +90,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.S
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
 	env, err := msg.Encrypt(kp)
 	if err != nil {
-		return fmt.Errorf("failed to encryt message: %w", err)
+		return fmt.Errorf("failed to encrypt message: %w", err)
 	}
 
 	if _, err = b.client.Publish(ctx, env); err != nil {
