@@ -37,13 +37,16 @@ jobs:
     - name: Run staticcheck
       run: staticcheck ./...
 
-    - name: Run testing
-      run: |
-        sudo --preserve-env \
-          env "PATH=$PATH" \
-          make tests
+    - name: Run root-less tests
+      run: make tests
 
-    - name: Run codacy-coverage-reporter
+    # - name: Run tests requiring root access
+    #   run: |
+    #     sudo --preserve-env \
+    #       env "PATH=$PATH" \
+    #       make tests
+
+    - name: Report test coverage to Codacy
       uses: codacy/codacy-coverage-reporter-action@v1
       env:
         CODACY_REPORTER_TMP_FOLDER: .codacy
