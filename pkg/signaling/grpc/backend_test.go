@@ -2,22 +2,46 @@ package grpc_test
 
 import (
 	"net"
+	"net/url"
 	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/pkg/signaling/grpc"
 )
 
-func TestBackend(t *testing.T) {
-	l, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		t.Fatalf("Failed to listen: %s", err)
-	}
-
-	// Start local dummy gRPC server
-	svr := grpc.NewServer()
-	go svr.Serve(l)
-	defer svr.Stop()
-
-	test.TestBackend(t, "grpc://127.0.0.1:8080?insecure=true", 10)
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "gRPC Backend Suite")
 }
+
+var _ = Describe("gRPC backend", func() {
+	var svr *grpc.Server
+	var l *net.TCPListener
+
+	BeforeEach(func() {
+		var err error
+		l, err = net.ListenTCP("tcp", &net.TCPAddr{
+			IP: net.IPv6loopback,
+		})
+		Expect(err).To(Succeed(), "Failed to listen: %s", err)
+
+		// Start local dummy gRPC server
+		svr = grpc.NewServer()
+		go svr.Serve(l)
+	})
+
+	It("works", func() {
+		u := url.URL{
+			Scheme:   "grpc",
+			Host:     l.Addr().String(),
+			RawQuery: "insecure=true",
+		}
+		test.RunBackendTest(u.String(), 10)
+	})
+
+	AfterEach(func() {
+		svr.Stop()
+	})
+})

@@ -30,7 +30,6 @@ func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
 
 func GenerateSignalingMessage() *pb.SignalingMessage {
 	return &pb.SignalingMessage{
-		Type: pb.SignalingMessage_OFFER,
 		Description: &pb.SessionDescription{
 			Epoch: rand.Int63(),
 		},

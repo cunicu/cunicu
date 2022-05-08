@@ -6,14 +6,20 @@ import (
 
 	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/signaling/p2p"
+	"riasc.eu/wice/pkg/signaling/inprocess"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestNewBackend(t *testing.T) {
-	uri, err := url.Parse("p2p:")
-	if err != nil {
-		t.Fatalf("Failed to parse URL: %s", err)
-	}
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Signaling Suite")
+}
+
+var _ = It("can create new a new backend", func() {
+	uri, err := url.Parse("inprocess:")
+	Expect(err).To(Succeed(), "Failed to parse URL: %s", err)
 
 	events := log.NewEventLogger()
 
@@ -22,11 +28,8 @@ func TestNewBackend(t *testing.T) {
 	}
 
 	b, err := signaling.NewBackend(cfg, events)
-	if err != nil {
-		t.Fatalf("Failed to create new backend: %s", err)
-	}
+	Expect(err).To(Succeed(), "Failed to create new backend: %s", err)
 
-	if _, ok := b.(*p2p.Backend); !ok {
-		t.Fail()
-	}
-}
+	_, isInprocessBackend := b.(*inprocess.Backend)
+	Expect(isInprocessBackend).To(BeTrue())
+})

@@ -1,27 +1,40 @@
 package wg_test
 
 import (
-	"testing"
-
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/wg"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestCmpPeersEqual(t *testing.T) {
-	a := wgtypes.Peer{}
-	b := wgtypes.Peer{}
+var _ = Describe("peer compare", func() {
 
-	if wg.CmpPeers(&a, &a) != 0 {
-		t.Fail()
-	}
+	When("equal", func() {
+		var a wgtypes.Peer
 
-	var err error
-	b.PublicKey, err = wgtypes.GenerateKey()
-	if err != nil {
-		t.Fail()
-	}
+		BeforeEach(func() {
+			a = wgtypes.Peer{}
+		})
 
-	if wg.CmpPeers(&a, &b) >= 0 {
-		t.Fail()
-	}
-}
+		It("works", func() {
+			Expect(wg.CmpPeers(&a, &a)).To(BeZero())
+		})
+	})
+
+	When("unequal", func() {
+		var a, b wgtypes.Peer
+
+		BeforeEach(func() {
+			a = wgtypes.Peer{}
+			b = wgtypes.Peer{}
+
+			k, _ := wgtypes.GenerateKey()
+			b.PublicKey = k
+		})
+
+		It("works", func() {
+			Expect(wg.CmpPeers(&a, &b)).NotTo(BeZero())
+		})
+	})
+})

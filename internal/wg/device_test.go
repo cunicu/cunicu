@@ -3,12 +3,14 @@ package wg_test
 import (
 	"bytes"
 	"strings"
-	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/wg"
 )
 
-var config = `[Interface]
+var _ = Context("device", func() {
+	const config = `[Interface]
 PrivateKey = 6Hw0A9Cv0LuCzbdwxPsrmW8oPvOyiyVelwH2pqKlAFE=
 ListenPort = 51823
 FwMark     = 4096
@@ -30,20 +32,16 @@ PersistentKeepalive = 25
 
 `
 
-func TestDeviceConfig(t *testing.T) {
-	rd := strings.NewReader(config)
+	Specify("check config parsing and serialization", func() {
+		rd := strings.NewReader(config)
 
-	cfg, err := wg.ParseConfig(rd, "")
-	if err != nil {
-		t.Fatalf("failed to parse config: %s", err)
-	}
+		cfg, err := wg.ParseConfig(rd, "")
+		Expect(err).To(Succeed(), "failed to parse config: %s", err)
 
-	wr := &bytes.Buffer{}
-	if err := cfg.Dump(wr); err != nil {
-		t.Fatalf("failed to dump config: %s", err)
-	}
+		wr := &bytes.Buffer{}
+		err = cfg.Dump(wr)
+		Expect(err).To(Succeed(), "failed to dump config: %s", err)
 
-	if wr.String() != config {
-		t.Errorf("configs not equal:\n%s\n%s", config, wr.String())
-	}
-}
+		Expect(wr.String()).To(Equal(config), "configs not equal:\n%s\n%s", config, wr.String())
+	})
+})

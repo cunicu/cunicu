@@ -3,11 +3,17 @@ package inprocess_test
 import (
 	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/test"
-
 	_ "riasc.eu/wice/pkg/signaling/inprocess"
 )
 
-func TestBackendInProcess(t *testing.T) {
-	test.TestBackend(t, "inprocess", 10)
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "In-Process Backend Suite")
 }
+
+var _ = Specify("inprocess backend", func() {
+	test.RunBackendTest("inprocess", 10)
+})

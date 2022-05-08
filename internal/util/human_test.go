@@ -1,62 +1,46 @@
 package util_test
 
 import (
-	"testing"
 	"time"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/util"
 )
 
-func TestPrettyDuration(t *testing.T) {
-	if util.PrettyDuration(5*time.Hour+15*time.Minute+time.Second, false) != "5 hours, 15 minutes, 1 second" {
-		t.Fail()
-	}
+var _ = Context("duration", func() {
+	DescribeTable("test", func(dur time.Duration, output string) {
+		Expect(util.PrettyDuration(dur, false)).To(Equal(output))
+	},
+		Entry("plural", 5*time.Hour+15*time.Minute+time.Second, "5 hours, 15 minutes, 1 second"),
+		Entry("singular", 0*time.Second, ""), // TODO: is this really desired?
 
-	if util.PrettyDuration(0, false) != "" {
-		t.Fail()
-	}
-}
+	)
+})
 
-func TestAgo(t *testing.T) {
-	s := time.Now()
+var _ = Specify("ago", func() {
+	now := time.Now()
 
-	if util.Ago(s, false) != "Now" {
-		t.Fail()
-	}
+	Expect(util.Ago(now, false)).To(Equal("Now"))
+	Expect(util.Ago(now.Add(-time.Hour), false)).To(Equal("1 hour ago"))
+	Expect(util.Ago(now.Add(-time.Hour-10*time.Minute), false)).To(Equal("1 hour, 10 minutes ago"))
+})
 
-	s = s.Add(-time.Hour)
+var _ = Context("bytes", func() {
+	DescribeTable("test", func(bytes int, output string) {
+		Expect(util.PrettyBytes(int64(bytes), false)).To(Equal(output))
+	},
+		Entry("without SI suffix", 500, "500 B"),
+		Entry("without SI suffix", 1536, "1.50 KiB"),
+		Entry("without SI suffix", 1572864, "1.50 MiB"),
+	)
+})
 
-	if util.Ago(s, false) != "1 hour ago" {
-		t.Errorf("%s", util.Ago(s, false))
-	}
-
-	s = s.Add(-10 * time.Minute)
-
-	if util.Ago(s, false) != "1 hour, 10 minutes ago" {
-		t.Errorf("%s", util.Ago(s, false))
-	}
-}
-
-func TestPrettyBytes(t *testing.T) {
-	if util.PrettyBytes(500, false) != "500 B" {
-		t.Fail()
-	}
-
-	if util.PrettyBytes(1536, false) != "1.50 KiB" {
-		t.Fail()
-	}
-
-	if util.PrettyBytes(1572864, false) != "1.50 MiB" {
-		t.Fail()
-	}
-}
-
-func TestEvery(t *testing.T) {
-	if util.Every(5*time.Hour, false) != "every 5 hours" {
-		t.Fail()
-	}
-
-	if util.Every(time.Hour, false) != "every 1 hour" {
-		t.Fail()
-	}
-}
+var _ = Context("every", func() {
+	DescribeTable("test", func(dur time.Duration, output string) {
+		Expect(util.Every(dur, false)).To(Equal(output))
+	},
+		Entry("plural", 5*time.Hour, "every 5 hours"),
+		Entry("singular", time.Hour, "every 1 hour"),
+	)
+})

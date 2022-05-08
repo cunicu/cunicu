@@ -45,14 +45,6 @@ func FprintfColored(wr io.Writer, color bool, f string, args ...interface{}) (in
 	return fmt.Fprintf(wr, f, args...)
 }
 
-func SprintfColored(color bool, f string, args ...interface{}) string {
-	if !color {
-		f = reANSIEscape.ReplaceAllString(f, "")
-	}
-
-	return fmt.Sprintf(f, args...)
-}
-
 func Color(str string, mods ...string) string {
 	return strings.Join(mods, "") + str + Reset
 }

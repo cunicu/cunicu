@@ -1,35 +1,79 @@
 package ice_test
 
 import (
-	"testing"
-
 	"github.com/pion/ice/v2"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	icex "riasc.eu/wice/internal/ice"
 )
 
-func TestCandidateTypeFromString(t *testing.T) {
-	for _, ct := range []ice.CandidateType{
-		ice.CandidateTypeHost,
-		ice.CandidateTypeServerReflexive,
-		ice.CandidateTypePeerReflexive,
-		ice.CandidateTypeRelay,
-	} {
-		if ctp, err := icex.CandidateTypeFromString(ct.String()); err != nil || ctp != ct {
-			t.Fail()
+var _ = Describe("Marshaling of ICE types", func() {
+	Context("Candidate type", func() {
+		t := []TableEntry{
+			Entry("Host", ice.CandidateTypeHost, "host"),
+			Entry("ServerReflexive", ice.CandidateTypeServerReflexive, "srflx"),
+			Entry("PeerReflexive", ice.CandidateTypePeerReflexive, "prflx"),
+			Entry("Relay", ice.CandidateTypeRelay, "relay"),
 		}
-	}
-}
 
-func TestNetworkTypeFromString(t *testing.T) {
-	for _, nt := range []ice.NetworkType{
-		ice.NetworkTypeUDP4,
-		ice.NetworkTypeUDP6,
-		ice.NetworkTypeTCP4,
-		ice.NetworkTypeTCP6,
-	} {
-		if ntp, err := icex.NetworkTypeFromString(nt.String()); err != nil || ntp != nt {
-			t.Fail()
+		DescribeTable("Unmarshal", func(ct ice.CandidateType, st string) {
+			var ctp icex.CandidateType
+			Expect(ctp.UnmarshalText([]byte(st))).To(Succeed())
+			Expect(ctp.CandidateType).To(Equal(ct))
+		}, t)
+
+		DescribeTable("Marshal", func(ct ice.CandidateType, st string) {
+			var ctp = icex.CandidateType{ct}
+			m, err := ctp.MarshalText()
+			Expect(err).To(Succeed())
+			Expect(string(m)).To(Equal(st))
+		}, t)
+	})
+
+	Context("Network type", func() {
+		t := []TableEntry{
+			Entry("TCP4", ice.NetworkTypeTCP4, "tcp4"),
+			Entry("TCP6", ice.NetworkTypeTCP6, "tcp6"),
+			Entry("UDP4", ice.NetworkTypeUDP4, "udp4"),
+			Entry("UDP6", ice.NetworkTypeUDP6, "udp6"),
 		}
-	}
-}
+
+		DescribeTable("Unmarshal", func(ct ice.NetworkType, st string) {
+			var ntp icex.NetworkType
+			Expect(ntp.UnmarshalText([]byte(st))).To(Succeed())
+			Expect(ntp.NetworkType).To(Equal(ct))
+		}, t)
+
+		DescribeTable("Marshal", func(ct ice.NetworkType, st string) {
+			var ntp = icex.NetworkType{ct}
+			m, err := ntp.MarshalText()
+			Expect(err).To(Succeed())
+			Expect(string(m)).To(Equal(st))
+		}, t)
+	})
+
+	Context("ICE URL", func() {
+		t := []TableEntry{
+			Entry(nil, "stun:example.com", "stun:example.com:3478", ice.URL{ice.SchemeTypeSTUN, "example.com", 3478, "", "", ice.ProtoTypeUDP}),
+			Entry(nil, "stuns:example.com", "stuns:example.com:5349", ice.URL{ice.SchemeTypeSTUNS, "example.com", 5349, "", "", ice.ProtoTypeTCP}),
+			Entry(nil, "stun:example.com:1234", "stun:example.com:1234", ice.URL{ice.SchemeTypeSTUN, "example.com", 1234, "", "", ice.ProtoTypeUDP}),
+			Entry(nil, "stuns:example.com:1234", "stuns:example.com:1234", ice.URL{ice.SchemeTypeSTUNS, "example.com", 1234, "", "", ice.ProtoTypeTCP}),
+			Entry(nil, "turn:example.com?transport=tcp", "turn:example.com:3478?transport=tcp", ice.URL{ice.SchemeTypeTURN, "example.com", 3478, "", "", ice.ProtoTypeTCP}),
+			Entry(nil, "turns:example.com", "turns:example.com:5349?transport=tcp", ice.URL{ice.SchemeTypeTURNS, "example.com", 5349, "", "", ice.ProtoTypeTCP}),
+		}
+
+		DescribeTable("Unmarshal", func(u, _ string, e ice.URL) {
+			var up icex.URL
+			Expect(up.UnmarshalText([]byte(u))).To(Succeed())
+			Expect(up.URL).To(Equal(e))
+		}, t)
+
+		DescribeTable("Marshal", func(_, u string, e ice.URL) {
+			var up = icex.URL{e}
+			m, err := up.MarshalText()
+			Expect(err).To(Succeed())
+			Expect(string(m)).To(Equal(u))
+		}, t)
+	})
+})

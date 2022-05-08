@@ -5,12 +5,14 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"testing"
 
 	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	// . "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 type peer struct {
@@ -21,7 +23,7 @@ type peer struct {
 	messages map[int64]chan *pb.SignalingMessage
 }
 
-func (p *peer) publish(t *testing.T, o *peer) {
+func (p *peer) publish(o *peer) {
 	if p.id == o.id {
 		return
 	}
@@ -39,32 +41,26 @@ func (p *peer) publish(t *testing.T, o *peer) {
 		},
 	}
 
-	if err := p.backend.Publish(context.Background(), kp, sentMsg); err != nil {
-		t.Fatalf("Failed to publish signaling message: %s", err)
-	}
+	err := p.backend.Publish(context.Background(), kp, sentMsg)
+	Expect(err).To(Succeed(), "Failed to publish signaling message: %s", err)
 }
 
-func (p *peer) receive(t *testing.T, o *peer) {
+func (p *peer) receive(o *peer) {
 	recvMsg := <-p.messages[o.id]
 
-	if recvMsg.Description.Epoch != o.id {
-		t.Fatalf("Received invalid message")
-	}
+	Expect(recvMsg.Description.Epoch).To(Equal(o.id), "Received invalid message")
 }
 
 // TestBackend creates n peers with separate connections to the signaling backend u
 // and exchanges a test message between each pair of backends
-func TestBackend(t *testing.T, u string, n int) {
-
-	// Add a color to make url.Parse succeed
+func RunBackendTest(u string, n int) {
+	// Add a colon to make url.Parse succeed
 	if !strings.Contains(u, ":") {
 		u += ":"
 	}
 
 	uri, err := url.Parse(u)
-	if err != nil {
-		t.Fatalf("Failed to parse URL: %s", err)
-	}
+	Expect(err).To(Succeed(), "Failed to parse URL: %s", err)
 
 	cfg := &signaling.BackendConfig{
 		URI: uri,
@@ -73,21 +69,18 @@ func TestBackend(t *testing.T, u string, n int) {
 	ps := []*peer{}
 	for i := 0; i < n; i++ {
 		p := &peer{
-			id:       int64(i),
+			id:       int64(i + 100),
 			events:   log.NewEventLogger(),
 			messages: map[int64]chan *pb.SignalingMessage{},
 		}
 
 		p.backend, err = signaling.NewBackend(cfg, p.events)
-		if err != nil {
-			t.Fatalf("Failed to create backend: %s", err)
-		}
+		Expect(err).To(Succeed(), "Failed to create backend: %s", err)
+
 		defer p.backend.Close()
 
 		p.key, err = crypto.GeneratePrivateKey()
-		if err != nil {
-			t.Fatalf("Failed to generate private key: %s", err)
-		}
+		Expect(err).To(Succeed(), "Failed to generate private key: %s", err)
 
 		ps = append(ps, p)
 	}
@@ -104,9 +97,7 @@ func TestBackend(t *testing.T, u string, n int) {
 			}
 
 			p.messages[o.id], err = p.backend.Subscribe(context.Background(), kp)
-			if err != nil {
-				t.Fatalf("Failed to subscribe: %s", err)
-			}
+			Expect(err).To(Succeed(), "Failed to subscribe: %s", err)
 		}
 	}
 
@@ -120,11 +111,11 @@ func TestBackend(t *testing.T, u string, n int) {
 			}
 
 			go func(p, o *peer) {
-				p.receive(t, o)
+				p.receive(o)
 				wg.Done()
 			}(p, o)
 
-			p.publish(t, o)
+			p.publish(o)
 		}
 	}
 

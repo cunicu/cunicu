@@ -1,35 +1,48 @@
 package pb_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"google.golang.org/protobuf/proto"
 	"riasc.eu/wice/internal/test"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
-func TestEncryptedMessage(t *testing.T) {
-	sd := pb.SessionDescription{
-		Epoch: 1234,
-	}
+var _ = Describe("message encryption", func() {
+	var sd pb.SessionDescription
+	var ourKP, theirKP *crypto.KeyPair
+	var em pb.EncryptedMessage
 
-	ourKP, theirKP, err := test.GenerateKeyPairs()
-	if err != nil {
-		t.FailNow()
-	}
+	BeforeEach(func() {
+		var err error
 
-	em := pb.EncryptedMessage{}
-	if err := em.Marshal(&sd, ourKP); err != nil {
-		t.Fatalf("Failed to encrypto message: %s", err)
-	}
+		sd = pb.SessionDescription{
+			Epoch: 1234,
+		}
 
-	sd2 := pb.SessionDescription{}
-	if err := em.Unmarshal(&sd2, theirKP); err != nil {
-		t.Fatalf("Failed to decrypt message: %s", err)
-	}
+		ourKP, theirKP, err = test.GenerateKeyPairs()
+		Expect(err).To(Succeed())
 
-	em.Body[0] ^= 1
+		em = pb.EncryptedMessage{}
+		err = em.Marshal(&sd, ourKP)
+		Expect(err).To(Succeed(), "Failed to encrypt message: %s", err)
+	})
 
-	if err := em.Unmarshal(&sd2, theirKP); err == nil {
-		t.Fatalf("Decrypted invalid message: %s", err)
-	}
-}
+	It("can en/decrypt a message", func() {
+		sd2 := pb.SessionDescription{}
+		err := em.Unmarshal(&sd2, theirKP)
+
+		Expect(err).To(Succeed(), "Failed to decrypt message: %s", err)
+		Expect(proto.Equal(&sd, &sd2)).To(BeTrue())
+	})
+
+	It("fails to decrypt an altered message", func() {
+		em.Body[0] ^= 1
+
+		sd2 := pb.SessionDescription{}
+		err := em.Unmarshal(&sd2, theirKP)
+
+		Expect(err).To(HaveOccurred(), "Decrypted invalid message: %s", err)
+	})
+})

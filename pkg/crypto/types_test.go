@@ -3,182 +3,207 @@ package crypto_test
 import (
 	"encoding/json"
 	"net"
-	"testing"
 
 	"riasc.eu/wice/pkg/crypto"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestGenerateKeyFromPassword(t *testing.T) {
-	key1 := crypto.GenerateKeyFromPassword("test")
-	key2 := crypto.GenerateKeyFromPassword("test2")
+var _ = Describe("PBKDF2 Key derivation", func() {
+	var key1, key2 crypto.Key
 
-	expectedKey1, err := crypto.ParseKey("SAyMLIWTO+DSnTx/JDak+lRR5huci8m4JsEabkkIxFY=")
-	if err != nil {
-		t.FailNow()
+	BeforeEach(func() {
+		key1 = crypto.GenerateKeyFromPassword("test")
+		key2 = crypto.GenerateKeyFromPassword("test2")
+	})
+
+	It("matches well known key", func() {
+		Expect(crypto.ParseKey("SAyMLIWTO+DSnTx/JDak+lRR5huci8m4JsEabkkIxFY=")).To(Equal(key1))
+	})
+
+	It("does not create equal keys", func() {
+		Expect(key1).NotTo(Equal(key2))
+	})
+
+	It("produces correct key length", func() {
+		Expect(key1).To(HaveLen(crypto.KeyLength))
+	})
+
+	It("does not produce empty keys", func() {
+		Expect(key1.IsSet()).To(BeTrue())
+	})
+
+	It("can parse the generated key as a valid key", func() {
+		_, err := crypto.ParseKeyBytes(key1[:])
+		Expect(err).To(Succeed())
+	})
+})
+
+var _ = Describe("Key generation", func() {
+	var key1, key2 crypto.Key
+
+	BeforeEach(func() {
+		var err error
+		key1, err = crypto.GenerateKey()
+		Expect(err).To(Succeed())
+
+		key2, err = crypto.GenerateKey()
+		Expect(err).To(Succeed())
+	})
+
+	It("does not create equal keys", func() {
+		Expect(key1).NotTo(Equal(key2))
+	})
+
+	It("produces correct key length", func() {
+		Expect(key1).To(HaveLen(crypto.KeyLength))
+	})
+
+	It("does not produce empty keys", func() {
+		Expect(key1.IsSet()).To(BeTrue())
+	})
+
+	It("can parse the generated key as a valid key", func() {
+		_, err := crypto.ParseKeyBytes(key1[:])
+		Expect(err).To(Succeed())
+	})
+})
+
+var _ = Describe("Private key generation", func() {
+	var key1, key2 crypto.Key
+
+	BeforeEach(func() {
+		var err error
+		key1, err = crypto.GeneratePrivateKey()
+		Expect(err).To(Succeed())
+
+		key2, err = crypto.GeneratePrivateKey()
+		Expect(err).To(Succeed())
+	})
+
+	It("does not create equal keys", func() {
+		Expect(key1).NotTo(Equal(key2))
+	})
+
+	It("produces correct key length", func() {
+		Expect(key1).To(HaveLen(crypto.KeyLength))
+	})
+
+	It("does not produce empty keys", func() {
+		Expect(key1.IsSet()).To(BeTrue())
+	})
+
+	It("can parse the generated key as a valid key", func() {
+		_, err := crypto.ParseKeyBytes(key1[:])
+		Expect(err).To(Succeed())
+	})
+})
+
+var _ = Describe("Key to string conversion", Ordered, func() {
+	var key1, key2 crypto.Key
+	var keyString string
+
+	BeforeAll(func() {
+		var err error
+
+		key1, err = crypto.GeneratePrivateKey()
+		Expect(err).To(Succeed())
+	})
+
+	It("can generate a string of the key", func() {
+		const Base64Regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+
+		keyString = key1.String()
+		Expect(keyString).To(MatchRegexp(Base64Regex))
+	})
+
+	It("can parse the generated string back as a key", func() {
+		var err error
+
+		key2, err = crypto.ParseKey(keyString)
+		Expect(err).To(Succeed())
+	})
+
+	It("result in the same key as the original", func() {
+		Expect(key1).To(Equal(key2))
+	})
+})
+
+var _ = Describe("Key to byte slice conversions", Ordered, func() {
+	var key1, key2 crypto.Key
+	var keyBytes []byte
+
+	BeforeAll(func() {
+		var err error
+
+		key1, err = crypto.GeneratePrivateKey()
+		Expect(err).To(Succeed())
+	})
+
+	It("can produce a byte slice from the key", func() {
+		keyBytes = key1.Bytes()
+		Expect(keyBytes).To(HaveLen(crypto.KeyLength))
+	})
+
+	It("can parse the byte slice back to a key", func() {
+		var err error
+		key2, err = crypto.ParseKeyBytes(keyBytes)
+		Expect(err).To(Succeed())
+	})
+
+	It("matches the original key", func() {
+		Expect(key1).To(Equal(key2))
+	})
+})
+
+var _ = It("can marshal a Key to a string via the encoding.TextMarshaler interface", func() {
+	var err error
+	var obj1, obj2 struct {
+		Key crypto.Key
 	}
 
-	if key1 != expectedKey1 {
-		t.Fail()
-	}
-
-	if key1 == key2 {
-		t.Fail()
-	}
-
-	if len(key1) != crypto.KeyLength {
-		t.Fail()
-	}
-
-	if !key1.IsSet() {
-		t.Fail()
-	}
-
-	if _, err := crypto.ParseKeyBytes(key1[:]); err != nil {
-		t.Fail()
-	}
-}
-
-func TestGenerateKey(t *testing.T) {
-	key1, err := crypto.GenerateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	key2, err := crypto.GenerateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	if !key1.IsSet() || !key2.IsSet() {
-		t.Fail()
-	}
-
-	if key1 == key2 {
-		t.Fail()
-	}
-}
-func TestGeneratePrivateKey(t *testing.T) {
-	key1, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	key2, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	if !key1.IsSet() || !key2.IsSet() {
-		t.Fail()
-	}
-
-	if key1 == key2 {
-		t.Fail()
-	}
-}
-
-func TestKeyString(t *testing.T) {
-	key1, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	keyString := key1.String()
-
-	key2, err := crypto.ParseKey(keyString)
-	if err != nil {
-		t.Fail()
-	}
-
-	if key1 != key2 {
-		t.Fail()
-	}
-}
-
-func TestKeyBytes(t *testing.T) {
-	key1, err := crypto.GenerateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	if key2, err := crypto.ParseKeyBytes(key1.Bytes()); err != nil || key2 != key1 {
-		t.Fail()
-	}
-}
-
-type testObj struct {
-	Key crypto.Key
-}
-
-func TestMarshal(t *testing.T) {
-	key, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
-
-	var obj1, obj2 testObj
-
-	obj1 = testObj{
-		Key: key,
-	}
+	obj1.Key, err = crypto.GeneratePrivateKey()
+	Expect(err).To(Succeed())
 
 	objJSON, err := json.Marshal(&obj1)
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
-	if err := json.Unmarshal(objJSON, &obj2); err != nil {
-		t.Fail()
-	}
+	err = json.Unmarshal(objJSON, &obj2)
+	Expect(err).To(Succeed())
 
-	if obj1 != obj2 {
-		t.Fail()
-	}
-}
+	Expect(obj1).To(Equal(obj2))
+})
 
-func TestPublicKey(t *testing.T) {
+var _ = It("can derive a public from a private key", func() {
 	sk, err := crypto.ParseKey("GMHOtIxfUrGmncORjYK/slCSK/8V2TF9MjzzoPDTkEc=")
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
 	pk, err := crypto.ParseKey("Hxm0/KTFRGFirpOoTWO2iMde/gJX+oVswUXEzVN5En8=")
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
-	if sk.PublicKey() != pk {
-		t.Fail()
-	}
-}
+	Expect(sk.PublicKey()).To(Equal(pk))
+})
 
-func TestKeyIsSet(t *testing.T) {
-	key, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
+var _ = Describe("Key test", func() {
+	It("non-empty", func() {
+		key, err := crypto.GeneratePrivateKey()
+		Expect(err).To(Succeed())
+		Expect(key.IsSet()).To(BeTrue())
+	})
 
-	if !key.IsSet() {
-		t.Fail()
-	}
+	It("empty", func() {
+		key := crypto.Key{}
+		Expect(key.IsSet()).To(BeFalse())
+	})
+})
 
-	key = crypto.Key{}
-
-	if key.IsSet() {
-		t.Fail()
-	}
-}
-
-func TestShared(t *testing.T) {
+var _ = It("can derive a shared key via the X25519 Diffie Hellman function", func() {
 	key1, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
 	key2, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
 	kp1 := crypto.KeyPair{
 		Ours:   key1,
@@ -190,29 +215,20 @@ func TestShared(t *testing.T) {
 		Theirs: key1.PublicKey(),
 	}
 
-	if kp1.Shared() != kp2.Shared() {
-		t.Fail()
-	}
-}
+	Expect(kp1.Shared()).To(Equal(kp2.Shared()))
+})
 
-func TestIPv6Address(t *testing.T) {
+var _ = It("can generate valid IPv6 link-local addresses from a public key", func() {
 	key, err := crypto.GeneratePrivateKey()
-	if err != nil {
-		t.FailNow()
-	}
+	Expect(err).To(Succeed())
 
 	addr := key.PublicKey().IPv6Address()
 
 	_, ll, err := net.ParseCIDR("fe80::/10")
-	if err != nil {
-		t.FailNow()
-	}
+	Expect(err).To(Succeed())
 
-	if ones, bits := addr.Mask.Size(); ones != 64 || bits != net.IPv6len*8 {
-		t.Fail()
-	}
-
-	if !ll.Contains(addr.IP) {
-		t.Fail()
-	}
-}
+	ones, bits := addr.Mask.Size()
+	Expect(ones).To(Equal(64))
+	Expect(bits).To(Equal(net.IPv6len * 8))
+	Expect(ll.Contains(addr.IP)).To(BeTrue())
+})

@@ -4,21 +4,26 @@ import (
 	"net"
 	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"riasc.eu/wice/internal/util"
 )
 
-func TestCmpEndpointEqual(t *testing.T) {
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Utilities Suite")
+}
+
+var _ = It("compare equal endpoints", func() {
 	a := net.UDPAddr{
 		IP:   net.ParseIP("1.1.1.1"),
 		Port: 1,
 	}
 
-	if util.CmpEndpoint(&a, &a) != 0 {
-		t.Fail()
-	}
-}
+	Expect(util.CmpEndpoint(&a, &a)).To(BeZero())
+})
 
-func TestCmpEndpointUnequal(t *testing.T) {
+var _ = It("compare unequal endpoints", func() {
 	a := net.UDPAddr{
 		IP:   net.ParseIP("1.1.1.1"),
 		Port: 1,
@@ -29,45 +34,29 @@ func TestCmpEndpointUnequal(t *testing.T) {
 		Port: 1,
 	}
 
-	if util.CmpEndpoint(&a, &b) == 0 {
-		t.Fail()
-	}
-}
+	Expect(util.CmpEndpoint(&a, &b)).NotTo(BeZero())
+})
 
-func TestGenerateRandomBytes(t *testing.T) {
-	r, err := util.GenerateRandomBytes(16)
-	if err != nil {
-		t.Fail()
-	}
-
-	if len(r) != 16 {
-		t.Fail()
-	}
-}
-
-func TestCmpNetEqual(t *testing.T) {
+var _ = It("compare equal networks", func() {
 	_, a, err := net.ParseCIDR("1.1.1.1/0")
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
-	if util.CmpNet(a, a) != 0 {
-		t.Fail()
-	}
-}
+	Expect(util.CmpNet(a, a)).To(BeZero())
+})
 
-func TestCmpNetUnequal(t *testing.T) {
+var _ = It("compare unequal networks", func() {
 	_, a, err := net.ParseCIDR("1.1.1.1/0")
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
 	_, b, err := net.ParseCIDR("1.1.1.1/1")
-	if err != nil {
-		t.Fail()
-	}
+	Expect(err).To(Succeed())
 
-	if util.CmpNet(a, b) == 0 {
-		t.Fail()
-	}
-}
+	Expect(util.CmpNet(a, b)).NotTo(BeZero())
+})
+
+var _ = It("can generate random bytes", func() {
+	r, err := util.GenerateRandomBytes(16)
+
+	Expect(err).To(Succeed())
+	Expect(r).To(HaveLen(16))
+})

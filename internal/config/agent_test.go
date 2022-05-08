@@ -1,124 +1,85 @@
 package config_test
 
 import (
-	"testing"
-
 	"github.com/pion/ice/v2"
 	"riasc.eu/wice/internal/config"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestParseArgsCandidateTypes(t *testing.T) {
-	config, err := config.Parse("--ice-candidate-type", "host", "--ice-candidate-type", "relay")
-	if err != nil {
-		t.Errorf("err got %v, want nil", err)
-	}
+var _ = Describe("Agent config", func() {
+	Context("Candidate types", func() {
+		It("can parse multiple candidate types", func() {
+			cfg, err := config.ParseArgs(
+				"--ice-candidate-type", "host",
+				"--ice-candidate-type", "relay",
+			)
+			Expect(err).To(Succeed())
 
-	agentConfig, err := config.AgentConfig()
-	if err != nil {
-		t.Errorf("Failed to get agent config: %s", err)
-	}
+			aCfg, err := cfg.AgentConfig()
+			Expect(err).To(Succeed())
+			Expect(aCfg.CandidateTypes).To(ConsistOf(ice.CandidateTypeRelay, ice.CandidateTypeHost))
+		})
+	})
 
-	if len(agentConfig.CandidateTypes) != 2 {
-		t.Fail()
-	}
+	Context("Network types", func() {
+		It("can parse multiple network types", func() {
+			cfg, err := config.ParseArgs(
+				"--ice-network-type", "udp4",
+				"--ice-network-type", "tcp6",
+			)
+			Expect(err).To(Succeed())
 
-	if agentConfig.CandidateTypes[0] != ice.CandidateTypeHost {
-		t.Fail()
-	}
+			aCfg, err := cfg.AgentConfig()
+			Expect(err).To(Succeed())
+			Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
+		})
+	})
 
-	if agentConfig.CandidateTypes[1] != ice.CandidateTypeRelay {
-		t.Fail()
-	}
-}
+	Context("Comma-separated network types", func() {
+		It("can parse multiple network types", func() {
+			cfg, err := config.ParseArgs(
+				"--ice-network-type", "udp4,tcp6",
+			)
+			Expect(err).To(Succeed())
 
-func TestParseArgsInterfaceFilter(t *testing.T) {
-	config, err := config.Parse("--ice-interface-filter", "eth\\d+")
-	if err != nil {
-		t.Errorf("err got %v, want nil", err)
-	}
+			aCfg, err := cfg.AgentConfig()
+			Expect(err).To(Succeed())
+			Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
+		})
+	})
 
-	agentConfig, err := config.AgentConfig()
-	if err != nil {
-		t.Errorf("Failed to get agent config: %s", err)
-	}
+	Context("Interface filter", func() {
+		It("can parse an interface filter", func() {
+			cfg, err := config.ParseArgs("--ice-interface-filter", "eth\\d+")
+			Expect(err).To(Succeed())
 
-	if !agentConfig.InterfaceFilter("eth0") {
-		t.Fail()
-	}
+			aCfg, err := cfg.AgentConfig()
+			Expect(err).To(Succeed())
 
-	if agentConfig.InterfaceFilter("wifi0") {
-		t.Fail()
-	}
-}
+			Expect(aCfg.InterfaceFilter("eth0")).To(BeTrue())
+			Expect(aCfg.InterfaceFilter("wifi0")).To(BeFalse())
+		})
+	})
 
-func TestParseArgsInterfaceFilterFail(t *testing.T) {
-	config, err := config.Parse("--ice-interface-filter", "eth(")
-	if err != nil {
-		t.Fail()
-	}
+	Context("Interface filter with invalid regex", func() {
+		It("can parse an interface filter", func() {
+			_, err := config.ParseArgs("--ice-interface-filter", "eth(")
+			Expect(err).To(HaveOccurred())
+		})
+	})
 
-	_, err = config.AgentConfig()
-	if err == nil {
-		t.Fail()
-	}
-}
+	Context("default values", func() {
+		It("has sensible default values", func() {
+			cfg, err := config.ParseArgs("--ice-interface-filter", "eth\\d+")
+			Expect(err).To(Succeed())
 
-func TestParseArgsDefault(t *testing.T) {
-	cfg, err := config.Parse()
-	if err != nil {
-		t.Fail()
-	}
+			aCfg, err := cfg.AgentConfig()
+			Expect(err).To(Succeed())
 
-	agentConfig, err := cfg.AgentConfig()
-	if err != nil {
-		t.FailNow()
-	}
-
-	if len(agentConfig.Urls) != 1 {
-		t.FailNow()
-	}
-
-	if agentConfig.Urls[0].String() != config.DefaultURL {
-		t.FailNow()
-	}
-
-	if len(cfg.Backends) != 1 {
-		t.FailNow()
-	}
-
-	if cfg.Backends[0].String() != config.DefaultBackend+":" {
-		t.FailNow()
-	}
-}
-
-func TestParseArgsUrls(t *testing.T) {
-	config, err := config.Parse("--url", "stun:stun.riasc.eu", "--url", "turn:turn.riasc.eu")
-	if err != nil {
-		t.Errorf("err got %v, want nil", err)
-	}
-
-	agentConfig, err := config.AgentConfig()
-	if err != nil {
-		t.FailNow()
-	}
-
-	if len(agentConfig.Urls) != 2 {
-		t.Fail()
-	}
-
-	if agentConfig.Urls[0].Host != "stun.riasc.eu" {
-		t.Fail()
-	}
-
-	if agentConfig.Urls[0].Scheme != ice.SchemeTypeSTUN {
-		t.Fail()
-	}
-
-	if agentConfig.Urls[1].Host != "turn.riasc.eu" {
-		t.Fail()
-	}
-
-	if agentConfig.Urls[1].Scheme != ice.SchemeTypeTURN {
-		t.Fail()
-	}
-}
+			Expect(aCfg.Urls).To(HaveLen(1))
+			Expect(aCfg.Urls[0].String()).To(Equal(config.DefaultURL))
+		})
+	})
+})
