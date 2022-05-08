@@ -5,7 +5,6 @@ Lets assume two Wireguard peers $P_a$ & $P_b$ are seeking to establish a ICE ses
 The smaller public key (PK) of the two peers takes the role of the controlling agent.
 In this example PA has the role of the controlling agent as: $PK(P_a) < PK(P_b)$.
 
-
 ```mermaid
 sequenceDiagram
     autonumber
@@ -36,8 +35,8 @@ Checkout the [`pkg/pb/signaling.proto`](../pkg/pb/signaling.proto) for details.
 
 ### Available backends
 
-- gRPC
-- Kubernetes API server
+-   gRPC
+-   Kubernetes API server
 
 For the use within a Kubernetes cluster also a dedicated backend using the Kubernetes api-server is available.
 Checkout the [`Backend`](../pkg/signaling/backend.go) interface for implementing your own backend.

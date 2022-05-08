@@ -2,4 +2,4 @@
 
 ɯice has a built-in self update functionality.
 
-Please refer to [usage/md/wice_update.md] for details about the `wice update` command.
+Please refer to the [usage documentation](usage/md/wice_self-update.md) for details about the `wice self-update` command.

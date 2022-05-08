@@ -117,9 +117,9 @@ proxy:
 
 All the settings from the configuration file can also be passed via environment variables by following the following rules:
 
-- Convert the setting name to uppercase
-- Prefixing the setting name with `WICE_`
-- Nested settings are separated by underscores
+-   Convert the setting name to uppercase
+-   Prefixing the setting name with `WICE_`
+-   Nested settings are separated by underscores
 
 **Example:** The setting `ice.max_binding_requests` can be set by the environment variable `WICE_ICE_MAX_BINDING_REQUESTS`
 
@@ -133,7 +133,7 @@ When `wice daemon` is started with a `--config-domain example.com` parameter it 
 
 STUN and TURN servers used for ICE are retrieved by SVR lookups and other ɯice settings are retrieved via TXT lookups: 
 
-```
+```text
 _stun._udp.example.com.  3600 IN SRV 10 0 3478 stun.example.com.
 _stuns._tcp.example.com. 3600 IN SRV 10 0 3478 stun.example.com.
 _turn._udp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
