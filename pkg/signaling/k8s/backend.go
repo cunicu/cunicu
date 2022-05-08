@@ -162,7 +162,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.Signa
 		return fmt.Errorf("failed to create envelope: %w", err)
 	}
 
-	b.logger.Debug("Created new SignalingEnvelope", zap.String("name", env.ObjectMeta.Name))
+	b.logger.Debug("Created envelope on API server", zap.String("name", env.ObjectMeta.Name))
 
 	return nil
 }
@@ -176,7 +176,7 @@ func (b *Backend) Close() error {
 func (b *Backend) onSignalingEnvelopeAdd(obj interface{}) {
 	env := obj.(*v1.SignalingEnvelope)
 
-	b.logger.Debug("SignalingEnvelope added", zap.String("name", env.ObjectMeta.Name))
+	b.logger.Debug("New envelope found on API server", zap.String("name", env.ObjectMeta.Name))
 	if err := b.process(env); err != nil {
 		b.logger.Error("Failed to process SignalEnvelope", zap.Error(err))
 	}
@@ -211,7 +211,7 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 	if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
 		b.logger.Warn("Failed to delete envelope", zap.Error(err))
 	} else {
-		b.logger.Debug("Deleted envelope", zap.String("envelope", env.ObjectMeta.Name))
+		b.logger.Debug("Deleted envelope from API server", zap.String("envelope", env.ObjectMeta.Name))
 	}
 
 	return nil

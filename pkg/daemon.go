@@ -58,7 +58,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Disable memlock for loading eBPF programs
 	if err := rlimit.RemoveMemlock(); err != nil {
-		panic(fmt.Errorf("failed to remove memlock: %w", err))
+		return nil, fmt.Errorf("failed to remove memlock: %w", err)
 	}
 
 	// Create Wireguard netlink socket
@@ -137,7 +137,7 @@ out:
 			}
 			d.eventListenersLock.Unlock()
 
-			event.Log(d.logger, "Broadcasted event", zap.Int("listeners", len(d.eventListeners)))
+			event.Log(d.logger, "Event", zap.Int("listeners", len(d.eventListeners)))
 
 		case event := <-ifEvents:
 			d.logger.Debug("Received interface event", zap.String("event", event.String()))
