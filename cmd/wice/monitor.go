@@ -20,7 +20,7 @@ func init() {
 func monitor(cmd *cobra.Command, args []string) error {
 	signals := internal.SetupSignals()
 
-	logger := zap.L().Named("events")
+	logger := logger.Named("events")
 
 out:
 	for {

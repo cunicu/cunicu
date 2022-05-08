@@ -62,7 +62,7 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 
 func daemon(cmd *cobra.Command, args []string) {
 	if err := cfg.Setup(args); err != nil {
-		zap.L().Fatal("Failed to parse configuration", zap.Error(err))
+		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
 
 	if logger.Core().Enabled(zap.DebugLevel) {

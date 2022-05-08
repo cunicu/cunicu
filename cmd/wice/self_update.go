@@ -40,7 +40,7 @@ func init() {
 }
 
 func selfUpdate(cmd *cobra.Command, args []string) {
-	logger := zap.L().Named("self-update")
+	logger := logger.Named("self-update")
 
 	if selfUpdateOptions.Output == "" {
 		file, err := os.Executable()
