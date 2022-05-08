@@ -10,11 +10,14 @@ checksum:
   name_template: "checksums.txt"
   algorithm: sha256
 
-signs:
-- artifacts: checksum
-  signature: "${artifact}.asc"
-  cmd: gpg
-  args: ["-u", "09BE3BAE8D55D4CD8579285A9675EAC34897E6E2", "--output", "${signature}", "--detach-sign", "${artifact}"]
+# Signing is disabled here as we can not perform it in the CI
+# Its is expected that the maintainer adds the checksum.asc file to the release by hand
+# after the CI pipeline has created the release.
+# signs:
+# - artifacts: checksum
+#   signature: "${artifact}.asc"
+#   cmd: gpg
+#   args: ["-u", "09BE3BAE8D55D4CD8579285A9675EAC34897E6E2", "--output", "${signature}", "--detach-sign", "${artifact}"]
 
 builds:
 - id: wice
