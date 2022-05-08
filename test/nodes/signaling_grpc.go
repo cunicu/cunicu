@@ -63,14 +63,13 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}
 
-	go func() {
-		var out []byte
-		if out, s.Command, err = s.Host.Run(cmd, args...); err != nil {
-			s.logger.Error("Failed to start", zap.Error(err))
-		}
+	if _, _, s.Command, err = s.Host.Start(cmd, args...); err != nil {
+		s.logger.Error("Failed to start", zap.Error(err))
+	}
 
-		os.Stdout.Write(out)
-	}()
+	if err := s.WaitReady(); err != nil {
+		return fmt.Errorf("failed to start turn server: %w", err)
+	}
 
 	return nil
 }
@@ -109,7 +108,7 @@ func (s *GrpcSignalingNode) isReachable() bool {
 }
 
 func (s *GrpcSignalingNode) WaitReady() error {
-	for tries := 100; !s.isReachable(); tries-- {
+	for tries := 1000; !s.isReachable(); tries-- {
 		if tries == 0 {
 			return fmt.Errorf("timed out")
 		}

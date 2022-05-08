@@ -119,7 +119,7 @@ func (c *CoturnNode) isReachable() bool {
 }
 
 func (c *CoturnNode) WaitReady() error {
-	for tries := 100; !c.isReachable(); tries-- {
+	for tries := 1000; !c.isReachable(); tries-- {
 		if tries == 0 {
 			return fmt.Errorf("timed out")
 		}
