@@ -14,11 +14,11 @@ func NewNAT(ident string) (*NAT, error) {
 	return nil, errors.ErrNotSupported
 }
 
-func (n *NAT) MasqueradeSourcePort(fromPort, toPort uint16, dest *net.UDPAddr) error {
+func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) error {
 	return errors.ErrNotSupported
 }
 
-func (n *NAT) RedirectNonSTUN(origPort, newPort uint16) error {
+func (n *NAT) RedirectNonSTUN(origPort, newPort int) error {
 	return errors.ErrNotSupported
 }
 
