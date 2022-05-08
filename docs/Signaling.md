@@ -1,61 +1,34 @@
-# Session signaling
+# Session Signaling
 
-Lets assume two Wireguard peers `Pa` & `Pb` are seeking to establish a ICE session.
+Lets assume two Wireguard peers $P_a$ & $P_b$ are seeking to establish a ICE session.
 
 The smaller public key (PK) of the two peers takes the role of the controlling agent.
-In this example PA has the role of the controlling agent as: `PK(PA) < PK(PB)`.
+In this example PA has the role of the controlling agent as: $PK(P_a) < PK(P_b)$.
 
-```text
-PA                         PB
 
-  --- initial offer     -->        id=SID_Pa, version=0, candidates=[], eoc=false
-  <-- initial offer     ---        id=SID_Pb, version=0, candidates=[], eoc=false
+```mermaid
+sequenceDiagram
+    autonumber
 
-  --- subsequent offers -->        id=SID_Pa, version=1, candidates=[C1_Pa], eoc=false
-  <-- subsequent offers ---        id=SID_Pb, version=1, candidates=[C1_Pb], eoc=false
+    actor Pa as Peer A
+    actor Pb as Peer B
+    participant b as Backend
 
-  --- subsequent offers -->        id=SID_Pa, version=2, candidates=[C1_Pa, C2_Pa], eoc=false
-  <-- subsequent offers ---        id=SID_Pb, version=2, candidates=[C1_Pb, C2_Pb], eoc=false
+    Pa ->> b: SessionDescription(Pa -> Pb)
+    b ->> Pb: SessionDescription(Pa -> Pb)
 
-  ---  eoc. offer       -->        id=SID_Pa, version=3, candidates=[C1_Pa, C2_Pa], eoc=true
-  <--  eoc. offer       ---        id=SID_Pb, version=3, candidates=[C1_Pb, C2_Pb], eoc=true
+    Pb ->> b: SessionDescription(Pb -> Pa)
+    b ->> Pa: SessionDescription(Pb -> Pa)
 ```
 
-## Restart
+## Session Description
 
-Agent will restart
+Session descriptions are exchanged by one or more the signaling backends via signaling _envelopes_ which contain signaling _messages_. 
+The _envelopes_ are containers which encrypt the carried _message_ via asymmetric cryptography using the public key of the recipient.
 
--   if
-    -   `last_recv.id` has been set
-    -   `recv.id!=last_recv.id`
-    -   `recv.version==0`
+Both the _envelope_ and the _message_ are serialized using Protobuf.
 
--   then
-    -   set
-        -   `local.id=rand()`
-        -   `local.version=0`
-        -   `local.candidates=[]`
-
-    -   publish new offer
-
-    -   wait for first offer including candidates from remote
-
-    -   (re)start agent
-
-    -   add first received
-
-    -   start gathering candidates
-        -   send an offers for each candidate `c`:
-            -   `candidates=local.candidates.append(c)`
-            -   `id=local.id`
-            -   `rid=local.rid`
-            -   `version=local.version++`
-
-## Offer
-
-Offers are exchanged by one or more the signaling backends via Protobuf messages.
-
-Checkout the [`pkg/pb/offer.proto`](../pkg/pb/offer.proto) for details.
+Checkout the [`pkg/pb/signaling.proto`](../pkg/pb/signaling.proto) for details.
 
 ## Backends
 
@@ -63,6 +36,34 @@ Checkout the [`pkg/pb/offer.proto`](../pkg/pb/offer.proto) for details.
 
 ### Available backends
 
-Currently, the main backend is based on [libp2p](https://libp2p.io/).
+- gRPC
+- Kubernetes API server
+
 For the use within a Kubernetes cluster also a dedicated backend using the Kubernetes api-server is available.
 Checkout the [`Backend`](../pkg/signaling/backend.go) interface for implementing your own backend.
+
+### Semantics
+
+A backend must:
+
+-   Allow the exchange of _envelopes_ between peers using their public keys.
+-   Guarantee a reliable delivery of _envelopes_.
+-   Not require not open _envelopes_ (require the knowledge of private keys).
+-   May deliver the _envelopes_ out-of-order.
+-   Shall be stateless (not buffer any _envelopes_ if the recipient is not yet know or reachable).
+
+### Interface
+
+All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/stv0g/wice/blob/master/pkg/signaling/backend.go):
+
+```go
+type Backend interface {
+	io.Closer
+
+	// Publish a signaling message to a specific peer
+	Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error
+
+	// Get a stream of messages from a specific peer
+	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+}
+```
