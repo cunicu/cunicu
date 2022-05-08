@@ -132,7 +132,3 @@ require (
 )
 
 replace github.com/vishvananda/netlink => github.com/stv0g/netlink v1.1.1-gont
-
-replace github.com/stv0g/gont => ../gont
-
-replace github.com/pion/ice/v2 => ../pion/ice
