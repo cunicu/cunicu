@@ -1,5 +1,5 @@
 <p align="center" >
-    <img style="width: 50%; margin: 4em 0" src="docs/wice_logo.svg" alt="wice logo" />
+    <img style="width: 50%; margin: 4em 0" src="docs/images/wice_logo.svg" alt="wice logo" />
     <h1 align="center">Wireguard Interactive Connectivity Establishment</h1>
 </p>
 
@@ -55,7 +55,7 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 
 ## Funding acknowledgement
 
-<img alt="European Flag" src="./docs/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of `k8s-netem`  has been supported by the [ERIGrid 2.0](https://erigrid2.eu) project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
+<img alt="European Flag" src="./docs/images/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of `k8s-netem`  has been supported by the [ERIGrid 2.0](https://erigrid2.eu) project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
 
 [wireguard]: https://wireguard.com
 

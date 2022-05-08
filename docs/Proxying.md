@@ -65,7 +65,7 @@ No round-trip through the kernel stack is required.
 
 ## Flowchart
 
-![](./wice_proxy.svg)
+![](./images/wice_proxy.svg)
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 
