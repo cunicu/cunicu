@@ -17,8 +17,7 @@ import (
 // Keys
 
 const (
-	KeyLength       = 32
-	SignatureLength = 64
+	KeyLength = 32
 
 	pbkdf2Iterations = 4096
 )
@@ -33,7 +32,6 @@ var (
 
 type Nonce []byte
 type Key [KeyLength]byte
-type Signature [SignatureLength]byte
 
 func GenerateKeyFromPassword(pw string) Key {
 	key := pbkdf2.Key([]byte(pw), pbkdf2Salt[:], pbkdf2Iterations, KeyLength, sha512.New)
@@ -128,10 +126,6 @@ func (k Key) IPv6Address() *net.IPNet {
 // Checks if the key is not zero
 func (k Key) IsSet() bool {
 	return k != Key{}
-}
-
-func (k Signature) String() string {
-	return base64.StdEncoding.EncodeToString(k[:])
 }
 
 type KeyPair struct {
