@@ -53,7 +53,7 @@ nfpms:
   - deb
   - rpm
   contents:
-  - src: "./contrib/wice.service"
+  - src: "./etc/systemd/wice.service"
     dst: "/usr/lib/systemd/system"
   - src: "./docs/usage/man/*.3"
     dst: "/usr/share/man/man3"
