@@ -75,6 +75,9 @@ func init() {
 		setupLogging,
 	)
 
+	f := rootCmd.Flags()
+	f.SortFlags = false
+
 	pf := rootCmd.PersistentFlags()
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of \"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", and \"fatal\")")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")

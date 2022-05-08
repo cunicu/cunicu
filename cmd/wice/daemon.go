@@ -22,7 +22,11 @@ var (
 )
 
 func init() {
+	f := daemonCmd.Flags()
+	f.SortFlags = false
+
 	pf := daemonCmd.PersistentFlags()
+
 	cfg = config.NewConfig(pf)
 
 	rootCmd.AddCommand(daemonCmd)
