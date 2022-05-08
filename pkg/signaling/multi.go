@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"riasc.eu/wice/internal/types"
+	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -53,7 +53,7 @@ func (m *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan 
 		chans = append(chans, ch)
 	}
 
-	return types.FanIn(chans...), nil
+	return util.FanIn(chans...), nil
 }
 
 func (m *MultiBackend) Close() error {

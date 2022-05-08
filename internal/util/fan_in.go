@@ -1,4 +1,4 @@
-package types
+package util
 
 func FanIn[T any](chans ...chan T) chan T {
 	nch := make(chan T)

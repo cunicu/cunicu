@@ -6,13 +6,13 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/types"
+	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
 type Subscription struct {
-	*types.Fanout[*pb.SignalingMessage]
+	*util.Fanout[*pb.SignalingMessage]
 
 	kp crypto.KeyPair
 }
@@ -61,7 +61,7 @@ func (s *SubscriptionsRegistry) NewSubscription(kp *crypto.KeyPair) (*Subscripti
 	}
 
 	sub := &Subscription{
-		Fanout: types.NewFanout[*pb.SignalingMessage](),
+		Fanout: util.NewFanout[*pb.SignalingMessage](16),
 		kp:     *kp,
 	}
 
@@ -111,7 +111,7 @@ func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair) (chan *pb.Signalin
 		return nil, err
 	}
 
-	return sub.AddChannel(), nil
+	return sub.Add(), nil
 }
 
 func (s *SubscriptionsRegistry) Unsubscribe(pkp *crypto.PublicKeyPair) {
