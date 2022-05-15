@@ -9,7 +9,7 @@ import (
 	icex "riasc.eu/wice/internal/ice"
 )
 
-type ICEPortSettings struct {
+type PortSettings struct {
 	Min int `yaml:"min,omitempty"`
 	Max int `yaml:"max,omitempty"`
 }
@@ -20,7 +20,7 @@ type ICESettings struct {
 	NetworkTypes   []icex.NetworkType   `yaml:"network_types,omitempty"`
 	NAT1to1IPs     []string             `yaml:"nat_1to1_ips,omitempty"`
 
-	Port ICEPortSettings `yaml:"port,omitempty"`
+	Port PortSettings `yaml:"port,omitempty"`
 
 	Lite               bool `yaml:"lite,omitempty"`
 	MDNS               bool `yaml:"mdns,omitempty"`
@@ -58,8 +58,15 @@ type WireguardConfigSettings struct {
 	Sync bool   `yaml:"sync,omitempty"`
 }
 
+type WireguardPortSettings struct {
+	Min int `yaml:"min,omitempty"`
+	Max int `yaml:"max,omitempty"`
+}
+
 type WireguardSettings struct {
 	Config WireguardConfigSettings `yaml:"config,omitempty"`
+
+	Port PortSettings `yaml:"port,omitempty"`
 
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`

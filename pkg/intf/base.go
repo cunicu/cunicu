@@ -3,7 +3,6 @@ package intf
 import (
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"os"
 	"sort"
@@ -461,10 +460,10 @@ func (i *BaseInterface) Fixup() error {
 	if i.ListenPort == 0 {
 		i.logger.Warn("Device has no listen port. Setting a random one..")
 
-		// Ephemeral Port Range (RFC6056 Sect. 2.1)
-		portMin := (1 << 15) + (1 << 14)
-		portMax := (1 << 16)
-		port := portMin + rand.Intn(portMax-portMin)
+		port, err := util.FindNextPortToListen("udp", i.config.Wireguard.Port.Min, i.config.Wireguard.Port.Max)
+		if err != nil {
+			return fmt.Errorf("failed set listen port: %w", err)
+		}
 
 		cfg.ListenPort = &port
 	}
