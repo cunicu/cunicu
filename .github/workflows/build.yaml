@@ -1,10 +1,14 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: build
+name: Build
 
 on: 
   push:
+    branches:
+    - master
   pull_request:
+    branches:
+    - master
 
 jobs:
   build:
