@@ -1,10 +1,11 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: goreleaser
+name: Release
 
 on:
-  pull_request:
   push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
