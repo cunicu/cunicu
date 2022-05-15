@@ -71,6 +71,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("socket.path", DefaultSocketPath)
 	c.SetDefault("socket.wait", false)
 	c.SetDefault("wg.config.path", "/etc/wireguard")
+	c.SetDefault("wg.port.min", WireguardDefaultPort)
+	c.SetDefault("wg.port.max", EphemeralPortMax)
 	c.SetDefault("proxy.ebpf", true)
 	c.SetDefault("proxy.nft", true)
 	c.SetDefault("ice.check_interval", "200ms")
@@ -80,8 +82,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("ice.failed_timeout", "5s")
 	c.SetDefault("ice.max_binding_requests", 7)
 	c.SetDefault("ice.urls", []string{DefaultURL})
-	c.SetDefault("ice.port.min", 1<<15+1<<14) // Ephemeral port range for private and dynamic ports (see RFC6335)
-	c.SetDefault("ice.port.max", 1<<16-1)
+	c.SetDefault("ice.port.min", EphemeralPortMin)
+	c.SetDefault("ice.port.max", EphemeralPortMax)
 
 	flags.StringVarP(&c.Domain, "domain", "A", "", "A DNS `domain` name used for DNS auto-configuration")
 	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "A `filename`s of a file")
@@ -97,6 +99,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.BoolP("wg-config-sync", "S", false, "Synchronize Wireguard interface with configuration file (see \"wg synconf\")")
 	flags.StringP("wg-config-path", "w", "", "The `directory` of Wireguard wg/wg-quick configuration files")
 
+	flags.Uint16("wg-port-min", 0, "Minimum `port` for allocation policy for Wireguard ListenPorts (range: 0-65535)")
+	flags.Uint16("wg-port-max", 0, "Maximum `port` for allocation policy for Wireguard ListenPorts (range: 0-65535)")
+
 	// ice.AgentConfig fields
 	flags.StringSliceP("url", "a", []string{}, "A STUN and/or TURN server `URL`")
 	flags.StringP("username", "U", "", "The `username` for STUN/TURN credentials")
@@ -106,8 +111,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
 	flags.StringSlice("ice-nat-1to1-ip", []string{}, "An `IP` address which will be added as local server reflexive candidates")
 
-	flags.Uint16("ice-port-min", 0, "Minimum `port` for allocation policy (range: 0-65535)")
-	flags.Uint16("ice-port-max", 0, "Maximum `port` for allocation policy (range: 0-65535)")
+	flags.Uint16("ice-port-min", 0, "Minimum `port` for allocation policy for ICE sockets (range: 0-65535)")
+	flags.Uint16("ice-port-max", 0, "Maximum `port` for allocation policy for ICE sockets (range: 0-65535)")
 	flags.BoolP("ice-lite", "L", false, "Lite agents do not perform connectivity check and only provide host candidates")
 	flags.BoolP("ice-mdns", "m", false, "Enable local Multicast DNS discovery")
 	flags.Uint16("ice-max-binding-requests", 0, "Maximum `number` of binding request before considering a pair failed")
@@ -130,6 +135,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"wg-interface-filter":      "wg.interface_filter",
 		"wg-config-sync":           "wg.config.sync",
 		"wg-config-path":           "wg.config.path",
+		"wg-port-min":              "wg.port.min",
+		"wg-port-max":              "wg.port.max",
 		"url":                      "ice.urls",
 		"username":                 "ice.username",
 		"password":                 "ice.password",
@@ -159,6 +166,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"watch-interval":           true,
 		"wg-config-sync":           true,
 		"wg-config-path":           true,
+		"wg-port-min":              true,
+		"wg-port-max":              true,
 		"ice-candidate-type":       true,
 		"ice-network-type":         true,
 		"ice-nat-1to1-ip":          true,
