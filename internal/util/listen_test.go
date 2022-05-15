@@ -9,7 +9,7 @@ import (
 	"riasc.eu/wice/internal/util"
 )
 
-var _ = Describe("find bindable UDP port in range", func() {
+var _ = Describe("find bindable port in range", func() {
 	Describe("next", func() {
 		It("finds the next available port", func() {
 			port, err := util.FindNextPortToListen("udp", 10032, config.EphemeralPortMax)
