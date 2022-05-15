@@ -1,6 +1,8 @@
 package netlink_test
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/vishvananda/netlink"
@@ -18,31 +20,34 @@ func TestSuite(t *testing.T) {
 }
 
 var _ = Describe("Wireguard link handling", Ordered, func() {
-	var l *nl.Wireguard
+	var link *nl.Wireguard
+	var linkName string
 
 	BeforeAll(func() {
+		linkName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
+
 		if !util.HasCapabilities(cap.NET_ADMIN) {
 			Skip("Insufficient privileges")
 		}
 
-		l = &nl.Wireguard{
+		link = &nl.Wireguard{
 			LinkAttrs: netlink.NewLinkAttrs(),
 		}
-		l.LinkAttrs.Name = "wg-test0"
+		link.LinkAttrs.Name = linkName
 	})
 
 	It("can add a link", func() {
-		Expect(netlink.LinkAdd(l)).To(Succeed())
+		Expect(netlink.LinkAdd(link)).To(Succeed())
 	})
 
 	It("can get link by name", func() {
-		l2, err := netlink.LinkByName("wg-test0")
+		l2, err := netlink.LinkByName(linkName)
 
 		Expect(err).To(Succeed())
 		Expect(l2.Type()).To(Equal("wireguard"))
 	})
 
 	It("can delete link again", func() {
-		Expect(netlink.LinkDel(l)).To(Succeed())
+		Expect(netlink.LinkDel(link)).To(Succeed())
 	})
 })
