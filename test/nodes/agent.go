@@ -120,14 +120,9 @@ func (a *Agent) Start(extraArgs []interface{}) error {
 		log.Fatal(err)
 	}
 
-	cmd, err := test.BuildBinary()
-	if err != nil {
-		return fmt.Errorf("failed to build wice: %w", err)
-	}
-
 	go func() {
 		var out []byte
-		if out, a.Command, err = a.Host.Run(cmd, args...); err != nil {
+		if out, a.Command, err = test.RunWice(a.Host, args); err != nil {
 			a.logger.Error("Failed to start", zap.Error(err))
 		}
 
