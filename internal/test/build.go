@@ -3,7 +3,6 @@ package test
 import (
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"os/exec"
 	"path"
@@ -99,10 +98,11 @@ func StartWiceWithCoverage(h *gont.Host, args ...interface{}) (io.Reader, io.Rea
 		return nil, nil, nil, fmt.Errorf("failed to find base dir: %w", err)
 	}
 
-	covPath := fmt.Sprintf("coverprofile-%s-%d.out", h.Name(), rand.Intn(10000))
+	covPath := fmt.Sprintf("coverprofile-%s.out", h.Name())
 	covPath = filepath.Join(base, covPath)
 	newArgs := []interface{}{"-test.run=^TestMain$", "-test.coverprofile=" + covPath, "--"}
 	newArgs = append(newArgs, args...)
 
 	return h.Start(bin, newArgs...)
 }
+
