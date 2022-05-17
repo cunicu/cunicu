@@ -2,11 +2,14 @@ package test
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"sync"
+
+	gont "github.com/stv0g/gont/pkg"
 )
 
 var (
@@ -60,4 +63,22 @@ func BuildBinary() (string, error) {
 	}
 
 	return binary, nil
+}
+
+func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
+	bin, err := BuildBinary()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to build binary: %w", err)
+	}
+
+	return h.Run(bin, args)
+}
+
+func StartWice(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
+	bin, err := BuildBinary()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to build binary: %w", err)
+	}
+
+	return h.Start(bin, args...)
 }
