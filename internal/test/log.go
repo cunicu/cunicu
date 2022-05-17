@@ -25,5 +25,6 @@ func SetupLogging() *zap.Logger {
 		return &writerWrapper{ginkgo.GinkgoWriter}, nil
 	})
 
-	return log.SetupLogging(zap.DebugLevel, []string{"ginkgo:"}, []string{"ginkgo:"})
+	outputPaths := []string{"ginkgo:"}
+	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)
 }
