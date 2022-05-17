@@ -66,7 +66,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	}
 
 	// Defaults
-	c.SetDefault("backends", []string{DefaultBackend})
+	c.SetDefault("backends", []string{})
 	c.SetDefault("watch_interval", "1s")
 	c.SetDefault("socket.path", DefaultSocketPath)
 	c.SetDefault("socket.wait", false)
