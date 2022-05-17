@@ -89,11 +89,13 @@ func extractToFile(buf []byte, filename, target string, logger *zap.Logger) erro
 		return fmt.Errorf("unable to remove target file: %v", err)
 	}
 
+	//#nosec G304 -- No file inclusion possible as we are writing only.
 	dest, err := os.OpenFile(target, os.O_CREATE|os.O_EXCL|os.O_WRONLY, mode)
 	if err != nil {
 		return err
 	}
 
+	//#nosec G110 -- We only download from safe locations (GitHub releases)
 	n, err := io.Copy(dest, rd)
 	if err != nil {
 		_ = dest.Close()

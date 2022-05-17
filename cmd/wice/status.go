@@ -40,7 +40,7 @@ func status(cmd *cobra.Command, args []string) error {
 		logger.Fatal("Failed to marshal", zap.Error(err))
 	}
 
-	os.Stdout.Write(buf)
+	_, err = os.Stdout.Write(buf)
 
-	return nil
+	return err
 }

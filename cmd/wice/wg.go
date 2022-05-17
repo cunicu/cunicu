@@ -93,7 +93,9 @@ func wgShow(cmd *cobra.Command, args []string) error {
 		mdev := intf.Device()
 		wdev := wg.Device(*mdev)
 
-		wdev.DumpEnv(os.Stdout)
+		if err := wdev.DumpEnv(os.Stdout); err != nil {
+			return err
+		}
 	}
 
 	return nil

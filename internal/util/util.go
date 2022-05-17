@@ -2,8 +2,8 @@ package util
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
-	"math/rand"
 	"net"
 	"os"
 )

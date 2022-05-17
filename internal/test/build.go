@@ -56,8 +56,10 @@ func BuildBinary(coverage bool) (string, error) {
 		var pkg = filepath.Join(base, "cmd/wice")
 		var cmd *exec.Cmd
 		if coverage {
+			//#nosec G204 -- Just for testing
 			cmd = exec.Command("go", "test", "-o", binary, "-buildvcs=false", "-cover", "-covermode=count", "-coverpkg="+packageName+"/...", "-c", "-tags", "testmain", pkg)
 		} else {
+			//#nosec G204 -- Just for testing
 			cmd = exec.Command("go", "build", "-o", binary, pkg)
 		}
 
@@ -105,4 +107,3 @@ func StartWiceWithCoverage(h *gont.Host, args ...interface{}) (io.Reader, io.Rea
 
 	return h.Start(bin, newArgs...)
 }
-

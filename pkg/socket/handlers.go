@@ -2,6 +2,7 @@ package socket
 
 import (
 	"context"
+	"fmt"
 
 	"riasc.eu/wice/pkg/pb"
 )
@@ -42,7 +43,9 @@ func (s *Server) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_St
 	}
 
 	for e := range events {
-		stream.Send(e)
+		if err := stream.Send(e); err != nil {
+			return fmt.Errorf("failed to send event: %w", err)
+		}
 	}
 
 	return nil

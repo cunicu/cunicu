@@ -270,7 +270,9 @@ func (a *Agent) DumpWireguardInterfaces() error {
 
 		for _, dev := range devs {
 			d := wg.Device(*dev)
-			d.DumpEnv(os.Stdout)
+			if err := d.DumpEnv(os.Stdout); err != nil {
+				return err
+			}
 		}
 
 		return nil

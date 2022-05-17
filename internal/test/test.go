@@ -31,6 +31,7 @@ func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
 func GenerateSignalingMessage() *pb.SignalingMessage {
 	return &pb.SignalingMessage{
 		Description: &pb.SessionDescription{
+			//#nosec G404 -- This is just test data
 			Epoch: rand.Int63(),
 		},
 	}

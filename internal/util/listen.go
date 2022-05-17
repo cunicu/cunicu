@@ -16,6 +16,7 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 	}
 
 	for attempts := 100; attempts > 0; attempts-- {
+		//#nosec G404 -- Port numbers do not require to be cryptographically random
 		port := min + rand.Intn(max-min+1)
 		if canListenOnPort(network, port) {
 			return port, nil
