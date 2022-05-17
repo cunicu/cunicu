@@ -52,9 +52,10 @@ var (
 		Version:           version,
 	}
 
-	version string //lint:ignore U1000 set via ldflags -X / goreleaser
-	commit  string //lint:ignore U1000 set via ldflags -X / goreleaser
-	date    string //lint:ignore U1000 set via ldflags -X / goreleaser
+	// set via ldflags -X / goreleaser
+	version string
+	date    string
+	// commit  string
 
 	logLevel = level{zapcore.InfoLevel}
 	logFile  string

@@ -279,7 +279,9 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 
 		if d.logger.Core().Enabled(zap.DebugLevel) {
 			d.logger.Debug("Intialized interface:")
-			interf.DumpConfig(&zapio.Writer{Log: d.logger})
+			if err := interf.DumpConfig(&zapio.Writer{Log: d.logger}); err != nil {
+				return err
+			}
 		}
 
 		d.Interfaces = append(d.Interfaces, interf)

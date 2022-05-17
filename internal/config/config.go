@@ -31,12 +31,21 @@ type Config struct {
 }
 
 func init() {
-	mime.AddExtensionType(".yaml", "text/yaml")
-	mime.AddExtensionType(".yaml", "text/x-yaml")
-	mime.AddExtensionType(".toml", "application/toml")
-	mime.AddExtensionType(".env", "text/x-ini")
-	mime.AddExtensionType(".ini", "text/x-ini")
-	mime.AddExtensionType(".props", "text/x-java-properties")
+	mtm := map[string][]string{
+		"text/yaml":              {".yaml", ".yml"},
+		"text/x-yaml":            {".yaml", ".yml"},
+		"application/toml":       {".toml"},
+		"text/x-ini":             {".env", ".ini"},
+		"text/x-java-properties": {".props"},
+	}
+
+	for typ, exts := range mtm {
+		for _, ext := range exts {
+			if err := mime.AddExtensionType(ext, typ); err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func ParseArgs(args ...string) (*Config, error) {
@@ -190,11 +199,15 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		if newName, ok := flagMap[flag.Name]; ok {
-			c.BindPFlag(newName, flag)
+			if err := c.BindPFlag(newName, flag); err != nil {
+				panic(err)
+			}
 		}
 
 		if hide, ok := advancedFlags[flag.Name]; ok && hide && !showAdvancedFlags {
-			flags.MarkHidden(flag.Name)
+			if err := flags.MarkHidden(flag.Name); err != nil {
+				panic(err)
+			}
 		}
 	})
 

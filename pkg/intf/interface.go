@@ -11,7 +11,7 @@ import (
 type Interface interface {
 	io.Closer
 
-	Dump(wr io.Writer, color bool, hideKeys bool)
+	Dump(wr io.Writer, color bool, hideKeys bool) error
 	DumpConfig(wr io.Writer) error
 	SyncConfig(cfg string) error
 

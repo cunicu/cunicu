@@ -67,7 +67,9 @@ func daemon(cmd *cobra.Command, args []string) {
 
 	if logger.Core().Enabled(zap.DebugLevel) {
 		logger.Debug("Loaded configuration:")
-		cfg.Dump(&zapio.Writer{Log: logger})
+		if err := cfg.Dump(&zapio.Writer{Log: logger}); err != nil {
+			logger.Fatal("Failed to dump configuration", zap.Error(err))
+		}
 	}
 
 	// Create daemon

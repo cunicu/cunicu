@@ -16,8 +16,12 @@ var (
 
 func main() {
 	if os.Args[0] == "wg" {
-		wgCmd.Execute()
+		if err := wgCmd.Execute(); err != nil {
+			os.Exit(1)
+		}
 	} else {
-		RootCmd.Execute()
+		if err := RootCmd.Execute(); err != nil {
+			os.Exit(1)
+		}
 	}
 }

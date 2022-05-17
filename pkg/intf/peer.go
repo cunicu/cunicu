@@ -76,9 +76,14 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
 		return nil, fmt.Errorf("failed to setup proxy: %w", err)
 	}
 
+	ip, err := p.PublicKey().IPv6Address()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get IP address: %w", err)
+	}
+
 	// Add default link-local address as allowed IP
 	ap := net.IPNet{
-		IP:   p.PublicKey().IPv6Address().IP,
+		IP:   ip.IP,
 		Mask: net.CIDRMask(128, 128),
 	}
 	if err := p.addAllowedIP(ap); err != nil {

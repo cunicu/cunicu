@@ -49,8 +49,15 @@ func Color(str string, mods ...string) string {
 	return strings.Join(mods, "") + str + Reset
 }
 
-func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]interface{}) {
+func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]interface{}) (int, error) {
+	n := 0
 	for k, v := range kv {
-		FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v)
+		if b, err := FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v); err != nil {
+			return b, err
+		} else {
+			n += b
+		}
 	}
+
+	return n, nil
 }

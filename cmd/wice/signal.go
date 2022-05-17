@@ -46,9 +46,9 @@ func signal(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	logger.Info("gRPC signaling server is listening", zap.String("address", listenAddress))
+	logger.Info("Starting gRPC signaling server", zap.String("address", listenAddress))
 
-	svr.Serve(l)
-
-	logger.Info("bye")
+	if err := svr.Serve(l); err != nil {
+		logger.Fatal("Failed to start gRPC server", zap.Error(err))
+	}
 }
