@@ -85,5 +85,13 @@ func init() {
 }
 
 func setupLogging() {
-	logger = log.SetupLogging(logLevel.Level, []string{"stdout", logFile}, []string{"stderr", logFile})
+	outputPaths := []string{"stdout"}
+	errOutputPaths := []string{"stderr"}
+
+	if logFile != "" {
+		outputPaths = append(outputPaths, logFile)
+		errOutputPaths = append(errOutputPaths, logFile)
+	}
+
+	logger = log.SetupLogging(logLevel.Level, outputPaths, errOutputPaths)
 }
