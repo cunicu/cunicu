@@ -24,6 +24,12 @@ wg:
   interfaces:
   - wg-vpn
 
+  # Port range for ListenPort setting of newly created Wireguard interfaces
+  # wice will select the first available port in this range.
+  port:
+    min: 52820
+    max: 65535
+
 # Control socket settings
 socket:
   path: /var/run/wice.sock
@@ -69,10 +75,9 @@ ice:
   nat_1to1_ips: []
 
   # Limit the port range used by ICE
-  # This is optional. Leave them 0 for the default UDP port allocation strategy.
   port:
-      max: 0
-      min: 0
+      min: 49152
+      max: 65535
 
   # The check interval controls how often our task loop runs when in the connecting state.
   check_interval: 200ms
