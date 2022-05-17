@@ -17,6 +17,9 @@ var _ = Describe("Fan-out", func() {
 
 		Eventually(ch1).Should(Receive(Equal(1234)))
 		Eventually(ch2).Should(Receive(Equal(1234)))
+
+		err := fo.Close()
+		Expect(err).To(Succeed())
 	})
 
 	It("also works with unbuffered channels if there is only a single channel", func() {
@@ -26,9 +29,27 @@ var _ = Describe("Fan-out", func() {
 		fo.C <- 1234
 
 		Eventually(ch).Should(Receive(Equal(1234)))
+
+		err := fo.Close()
+		Expect(err).To(Succeed())
 	})
 
-	It("might deadlock if there are more reciving channels", func() {
+	It("also works with unbuffered channels if there is only a single channel or others have been removed", func() {
+		fo := util.NewFanout[int](0)
+		ch1 := fo.Add()
+		ch2 := fo.Add()
+
+		fo.Remove(ch2)
+
+		fo.C <- 1234
+
+		Eventually(ch1).Should(Receive(Equal(1234)))
+
+		err := fo.Close()
+		Expect(err).To(Succeed())
+	})
+
+	It("might deadlock if there are more receiving channels", func() {
 		fo := util.NewFanout[int](0)
 		ch1 := fo.Add()
 		ch2 := fo.Add()
@@ -37,5 +58,8 @@ var _ = Describe("Fan-out", func() {
 
 		Eventually(ch1).ShouldNot(Receive(Equal(1234)))
 		Eventually(ch2).ShouldNot(Receive(Equal(1234)))
+
+		err := fo.Close()
+		Expect(err).To(Succeed())
 	})
 })

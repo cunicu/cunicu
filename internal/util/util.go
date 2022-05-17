@@ -6,9 +6,6 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	"unsafe"
-
-	"golang.org/x/sys/unix"
 )
 
 type Less func(i, j int) bool
@@ -55,14 +52,6 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 func GenerateRandomString(s int) (string, error) {
 	b, err := GenerateRandomBytes(s)
 	return base64.URLEncoding.EncodeToString(b), err
-}
-
-func SetsockoptBytes(fd int, level int, opt int, b []byte) unix.Errno {
-	_, _, errno := unix.Syscall6(unix.SYS_SETSOCKOPT,
-		uintptr(fd), uintptr(level), uintptr(opt),
-		uintptr(unsafe.Pointer(&b[0])), uintptr(len(b)), 0)
-
-	return errno
 }
 
 func IsATTY() bool {
