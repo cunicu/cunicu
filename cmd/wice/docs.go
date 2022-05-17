@@ -54,6 +54,8 @@ func init() {
 
 func docsMarkdown(cmd *cobra.Command, args []string) error {
 	dir := filepath.Join(outputDir, "md")
+
+	//#nosec G301 -- Doc directories must be world readable
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
@@ -63,6 +65,8 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 
 func docsManpage(cmd *cobra.Command, args []string) error {
 	dir := filepath.Join(outputDir, "man")
+
+	//#nosec G301 -- Doc directories must be world readable
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}

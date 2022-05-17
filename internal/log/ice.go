@@ -63,7 +63,9 @@ func (l *pionLeveledLogger) Errorf(format string, args ...interface{}) {
 func (f *pionLoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 	var lvl zapcore.Level
 	if lvlStr := os.Getenv("PION_LOG"); lvlStr != "" {
-		lvl.UnmarshalText([]byte(lvlStr))
+		if err := lvl.UnmarshalText([]byte(lvlStr)); err != nil {
+			f.Base.Fatal("Unknown ICE logger level", zap.Error(err), zap.String("level", lvlStr))
+		}
 	} else {
 		lvl = zapcore.WarnLevel
 	}

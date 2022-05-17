@@ -39,7 +39,7 @@ func (d *Device) DumpEnv(wr io.Writer) {
 	d.Dump(wr, color, hideKeys)
 }
 
-func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) {
+func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
 	var kv = map[string]interface{}{
 		"public key":     d.PublicKey,
 		"private key":    "(hidden)",
@@ -54,8 +54,12 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) {
 		kv["fwmark"] = fmt.Sprintf("%#x", d.FirewallMark)
 	}
 
-	t.FprintfColored(wr, color, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name)
-	t.PrintKeyValues(wr, color, "  ", kv)
+	if _, err := t.FprintfColored(wr, color, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name); err != nil {
+		return err
+	}
+	if _, err := t.PrintKeyValues(wr, color, "  ", kv); err != nil {
+		return err
+	}
 
 	// TODO: sort peer list
 	// https://github.com/WireGuard/wireguard-tools/blob/1fd95708391088742c139010cc6b821add941dec/src/show.c#L47
@@ -95,7 +99,13 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) {
 		}
 
 		fmt.Fprintln(wr)
-		t.FprintfColored(wr, color, t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", peer.PublicKey.String())
-		t.PrintKeyValues(wr, color, "  ", kv)
+		if _, err := t.FprintfColored(wr, color, t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", peer.PublicKey.String()); err != nil {
+			return err
+		}
+		if _, err := t.PrintKeyValues(wr, color, "  ", kv); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net"
 
 	"github.com/aead/siphash"
@@ -108,19 +109,27 @@ func (k Key) Bytes() []byte {
 }
 
 // IPv6Address derives an IPv6 link local address from they key
-func (k Key) IPv6Address() *net.IPNet {
+func (k Key) IPv6Address() (*net.IPNet, error) {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
 	hash, _ := siphash.New64(addrHashKey[:])
-	hash.Write(k[:])
+	if n, err := hash.Write(k[:]); err != nil {
+		return nil, err
+	} else if n != KeyLength {
+		return nil, errors.New("incomplete write")
+	}
 
 	// Append interface identifier from the hash function
 	ip = hash.Sum(ip)
 
+	if len(ip) != net.IPv6len {
+		return nil, fmt.Errorf("invalid IP length: %d", len(ip))
+	}
+
 	return &net.IPNet{
 		IP:   ip,
 		Mask: net.CIDRMask(64, 128),
-	}
+	}, nil
 }
 
 // Checks if the key is not zero

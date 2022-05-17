@@ -21,9 +21,11 @@ func (w *writerWrapper) Sync() error {
 }
 
 func SetupLogging() *zap.Logger {
-	zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
+	if err := zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
 		return &writerWrapper{ginkgo.GinkgoWriter}, nil
-	})
+	}); err != nil {
+		panic(err)
+	}
 
 	outputPaths := []string{"ginkgo:"}
 	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)

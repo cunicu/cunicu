@@ -29,7 +29,9 @@ func NewGRPCLogger(logger *zap.Logger) grpclog.LoggerV2 {
 
 	severityLevel := os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL")
 	if severityLevel != "" {
-		level.UnmarshalText([]byte(severityLevel))
+		if err := level.UnmarshalText([]byte(severityLevel)); err != nil {
+			logger.Fatal("Unknown gRPC logger severity level", zap.Error(err), zap.String("level", severityLevel))
+		}
 	} else {
 		level = zap.WarnLevel
 	}

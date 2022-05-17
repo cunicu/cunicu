@@ -354,7 +354,10 @@ func (i *BaseInterface) RemovePeer(pk wgtypes.Key) error {
 }
 
 func (i *BaseInterface) addLinkLocalAddress() error {
-	addr := i.PublicKey().IPv6Address()
+	addr, err := i.PublicKey().IPv6Address()
+	if err != nil {
+		return err
+	}
 
 	return i.AddAddress(addr)
 }

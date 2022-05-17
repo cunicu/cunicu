@@ -156,7 +156,7 @@ When `wice daemon` can be started with `--config` options pointing to HTTPS URIs
 
 This feature can be combined with the DNS auto-configuration method by providing a TXT record pointing to the configuration file:
 
-```
+```text
 example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
 ```
 

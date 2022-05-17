@@ -222,7 +222,8 @@ var _ = It("can generate valid IPv6 link-local addresses from a public key", fun
 	key, err := crypto.GeneratePrivateKey()
 	Expect(err).To(Succeed())
 
-	addr := key.PublicKey().IPv6Address()
+	addr, err := key.PublicKey().IPv6Address()
+	Expect(err).To(Succeed())
 
 	_, ll, err := net.ParseCIDR("fe80::/10")
 	Expect(err).To(Succeed())

@@ -26,8 +26,13 @@ func (p *Peer) InitiateHandshake() error {
 	for time.Since(p.LastHandshakeTime) > 5*time.Second {
 		p.logger.Debug("Waiting for handshake")
 
+		ip, err := p.PublicKey().IPv6Address()
+		if err != nil {
+			return fmt.Errorf("failed to get IP: %w", err)
+		}
+
 		ra := &net.UDPAddr{
-			IP:   p.PublicKey().IPv6Address().IP,
+			IP:   ip.IP,
 			Zone: p.Interface.Name(),
 			Port: 1234,
 		}
