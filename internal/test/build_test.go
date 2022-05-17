@@ -20,7 +20,7 @@ var _ = Describe("build", func() {
 	})
 
 	It("can build wice binary", func() {
-		bin, err := test.BuildBinary()
+		bin, err := test.BuildBinary(false)
 		Expect(err).To(Succeed())
 
 		fi, err := os.Stat(bin)

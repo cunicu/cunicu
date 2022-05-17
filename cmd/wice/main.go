@@ -18,6 +18,6 @@ func main() {
 	if os.Args[0] == "wg" {
 		wgCmd.Execute()
 	} else {
-		rootCmd.Execute()
+		RootCmd.Execute()
 	}
 }

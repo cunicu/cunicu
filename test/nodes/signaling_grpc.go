@@ -58,7 +58,7 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 		"--listen", fmt.Sprintf(":%d", s.port),
 	}
 
-	cmd, err := test.BuildBinary()
+	cmd, err := test.BuildBinary(false)
 	if err != nil {
 		return fmt.Errorf("failed to build wice: %w", err)
 	}

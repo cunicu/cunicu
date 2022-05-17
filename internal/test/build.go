@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path"
@@ -16,6 +17,8 @@ var (
 	// Singleton for compiled wice executable
 	binary      string
 	binaryMutex sync.Mutex
+
+	packageName = "riasc.eu/wice"
 )
 
 func FindBaseDir() (string, error) {
@@ -39,7 +42,7 @@ func FindBaseDir() (string, error) {
 	return "", os.ErrNotExist
 }
 
-func BuildBinary() (string, error) {
+func BuildBinary(coverage bool) (string, error) {
 	binaryMutex.Lock()
 	defer binaryMutex.Unlock()
 
@@ -51,12 +54,14 @@ func BuildBinary() (string, error) {
 			return "", fmt.Errorf("failed to find base dir: %w", err)
 		}
 
-		wd, _ := os.Getwd()
-		os.Chdir(base)
-		defer os.Chdir(wd)
-		// zap.L().Info("Base dir", zap.String("dir", base), zap.String("wd", wd))
+		var pkg = filepath.Join(base, "cmd/wice")
+		var cmd *exec.Cmd
+		if coverage {
+			cmd = exec.Command("go", "test", "-o", binary, "-buildvcs=false", "-cover", "-covermode=count", "-coverpkg="+packageName+"/...", "-c", "-tags", "testmain", pkg)
+		} else {
+			cmd = exec.Command("go", "build", "-o", binary, pkg)
+		}
 
-		cmd := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "./cmd/wice/")
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return "", fmt.Errorf("failed to build wice: %w\n%s", err, out)
 		}
@@ -66,7 +71,7 @@ func BuildBinary() (string, error) {
 }
 
 func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
-	bin, err := BuildBinary()
+	bin, err := BuildBinary(false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build binary: %w", err)
 	}
@@ -75,10 +80,29 @@ func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
 }
 
 func StartWice(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
-	bin, err := BuildBinary()
+	bin, err := BuildBinary(false)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to build binary: %w", err)
 	}
 
 	return h.Start(bin, args...)
+}
+
+func StartWiceWithCoverage(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
+	bin, err := BuildBinary(true)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to build binary: %w", err)
+	}
+
+	base, err := FindBaseDir()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to find base dir: %w", err)
+	}
+
+	covPath := fmt.Sprintf("coverprofile-%s-%d.out", h.Name(), rand.Intn(10000))
+	covPath = filepath.Join(base, covPath)
+	newArgs := []interface{}{"-test.run=^TestMain$", "-test.coverprofile=" + covPath, "--"}
+	newArgs = append(newArgs, args...)
+
+	return h.Start(bin, newArgs...)
 }

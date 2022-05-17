@@ -14,7 +14,7 @@ var monitorCmd = &cobra.Command{
 }
 
 func init() {
-	addClientCommand(rootCmd, monitorCmd)
+	addClientCommand(RootCmd, monitorCmd)
 }
 
 func monitor(cmd *cobra.Command, args []string) error {

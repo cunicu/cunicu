@@ -112,6 +112,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.0.0
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
+	golang.org/x/exp v0.0.0-20220516143420-24438e51023a
 	sigs.k8s.io/controller-runtime v0.11.2
 )
 

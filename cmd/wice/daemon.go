@@ -29,7 +29,7 @@ func init() {
 
 	cfg = config.NewConfig(pf)
 
-	rootCmd.AddCommand(daemonCmd)
+	RootCmd.AddCommand(daemonCmd)
 }
 
 func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

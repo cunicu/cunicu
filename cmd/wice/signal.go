@@ -25,7 +25,7 @@ func init() {
 	pf := signalCmd.PersistentFlags()
 	pf.StringVarP(&listenAddress, "listen", "L", ":443", "listen address")
 
-	rootCmd.AddCommand(signalCmd)
+	RootCmd.AddCommand(signalCmd)
 }
 
 func signal(cmd *cobra.Command, args []string) {

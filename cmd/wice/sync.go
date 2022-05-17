@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	addClientCommand(rootCmd, syncCmd)
+	addClientCommand(RootCmd, syncCmd)
 }
 
 func sync(cmd *cobra.Command, args []string) error {

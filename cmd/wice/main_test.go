@@ -1,16 +1,23 @@
+// go:build testmain
+//go:build testmain
+// +build testmain
+
 package main_test
 
 import (
+	"os"
 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/test"
+	m "riasc.eu/wice/cmd/wice"
+
+	"golang.org/x/exp/slices"
 )
 
-func TestSuite(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Main")
-}
+func TestMain(t *testing.T) {
+	i := slices.Index(os.Args, "--")
+	if i >= 0 {
+		os.Args = append([]string{os.Args[0]}, os.Args[i+1:]...)
+	}
 
-var _ = test.SetupLogging()
+	m.RootCmd.Execute()
+}

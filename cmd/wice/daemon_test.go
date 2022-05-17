@@ -29,9 +29,6 @@ var _ = Describe("single isolated host", func() {
 			Skip("Insufficient privileges")
 		}
 
-		_, err := test.BuildBinary()
-		Expect(err).To(Succeed())
-
 		n, err = g.NewNetwork("")
 		Expect(err).To(Succeed())
 
@@ -66,7 +63,7 @@ var _ = Describe("single isolated host", func() {
 				tmpDir = GinkgoT().TempDir()
 				sockPath := filepath.Join(tmpDir, "wice.sock")
 
-				_, _, cmd, err = test.StartWice(h1, "daemon",
+				_, _, cmd, err = test.StartWiceWithCoverage(h1, "daemon",
 					"--log-level", "debug",
 					"--socket", sockPath)
 				Expect(err).To(Succeed())
@@ -78,7 +75,7 @@ var _ = Describe("single isolated host", func() {
 			})
 
 			AfterEach(func() {
-				err = cmd.Process.Kill()
+				err = cmd.Process.Signal(os.Interrupt)
 				Expect(err).To(Succeed())
 
 				err = client.Close()
