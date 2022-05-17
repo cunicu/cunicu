@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
@@ -9,7 +8,6 @@ import (
 	"net"
 
 	"github.com/aead/siphash"
-	"github.com/pion/dtls/v2/pkg/crypto/hash"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -143,21 +141,6 @@ type KeyPair struct {
 }
 
 type PublicKeyPair KeyPair
-
-func (kp KeyPair) ID(key []byte) string {
-	if key == nil {
-		key = []byte{}
-	}
-
-	ctx := hmac.New(hash.SHA512.CryptoHash().HashFunc().New, key)
-
-	ctx.Write(kp.Ours[:])
-	ctx.Write(kp.Theirs[:])
-
-	mac := ctx.Sum(nil)
-
-	return base64.URLEncoding.EncodeToString(mac)
-}
 
 func (kp KeyPair) Shared() Key {
 	shared, _ := curve25519.X25519(kp.Ours[:], kp.Theirs[:])

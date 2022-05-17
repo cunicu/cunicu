@@ -158,7 +158,9 @@ out:
 			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
 			switch sig {
 			case unix.SIGUSR1:
-				d.SyncAllInterfaces()
+				if err := d.SyncAllInterfaces(); err != nil {
+					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
+				}
 			default:
 				break out
 			}

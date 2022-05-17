@@ -13,7 +13,7 @@ import (
 
 type Device wgtypes.Device
 
-func (d *Device) DumpEnv(wr io.Writer) {
+func (d *Device) DumpEnv(wr io.Writer) error {
 	var color, hideKeys bool
 
 	switch os.Getenv("WG_COLOR_MODE") {
@@ -36,7 +36,7 @@ func (d *Device) DumpEnv(wr io.Writer) {
 		hideKeys = true
 	}
 
-	d.Dump(wr, color, hideKeys)
+	return d.Dump(wr, color, hideKeys)
 }
 
 func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
