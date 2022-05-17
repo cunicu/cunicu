@@ -4,7 +4,7 @@
 
 ### Synopsis
 
-Wireguard Interactive Connectitivty Establishment
+Wireguard Interactive Connectivity Establishment
 
 ```
 wice [flags]
