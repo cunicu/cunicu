@@ -43,7 +43,7 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(docsCmd)
+	RootCmd.AddCommand(docsCmd)
 
 	docsCmd.AddCommand(docsManpageCmd)
 	docsCmd.AddCommand(docsMarkdownCmd)
@@ -58,7 +58,7 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	return doc.GenMarkdownTree(rootCmd, dir)
+	return doc.GenMarkdownTree(RootCmd, dir)
 }
 
 func docsManpage(cmd *cobra.Command, args []string) error {
@@ -79,5 +79,5 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 		Date:    &d,
 	}
 
-	return doc.GenManTree(rootCmd, header, dir)
+	return doc.GenManTree(RootCmd, header, dir)
 }

@@ -33,7 +33,7 @@ func FindNextPortToListen(network string, start, end int) (int, error) {
 		return -1, fmt.Errorf("unsupported network: %s", network)
 	}
 
-	for port := start; start <= end; port++ {
+	for port := start; port <= end; port++ {
 		if canListenOnPort(network, port) {
 			return port, nil
 		}
@@ -44,11 +44,7 @@ func FindNextPortToListen(network string, start, end int) (int, error) {
 
 func canListenOnPort(network string, port int) bool {
 	if conn, err := net.ListenUDP(network, &net.UDPAddr{Port: port}); err == nil {
-		if err := conn.Close(); err != nil {
-			return false
-		}
-
-		return true
+		return conn.Close() == nil
 	} else {
 		return false
 	}

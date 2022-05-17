@@ -33,7 +33,7 @@ type SelfUpdateOptions struct {
 var selfUpdateOptions SelfUpdateOptions
 
 func init() {
-	rootCmd.AddCommand(selfUpdateCmd)
+	RootCmd.AddCommand(selfUpdateCmd)
 
 	flags := selfUpdateCmd.Flags()
 	flags.StringVar(&selfUpdateOptions.Output, "output", "", "Save the downloaded file as `filename` (default: running binary itself)")

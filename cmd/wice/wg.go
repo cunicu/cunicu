@@ -49,7 +49,7 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(wgCmd)
+	RootCmd.AddCommand(wgCmd)
 
 	wgCmd.AddCommand(wgGenKeyCmd)
 	wgCmd.AddCommand(wgGenPSKCmd)

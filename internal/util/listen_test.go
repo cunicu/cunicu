@@ -18,6 +18,16 @@ var _ = Describe("find bindable port in range", func() {
 			Expect(port).To(BeNumerically("==", 10032))
 		})
 
+		It("fails if max < min", func() {
+			_, err := util.FindNextPortToListen("udp", 10010, 1005)
+			Expect(err).To(MatchError("minimal port must be larger than maximal port number"))
+		})
+
+		It("fails for unsupported network type", func() {
+			_, err := util.FindNextPortToListen("tcp", 10010, 10020)
+			Expect(err).To(MatchError("unsupported network: tcp"))
+		})
+
 		Context("with used port", func() {
 			var conn net.Conn
 			var port = 10024
@@ -36,10 +46,15 @@ var _ = Describe("find bindable port in range", func() {
 				Expect(err).To(Succeed())
 			})
 
-			It("fails with a single port if that one is already used", func() {
+			It("finds the next available port", func() {
 				portFound, err := util.FindNextPortToListen("udp", port, config.EphemeralPortMax)
 				Expect(err).To(Succeed())
 				Expect(portFound).To(BeNumerically("==", port+1))
+			})
+
+			It("fails with a single port if that one is already used", func() {
+				_, err := util.FindNextPortToListen("udp", port, port)
+				Expect(err).To(MatchError("failed to find port"))
 			})
 		})
 	})
@@ -90,6 +105,11 @@ var _ = Describe("find bindable port in range", func() {
 		It("fails if max < min", func() {
 			_, err := util.FindRandomPortToListen("udp", 10010, 1005)
 			Expect(err).To(MatchError("minimal port must be larger than maximal port number"))
+		})
+
+		It("fails for unsupported network type", func() {
+			_, err := util.FindRandomPortToListen("tcp", 10010, 10020)
+			Expect(err).To(MatchError("unsupported network: tcp"))
 		})
 
 		It("works with a single port", func() {

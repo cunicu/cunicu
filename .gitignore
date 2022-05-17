@@ -3,5 +3,5 @@ build/
 dist/
 /wice
 *.log
-coverprofile.out
+*.out
 lcov.info
