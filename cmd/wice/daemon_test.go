@@ -11,7 +11,9 @@ import (
 	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	"github.com/vishvananda/netlink"
+	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/internal/test"
+	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/socket"
 )
@@ -23,6 +25,10 @@ var _ = Describe("single isolated host", func() {
 	var h1 *g.Host
 
 	BeforeEach(func() {
+		if !util.HasCapabilities(cap.NET_ADMIN) {
+			Skip("Insufficient privileges")
+		}
+
 		_, err := test.BuildBinary()
 		Expect(err).To(Succeed())
 
@@ -30,6 +36,7 @@ var _ = Describe("single isolated host", func() {
 		Expect(err).To(Succeed())
 
 		h1, err = n.AddHost("h1")
+		Expect(err).To(Succeed())
 	})
 
 	AfterEach(func() {

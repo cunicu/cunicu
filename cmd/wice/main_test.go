@@ -13,4 +13,4 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Main")
 }
 
-var logger = test.SetupLogging()
+var _ = test.SetupLogging()
