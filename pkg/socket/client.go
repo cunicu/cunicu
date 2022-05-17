@@ -5,14 +5,16 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
+	"net"
 	"sync"
 	"time"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	ginsecure "google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
@@ -33,24 +35,16 @@ type Client struct {
 }
 
 func waitForSocket(path string) error {
-	tries := 500
-	for {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			tries--
-			if tries == 0 {
-				return fmt.Errorf("timed out")
-			}
-
-			time.Sleep(10 * time.Millisecond)
-			continue
-		} else if err != nil {
-			return fmt.Errorf("failed stat: %w", err)
-		} else {
-			break
+	for tries := 500; tries > 0; tries-- {
+		ua := &net.UnixAddr{Name: path}
+		if conn, err := net.DialUnix("unix", nil, ua); err == nil {
+			return conn.Close()
 		}
+
+		time.Sleep(10 * time.Millisecond)
 	}
 
-	return nil
+	return fmt.Errorf("timed out")
 }
 
 func Connect(path string) (*Client, error) {
@@ -97,13 +91,18 @@ func (c *Client) streamEvents() {
 	stream, err := c.StreamEvents(context.Background(), &pb.StreamEventsParams{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
+		return
 	}
 
 	ok := true
 	for ok {
 		e, err := stream.Recv()
 		if err != nil {
-			c.logger.Error("Failed to receive event", zap.Error(err))
+			sts, ok := status.FromError(err)
+			if !ok || (sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable) {
+				c.logger.Error("Failed to receive event", zap.Error(err))
+			}
+
 			break
 		}
 
