@@ -1,6 +1,8 @@
 package test
 
 import (
+	"bytes"
+	"math"
 	"math/rand"
 	"net"
 
@@ -47,4 +49,21 @@ func ParseIP(s string) (net.IPNet, error) {
 		IP:   ip,
 		Mask: netw.Mask,
 	}, nil
+}
+
+func Entropy(data []byte) float64 {
+	if len(data) == 0 {
+		return 0
+	}
+
+	var length = float64(len(data))
+	var entropy = 0.0
+
+	for i := 0; i < 256; i++ {
+		if p := float64(bytes.Count(data, []byte{byte(i)})) / length; p > 0 {
+			entropy += -p * math.Log2(p)
+		}
+	}
+
+	return entropy
 }

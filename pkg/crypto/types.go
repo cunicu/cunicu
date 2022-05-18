@@ -68,10 +68,7 @@ func ParseKey(str string) (Key, error) {
 		return Key{}, err
 	}
 
-	var key Key
-	copy(key[:], k[:KeyLength])
-
-	return key, nil
+	return ParseKeyBytes(k)
 }
 
 func ParseKeyBytes(buf []byte) (Key, error) {

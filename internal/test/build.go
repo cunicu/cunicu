@@ -60,7 +60,7 @@ func BuildBinary(coverage bool) (string, error) {
 			cmd = exec.Command("go", "test", "-o", binary, "-buildvcs=false", "-cover", "-covermode=count", "-coverpkg="+packageName+"/...", "-c", "-tags", "testmain", pkg)
 		} else {
 			//#nosec G204 -- Just for testing
-			cmd = exec.Command("go", "build", "-o", binary, pkg)
+			cmd = exec.Command("go", "build", "-buildvcs=false", "-o", binary, pkg)
 		}
 
 		if out, err := cmd.CombinedOutput(); err != nil {
