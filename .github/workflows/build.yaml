@@ -58,3 +58,9 @@ jobs:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
         coverage-reports: coverprofile.out
         force-coverage-parser: go
+
+    - name: Report test coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverprofile.out
