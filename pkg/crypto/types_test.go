@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 
+	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/pkg/crypto"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -30,8 +31,8 @@ var _ = Describe("PBKDF2 Key derivation", func() {
 		Expect(key1).To(HaveLen(crypto.KeyLength))
 	})
 
-	It("does not produce empty keys", func() {
-		Expect(key1.IsSet()).To(BeTrue())
+	It("produces a random key", func() {
+		Expect(key1.Bytes()).To(test.BeRandom())
 	})
 
 	It("can parse the generated key as a valid key", func() {
@@ -60,8 +61,8 @@ var _ = Describe("Key generation", func() {
 		Expect(key1).To(HaveLen(crypto.KeyLength))
 	})
 
-	It("does not produce empty keys", func() {
-		Expect(key1.IsSet()).To(BeTrue())
+	It("generates random keys", func() {
+		Expect(key1.Bytes()).To(test.BeRandom())
 	})
 
 	It("can parse the generated key as a valid key", func() {
@@ -90,8 +91,8 @@ var _ = Describe("Private key generation", func() {
 		Expect(key1).To(HaveLen(crypto.KeyLength))
 	})
 
-	It("does not produce empty keys", func() {
-		Expect(key1.IsSet()).To(BeTrue())
+	It("generates random keys", func() {
+		Expect(key1.Bytes()).To(test.BeRandom())
 	})
 
 	It("can parse the generated key as a valid key", func() {
@@ -127,6 +128,18 @@ var _ = Describe("Key to string conversion", Ordered, func() {
 
 	It("result in the same key as the original", func() {
 		Expect(key1).To(Equal(key2))
+	})
+})
+
+var _ = Describe("Key parsing", func() {
+	It("fails to parse a key from a malformed string", func() {
+		_, err := crypto.ParseKey("this is not a proper base64 encoded key")
+		Expect(err.Error()).To(ContainSubstring("illegal base64 data"))
+	})
+
+	It("fails to parse a proper base64 string with incorrect length", func() {
+		_, err := crypto.ParseKey("gHI04aIM0Nopa149R+Isnj7bI+B750p2/BMwy4tV8YEC")
+		Expect(err).To(MatchError("invalid length"))
 	})
 })
 
@@ -216,6 +229,7 @@ var _ = It("can derive a shared key via the X25519 Diffie Hellman function", fun
 	}
 
 	Expect(kp1.Shared()).To(Equal(kp2.Shared()))
+	Expect(kp1.Shared().Bytes()).To(test.BeRandom())
 })
 
 var _ = It("can generate valid IPv6 link-local addresses from a public key", func() {
@@ -232,4 +246,22 @@ var _ = It("can generate valid IPv6 link-local addresses from a public key", fun
 	Expect(ones).To(Equal(64))
 	Expect(bits).To(Equal(net.IPv6len * 8))
 	Expect(ll.Contains(addr.IP)).To(BeTrue())
+})
+
+var _ = It("can generate a public keypair from a public/private one", func() {
+	key1, err := crypto.GeneratePrivateKey()
+	Expect(err).To(Succeed())
+
+	key2, err := crypto.GeneratePrivateKey()
+	Expect(err).To(Succeed())
+
+	kp := crypto.KeyPair{
+		Ours:   key1,
+		Theirs: key2.PublicKey(),
+	}
+
+	pkp := kp.Public()
+
+	Expect(pkp.Ours).To(Equal(kp.Ours.PublicKey()))
+	Expect(pkp.Theirs).To(Equal(kp.Theirs))
 })

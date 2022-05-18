@@ -19,6 +19,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Netlink Suite")
 }
 
+// TODO: Run these tests in a network namespace via Gont
 var _ = Describe("Wireguard link handling", Ordered, func() {
 	var link *nl.Wireguard
 	var linkName string
