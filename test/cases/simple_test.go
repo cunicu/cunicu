@@ -9,81 +9,103 @@ import (
 
 var _ = Context("simple", func() {
 
-	Specify("any", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
+	Context("any", func() {
+		Specify("ipv4", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{},
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
+
+		Specify("ipv6", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp6",
+					},
+				},
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
 	})
 
-	Specify("any IPv6", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{
-				Arguments: []interface{}{
-					"--ice-network-type", "udp6",
+	Context("host", func() {
+		Specify("ipv4", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp4",
+						"--ice-candidate-type", "srflx",
+					},
 				},
-			},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
+
+		Specify("ipv6", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp6",
+						"--ice-candidate-type", "srflx",
+					},
+				},
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
 	})
 
-	Specify("host IPv4", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{
-				Arguments: []interface{}{
-					"--ice-network-type", "udp4",
-					"--ice-candidate-type", "srflx",
+	Context("srflx", func() {
+		Specify("ipv4", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp4",
+						"--ice-candidate-type", "srflx",
+					},
 				},
-			},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
+
+		Specify("ipv6", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp6",
+						"--ice-candidate-type", "srflx",
+					},
+				},
+				&net.NetworkParams{
+					NumAgents: 2,
+				},
+			)
+		})
 	})
 
-	Specify("host IPv6", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{
-				Arguments: []interface{}{
-					"--ice-network-type", "udp6",
-					"--ice-candidate-type", "srflx",
+	Context("relay", func() {
+		Specify("ipv4", func() {
+			Run(net.Simple,
+				&nodes.AgentParams{
+					Arguments: []interface{}{
+						"--ice-network-type", "udp4",
+						"--ice-candidate-type", "relay",
+					},
 				},
-			},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
-	})
-
-	Specify("srflx", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{
-				Arguments: []interface{}{
-					"--ice-network-type", "udp4",
-					"--ice-candidate-type", "srflx",
+				&net.NetworkParams{
+					NumAgents: 2,
 				},
-			},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
-	})
-
-	Specify("relay", func() {
-		Run(net.Simple,
-			&nodes.AgentParams{
-				Arguments: []interface{}{
-					"--ice-network-type", "udp4",
-					"--ice-candidate-type", "relay",
-				},
-			},
-			&net.NetworkParams{
-				NumAgents: 2,
-			},
-		)
+			)
+		})
 	})
 })
