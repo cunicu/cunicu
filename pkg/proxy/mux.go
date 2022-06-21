@@ -9,16 +9,20 @@ import (
 	"riasc.eu/wice/internal/log"
 )
 
-func CreateUDPMux(listenPort int) (ice.UDPMux, error) {
-	conn, err := createFilteredSTUNConnection(listenPort)
+func CreateUDPMux(listenPort int) (ice.UDPMux, int, error) {
+	conn, err := net.ListenUDP("udp", nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return ice.NewUDPMuxDefault(ice.UDPMuxParams{
+	lAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
 		UDPConn: conn,
 		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux"),
-	}), nil
+	})
+
+	return mux, lAddr.Port, nil
 }
 
 func CreateUDPMuxSrflx() (ice.UniversalUDPMux, int, error) {

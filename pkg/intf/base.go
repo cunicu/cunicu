@@ -409,12 +409,13 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 	}
 
 	// Create per-interface UDPMux
-	if i.udpMux, err = proxy.CreateUDPMux(i.ListenPort); err != nil && err != errors.ErrNotSupported {
+	var lPortHost, lPortSrfx int
+
+	if i.udpMux, lPortHost, err = proxy.CreateUDPMux(i.ListenPort); err != nil && err != errors.ErrNotSupported {
 		return BaseInterface{}, fmt.Errorf("failed to setup host UDP mux: %w", err)
 	}
 
-	var lPort int
-	if i.udpMuxSrflx, lPort, err = proxy.CreateUDPMuxSrflx(); err != nil && err != errors.ErrNotSupported {
+	if i.udpMuxSrflx, lPortSrfx, err = proxy.CreateUDPMuxSrflx(); err != nil && err != errors.ErrNotSupported {
 		return BaseInterface{}, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
 	}
 
@@ -425,10 +426,13 @@ func NewInterface(dev *wgtypes.Device, client *wgctrl.Client, backend signaling.
 			return BaseInterface{}, fmt.Errorf("failed to setup NAT: %w", err)
 		}
 
-		// Redirect non-STUN traffic directed to UDPMuxSrfx to listen port
-		if err := i.nat.RedirectNonSTUN(lPort, i.ListenPort); err != nil {
+		// Redirect non-STUN traffic directed at UDP muxes to Wireguard interface via in-kernel port redirect / NAT
+		if err := i.nat.RedirectNonSTUN(lPortHost, i.ListenPort); err != nil {
 			return BaseInterface{}, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
+		}
 
+		if err := i.nat.RedirectNonSTUN(lPortSrfx, i.ListenPort); err != nil {
+			return BaseInterface{}, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 		}
 	}
 

@@ -55,12 +55,7 @@ func (p *Proxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, err
 	// By default we proxy through the userspace
 	var ep *net.UDPAddr = nil
 
-	if cp.Local.Type() == ice.CandidateTypeHost && p.withEBPF {
-		ep = &net.UDPAddr{
-			IP:   net.ParseIP(cp.Remote.Address()),
-			Port: cp.Remote.Port(),
-		}
-	} else if cp.Local.Type() == ice.CandidateTypeServerReflexive && p.withNFT {
+	if cp.Local.Type() == ice.CandidateTypeHost || cp.Local.Type() == ice.CandidateTypeServerReflexive {
 		ep = &net.UDPAddr{
 			IP:   net.ParseIP(cp.Remote.Address()),
 			Port: cp.Remote.Port(),
