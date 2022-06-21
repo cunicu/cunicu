@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cilium/ebpf/rlimit"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -60,11 +59,6 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
-	}
-
-	// Disable memlock for loading eBPF programs
-	if err := rlimit.RemoveMemlock(); err != nil {
-		return nil, fmt.Errorf("failed to remove memlock: %w", err)
 	}
 
 	// Create Wireguard netlink socket

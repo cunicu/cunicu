@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/aead/siphash v1.0.1
-	github.com/cilium/ebpf v0.9.0
 	github.com/foxcpp/go-mockdns v1.0.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/zapr v1.2.3
