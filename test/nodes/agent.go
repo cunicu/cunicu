@@ -122,7 +122,7 @@ func (a *Agent) Start(extraArgs []interface{}) error {
 
 	go func() {
 		var out []byte
-		if out, a.Command, err = test.RunWice(a.Host, args); err != nil {
+		if out, a.Command, err = test.RunWice(a.Host, args...); err != nil {
 			a.logger.Error("Failed to start", zap.Error(err))
 		}
 

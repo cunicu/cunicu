@@ -46,18 +46,16 @@ func Run(factory net.NetworkFactory, a *nodes.AgentParams, p *net.NetworkParams)
 		// TODO: We currently assume that all relays use the same credentials
 		a.Arguments = append(a.Arguments, "--username", n.Relays[0].Username())
 		a.Arguments = append(a.Arguments, "--password", n.Relays[0].Password())
+	}
 
-		for _, r := range n.Relays {
-			for _, u := range r.URLs() {
-				a.Arguments = append(a.Arguments, "--url", u)
-			}
+	for _, r := range n.Relays {
+		for _, u := range r.URLs() {
+			a.Arguments = append(a.Arguments, "--url", u)
 		}
 	}
 
-	if len(n.SignalingNodes) > 0 {
-		for _, s := range n.SignalingNodes {
-			a.Arguments = append(a.Arguments, "--backend", s.URL())
-		}
+	for _, s := range n.SignalingNodes {
+		a.Arguments = append(a.Arguments, "--backend", s.URL())
 	}
 
 	logger.Info("Starting agent nodes", zap.Int("count", len(n.Agents)))
@@ -72,9 +70,4 @@ func Run(factory net.NetworkFactory, a *nodes.AgentParams, p *net.NetworkParams)
 	logger.Info("Ping between peers")
 	err = n.Agents.PingPeers()
 	Expect(err).To(Succeed(), "Failed to ping peers: %s", err)
-
-	// n.Agents.ForEachAgent(func(a *nodes.Agent) error {
-	// 	a.Dump()
-	// 	return nil
-	// })
 }
