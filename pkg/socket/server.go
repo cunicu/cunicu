@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 
 	"riasc.eu/wice/pkg"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
 
 	"net"
@@ -65,7 +65,7 @@ func Listen(network string, address string, wait bool, daemon *pkg.Daemon) (*Ser
 	return s, nil
 }
 
-func (s *Server) findPeer(intfName string, peerPK []byte) (*intf.Peer, *pb.Error, error) {
+func (s *Server) findPeer(intfName string, peerPK []byte) (*core.Peer, *pb.Error, error) {
 	intf := s.daemon.Interfaces.GetByName(intfName)
 	if intf == nil {
 		return nil, &pb.Error{
