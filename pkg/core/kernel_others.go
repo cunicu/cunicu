@@ -1,6 +1,6 @@
 //go:build !linux
 
-package intf
+package core
 
 import (
 	"golang.zx2c4.com/wireguard/wgctrl"

@@ -12,7 +12,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/pkg/intf"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 
@@ -24,7 +24,7 @@ type Daemon struct {
 	Client  *wgctrl.Client
 	Config  *config.Config
 
-	Interfaces    intf.InterfaceList
+	Interfaces    core.InterfaceList
 	InterfaceLock sync.RWMutex
 
 	Events chan *pb.Event
@@ -78,7 +78,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Client:  client,
 		Backend: backend,
 
-		Interfaces:    intf.InterfaceList{},
+		Interfaces:    core.InterfaceList{},
 		InterfaceLock: sync.RWMutex{},
 
 		Events:         events,
@@ -91,14 +91,14 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Check if Wireguard interface can be created by the kernel
 	if !cfg.Wireguard.Userspace {
-		cfg.Wireguard.Userspace = !intf.WireguardModuleExists()
+		cfg.Wireguard.Userspace = !core.WireguardModuleExists()
 	}
 
 	return d, nil
 }
 
 func (d *Daemon) Run() error {
-	ifEvents := make(chan intf.InterfaceEvent, 16)
+	ifEvents := make(chan core.InterfaceEvent, 16)
 	errors := make(chan error, 16)
 	signals := internal.SetupSignals()
 
@@ -106,11 +106,11 @@ func (d *Daemon) Run() error {
 		return fmt.Errorf("failed to create interfaces: %w", err)
 	}
 
-	if err := intf.WatchWireguardUserspaceInterfaces(ifEvents, errors); err != nil {
+	if err := core.WatchWireguardUserspaceInterfaces(ifEvents, errors); err != nil {
 		return fmt.Errorf("failed to watch userspace interfaces: %w", err)
 	}
 
-	if err := intf.WatchWireguardKernelInterfaces(ifEvents, errors); err != nil {
+	if err := core.WatchWireguardKernelInterfaces(ifEvents, errors); err != nil {
 		return fmt.Errorf("failed to watch kernel interfaces: %w", err)
 	}
 
@@ -178,7 +178,7 @@ func (d *Daemon) Close() error {
 	return nil
 }
 
-func (d *Daemon) GetInterfaceByName(name string) intf.Interface {
+func (d *Daemon) GetInterfaceByName(name string) core.Interface {
 	for _, intf := range d.Interfaces {
 		if intf.Name() == name {
 			return intf
@@ -194,8 +194,8 @@ func (d *Daemon) SyncAllInterfaces() error {
 		d.logger.Fatal("Failed to list Wireguard interfaces", zap.Error(err))
 	}
 
-	syncedInterfaces := intf.InterfaceList{}
-	keepInterfaces := intf.InterfaceList{}
+	syncedInterfaces := core.InterfaceList{}
+	keepInterfaces := core.InterfaceList{}
 
 	for _, device := range devices {
 		if !d.Config.Wireguard.InterfaceFilter.MatchString(device.Name) {
@@ -207,7 +207,7 @@ func (d *Daemon) SyncAllInterfaces() error {
 		if interf == nil { // new interface
 			d.logger.Info("Adding new interface", zap.String("intf", device.Name))
 
-			i, err := intf.NewInterface(device, d.Client, d.Backend, d.Events, d.Config)
+			i, err := core.NewInterface(device, d.Client, d.Backend, d.Events, d.Config)
 			if err != nil {
 				d.logger.Fatal("Failed to create new interface",
 					zap.Error(err),
@@ -256,7 +256,7 @@ func (d *Daemon) SyncAllInterfaces() error {
 }
 
 func (d *Daemon) CreateInterfacesFromArgs() error {
-	var devs intf.Devices
+	var devs core.Devices
 	devs, err := d.Client.Devices()
 	if err != nil {
 		return err
@@ -269,18 +269,18 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 			continue
 		}
 
-		var interf intf.Interface
+		var interf core.Interface
 		if d.Config.Wireguard.Userspace {
-			interf, err = intf.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
+			interf, err = core.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		} else {
-			interf, err = intf.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
+			interf, err = core.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
 		}
 		if err != nil {
 			return fmt.Errorf("failed to create Wireguard device: %w", err)
 		}
 
 		if d.logger.Core().Enabled(zap.DebugLevel) {
-			d.logger.Debug("Intialized interface:")
+			d.logger.Debug("Initialized interface:")
 			if err := interf.DumpConfig(&zapio.Writer{Log: d.logger}); err != nil {
 				return err
 			}

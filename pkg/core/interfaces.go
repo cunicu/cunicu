@@ -1,4 +1,4 @@
-package intf
+package core
 
 import "riasc.eu/wice/pkg/crypto"
 

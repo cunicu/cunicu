@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc/codes"
 	ginsecure "google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/intf"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -157,8 +157,8 @@ func (c *Client) WaitForPeerHandshake(peer crypto.Key) {
 			continue
 		}
 
-		mod := intf.PeerModifier(ee.PeerModified.Modified)
-		if mod.Is(intf.PeerModifiedHandshakeTime) {
+		mod := core.PeerModifier(ee.PeerModified.Modified)
+		if mod.Is(core.PeerModifiedHandshakeTime) {
 			return
 		}
 	}

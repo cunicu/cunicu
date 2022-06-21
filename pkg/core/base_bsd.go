@@ -1,6 +1,6 @@
 //go:build darwin || dragonfly || freebsd || netbsd
 
-package intf
+package core
 
 import (
 	"net"

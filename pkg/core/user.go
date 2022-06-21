@@ -5,7 +5,7 @@
  * Copyright (C) 2017-2021 WireGuard LLC. All Rights Reserved.
  */
 
-package intf
+package core
 
 import (
 	"fmt"

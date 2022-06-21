@@ -1,6 +1,6 @@
 //go:build !linux
 
-package intf
+package core
 
 func WatchWireguardKernelInterfaces(chan InterfaceEvent, chan error) error {
 	return nil
