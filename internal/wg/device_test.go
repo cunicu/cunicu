@@ -29,7 +29,6 @@ PublicKey           = mBgUyqcI0XXrWskB5w9Z+C3LX5Gu5kw4mDTFPigu/Xg=
 AllowedIPs          = 0.0.0.0/0, ::/0
 Endpoint            = 14.10.19.13:3436
 PersistentKeepalive = 25
-
 `
 
 	Specify("check config parsing and serialization", func() {
