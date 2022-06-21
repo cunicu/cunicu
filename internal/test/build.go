@@ -77,7 +77,7 @@ func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
 		return nil, nil, fmt.Errorf("failed to build binary: %w", err)
 	}
 
-	return h.Run(bin, args)
+	return h.Run(bin, args...)
 }
 
 func StartWice(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
