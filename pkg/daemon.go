@@ -29,10 +29,10 @@ type Daemon struct {
 
 	Events chan *pb.Event
 
-	eventListeners     map[chan *pb.Event]interface{}
+	eventListeners     map[chan *pb.Event]any
 	eventListenersLock sync.Mutex
 
-	stop chan interface{}
+	stop chan any
 
 	logger *zap.Logger
 }
@@ -82,9 +82,9 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		InterfaceLock: sync.RWMutex{},
 
 		Events:         events,
-		eventListeners: map[chan *pb.Event]interface{}{},
+		eventListeners: map[chan *pb.Event]any{},
 
-		stop: make(chan interface{}),
+		stop: make(chan any),
 
 		logger: logger,
 	}

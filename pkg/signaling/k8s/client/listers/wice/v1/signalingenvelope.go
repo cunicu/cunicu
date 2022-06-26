@@ -48,7 +48,7 @@ func NewSignalingEnvelopeLister(indexer cache.Indexer) SignalingEnvelopeLister {
 
 // List lists all SignalingEnvelopes in the indexer.
 func (s *signalingEnvelopeLister) List(selector labels.Selector) (ret []*v1.SignalingEnvelope, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
+	err = cache.ListAll(s.indexer, selector, func(m any) {
 		ret = append(ret, m.(*v1.SignalingEnvelope))
 	})
 	return ret, err
@@ -80,7 +80,7 @@ type signalingEnvelopeNamespaceLister struct {
 
 // List lists all SignalingEnvelopes in the indexer for a given namespace.
 func (s signalingEnvelopeNamespaceLister) List(selector labels.Selector) (ret []*v1.SignalingEnvelope, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
+	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m any) {
 		ret = append(ret, m.(*v1.SignalingEnvelope))
 	})
 	return ret, err

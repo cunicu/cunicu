@@ -56,7 +56,7 @@ type ReadCloser interface {
 	io.Closer
 }
 
-func getSize(v interface{}) (int, bool) {
+func getSize(v any) (int, bool) {
 	if sz, ok := v.(interface {
 		Size() (n int)
 	}); ok {

@@ -44,7 +44,7 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 		return []string{}, cobra.ShellCompDirectiveError | cobra.ShellCompDirectiveNoFileComp
 	}
 
-	var existing = map[string]interface{}{}
+	var existing = map[string]any{}
 	var ifnames = []string{}
 
 	for _, arg := range args {

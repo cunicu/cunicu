@@ -24,7 +24,7 @@ func (l *pionLeveledLogger) Trace(msg string) {
 	l.SugaredLogger.Debug(msg)
 }
 
-func (l *pionLeveledLogger) Tracef(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Tracef(format string, args ...any) {
 	l.SugaredLogger.Debugf(format, args...)
 }
 
@@ -32,7 +32,7 @@ func (l *pionLeveledLogger) Debug(msg string) {
 	l.SugaredLogger.Debug(msg)
 }
 
-func (l *pionLeveledLogger) Debugf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Debugf(format string, args ...any) {
 	l.SugaredLogger.Debugf(format, args...)
 }
 
@@ -40,7 +40,7 @@ func (l *pionLeveledLogger) Info(msg string) {
 	l.SugaredLogger.Info(msg)
 }
 
-func (l *pionLeveledLogger) Infof(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Infof(format string, args ...any) {
 	l.SugaredLogger.Infof(format, args...)
 }
 
@@ -48,7 +48,7 @@ func (l *pionLeveledLogger) Warn(msg string) {
 	l.SugaredLogger.Warn(msg)
 }
 
-func (l *pionLeveledLogger) Warnf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Warnf(format string, args ...any) {
 	l.SugaredLogger.Warnf(format, args...)
 }
 
@@ -56,7 +56,7 @@ func (l *pionLeveledLogger) Error(msg string) {
 	l.SugaredLogger.Error(msg)
 }
 
-func (l *pionLeveledLogger) Errorf(format string, args ...interface{}) {
+func (l *pionLeveledLogger) Errorf(format string, args ...any) {
 	l.SugaredLogger.Errorf(format, args...)
 }
 

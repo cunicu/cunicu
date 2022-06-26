@@ -42,7 +42,7 @@ func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
 	return t, nil
 }
 
-func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
+func (s *GrpcSignalingNode) Start(_ ...any) error {
 	var err error
 	var logPath = fmt.Sprintf("logs/%s.log", s.Name())
 
@@ -50,7 +50,7 @@ func (s *GrpcSignalingNode) Start(_ ...interface{}) error {
 		return fmt.Errorf("failed to remove old log file: %w", err)
 	}
 
-	var args = []interface{}{
+	var args = []any{
 		"signal",
 		"--log-level", "debug",
 		"--log-file", logPath,

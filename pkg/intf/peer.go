@@ -46,7 +46,7 @@ type Peer struct {
 	config    *config.Config
 	events    chan *pb.Event
 	messages  chan *pb.SignalingMessage
-	doRestart chan interface{}
+	doRestart chan any
 
 	logger *zap.Logger
 }
@@ -67,7 +67,7 @@ func NewPeer(wgp *wgtypes.Peer, i *BaseInterface) (*Peer, error) {
 		backend:   i.backend,
 		events:    i.events,
 		config:    i.config,
-		doRestart: make(chan interface{}),
+		doRestart: make(chan any),
 		logger:    logger,
 	}
 

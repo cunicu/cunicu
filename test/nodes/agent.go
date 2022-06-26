@@ -24,7 +24,7 @@ import (
 )
 
 type AgentParams struct {
-	Arguments []interface{}
+	Arguments []any
 }
 
 // Agent is a host running ɯice
@@ -97,7 +97,7 @@ func NewAgents(n *g.Network, numNodes int, opts ...g.Option) (AgentList, error) 
 	return al, nil
 }
 
-func (a *Agent) Start(extraArgs []interface{}) error {
+func (a *Agent) Start(extraArgs []any) error {
 	var err error
 
 	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
@@ -107,7 +107,7 @@ func (a *Agent) Start(extraArgs []interface{}) error {
 		return fmt.Errorf("failed to remove old log file: %w", err)
 	}
 
-	args := []interface{}{
+	args := []any{
 		"daemon",
 		"--socket", sockPath,
 		"--socket-wait",

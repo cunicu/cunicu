@@ -8,7 +8,7 @@ import (
 
 type AgentList []*Agent
 
-func (al AgentList) Start(args []interface{}) error {
+func (al AgentList) Start(args []any) error {
 	if err := al.ForEachAgentPair(func(a, b *Agent) error {
 		return a.AddWireguardPeer(b)
 	}); err != nil {
