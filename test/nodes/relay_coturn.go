@@ -63,13 +63,13 @@ func (c *CoturnNode) Password() string {
 	return "password1"
 }
 
-func (c *CoturnNode) Start(_ ...interface{}) error {
+func (c *CoturnNode) Start(_ ...any) error {
 	var err error
 
 	// Delete previous log file
 	os.Remove(c.Config["log-file"])
 
-	var args = []interface{}{
+	var args = []any{
 		"-n",
 	}
 

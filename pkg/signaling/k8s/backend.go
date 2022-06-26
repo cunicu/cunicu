@@ -173,7 +173,7 @@ func (b *Backend) Close() error {
 	return nil // TODO
 }
 
-func (b *Backend) onSignalingEnvelopeAdd(obj interface{}) {
+func (b *Backend) onSignalingEnvelopeAdd(obj any) {
 	env := obj.(*v1.SignalingEnvelope)
 
 	b.logger.Debug("New envelope found on API server", zap.String("name", env.ObjectMeta.Name))
@@ -182,7 +182,7 @@ func (b *Backend) onSignalingEnvelopeAdd(obj interface{}) {
 	}
 }
 
-func (b *Backend) onSessionDescriptionUpdate(_ interface{}, new interface{}) {
+func (b *Backend) onSessionDescriptionUpdate(_ any, new any) {
 	newEnv := new.(*v1.SignalingEnvelope)
 
 	b.logger.Debug("SignalingEnvelope updated", zap.String("name", newEnv.ObjectMeta.Name))

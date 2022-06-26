@@ -20,7 +20,7 @@ type entropyMatcher struct {
 	minEntropy float64
 }
 
-func (matcher *entropyMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *entropyMatcher) Match(actual any) (success bool, err error) {
 	buff, ok := actual.([]byte)
 	if !ok {
 		return false, fmt.Errorf("HaveEntropy matcher expects a byte slice")
@@ -29,10 +29,10 @@ func (matcher *entropyMatcher) Match(actual interface{}) (success bool, err erro
 	return Entropy(buff) > matcher.minEntropy, nil
 }
 
-func (matcher *entropyMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *entropyMatcher) FailureMessage(actual any) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nto have at least an entropy of %f", actual, matcher.minEntropy)
 }
 
-func (matcher *entropyMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *entropyMatcher) NegatedFailureMessage(actual any) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nto have an entropy lower than %f", actual, matcher.minEntropy)
 }

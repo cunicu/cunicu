@@ -22,7 +22,7 @@ var _ = Context("simple", func() {
 		Specify("ipv6", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp6",
 					},
 				},
@@ -37,7 +37,7 @@ var _ = Context("simple", func() {
 		Specify("ipv4", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp4",
 						"--ice-candidate-type", "srflx",
 					},
@@ -51,7 +51,7 @@ var _ = Context("simple", func() {
 		Specify("ipv6", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp6",
 						"--ice-candidate-type", "srflx",
 					},
@@ -67,7 +67,7 @@ var _ = Context("simple", func() {
 		Specify("ipv4", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp4",
 						"--ice-candidate-type", "srflx",
 					},
@@ -81,7 +81,7 @@ var _ = Context("simple", func() {
 		Specify("ipv6", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp6",
 						"--ice-candidate-type", "srflx",
 					},
@@ -97,7 +97,7 @@ var _ = Context("simple", func() {
 		Specify("ipv4", func() {
 			Run(net.Simple,
 				&nodes.AgentParams{
-					Arguments: []interface{}{
+					Arguments: []any{
 						"--ice-network-type", "udp4",
 						"--ice-candidate-type", "relay",
 					},

@@ -71,7 +71,7 @@ func BuildBinary(coverage bool) (string, error) {
 	return binary, nil
 }
 
-func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
+func RunWice(h *gont.Host, args ...any) ([]byte, *exec.Cmd, error) {
 	bin, err := BuildBinary(false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build binary: %w", err)
@@ -80,7 +80,7 @@ func RunWice(h *gont.Host, args ...interface{}) ([]byte, *exec.Cmd, error) {
 	return h.Run(bin, args...)
 }
 
-func StartWice(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
+func StartWice(h *gont.Host, args ...any) (io.Reader, io.Reader, *exec.Cmd, error) {
 	bin, err := BuildBinary(false)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to build binary: %w", err)
@@ -89,7 +89,7 @@ func StartWice(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.C
 	return h.Start(bin, args...)
 }
 
-func StartWiceWithCoverage(h *gont.Host, args ...interface{}) (io.Reader, io.Reader, *exec.Cmd, error) {
+func StartWiceWithCoverage(h *gont.Host, args ...any) (io.Reader, io.Reader, *exec.Cmd, error) {
 	bin, err := BuildBinary(true)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to build binary: %w", err)
@@ -102,7 +102,7 @@ func StartWiceWithCoverage(h *gont.Host, args ...interface{}) (io.Reader, io.Rea
 
 	covPath := fmt.Sprintf("coverprofile-%s.out", h.Name())
 	covPath = filepath.Join(base, covPath)
-	newArgs := []interface{}{"-test.run=^TestMain$", "-test.coverprofile=" + covPath, "--"}
+	newArgs := []any{"-test.run=^TestMain$", "-test.coverprofile=" + covPath, "--"}
 	newArgs = append(newArgs, args...)
 
 	return h.Start(bin, newArgs...)

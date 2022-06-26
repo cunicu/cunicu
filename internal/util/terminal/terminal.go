@@ -37,7 +37,7 @@ var (
 	reANSIEscape = regexp.MustCompile(`(?mi)\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])`)
 )
 
-func FprintfColored(wr io.Writer, color bool, f string, args ...interface{}) (int, error) {
+func FprintfColored(wr io.Writer, color bool, f string, args ...any) (int, error) {
 	if !color {
 		f = reANSIEscape.ReplaceAllString(f, "")
 	}
@@ -49,7 +49,7 @@ func Color(str string, mods ...string) string {
 	return strings.Join(mods, "") + str + Reset
 }
 
-func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]interface{}) (int, error) {
+func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]any) (int, error) {
 	n := 0
 	for k, v := range kv {
 		if b, err := FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v); err != nil {

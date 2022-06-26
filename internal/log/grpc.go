@@ -44,7 +44,7 @@ func NewGRPCLogger(logger *zap.Logger) grpclog.LoggerV2 {
 	}
 }
 
-func (l *grpcLogger) unwrap(args []interface{}) (string, []zap.Field) {
+func (l *grpcLogger) unwrap(args []any) (string, []zap.Field) {
 	fields := []zap.Field{}
 
 	if len(args) > 0 {
@@ -59,30 +59,30 @@ func (l *grpcLogger) unwrap(args []interface{}) (string, []zap.Field) {
 	return fmt.Sprint(args...), fields
 }
 
-func (l *grpcLogger) Warning(args ...interface{}) {
+func (l *grpcLogger) Warning(args ...any) {
 	l.Warn(args...)
 }
 
-func (l *grpcLogger) Warningf(format string, args ...interface{}) {
+func (l *grpcLogger) Warningf(format string, args ...any) {
 	l.Warnf(format, args...)
 }
 
-func (l *grpcLogger) Infoln(args ...interface{}) {
+func (l *grpcLogger) Infoln(args ...any) {
 	msg, fields := l.unwrap(args)
 	l.Desugar().Info(msg, fields...)
 }
 
-func (l *grpcLogger) Warningln(args ...interface{}) {
+func (l *grpcLogger) Warningln(args ...any) {
 	msg, fields := l.unwrap(args)
 	l.Desugar().Warn(msg, fields...)
 }
 
-func (l *grpcLogger) Errorln(args ...interface{}) {
+func (l *grpcLogger) Errorln(args ...any) {
 	msg, fields := l.unwrap(args)
 	l.Desugar().Error(msg, fields...)
 }
 
-func (l *grpcLogger) Fatalln(args ...interface{}) {
+func (l *grpcLogger) Fatalln(args ...any) {
 	msg, fields := l.unwrap(args)
 	l.Desugar().Fatal(msg, fields...)
 }

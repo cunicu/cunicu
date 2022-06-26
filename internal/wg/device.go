@@ -40,7 +40,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 }
 
 func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
-	var kv = map[string]interface{}{
+	var kv = map[string]any{
 		"public key":     d.PublicKey,
 		"private key":    "(hidden)",
 		"listening port": d.ListenPort,
@@ -65,7 +65,7 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
 	// https://github.com/WireGuard/wireguard-tools/blob/1fd95708391088742c139010cc6b821add941dec/src/show.c#L47
 
 	for _, peer := range d.Peers {
-		var kv = map[string]interface{}{
+		var kv = map[string]any{
 			"allowed ips": "(none)",
 		}
 

@@ -20,8 +20,8 @@ package v1
 
 // SignalingEnvelopeListerExpansion allows custom methods to be added to
 // SignalingEnvelopeLister.
-type SignalingEnvelopeListerExpansion interface{}
+type SignalingEnvelopeListerExpansion any
 
 // SignalingEnvelopeNamespaceListerExpansion allows custom methods to be added to
 // SignalingEnvelopeNamespaceLister.
-type SignalingEnvelopeNamespaceListerExpansion interface{}
+type SignalingEnvelopeNamespaceListerExpansion any

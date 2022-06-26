@@ -22,7 +22,7 @@ func Run(factory net.NetworkFactory, a *nodes.AgentParams, p *net.NetworkParams)
 	logger := zap.L().Named("test.e2e")
 
 	if a.Arguments == nil {
-		a.Arguments = []interface{}{}
+		a.Arguments = []any{}
 	}
 
 	if p.NetworkOptions == nil {
