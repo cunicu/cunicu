@@ -105,7 +105,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering Wireguard interfaces (e.g. \"wg-.*\")")
 	flags.BoolP("wg-userspace", "u", false, "Start userspace Wireguard daemon")
-	flags.BoolP("wg-config-sync", "S", false, "Synchronize Wireguard interface with configuration file (see \"wg synconf\")")
+	flags.BoolP("wg-config-sync", "S", false, "Synchronize Wireguard interface with configuration file (see \"wg syncconf\")")
 	flags.StringP("wg-config-path", "w", "", "The `directory` of Wireguard wg/wg-quick configuration files")
 
 	flags.Uint16("wg-port-min", 0, "Minimum `port` for allocation policy for Wireguard ListenPorts (range: 0-65535)")
@@ -129,7 +129,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.String("ice-interface-filter", ".*", "A `regex` for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
 	flags.Duration("ice-disconnected-timeout", 0, "Time until an Agent transitions disconnected")
 	flags.Duration("ice-failed-timeout", 0, "Time until an Agent transitions to failed after disconnected")
-	flags.Duration("ice-keepalive-interval", 0, "Interval netween STUN keepalives")
+	flags.Duration("ice-keepalive-interval", 0, "Interval between STUN keepalives")
 	flags.Duration("ice-check-interval", 0, "Interval at which the agent performs candidate checks in the connecting phase")
 	flags.Duration("ice-restart-timeout", 0, "Time to wait before ICE restart")
 
@@ -222,7 +222,7 @@ func (c *Config) Setup(args []string) error {
 	// First lookup settings via DNS
 	if c.Domain != "" {
 		if err := c.Lookup(c.Domain); err != nil {
-			return fmt.Errorf("DNS autoconfiguration failed: %w", err)
+			return fmt.Errorf("DNS auto-configuration failed: %w", err)
 		}
 	}
 
