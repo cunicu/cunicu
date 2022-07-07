@@ -16,7 +16,7 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 COPY . .
 RUN make
 
-FROM alpine:3.15
+FROM alpine:3.16
 
 COPY --from=builder /app/wice /
 
