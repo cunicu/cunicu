@@ -6,7 +6,7 @@ GIT_VERSION = $(shell git describe --tags --dirty || echo unknown)
 LDFLAGS = -X main.version=$(GIT_VERSION) -X main.commit=$(GIT_COMMIT) -X main.date=$(shell date -Iseconds)
 
 GINKGO_PKG ?= ./...
-GINKGO_OPTS += -v -cover -coverpkg=$(PKG)/... -covermode=count -r -p --randomize-all $(GINKGO_PKG)
+GINKGO_OPTS += --covermode=count -r --randomize-all $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG)
 
 all: wice
 
