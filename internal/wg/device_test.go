@@ -10,7 +10,13 @@ import (
 )
 
 var _ = Context("device", func() {
-	const config = `[Interface]
+	var err error
+	var cfg *wg.Config
+
+	var cfgStr string
+
+	BeforeEach(func() {
+		cfgStr = `[Interface]
 PrivateKey = 6Hw0A9Cv0LuCzbdwxPsrmW8oPvOyiyVelwH2pqKlAFE=
 ListenPort = 51823
 FwMark     = 4096
@@ -23,24 +29,39 @@ PostUp     = ip addr add 172.23.156.5 peer 172.23.156.4 dev %i
 PostUp     = ip addr add fe80::5/64 dev %i
 PostDown   = bla1
 PostDown   = bla2
+`
+	})
 
+	JustBeforeEach(func() {
+		rd := strings.NewReader(cfgStr)
+
+		cfg, err = wg.ParseConfig(rd, "")
+		Expect(err).To(Succeed(), "failed to parse config: %s", err)
+	})
+
+	test := func() {
+		It("can parse and serialize", func() {
+			wr := &bytes.Buffer{}
+			err = cfg.Dump(wr)
+			Expect(err).To(Succeed(), "failed to dump config: %s", err)
+
+			Expect(wr.String()).To(Equal(cfgStr), "configs not equal:\n%s\n%s", cfgStr, wr.String())
+		})
+	}
+
+	test()
+
+	When("it has a peer", func() {
+		BeforeEach(func() {
+			cfgStr += `
 [Peer]
 PublicKey           = mBgUyqcI0XXrWskB5w9Z+C3LX5Gu5kw4mDTFPigu/Xg=
 AllowedIPs          = 0.0.0.0/0, ::/0
 Endpoint            = 14.10.19.13:3436
 PersistentKeepalive = 25
 `
+		})
 
-	Specify("check config parsing and serialization", func() {
-		rd := strings.NewReader(config)
-
-		cfg, err := wg.ParseConfig(rd, "")
-		Expect(err).To(Succeed(), "failed to parse config: %s", err)
-
-		wr := &bytes.Buffer{}
-		err = cfg.Dump(wr)
-		Expect(err).To(Succeed(), "failed to dump config: %s", err)
-
-		Expect(wr.String()).To(Equal(config), "configs not equal:\n%s\n%s", config, wr.String())
+		test()
 	})
 })
