@@ -178,9 +178,20 @@ func ParseConfig(rd io.Reader, name string) (*Config, error) {
 		return nil, err
 	}
 
+	// We add a pseudo peer section just allow mapping via StrictMapTo if there are no peers configured
+	fakePeer := !iniFile.HasSection("Peer")
+	if fakePeer {
+		iniFile.NewSection("Peer")
+	}
+
 	iniCfg := &config{}
 	if err := iniFile.StrictMapTo(iniCfg); err != nil {
 		return nil, fmt.Errorf("failed to parse Interface section: %s", err)
+	}
+
+	// Remove fake peer section again
+	if fakePeer {
+		iniCfg.Peers = nil
 	}
 
 	return iniCfg.Config()
