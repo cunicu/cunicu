@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"net"
 	"strings"
@@ -27,6 +28,10 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 }
 
 func FindNextPortToListen(network string, start, end int) (int, error) {
+	if end == 0 {
+		end = math.MaxUint16
+	}
+
 	if end < start {
 		return -1, fmt.Errorf("minimal port must be larger than maximal port number")
 	}
