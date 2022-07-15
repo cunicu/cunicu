@@ -237,7 +237,7 @@ func (a *Agent) WaitReady(p *Agent) error {
 func (a *Agent) PingWireguardPeer(peer *Agent) error {
 	os.Setenv("LC_ALL", "C") // fix issues with parsing of -W and -i options
 
-	if out, _, err := a.Run("ping", "-c", 2, "-w", 10, "-i", 0.5, peer.Address.IP); err != nil {
+	if out, _, err := a.Run("ping", "-c", 5, "-w", 20, "-i", 0.1, peer.Address.IP); err != nil {
 		os.Stdout.Write(out)
 		os.Stdout.Sync()
 
