@@ -14,6 +14,8 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "In-Process Backend Suite")
 }
 
+var _ = test.SetupLogging()
+
 var _ = Specify("inprocess backend", func() {
 	test.RunBackendTest("inprocess", 10)
 })

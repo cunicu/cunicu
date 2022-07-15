@@ -23,10 +23,10 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Kubernetes Backend Suite")
 }
 
+var logger = test.SetupLogging()
+
 var testenv *envtest.Environment
 var kcfg *os.File
-
-var logger = test.SetupLogging()
 
 var _ = Describe("Kubernetes backend", func() {
 	BeforeEach(func() {

@@ -11,7 +11,7 @@ import (
 
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Test")
+	RunSpecs(t, "Test Helper Suite")
 }
 
 var _ = test.SetupLogging()
