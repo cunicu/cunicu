@@ -46,7 +46,7 @@ func BuildBinary(coverage bool) (string, error) {
 	defer binaryMutex.Unlock()
 
 	if binary == "" {
-		binary = "/tmp/wice"
+		binary = TempFileName("wice-", "")
 
 		base, err := FindBaseDir()
 		if err != nil {
