@@ -2,9 +2,12 @@ package test
 
 import (
 	"bytes"
+	"encoding/hex"
 	"math"
 	"math/rand"
 	"net"
+	"os"
+	"path/filepath"
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -66,4 +69,11 @@ func Entropy(data []byte) float64 {
 	}
 
 	return entropy
+}
+
+// TempFileName generates a temporary filename for use in testing or whatever
+func TempFileName(prefix, suffix string) string {
+	randBytes := make([]byte, 16)
+	rand.Read(randBytes)
+	return filepath.Join(os.TempDir(), prefix+hex.EncodeToString(randBytes)+suffix)
 }
