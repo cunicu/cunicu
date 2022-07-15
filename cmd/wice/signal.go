@@ -14,7 +14,6 @@ var (
 		Use:   "signal",
 		Short: "Start gRPC signaling server",
 
-		// The main wice command is just an alias for "wice daemon"
 		Run: signal,
 	}
 

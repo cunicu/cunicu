@@ -45,7 +45,7 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 	}
 
 	var existing = map[string]any{}
-	var ifnames = []string{}
+	var intfNames = []string{}
 
 	for _, arg := range args {
 		existing[arg] = nil
@@ -53,11 +53,11 @@ func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) 
 
 	for _, dev := range devs {
 		if _, exists := existing[dev.Name]; !exists {
-			ifnames = append(ifnames, dev.Name)
+			intfNames = append(intfNames, dev.Name)
 		}
 	}
 
-	return ifnames, cobra.ShellCompDirectiveNoFileComp
+	return intfNames, cobra.ShellCompDirectiveNoFileComp
 }
 
 func daemon(cmd *cobra.Command, args []string) {

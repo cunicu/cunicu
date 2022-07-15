@@ -67,7 +67,7 @@ var _ = Describe("parse command line arguments", func() {
 
 		Expect(err).To(
 			And(
-				MatchError(ContainSubstring("DNS autoconfiguration failed")),
+				MatchError(ContainSubstring("DNS auto-configuration failed")),
 				Or(
 					MatchError(ContainSubstring("no such host")),
 					MatchError(ContainSubstring("i/o timeout")),
@@ -76,7 +76,7 @@ var _ = Describe("parse command line arguments", func() {
 		)
 	})
 
-	It("should fail when passed an non-existant domain name", func() {
+	It("should fail when passed an non-existent domain name", func() {
 		// RFC6761 defines that "invalid" is a special domain name to always be invalid
 		_, err := config.ParseArgs("-A", "invalid")
 
@@ -167,21 +167,21 @@ var _ = Describe("parse command line arguments", func() {
 				server.Close()
 			})
 
-			It("fails on loading an non-existant remote file", func() {
+			It("fails on loading an non-existent remote file", func() {
 				_, err := config.ParseArgs("--config", "http://example.com/doesnotexist.yaml")
 
 				Expect(err).To(HaveOccurred())
 			})
 		})
 
-		Describe("non-existant files", func() {
-			It("fails on loading an non-existant local file", func() {
-				_, err := config.ParseArgs("--config", "/doesnotexist.yaml")
+		Describe("non-existent files", func() {
+			It("fails on loading an non-existent local file", func() {
+				_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
 
 				Expect(err).To(HaveOccurred())
 			})
 
-			It("fails on loading an non-existant remote file", func() {
+			It("fails on loading an non-existent remote file", func() {
 				_, err := config.ParseArgs("--config", "http://example.com/doesnotexist.yaml")
 
 				Expect(err).To(HaveOccurred())
