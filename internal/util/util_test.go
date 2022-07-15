@@ -7,6 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/internal/util"
 )
 
@@ -14,6 +15,8 @@ func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Utilities Suite")
 }
+
+var _ = test.SetupLogging()
 
 var _ = Describe("utils", func() {
 

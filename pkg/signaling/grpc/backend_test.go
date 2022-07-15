@@ -16,6 +16,8 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "gRPC Backend Suite")
 }
 
+var _ = test.SetupLogging()
+
 var _ = Describe("gRPC backend", func() {
 	var svr *grpc.Server
 	var l *net.TCPListener

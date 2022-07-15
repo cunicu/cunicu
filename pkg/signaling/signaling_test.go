@@ -1,4 +1,4 @@
-package wg_test
+package signaling_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Wireguard Suite")
+	RunSpecs(t, "Signaling Suite")
 }
 
 var _ = test.SetupLogging()

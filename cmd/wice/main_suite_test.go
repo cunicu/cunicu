@@ -10,7 +10,7 @@ import (
 
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Main")
+	RunSpecs(t, "Main Commands Suite")
 }
 
 var _ = test.SetupLogging()
