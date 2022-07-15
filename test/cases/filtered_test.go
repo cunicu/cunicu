@@ -8,9 +8,7 @@ import (
 )
 
 var _ = Context("filtered", func() {
-	Specify("filtered", func() {
-		Skip("p2p not yet supported")
-
+	Specify("filtered", Pending, func() {
 		Run(net.Filtered,
 			&nodes.AgentParams{},
 			&net.NetworkParams{
