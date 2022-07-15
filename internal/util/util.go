@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-type Less func(i, j int) bool
-
 func CmpEndpoint(a, b *net.UDPAddr) int {
 	if a == nil && b == nil {
 		return 0

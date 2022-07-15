@@ -2,10 +2,11 @@ package util
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"net"
 	"strings"
+
+	"riasc.eu/wice/internal/config"
 )
 
 func FindRandomPortToListen(network string, min, max int) (int, error) {
@@ -29,7 +30,7 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 
 func FindNextPortToListen(network string, start, end int) (int, error) {
 	if end == 0 {
-		end = math.MaxUint16
+		end = config.EphemeralPortMax
 	}
 
 	if end < start {
