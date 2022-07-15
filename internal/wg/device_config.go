@@ -287,6 +287,7 @@ func (p *peerConfig) Config() (*wgtypes.PeerConfig, error) {
 		if cfg.AllowedIPs, err = parseCIDRs(p.AllowedIPs, false); err != nil {
 			return nil, fmt.Errorf("failed to parse allowed ips: %w", err)
 		}
+		cfg.ReplaceAllowedIPs = true
 	}
 
 	return cfg, nil
