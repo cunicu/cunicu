@@ -8,9 +8,7 @@ import (
 )
 
 var _ = Context("nat", func() {
-	Specify("nat", func() {
-		Skip("p2p not yet supported")
-
+	Specify("nat", Pending, func() {
 		Run(net.NAT,
 			&nodes.AgentParams{},
 			&net.NetworkParams{
