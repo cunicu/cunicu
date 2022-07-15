@@ -12,6 +12,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
+	gopt "github.com/stv0g/gont/pkg/options"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -47,6 +48,10 @@ type Agent struct {
 }
 
 func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Agent, error) {
+
+	// We dont want to log the sub-processes output since we already redirect it to a file
+	opts = append(opts, gopt.LogToDebug(false))
+
 	h, err := m.AddHost(name, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create host: %w", err)
@@ -124,9 +129,8 @@ func (a *Agent) Start(extraArgs []any) error {
 		var out []byte
 		if out, a.Command, err = test.RunWice(a.Host, args...); err != nil {
 			a.logger.Error("Failed to start", zap.Error(err))
+			os.Stdout.Write(out)
 		}
-
-		os.Stdout.Write(out)
 	}()
 
 	if a.Client, err = socket.Connect(sockPath); err != nil {
