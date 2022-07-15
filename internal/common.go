@@ -15,7 +15,7 @@ func SetupRand() {
 
 func SetupSignals() chan os.Signal {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, unix.SIGINT, unix.SIGTERM)
+	signal.Notify(ch, unix.SIGINT, unix.SIGTERM, unix.SIGUSR1)
 
 	return ch
 }
