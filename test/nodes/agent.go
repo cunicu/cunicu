@@ -12,7 +12,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
-	nl "github.com/vishvananda/netlink"
+	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -163,8 +163,8 @@ func (a *Agent) AddWireguardInterface() error {
 		return fmt.Errorf("failed to generate private key: %w", err)
 	}
 
-	l := &nl.Wireguard{
-		LinkAttrs: nl.NewLinkAttrs(),
+	l := &netlink.Wireguard{
+		LinkAttrs: netlink.NewLinkAttrs(),
 	}
 	l.LinkAttrs.Name = a.WireguardInterfaceName
 
@@ -178,7 +178,7 @@ func (a *Agent) AddWireguardInterface() error {
 		return fmt.Errorf("failed to set link up: %w", err)
 	}
 
-	nlAddr := nl.Addr{
+	nlAddr := netlink.Addr{
 		IPNet: &a.Address,
 	}
 
