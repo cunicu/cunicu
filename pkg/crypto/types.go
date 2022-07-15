@@ -124,7 +124,37 @@ func (k Key) IPv6Address() (*net.IPNet, error) {
 	return &net.IPNet{
 		IP:   ip,
 		Mask: net.CIDRMask(64, 128),
-	}, nil
+	}
+}
+
+// IPv4Address derives an IPv4 link local address from they key
+func (k Key) IPv4Address() *net.IPNet {
+	hash, _ := siphash.New64(addrHashKey[:])
+	hash.Write(k[:])
+
+	sum := hash.Sum64()
+	sum2 := uint64(0)
+
+	for i := 0; i < 4; i++ {
+		sum2 ^= sum & 0xffff
+		sum >>= 16
+	}
+
+	c := byte(sum2 >> 8)
+	d := byte(sum2 & 0xff)
+
+	// Exclude reserved addresses
+	// See: https://datatracker.ietf.org/doc/html/rfc3927#section-2.1
+	if c == 0 {
+		c++
+	} else if c == 0xff {
+		c--
+	}
+
+	return &net.IPNet{
+		IP:   net.IPv4(169, 254, c, d),
+		Mask: net.CIDRMask(16, 32),
+	}
 }
 
 // Checks if the key is not zero
