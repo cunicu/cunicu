@@ -7,15 +7,20 @@ import "common.proto";
 
 message Event {
     enum Type {
+        // Signaling Events
         BACKEND_READY = 0;
 
+        // Core Events
         PEER_ADDED = 20;
         PEER_REMOVED = 21;
         PEER_MODIFIED = 22;
-        PEER_CONNECTION_STATE_CHANGED = 23;
 
         INTERFACE_ADDED = 30;
         INTERFACE_REMOVED = 31;
+        INTERFACE_MODIFIED = 32;
+
+        // ICE Events
+        PEER_CONNECTION_STATE_CHANGED = 23;
     }
 
     Type type = 1;
@@ -30,13 +35,18 @@ message Event {
     oneof event {
         BackendReadyEvent backend_ready = 100;
 
+        PeerConnectionStateChangeEvent peer_connection_state_change = 121;
         PeerModifiedEvent peer_modified = 122;
-        PeerConnectionStateChangeEvent peer_connection_state_change = 123;
+        InterfaceModifiedEvent interface_modified = 123;
     }
 }
 
 message PeerModifiedEvent {
     uint32 modified = 1;   
+}
+
+message InterfaceModifiedEvent {
+    uint32 modified = 1;
 }
 
 message PeerConnectionStateChangeEvent {
@@ -45,10 +55,11 @@ message PeerConnectionStateChangeEvent {
 
 message BackendReadyEvent {
     enum Type {
-        P2P = 0;
-        K8S = 1;
-        GRPC = 2;
-        INPROCESS = 3;
+        MULTI = 0;
+        P2P = 1;
+        K8S = 2;
+        GRPC = 3;
+        INPROCESS = 4;
     }
 
     Type type = 1;

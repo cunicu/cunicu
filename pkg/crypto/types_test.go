@@ -236,19 +236,33 @@ var _ = It("can generate valid IPv6 link-local addresses from a public key", fun
 	key, err := crypto.GeneratePrivateKey()
 	Expect(err).To(Succeed())
 
-	addr, err := key.PublicKey().IPv6Address()
-	Expect(err).To(Succeed())
+	addr := key.PublicKey().IPv6Address()
 
 	_, ll, err := net.ParseCIDR("fe80::/10")
 	Expect(err).To(Succeed())
 
 	ones, bits := addr.Mask.Size()
 	Expect(ones).To(Equal(64))
-	Expect(bits).To(Equal(net.IPv6len * 8))
+	Expect(bits).To(Equal(128))
 	Expect(ll.Contains(addr.IP)).To(BeTrue())
 })
 
-var _ = It("can generate a public keypair from a public/private one", func() {
+var _ = It("can generate valid IPv4 link-local addresses from a public key", func() {
+	key, err := crypto.GeneratePrivateKey()
+	Expect(err).To(Succeed())
+
+	addr := key.PublicKey().IPv4Address()
+
+	_, ll, err := net.ParseCIDR("169.254.0.0/16")
+	Expect(err).To(Succeed())
+
+	ones, bits := addr.Mask.Size()
+	Expect(ones).To(Equal(16))
+	Expect(bits).To(Equal(32))
+	Expect(ll.Contains(addr.IP)).To(BeTrue())
+})
+
+var _ = It("can generate a public key pair from a public/private one", func() {
 	key1, err := crypto.GeneratePrivateKey()
 	Expect(err).To(Succeed())
 

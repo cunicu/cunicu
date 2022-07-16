@@ -5,6 +5,7 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
 import "session.proto";
+import "peer.proto";
 import "message.proto";
 
 message SignalingEnvelope {
@@ -15,7 +16,8 @@ message SignalingEnvelope {
 }
 
 message SignalingMessage {
-    SessionDescription description = 1;
+    SessionDescription session = 10;
+    PeerDescription peer = 11;
 }
 
 message SubscribeParams {

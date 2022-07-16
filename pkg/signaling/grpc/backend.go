@@ -24,15 +24,13 @@ type Backend struct {
 
 	config BackendConfig
 
-	events chan *pb.Event
 	logger *zap.Logger
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{
-		events: events,
 		logger: logger,
 	}
 
@@ -46,16 +44,23 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 
 	b.client = pb.NewSignalingClient(b.conn)
 
-	b.events <- &pb.Event{
-		Type: pb.Event_BACKEND_READY,
-		Event: &pb.Event_BackendReady{
-			BackendReady: &pb.BackendReadyEvent{
-				Type: pb.BackendReadyEvent_GRPC,
-			},
-		},
-	}
+	cfg.OnBackendReady.Invoke(b)
+
+	// TODO
+	// b.events <- &pb.Event{
+	// 	Type: pb.Event_BACKEND_READY,
+	// 	Event: &pb.Event_BackendReady{
+	// 		BackendReady: &pb.BackendReadyEvent{
+	// 			Type: pb.BackendReadyEvent_GRPC,
+	// 		},
+	// 	},
+	// }
 
 	return b, nil
+}
+
+func (b *Backend) Type() pb.BackendReadyEvent_Type {
+	return pb.BackendReadyEvent_GRPC
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {

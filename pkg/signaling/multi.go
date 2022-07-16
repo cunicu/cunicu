@@ -13,7 +13,7 @@ type MultiBackend struct {
 	backends []Backend
 }
 
-func NewMultiBackend(uris []*url.URL, cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
+func NewMultiBackend(uris []*url.URL, cfg *BackendConfig) (Backend, error) {
 	mb := &MultiBackend{
 		backends: []Backend{},
 	}
@@ -21,7 +21,7 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig, events chan *pb.Event)
 	for _, u := range uris {
 		cfg.URI = u
 
-		if b, err := NewBackend(cfg, events); err == nil {
+		if b, err := NewBackend(cfg); err == nil {
 			mb.backends = append(mb.backends, b)
 		} else {
 			return nil, err
@@ -29,6 +29,10 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig, events chan *pb.Event)
 	}
 
 	return mb, nil
+}
+
+func (b *MultiBackend) Type() pb.BackendReadyEvent_Type {
+	return pb.BackendReadyEvent_MULTI
 }
 
 func (m *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {

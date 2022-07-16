@@ -32,7 +32,7 @@ func (p *peer) publish(o *peer) {
 	}
 
 	sentMsg := &pb.SignalingMessage{
-		Description: &pb.SessionDescription{
+		Session: &pb.SessionDescription{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
 			Epoch: p.id,
@@ -46,7 +46,7 @@ func (p *peer) publish(o *peer) {
 func (p *peer) receive(o *peer) {
 	recvMsg := <-p.messages[o.id]
 
-	g.Expect(recvMsg.Description.Epoch).To(g.Equal(o.id), "Received invalid message")
+	g.Expect(recvMsg.Session.Epoch).To(g.Equal(o.id), "Received invalid message")
 }
 
 // TestBackend creates n peers with separate connections to the signaling backend u
@@ -60,8 +60,14 @@ func RunBackendTest(u string, n int) {
 	uri, err := url.Parse(u)
 	g.Expect(err).To(g.Succeed(), "Failed to parse URL: %s", err)
 
+	ready := sync.WaitGroup{}
+	ready.Add(n)
+
 	cfg := &signaling.BackendConfig{
 		URI: uri,
+		// OnReady: func(b signaling.Backend) {
+		// 	ready.Done()
+		// },
 	}
 
 	ps := []*peer{}
@@ -72,7 +78,7 @@ func RunBackendTest(u string, n int) {
 			messages: map[int64]chan *pb.SignalingMessage{},
 		}
 
-		p.backend, err = signaling.NewBackend(cfg, p.events)
+		p.backend, err = signaling.NewBackend(cfg)
 		g.Expect(err).To(g.Succeed(), "Failed to create backend: %s", err)
 
 		defer p.backend.Close()
@@ -82,6 +88,9 @@ func RunBackendTest(u string, n int) {
 
 		ps = append(ps, p)
 	}
+
+	// Wait until all backends are ready
+	ready.Wait()
 
 	for _, p := range ps {
 		for _, o := range ps {

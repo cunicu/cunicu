@@ -35,8 +35,6 @@ type Backend struct {
 
 	term chan struct{}
 
-	events chan *pb.Event
-
 	logger *zap.Logger
 }
 
@@ -47,15 +45,14 @@ func init() {
 	}
 }
 
-func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap.Logger) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
 	var config *rest.Config
 	var err error
 
-	b := Backend{
+	b := &Backend{
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
 		term:                  make(chan struct{}),
 		config:                defaultConfig,
-		events:                events,
 		logger:                logger,
 	}
 
@@ -109,16 +106,23 @@ func NewBackend(cfg *signaling.BackendConfig, events chan *pb.Event, logger *zap
 	go b.periodicCleanup()
 	b.logger.Debug("Started regular cleanup")
 
-	b.events <- &pb.Event{
-		Type: pb.Event_BACKEND_READY,
-		Event: &pb.Event_BackendReady{
-			BackendReady: &pb.BackendReadyEvent{
-				Type: pb.BackendReadyEvent_K8S,
-			},
-		},
-	}
+	cfg.OnBackendReady.Invoke(b)
 
-	return &b, nil
+	// TODO
+	// b.events <- &pb.Event{
+	// 	Type: pb.Event_BACKEND_READY,
+	// 	Event: &pb.Event_BackendReady{
+	// 		BackendReady: &pb.BackendReadyEvent{
+	// 			Type: ,
+	// 		},
+	// 	},
+	// }
+
+	return b, nil
+}
+
+func (b *Backend) Type() pb.BackendReadyEvent_Type {
+	return pb.BackendReadyEvent_K8S
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
@@ -194,7 +198,7 @@ func (b *Backend) onSessionDescriptionUpdate(_ any, new any) {
 func (b *Backend) process(env *v1.SignalingEnvelope) error {
 	kp, err := env.PublicKeyPair()
 	if err != nil {
-		return fmt.Errorf("failed to get keypair from envelope: %w", err)
+		return fmt.Errorf("failed to get key pair from envelope: %w", err)
 	}
 
 	sub, err := b.GetSubscription(&kp)
