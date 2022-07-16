@@ -12,7 +12,7 @@ import (
 )
 
 type Subscription struct {
-	*util.Fanout[*pb.SignalingMessage]
+	*util.FanOut[*pb.SignalingMessage]
 
 	kp crypto.KeyPair
 }
@@ -61,7 +61,7 @@ func (s *SubscriptionsRegistry) NewSubscription(kp *crypto.KeyPair) (*Subscripti
 	}
 
 	sub := &Subscription{
-		Fanout: util.NewFanout[*pb.SignalingMessage](16),
+		FanOut: util.NewFanOut[*pb.SignalingMessage](16),
 		kp:     *kp,
 	}
 
