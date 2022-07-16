@@ -13,6 +13,8 @@ const (
 	year = 365 * day
 )
 
+// PrettyDuration pretty prints a time just like `wg show`
+// See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L129
 func PrettyDuration(left time.Duration, color bool) string {
 	out := []string{}
 	comps := []struct {
@@ -48,6 +50,8 @@ func PrettyDuration(left time.Duration, color bool) string {
 	return strings.Join(out, ", ")
 }
 
+// Ago pretty prints a duration with an `ago` suffix.
+// See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L157
 func Ago(ts time.Time, colored bool) string {
 	d := time.Since(ts)
 
@@ -58,10 +62,14 @@ func Ago(ts time.Time, colored bool) string {
 	return PrettyDuration(d, colored) + " ago"
 }
 
+// Every pretty prints a duration with an `every` prefix
+// See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L176
 func Every(d time.Duration, color bool) string {
 	return "every " + PrettyDuration(d, color)
 }
 
+// PrettyBytes pretty prints a byte count
+// See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L184
 func PrettyBytes(b int64, color bool) string {
 	if b < 1024 {
 		if color {
