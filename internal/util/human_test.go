@@ -12,9 +12,9 @@ var _ = Context("duration", func() {
 	DescribeTable("test", func(dur time.Duration, output string) {
 		Expect(util.PrettyDuration(dur, false)).To(Equal(output))
 	},
-		Entry("plural", 5*time.Hour+15*time.Minute+time.Second, "5 hours, 15 minutes, 1 second"),
-		Entry("singular", 0*time.Second, ""), // TODO: is this really desired?
-
+		Entry("plural", 5*time.Hour+15*time.Minute+2*time.Second, "5 hours, 15 minutes, 2 seconds"),
+		Entry("singular", time.Hour+time.Minute+time.Second, "1 hour, 1 minute, 1 second"),
+		Entry("empty", 0*time.Second, ""),
 	)
 })
 
