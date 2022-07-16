@@ -3,6 +3,7 @@ package test
 import (
 	"net/url"
 	"os"
+	"path"
 
 	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
@@ -39,6 +40,12 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	}
 
 	if fn != "" {
+		if path := path.Dir(fn); path != "" {
+			if err := os.MkdirAll(path, 0755); err != nil {
+				panic(err)
+			}
+		}
+
 		outputPaths = append(outputPaths, fn)
 	}
 
