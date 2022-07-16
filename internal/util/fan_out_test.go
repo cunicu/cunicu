@@ -8,7 +8,7 @@ import (
 
 var _ = Describe("Fan-out", func() {
 	It("should require buffered channels if we synchronously receive from the output channels", func() {
-		fo := util.NewFanout[int](1)
+		fo := util.NewFanOut[int](1)
 
 		ch1 := fo.Add()
 		ch2 := fo.Add()
@@ -23,7 +23,7 @@ var _ = Describe("Fan-out", func() {
 	})
 
 	It("also works with unbuffered channels if there is only a single channel", func() {
-		fo := util.NewFanout[int](0)
+		fo := util.NewFanOut[int](0)
 		ch := fo.Add()
 
 		fo.C <- 1234
@@ -35,7 +35,7 @@ var _ = Describe("Fan-out", func() {
 	})
 
 	It("also works with unbuffered channels if there is only a single channel or others have been removed", func() {
-		fo := util.NewFanout[int](0)
+		fo := util.NewFanOut[int](0)
 		ch1 := fo.Add()
 		ch2 := fo.Add()
 
@@ -50,7 +50,7 @@ var _ = Describe("Fan-out", func() {
 	})
 
 	It("might deadlock if there are more receiving channels", func() {
-		fo := util.NewFanout[int](0)
+		fo := util.NewFanOut[int](0)
 		ch1 := fo.Add()
 		ch2 := fo.Add()
 

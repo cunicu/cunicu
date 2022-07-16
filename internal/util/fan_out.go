@@ -2,7 +2,7 @@ package util
 
 import "sync"
 
-type Fanout[T any] struct {
+type FanOut[T any] struct {
 	C chan T
 
 	buf  int
@@ -10,8 +10,8 @@ type Fanout[T any] struct {
 	lock sync.RWMutex
 }
 
-func NewFanout[T any](buf int) *Fanout[T] {
-	f := &Fanout[T]{
+func NewFanOut[T any](buf int) *FanOut[T] {
+	f := &FanOut[T]{
 		C:    make(chan T),
 		subs: map[chan T]struct{}{},
 		buf:  buf,
@@ -22,7 +22,7 @@ func NewFanout[T any](buf int) *Fanout[T] {
 	return f
 }
 
-func (f *Fanout[T]) run() {
+func (f *FanOut[T]) run() {
 	for t := range f.C {
 		f.lock.RLock()
 		for ch := range f.subs {
@@ -32,7 +32,7 @@ func (f *Fanout[T]) run() {
 	}
 }
 
-func (f *Fanout[T]) Add() chan T {
+func (f *FanOut[T]) Add() chan T {
 	ch := make(chan T, f.buf)
 
 	f.lock.Lock()
@@ -42,13 +42,13 @@ func (f *Fanout[T]) Add() chan T {
 	return ch
 }
 
-func (f *Fanout[T]) Remove(ch chan T) {
+func (f *FanOut[T]) Remove(ch chan T) {
 	f.lock.Lock()
 	delete(f.subs, ch)
 	f.lock.Unlock()
 }
 
-func (f *Fanout[T]) Close() error {
+func (f *FanOut[T]) Close() error {
 	close(f.C)
 	return nil
 }
