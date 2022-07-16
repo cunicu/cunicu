@@ -6,8 +6,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-type Less func(i, j int) bool
-
 func CmpDevices(a, b *wgtypes.Device) int {
 	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
 }
@@ -16,6 +14,21 @@ func CmpPeers(a, b *wgtypes.Peer) int {
 	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
 }
 
-func LessPeers(peers []wgtypes.Peer) Less {
-	return func(i, j int) bool { return CmpPeers(&peers[i], &peers[j]) < 0 }
+func CmpPeerHandshakeTime(a, b *wgtypes.Peer) int {
+	if a.LastHandshakeTime.UnixMilli() == 0 && b.LastHandshakeTime.UnixMilli() != 0 {
+		return 1
+	}
+
+	if b.LastHandshakeTime.UnixMilli() == 0 && a.LastHandshakeTime.UnixMilli() != 0 {
+		return -1
+	}
+
+	diff := a.LastHandshakeTime.UnixMilli() - b.LastHandshakeTime.UnixMilli()
+	if diff < 0 {
+		return 1
+	} else if diff > 0 {
+		return -1
+	} else {
+		return 0
+	}
 }
