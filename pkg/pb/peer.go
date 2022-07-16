@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -34,11 +35,18 @@ func NewPeer(p wgtypes.Peer) *Peer {
 func (p *Peer) Peer() wgtypes.Peer {
 	allowedIPs := []net.IPNet{}
 	for _, allowedIP := range p.AllowedIps {
-		_, ipnet, _ := net.ParseCIDR(allowedIP) // TODO handle error
+		_, ipnet, err := net.ParseCIDR(allowedIP)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse Wireguard AllowedIP: %w", err))
+		}
+
 		allowedIPs = append(allowedIPs, *ipnet)
 	}
 
-	endpoint, _ := net.ResolveUDPAddr("udp", p.Endpoint) // TODO handle error
+	endpoint, err := net.ResolveUDPAddr("udp", p.Endpoint)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse Wireguard Endpoint: %w", err))
+	}
 
 	q := wgtypes.Peer{
 		PublicKey:                   *(*wgtypes.Key)(p.PublicKey),
