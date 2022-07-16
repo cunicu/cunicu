@@ -49,13 +49,19 @@ type SocketSettings struct {
 }
 
 type WireguardConfigSettings struct {
-	Path string `yaml:"path,omitempty"`
-	Sync bool   `yaml:"sync,omitempty"`
+	Path  string `yaml:"path,omitempty"`
+	Sync  bool   `yaml:"sync,omitempty"`
+	Watch bool   `yaml:"watch,omitempty"`
 }
 
+type WireguardRoutesSettings struct {
+	Sync  bool   `yaml:"sync,omitempty"`
+	Table string `yaml:"table,omitempty"`
+}
 
 type WireguardSettings struct {
 	Config WireguardConfigSettings `yaml:"config,omitempty"`
+	Routes WireguardRoutesSettings `yaml:"routes,omitempty"`
 
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`
