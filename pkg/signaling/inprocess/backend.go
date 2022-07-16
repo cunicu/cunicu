@@ -31,16 +31,6 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 
 	cfg.OnBackendReady.Invoke(b)
 
-	// TODO
-	// b.events <- &pb.Event{
-	// 	Type: pb.Event_BACKEND_READY,
-	// 	Event: &pb.Event_BackendReady{
-	// 		BackendReady: &pb.BackendReadyEvent{
-	// 			Type: pb.BackendReadyEvent_INPROCESS,
-	// 		},
-	// 	},
-	// }
-
 	return b, nil
 }
 

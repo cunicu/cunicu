@@ -108,16 +108,6 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 
 	cfg.OnBackendReady.Invoke(b)
 
-	// TODO
-	// b.events <- &pb.Event{
-	// 	Type: pb.Event_BACKEND_READY,
-	// 	Event: &pb.Event_BackendReady{
-	// 		BackendReady: &pb.BackendReadyEvent{
-	// 			Type: ,
-	// 		},
-	// 	},
-	// }
-
 	return b, nil
 }
 
@@ -174,7 +164,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.Signa
 func (b *Backend) Close() error {
 	close(b.term)
 
-	return nil // TODO
+	return nil // TODO: Shutdown backend
 }
 
 func (b *Backend) onSignalingEnvelopeAdd(obj any) {
