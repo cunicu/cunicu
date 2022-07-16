@@ -80,6 +80,10 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("socket.path", DefaultSocketPath)
 	c.SetDefault("socket.wait", false)
 	c.SetDefault("wg.config.path", "/etc/wireguard")
+	c.SetDefault("wg.config.sync", false)
+	c.SetDefault("wg.config.watch", false)
+	c.SetDefault("wg.routes.sync", false)
+	c.SetDefault("wg.routes.table", "main")
 	c.SetDefault("ice.check_interval", "200ms")
 	c.SetDefault("ice.keepalive_interval", "2s")
 	c.SetDefault("ice.disconnected_timeout", "5s")
@@ -91,19 +95,22 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("ice.port.max", EphemeralPortMax)
 
 	flags.StringVarP(&c.Domain, "domain", "A", "", "A DNS `domain` name used for DNS auto-configuration")
-	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "A `filename`s of a file")
+	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "One or more `filename`s of configuration files")
 
 	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
-	flags.StringSliceP("backend", "b", []string{}, "A signaling backend `URL`")
+	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
 	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on Wireguard interfaces")
 
 	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering Wireguard interfaces (e.g. \"wg-.*\")")
-	flags.BoolP("wg-userspace", "u", false, "Start userspace Wireguard daemon")
+	flags.BoolP("wg-userspace", "u", false, "Create new interfaces with userspace Wireguard implementation")
 	flags.BoolP("wg-config-sync", "S", false, "Synchronize Wireguard interface with configuration file (see \"wg syncconf\")")
 	flags.StringP("wg-config-path", "w", "", "The `directory` of Wireguard wg/wg-quick configuration files")
+	flags.BoolP("wg-config-watch", "W", false, "Watch and synchronize changes to the Wireguard configuration files")
+	flags.BoolP("wg-routes-sync", "R", false, "Synchronize Wireguard AllowedIPs with kernel routing table")
+	flags.StringP("wg-routes-table", "T", "main", "Kernel routing table to use")
 
 	// ice.AgentConfig fields
-	flags.StringSliceP("url", "a", []string{}, "A STUN and/or TURN server `URL`")
+	flags.StringSliceP("url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
 	flags.StringP("username", "U", "", "The `username` for STUN/TURN credentials")
 	flags.StringP("password", "P", "", "The `password` for STUN/TURN credentials")
 
@@ -135,6 +142,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"wg-interface-filter":      "wg.interface_filter",
 		"wg-config-sync":           "wg.config.sync",
 		"wg-config-path":           "wg.config.path",
+		"wg-config-watch":          "wg.config.watch",
+		"wg-routes-sync":           "wg.routes.sync",
+		"wg-routes-table":          "wg.routes.table",
 		"url":                      "ice.urls",
 		"username":                 "ice.username",
 		"password":                 "ice.password",
@@ -162,6 +172,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"watch-interval":           true,
 		"wg-config-sync":           true,
 		"wg-config-path":           true,
+		"wg-config-watch":          true,
+		"wg-routes-sync":           true,
+		"wg-routes-table":          true,
 		"ice-candidate-type":       true,
 		"ice-network-type":         true,
 		"ice-nat-1to1-ip":          true,
