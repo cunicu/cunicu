@@ -13,6 +13,14 @@ import (
 	"riasc.eu/wice/pkg/signaling"
 )
 
+type readyHandler struct {
+	sync.WaitGroup
+}
+
+func (r *readyHandler) OnBackendReady(b signaling.Backend) {
+	r.Done()
+}
+
 type peer struct {
 	id       int64
 	backend  signaling.Backend
@@ -60,14 +68,12 @@ func RunBackendTest(u string, n int) {
 	uri, err := url.Parse(u)
 	g.Expect(err).To(g.Succeed(), "Failed to parse URL: %s", err)
 
-	ready := sync.WaitGroup{}
+	ready := &readyHandler{}
 	ready.Add(n)
 
 	cfg := &signaling.BackendConfig{
-		URI: uri,
-		// OnReady: func(b signaling.Backend) {
-		// 	ready.Done()
-		// },
+		URI:            uri,
+		OnBackendReady: signaling.BackendReadyHandlerList{ready},
 	}
 
 	ps := []*peer{}
