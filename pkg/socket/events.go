@@ -9,6 +9,7 @@ import (
 	"riasc.eu/wice/pkg/core"
 	icex "riasc.eu/wice/pkg/feat/disc/ice"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 func (s *Server) OnInterfaceAdded(i *core.Interface) {
@@ -77,6 +78,18 @@ func (s *Server) OnConnectionStateChange(p *icex.Peer, cs ice.ConnectionState) {
 		Event: &pb.Event_PeerConnectionStateChange{
 			PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
 				NewState: pb.NewConnectionState(cs),
+			},
+		},
+	}
+}
+
+func (s *Server) OnBackendReady(b signaling.Backend) {
+	s.events.C <- &pb.Event{
+		Type: pb.Event_BACKEND_READY,
+
+		Event: &pb.Event_BackendReady{
+			BackendReady: &pb.BackendReadyEvent{
+				Type: b.Type(),
 			},
 		},
 	}

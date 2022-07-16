@@ -24,12 +24,13 @@ var _ = It("can create new a new backend", func() {
 	h := readyHandler(0)
 
 	cfg := &signaling.BackendConfig{
-		URI:            uri,
-		OnBackendReady: signaling.BackendReadyHandlerList{&h},
+		URI: uri,
 	}
 
 	b, err := signaling.NewBackend(cfg)
 	Expect(err).To(Succeed(), "Failed to create new backend: %s", err)
+
+	b.OnReady(&h)
 
 	_, isInprocessBackend := b.(*inprocess.Backend)
 	Expect(isInprocessBackend).To(BeTrue())

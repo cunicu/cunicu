@@ -31,12 +31,18 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig) (Backend, error) {
 	return mb, nil
 }
 
-func (b *MultiBackend) Type() pb.BackendReadyEvent_Type {
+func (mb *MultiBackend) OnReady(h BackendReadyHandler) {
+	for _, b := range mb.backends {
+		b.OnReady(h)
+	}
+}
+
+func (mb *MultiBackend) Type() pb.BackendReadyEvent_Type {
 	return pb.BackendReadyEvent_MULTI
 }
 
-func (m *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
-	for _, b := range m.backends {
+func (mb *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+	for _, b := range mb.backends {
 		if err := b.Publish(ctx, kp, msg); err != nil {
 			return err
 		}
@@ -45,10 +51,10 @@ func (m *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.
 	return nil
 }
 
-func (m *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
+func (mb *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
 	chans := []chan *pb.SignalingMessage{}
 
-	for _, b := range m.backends {
+	for _, b := range mb.backends {
 		ch, err := b.Subscribe(ctx, kp)
 		if err != nil {
 			return nil, err
@@ -60,8 +66,8 @@ func (m *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan 
 	return util.FanIn(chans...), nil
 }
 
-func (m *MultiBackend) Close() error {
-	for _, b := range m.backends {
+func (mb *MultiBackend) Close() error {
+	for _, b := range mb.backends {
 		if err := b.Close(); err != nil {
 			return err
 		}
