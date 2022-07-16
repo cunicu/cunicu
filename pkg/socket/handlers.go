@@ -83,13 +83,14 @@ func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, er
 }
 
 func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
-	_, pbErr, err := s.findPeer(params.Intf, params.Peer)
+	p, pbErr, err := s.findPeer(params.Intf, params.Peer)
 	if pbErr != nil || err != nil {
 		return pbErr, err
 	}
 
-	// TODO
-	// peer.Restart()
+	ip := s.daemon.EndpointDiscovery.Peers[p]
+
+	ip.Restart()
 
 	return pb.Success, nil
 }
