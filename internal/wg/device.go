@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/util"
 	t "riasc.eu/wice/internal/util/terminal"
@@ -61,10 +62,12 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
 		return err
 	}
 
-	// TODO: Sort peer list
-	// https://github.com/WireGuard/wireguard-tools/blob/1fd95708391088742c139010cc6b821add941dec/src/show.c#L47
+	// Sort peers by last handshake time
+	var sortedPeers []wgtypes.Peer
+	copy(sortedPeers, d.Peers)
+	slices.SortFunc(sortedPeers, func(a, b wgtypes.Peer) bool { return CmpPeerHandshakeTime(&a, &b) < 0 })
 
-	for _, peer := range d.Peers {
+	for _, peer := range sortedPeers {
 		var kv = map[string]any{
 			"allowed ips": "(none)",
 		}
