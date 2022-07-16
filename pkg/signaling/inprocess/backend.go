@@ -21,17 +21,24 @@ func init() {
 }
 
 type Backend struct {
+	onReady signaling.BackendReadyHandlerList
+
 	logger *zap.Logger
 }
 
 func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
 	b := &Backend{
-		logger: logger,
+		onReady: signaling.BackendReadyHandlerList{},
+		logger:  logger,
 	}
 
-	cfg.OnBackendReady.Invoke(b)
+	b.onReady.Invoke(b)
 
 	return b, nil
+}
+
+func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
+	b.onReady.Register(h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {

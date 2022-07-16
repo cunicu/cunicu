@@ -39,7 +39,7 @@ type Daemon struct {
 
 	// Shared
 
-	backend signaling.Backend
+	Backend signaling.Backend
 	client  *wgctrl.Client
 	config  *config.Config
 
@@ -87,7 +87,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	d := &Daemon{
 		config:  cfg,
 		client:  client,
-		backend: backend,
+		Backend: backend,
 
 		stop:    make(chan any),
 		signals: internal.SetupSignals(),
@@ -143,7 +143,7 @@ func (d *Daemon) setupFeatures() error {
 
 	// TODO: Add configuration setting
 	if true {
-		if d.EndpointDiscovery, err = ice.New(d.Watcher, d.config, d.client, d.backend); err != nil {
+		if d.EndpointDiscovery, err = ice.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
 			return fmt.Errorf("failed to start endpoint discovery: %w", err)
 		}
 

@@ -72,8 +72,7 @@ func RunBackendTest(u string, n int) {
 	ready.Add(n)
 
 	cfg := &signaling.BackendConfig{
-		URI:            uri,
-		OnBackendReady: signaling.BackendReadyHandlerList{ready},
+		URI: uri,
 	}
 
 	ps := []*peer{}

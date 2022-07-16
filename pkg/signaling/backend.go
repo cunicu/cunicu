@@ -27,8 +27,6 @@ type BackendPlugin struct {
 
 type BackendConfig struct {
 	URI *url.URL
-
-	OnBackendReady BackendReadyHandlerList
 }
 
 type Backend interface {
@@ -39,6 +37,8 @@ type Backend interface {
 
 	// Get a stream of messages from a specific peer
 	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+
+	OnReady(h BackendReadyHandler)
 
 	// Returns the backends type identifier
 	Type() pb.BackendReadyEvent_Type
