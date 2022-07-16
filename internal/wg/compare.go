@@ -8,6 +8,10 @@ import (
 
 type Less func(i, j int) bool
 
+func CmpDevices(a, b *wgtypes.Device) int {
+	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
+}
+
 func CmpPeers(a, b *wgtypes.Peer) int {
 	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
 }

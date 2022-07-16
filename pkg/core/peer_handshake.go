@@ -8,7 +8,7 @@ import (
 
 // EnsureHandshake initiated a new Wireguard handshake if the last one is older than 5 seconds
 func (p *Peer) EnsureHandshake() error {
-	// Return if the last handshake happed within the last 5 seconds
+	// Return if the last handshake happened within the last 5 seconds
 	if time.Since(p.LastHandshakeTime) < 5*time.Second {
 		return nil
 	}
@@ -26,10 +26,7 @@ func (p *Peer) InitiateHandshake() error {
 	for time.Since(p.LastHandshakeTime) > 5*time.Second {
 		p.logger.Debug("Waiting for handshake")
 
-		ip, err := p.PublicKey().IPv6Address()
-		if err != nil {
-			return fmt.Errorf("failed to get IP: %w", err)
-		}
+		ip := p.PublicKey().IPv6Address()
 
 		ra := &net.UDPAddr{
 			IP:   ip.IP,

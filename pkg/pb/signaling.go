@@ -32,7 +32,7 @@ func (e *SignalingEnvelope) Decrypt(kp *crypto.KeyPair) (*SignalingMessage, erro
 	}
 
 	if ekp != kp.Public() {
-		return nil, errors.New("keypair mismatch")
+		return nil, errors.New("key pair mismatch")
 	}
 
 	msg := &SignalingMessage{}

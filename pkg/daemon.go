@@ -1,37 +1,50 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
-	"sync"
-	"time"
+	"os"
 
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
+	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/internal/config"
+	"riasc.eu/wice/internal/util"
+	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/device"
+	"riasc.eu/wice/pkg/feat/disc/ice"
+	"riasc.eu/wice/pkg/feat/setup"
+	config_sync "riasc.eu/wice/pkg/feat/sync/config"
+	route_sync "riasc.eu/wice/pkg/feat/sync/routes"
+	"riasc.eu/wice/pkg/watcher"
+
 	"riasc.eu/wice/pkg/signaling"
 
 	"go.uber.org/zap/zapio"
 )
 
 type Daemon struct {
-	Backend signaling.Backend
-	Client  *wgctrl.Client
-	Config  *config.Config
+	*watcher.Watcher
 
-	Interfaces    core.InterfaceList
-	InterfaceLock sync.RWMutex
+	// Features
 
-	Events chan *pb.Event
+	ConfigSyncer      *config_sync.Syncer
+	RouteSyncer       *route_sync.Syncer
+	Setup             *setup.Setup
+	EndpointDiscovery *ice.EndpointDiscovery
 
-	eventListeners     map[chan *pb.Event]any
-	eventListenersLock sync.Mutex
+	// Shared
 
-	stop chan any
+	backend signaling.Backend
+	client  *wgctrl.Client
+	config  *config.Config
+
+	stop    chan any
+	signals chan os.Signal
 
 	logger *zap.Logger
 }
@@ -40,7 +53,11 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	var err error
 
 	logger := zap.L().Named("daemon")
-	events := make(chan *pb.Event, 16)
+
+	// Check permissions
+	if !util.HasCapabilities(cap.NET_ADMIN) {
+		return nil, errors.New("insufficient privileges. Pleas run wice as root user or with NET_ADMIN capabilities")
+	}
 
 	// Create backend
 	var backend signaling.Backend
@@ -48,14 +65,14 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	if len(cfg.Backends) == 1 {
 		backend, err = signaling.NewBackend(&signaling.BackendConfig{
 			URI: &cfg.Backends[0].URL,
-		}, events)
+		})
 	} else {
 		urls := []*url.URL{}
 		for _, u := range cfg.Backends {
 			urls = append(urls, &u.URL)
 		}
 
-		backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{}, events)
+		backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{})
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
@@ -68,96 +85,90 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	d := &Daemon{
-		Config:  cfg,
-		Client:  client,
-		Backend: backend,
+		config:  cfg,
+		client:  client,
+		backend: backend,
 
-		Interfaces:    core.InterfaceList{},
-		InterfaceLock: sync.RWMutex{},
-
-		Events:         events,
-		eventListeners: map[chan *pb.Event]any{},
-
-		stop: make(chan any),
+		stop:    make(chan any),
+		signals: internal.SetupSignals(),
 
 		logger: logger,
 	}
 
+	if d.Watcher, err = watcher.New(d.client, cfg.WatchInterval, &cfg.Wireguard.InterfaceFilter.Regexp); err != nil {
+		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
+	}
+
 	// Check if Wireguard interface can be created by the kernel
 	if !cfg.Wireguard.Userspace {
-		cfg.Wireguard.Userspace = !core.WireguardModuleExists()
+		cfg.Wireguard.Userspace = !wg.KernelModuleExists()
+	}
+
+	if err := d.setupFeatures(); err != nil {
+		return nil, err
 	}
 
 	return d, nil
 }
 
-func (d *Daemon) Run() error {
-	ifEvents := make(chan core.InterfaceEvent, 16)
-	errors := make(chan error, 16)
-	signals := internal.SetupSignals()
+func (d *Daemon) setupFeatures() error {
+	var err error
 
+	// TODO: Add configuration setting
+	if true {
+		if d.Setup, err = setup.New(d.Watcher, d.client); err != nil {
+			return fmt.Errorf("failed to create interface setuper: %w", err)
+		}
+	}
+
+	if d.config.Wireguard.Config.Sync {
+		if d.ConfigSyncer, err = config_sync.New(d.Watcher, d.client,
+			d.config.Wireguard.Config.Path,
+			d.config.Wireguard.Config.Watch,
+			d.config.Wireguard.Userspace); err != nil {
+
+			return fmt.Errorf("failed to start configuration file synchronization: %w", err)
+		}
+
+		d.logger.Info("Started configuration file synchronization")
+	}
+
+	if d.config.Wireguard.Routes.Sync {
+		if d.RouteSyncer, err = route_sync.New(d.Watcher, d.config.Wireguard.Routes.Table); err != nil {
+			return fmt.Errorf("failed to start allowed-ips <-> kernel route synchronization: %w", err)
+		}
+
+		d.logger.Info("Started allowed-ips <-> kernel route synchronization")
+	}
+
+	// TODO: Add configuration setting
+	if true {
+		if d.EndpointDiscovery, err = ice.New(d.Watcher, d.config, d.client, d.backend); err != nil {
+			return fmt.Errorf("failed to start endpoint discovery: %w", err)
+		}
+
+		d.logger.Info("Started endpoint discovery")
+	}
+
+	return nil
+}
+
+func (d *Daemon) Run() error {
 	if err := d.CreateInterfacesFromArgs(); err != nil {
 		return fmt.Errorf("failed to create interfaces: %w", err)
 	}
 
-	if err := core.WatchWireguardUserspaceInterfaces(ifEvents, errors); err != nil {
-		return fmt.Errorf("failed to watch userspace interfaces: %w", err)
-	}
+	go d.Watcher.Run()
 
-	if err := core.WatchWireguardKernelInterfaces(ifEvents, errors); err != nil {
-		return fmt.Errorf("failed to watch kernel interfaces: %w", err)
-	}
-
-	d.logger.Debug("Starting initial interface sync")
-	if err := d.SyncAllInterfaces(); err != nil {
-		return fmt.Errorf("initial sync failed: %w", err)
-	}
-
-	ticker := time.NewTicker(d.Config.WatchInterval)
-
-out:
-	for {
-		select {
-		// We still a need periodic sync we can not (yet) monitor Wireguard interfaces
-		// for changes via a netlink socket (patch is pending)
-		case <-ticker.C:
-			d.logger.Debug("Starting periodic interface sync")
-			d.SyncAllInterfaces()
-
-		case <-d.stop:
-			d.logger.Info("Received stop request")
-			break out
-
-		case event := <-d.Events:
-			if event.Time == nil {
-				event.Time = pb.TimeNow()
+	for sig := range d.signals {
+		d.logger.Debug("Received signal", zap.String("signal", sig.String()))
+		switch sig {
+		case unix.SIGUSR1:
+			if err := d.Sync(); err != nil {
+				d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
 			}
-
-			d.eventListenersLock.Lock()
-			for ch := range d.eventListeners {
-				ch <- event
-			}
-			d.eventListenersLock.Unlock()
-
-			event.Log(d.logger, "Event", zap.Int("listeners", len(d.eventListeners)))
-
-		case event := <-ifEvents:
-			d.logger.Debug("Received interface event", zap.String("event", event.String()))
-			d.SyncAllInterfaces()
-
-		case err := <-errors:
-			d.logger.Error("Failed to watch for interface changes", zap.Error(err))
-
-		case sig := <-signals:
-			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
-			switch sig {
-			case unix.SIGUSR1:
-				if err := d.SyncAllInterfaces(); err != nil {
-					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
-				}
-			default:
-				break out
-			}
+		default:
+			return nil
 		}
 	}
 
@@ -172,115 +183,33 @@ func (d *Daemon) Close() error {
 	return nil
 }
 
-func (d *Daemon) GetInterfaceByName(name string) core.Interface {
-	for _, intf := range d.Interfaces {
-		if intf.Name() == name {
-			return intf
-		}
-	}
-
-	return nil
-}
-
-func (d *Daemon) SyncAllInterfaces() error {
-	devices, err := d.Client.Devices()
-	if err != nil {
-		d.logger.Fatal("Failed to list Wireguard interfaces", zap.Error(err))
-	}
-
-	syncedInterfaces := core.InterfaceList{}
-	keepInterfaces := core.InterfaceList{}
-
-	for _, device := range devices {
-		if !d.Config.Wireguard.InterfaceFilter.MatchString(device.Name) {
-			continue // Skip interfaces which do not match the filter
-		}
-
-		// Find matching interface
-		interf := d.GetInterfaceByName(device.Name)
-		if interf == nil { // new interface
-			d.logger.Info("Adding new interface", zap.String("intf", device.Name))
-
-			i, err := core.NewInterface(device, d.Client, d.Backend, d.Events, d.Config)
-			if err != nil {
-				d.logger.Fatal("Failed to create new interface",
-					zap.Error(err),
-					zap.String("intf", device.Name),
-				)
-			}
-
-			interf = &i
-
-			d.Interfaces = append(d.Interfaces, &i)
-		} else { // existing interface
-			d.logger.Debug("Sync existing interface", zap.String("intf", device.Name))
-
-			if err := interf.Sync(device); err != nil {
-				d.logger.Fatal("Failed to sync interface",
-					zap.Error(err),
-					zap.String("intf", device.Name),
-				)
-			}
-		}
-
-		syncedInterfaces = append(syncedInterfaces, interf)
-	}
-
-	for _, intf := range d.Interfaces {
-		i := syncedInterfaces.GetByName(intf.Name())
-		if i == nil {
-			d.logger.Info("Removing vanished interface", zap.String("intf", intf.Name()))
-
-			if err := intf.Close(); err != nil {
-				d.logger.Fatal("Failed to close interface", zap.Error(err))
-			}
-
-			d.Events <- &pb.Event{
-				Type:      pb.Event_INTERFACE_REMOVED,
-				Interface: intf.Name(),
-			}
-		} else {
-			keepInterfaces = append(keepInterfaces, intf)
-		}
-	}
-
-	d.Interfaces = keepInterfaces
-
-	return nil
-}
-
 func (d *Daemon) CreateInterfacesFromArgs() error {
-	var devs core.Devices
-	devs, err := d.Client.Devices()
+	var devs device.Devices
+	devs, err := d.client.Devices()
 	if err != nil {
 		return err
 	}
 
-	for _, interfName := range d.Config.Wireguard.Interfaces {
-		dev := devs.GetByName(interfName)
+	for _, intfName := range d.config.Wireguard.Interfaces {
+		dev := devs.GetByName(intfName)
 		if dev != nil {
-			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", interfName))
+			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", intfName))
 			continue
 		}
 
-		var interf core.Interface
-		if d.Config.Wireguard.Userspace {
-			interf, err = core.CreateUserInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
-		} else {
-			interf, err = core.CreateKernelInterface(interfName, d.Client, d.Backend, d.Events, d.Config)
-		}
+		i, err := core.CreateInterface(intfName, d.config.Wireguard.Userspace, d.client)
 		if err != nil {
 			return fmt.Errorf("failed to create Wireguard device: %w", err)
 		}
 
 		if d.logger.Core().Enabled(zap.DebugLevel) {
 			d.logger.Debug("Initialized interface:")
-			if err := interf.DumpConfig(&zapio.Writer{Log: d.logger}); err != nil {
+			if err := i.DumpConfig(&zapio.Writer{Log: d.logger}); err != nil {
 				return err
 			}
 		}
 
-		d.Interfaces = append(d.Interfaces, interf)
+		d.Watcher.Interfaces[i.Name()] = i
 	}
 
 	return nil
@@ -290,14 +219,4 @@ func (d *Daemon) Stop() error {
 	close(d.stop)
 
 	return nil
-}
-
-func (d *Daemon) ListenEvents() chan *pb.Event {
-	events := make(chan *pb.Event, 100)
-
-	d.eventListenersLock.Lock()
-	d.eventListeners[events] = nil
-	d.eventListenersLock.Unlock()
-
-	return events
 }

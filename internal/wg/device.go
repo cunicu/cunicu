@@ -61,7 +61,7 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
 		return err
 	}
 
-	// TODO: sort peer list
+	// TODO: Sort peer list
 	// https://github.com/WireGuard/wireguard-tools/blob/1fd95708391088742c139010cc6b821add941dec/src/show.c#L47
 
 	for _, peer := range d.Peers {

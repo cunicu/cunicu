@@ -8,11 +8,11 @@ import (
 )
 
 func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) {
-	s.daemon.InterfaceLock.Lock()
-	defer s.daemon.InterfaceLock.Unlock()
+	s.daemon.Watcher.InterfaceLock.Lock()
+	defer s.daemon.Watcher.InterfaceLock.Unlock()
 
 	interfaces := []*pb.Interface{}
-	for _, i := range s.daemon.Interfaces {
+	for _, i := range s.daemon.Watcher.Interfaces {
 		interfaces = append(interfaces, i.Marshal())
 	}
 
@@ -21,28 +21,28 @@ func (s *Server) GetStatus(ctx context.Context, _ *pb.Void) (*pb.Status, error) 
 	}, nil
 }
 
-func (s *Server) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
-	events := s.daemon.ListenEvents()
-
-	// Send initial connection state of all peers
-	for _, i := range s.daemon.Interfaces {
-		for key, p := range i.Peers() {
-			e := &pb.Event{
-				Type:      pb.Event_PEER_CONNECTION_STATE_CHANGED,
-				Interface: p.Interface.Name(),
-				Peer:      key.Bytes(),
-				Event: &pb.Event_PeerConnectionStateChange{
-					PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-						NewState: pb.NewConnectionState(p.ConnectionState),
-					},
+func (s *Server) sendConnectionStates(stream pb.Socket_StreamEventsServer) {
+	for _, p := range s.daemon.EndpointDiscovery.Peers {
+		e := &pb.Event{
+			Type:      pb.Event_PEER_CONNECTION_STATE_CHANGED,
+			Interface: p.Interface.Name(),
+			Peer:      p.Peer.PublicKey().Bytes(),
+			Event: &pb.Event_PeerConnectionStateChange{
+				PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
+					NewState: pb.NewConnectionState(p.ConnectionState),
 				},
-			}
-
-			stream.Send(e)
+			},
 		}
-	}
 
-	for e := range events {
+		stream.Send(e)
+	}
+}
+
+func (s *Server) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
+	// Send initial connection state of all peers
+	s.sendConnectionStates(stream)
+
+	for e := range s.events.Add() {
 		if err := stream.Send(e); err != nil {
 			return fmt.Errorf("failed to send event: %w", err)
 		}
@@ -75,7 +75,7 @@ func (s *Server) Stop(ctx context.Context, params *pb.StopParams) (*pb.Error, er
 }
 
 func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, error) {
-	if err := s.daemon.SyncAllInterfaces(); err != nil {
+	if err := s.daemon.Watcher.Sync(); err != nil {
 		return pb.NewError(err), nil
 	}
 
@@ -83,12 +83,13 @@ func (s *Server) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Error, er
 }
 
 func (s *Server) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
-	peer, pbErr, err := s.findPeer(params.Intf, params.Peer)
+	_, pbErr, err := s.findPeer(params.Intf, params.Peer)
 	if pbErr != nil || err != nil {
 		return pbErr, err
 	}
 
-	peer.Restart()
+	// TODO
+	// peer.Restart()
 
 	return pb.Success, nil
 }

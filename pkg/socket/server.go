@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
@@ -27,10 +28,12 @@ type Server struct {
 	waitGroup sync.WaitGroup
 	waitOnce  sync.Once
 
+	events *util.FanOut[*pb.Event]
+
 	logger *zap.Logger
 }
 
-func Listen(network string, address string, wait bool, daemon *pkg.Daemon) (*Server, error) {
+func Listen(network string, address string) (*Server, error) {
 	logger := zap.L().Named("socket.server")
 	// Remove old unix sockets
 	if network == "unix" {
@@ -45,28 +48,39 @@ func Listen(network string, address string, wait bool, daemon *pkg.Daemon) (*Ser
 	}
 
 	s := &Server{
-		daemon:   daemon,
 		listener: l,
+		events:   util.NewFanOut[*pb.Event](0),
 		logger:   logger,
 		grpc:     grpc.NewServer(),
 	}
 
-	pb.RegisterSocketServer(s.grpc, s)
+	s.waitGroup.Add(1)
 
 	go s.grpc.Serve(l)
-
-	s.waitGroup.Add(1)
-	if wait {
-		s.logger.Info("Wait for control socket connection")
-
-		s.waitGroup.Wait()
-	}
 
 	return s, nil
 }
 
+func (s *Server) Wait() {
+	s.logger.Info("Wait for control socket connection")
+
+	s.waitGroup.Wait()
+}
+
+func (s *Server) RegisterDaemon(d *pkg.Daemon) {
+	s.daemon = d
+
+	pb.RegisterSocketServer(s.grpc, s)
+
+	d.Watcher.RegisterAll(s)
+
+	if d.EndpointDiscovery != nil {
+		d.EndpointDiscovery.OnConnectionStateChange.Register(s)
+	}
+}
+
 func (s *Server) findPeer(intfName string, peerPK []byte) (*core.Peer, *pb.Error, error) {
-	intf := s.daemon.Interfaces.GetByName(intfName)
+	intf := s.daemon.Watcher.Interfaces.ByName(intfName)
 	if intf == nil {
 		return nil, &pb.Error{
 			Code:    pb.Error_ENOENT,
@@ -79,7 +93,7 @@ func (s *Server) findPeer(intfName string, peerPK []byte) (*core.Peer, *pb.Error
 		return nil, nil, fmt.Errorf("invalid key: %w", err)
 	}
 
-	peer, ok := intf.Peers()[pk]
+	peer, ok := intf.Peers[pk]
 	if !ok {
 		return nil, &pb.Error{
 			Code:    pb.Error_ENOENT,

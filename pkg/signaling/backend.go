@@ -18,7 +18,7 @@ var (
 
 type BackendType string // URL schemes
 
-type BackendFactory func(*BackendConfig, chan *pb.Event, *zap.Logger) (Backend, error)
+type BackendFactory func(*BackendConfig, *zap.Logger) (Backend, error)
 
 type BackendPlugin struct {
 	New         BackendFactory
@@ -27,6 +27,8 @@ type BackendPlugin struct {
 
 type BackendConfig struct {
 	URI *url.URL
+
+	OnBackendReady BackendReadyHandlerList
 }
 
 type Backend interface {
@@ -37,9 +39,12 @@ type Backend interface {
 
 	// Get a stream of messages from a specific peer
 	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+
+	// Returns the backends type identifier
+	Type() pb.BackendReadyEvent_Type
 }
 
-func NewBackend(cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
+func NewBackend(cfg *BackendConfig) (Backend, error) {
 	typs := strings.SplitN(cfg.URI.Scheme, "+", 2)
 	typ := BackendType(typs[0])
 
@@ -55,7 +60,7 @@ func NewBackend(cfg *BackendConfig, events chan *pb.Event) (Backend, error) {
 	loggerName := fmt.Sprintf("backend.%s", typ)
 	logger := zap.L().Named(loggerName).With(zap.Any("backend", cfg.URI))
 
-	be, err := p.New(cfg, events, logger)
+	be, err := p.New(cfg, logger)
 	if err != nil {
 		return nil, err
 	}
