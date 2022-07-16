@@ -23,18 +23,13 @@ type Proxy struct {
 	iceConn  *ice.Conn
 	userConn *net.UDPConn
 
-	withEBPF bool
-	withNFT  bool
-
 	logger *zap.Logger
 }
 
-func NewProxy(nat *NAT, listenPort int, withEBPF, withNFT bool) (*Proxy, error) {
+func NewProxy(nat *NAT, listenPort int) (*Proxy, error) {
 	p := &Proxy{
 		nat:        nat,
 		listenPort: listenPort,
-		withEBPF:   withEBPF,
-		withNFT:    withNFT,
 		logger:     zap.L().Named("proxy"),
 	}
 

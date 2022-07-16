@@ -14,7 +14,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-	. "github.com/onsi/gomega/gstruct"
 	"github.com/pion/ice/v2"
 )
 
@@ -228,13 +227,6 @@ var _ = Describe("use proper default options", func() {
 	It("should have a default STUN URL", func() {
 		Expect(cfg.ICE.URLs).To(HaveLen(1))
 		Expect(cfg.ICE.URLs).To(ContainElement(HaveField("Host", "l.google.com")))
-	})
-
-	It("should have proxies enabled", func() {
-		Expect(cfg.Proxy).To(MatchFields(0, Fields{
-			"NFT":  BeTrue(),
-			"EBPF": BeTrue(),
-		}))
 	})
 })
 

@@ -43,11 +43,6 @@ type ICESettings struct {
 	Password string `yaml:"password,omitempty"`
 }
 
-type ProxySettings struct {
-	NFT  bool `yaml:"nft"`
-	EBPF bool `yaml:"ebpf"`
-}
-
 type SocketSettings struct {
 	Path string `yaml:"path,omitempty"`
 	Wait bool   `yaml:"wait,omitempty"`
@@ -58,15 +53,9 @@ type WireguardConfigSettings struct {
 	Sync bool   `yaml:"sync,omitempty"`
 }
 
-type WireguardPortSettings struct {
-	Min int `yaml:"min,omitempty"`
-	Max int `yaml:"max,omitempty"`
-}
 
 type WireguardSettings struct {
 	Config WireguardConfigSettings `yaml:"config,omitempty"`
-
-	Port PortSettings `yaml:"port,omitempty"`
 
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`
@@ -80,7 +69,6 @@ type Settings struct {
 	Backends []BackendURL `yaml:"backends,omitempty"`
 
 	ICE       ICESettings       `yaml:"ice,omitempty"`
-	Proxy     ProxySettings     `yaml:"proxy,omitempty"`
 	Socket    SocketSettings    `yaml:"socket,omitempty"`
 	Wireguard WireguardSettings `yaml:"wg,omitempty"`
 }

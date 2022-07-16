@@ -80,10 +80,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("socket.path", DefaultSocketPath)
 	c.SetDefault("socket.wait", false)
 	c.SetDefault("wg.config.path", "/etc/wireguard")
-	c.SetDefault("wg.port.min", WireguardDefaultPort)
-	c.SetDefault("wg.port.max", EphemeralPortMax)
-	c.SetDefault("proxy.ebpf", true)
-	c.SetDefault("proxy.nft", true)
 	c.SetDefault("ice.check_interval", "200ms")
 	c.SetDefault("ice.keepalive_interval", "2s")
 	c.SetDefault("ice.disconnected_timeout", "5s")
@@ -100,16 +96,11 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
 	flags.StringSliceP("backend", "b", []string{}, "A signaling backend `URL`")
 	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on Wireguard interfaces")
-	flags.BoolP("proxy-ebpf", "p", true, "Use eBPF filters to diverge STUN packets to wice")
-	flags.BoolP("proxy-nft", "n", true, "Use NFTables to redirect STUN packets to wice")
 
 	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering Wireguard interfaces (e.g. \"wg-.*\")")
 	flags.BoolP("wg-userspace", "u", false, "Start userspace Wireguard daemon")
 	flags.BoolP("wg-config-sync", "S", false, "Synchronize Wireguard interface with configuration file (see \"wg syncconf\")")
 	flags.StringP("wg-config-path", "w", "", "The `directory` of Wireguard wg/wg-quick configuration files")
-
-	flags.Uint16("wg-port-min", 0, "Minimum `port` for allocation policy for Wireguard ListenPorts (range: 0-65535)")
-	flags.Uint16("wg-port-max", 0, "Maximum `port` for allocation policy for Wireguard ListenPorts (range: 0-65535)")
 
 	// ice.AgentConfig fields
 	flags.StringSliceP("url", "a", []string{}, "A STUN and/or TURN server `URL`")
@@ -144,8 +135,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"wg-interface-filter":      "wg.interface_filter",
 		"wg-config-sync":           "wg.config.sync",
 		"wg-config-path":           "wg.config.path",
-		"wg-port-min":              "wg.port.min",
-		"wg-port-max":              "wg.port.max",
 		"url":                      "ice.urls",
 		"username":                 "ice.username",
 		"password":                 "ice.password",
@@ -166,8 +155,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"ice-restart-timeout":      "ice.restart_timeout",
 		"socket":                   "socket.path",
 		"socket-wait":              "socket.wait",
-		"proxy-ebpf":               "proxy.ebpf",
-		"proxy-nft":                "proxy.nft",
 	}
 
 	showAdvancedFlags := os.Getenv("WICE_ADVANCED_CLI") != ""
@@ -175,8 +162,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"watch-interval":           true,
 		"wg-config-sync":           true,
 		"wg-config-path":           true,
-		"wg-port-min":              true,
-		"wg-port-max":              true,
 		"ice-candidate-type":       true,
 		"ice-network-type":         true,
 		"ice-nat-1to1-ip":          true,
@@ -193,8 +178,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"ice-check-interval":       true,
 		"ice-restart-timeout":      true,
 		"socket-wait":              true,
-		"proxy-ebpf":               true,
-		"proxy-nft":                true,
 	}
 
 	flags.VisitAll(func(flag *pflag.Flag) {
