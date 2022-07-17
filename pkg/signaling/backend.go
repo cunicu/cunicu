@@ -29,6 +29,10 @@ type BackendConfig struct {
 	URI *url.URL
 }
 
+type BackendReadyHandler interface {
+	OnBackendReady(b Backend)
+}
+
 type Backend interface {
 	io.Closer
 

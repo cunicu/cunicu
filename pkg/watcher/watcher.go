@@ -49,7 +49,7 @@ type Watcher struct {
 
 	devices []*wgtypes.Device
 
-	OnInterface core.InterfaceHandlerList
+	onInterface []core.InterfaceHandler
 
 	client *wgctrl.Client
 
@@ -69,7 +69,7 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 		Interfaces:    core.InterfaceList{},
 		InterfaceLock: sync.RWMutex{},
 
-		OnInterface: core.InterfaceHandlerList{},
+		onInterface: []core.InterfaceHandler{},
 
 		devices: []*wgtypes.Device{},
 
@@ -83,6 +83,10 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 
 		logger: zap.L().Named("watcher"),
 	}, nil
+}
+
+func (w *Watcher) OnInterface(h core.InterfaceHandler) {
+	w.onInterface = append(w.onInterface, h)
 }
 
 func (w *Watcher) Run() {
@@ -162,7 +166,9 @@ func (w *Watcher) Sync() error {
 
 		w.logger.Info("Interface removed", zap.String("intf", wgd.Name))
 
-		w.OnInterface.InvokeRemoved(i)
+		for _, h := range w.onInterface {
+			h.OnInterfaceRemoved(i)
+		}
 
 		if err := i.Close(); err != nil {
 			w.logger.Fatal("Failed to close interface", zap.Error(err))
@@ -182,7 +188,9 @@ func (w *Watcher) Sync() error {
 
 		w.Interfaces[wgd.Name] = i
 
-		w.OnInterface.InvokeAdded(i)
+		for _, h := range w.onInterface {
+			h.OnInterfaceAdded(i)
+		}
 
 		i.Sync(wgd)
 	}

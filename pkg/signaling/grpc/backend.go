@@ -24,7 +24,7 @@ type Backend struct {
 
 	config BackendConfig
 
-	onReady signaling.BackendReadyHandlerList
+	onReady []signaling.BackendReadyHandler
 
 	logger *zap.Logger
 }
@@ -33,7 +33,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	var err error
 
 	b := &Backend{
-		onReady: signaling.BackendReadyHandlerList{},
+		onReady: []signaling.BackendReadyHandler{},
 		logger:  logger,
 	}
 
@@ -47,13 +47,15 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 
 	b.client = pb.NewSignalingClient(b.conn)
 
-	b.onReady.Invoke(b)
+	for _, h := range b.onReady {
+		h.OnBackendReady(b)
+	}
 
 	return b, nil
 }
 
 func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
-	b.onReady.Register(h)
+	b.onReady = append(b.onReady, h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {

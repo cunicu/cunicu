@@ -19,7 +19,7 @@ type Peer struct {
 
 	Interface *Interface
 
-	OnModified PeerModifiedHandlerList
+	onModified []PeerModifiedHandler
 
 	client *wgctrl.Client
 
@@ -37,7 +37,7 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 		Interface: i,
 		Peer:      *wgp,
 
-		OnModified: PeerModifiedHandlerList{},
+		onModified: []PeerModifiedHandler{},
 
 		client: i.client,
 		logger: logger,
@@ -94,6 +94,10 @@ func (p *Peer) WireguardConfig() *wgtypes.PeerConfig {
 	}
 
 	return cfg
+}
+
+func (p *Peer) OnModified(h PeerModifiedHandler) {
+	p.onModified = append(p.onModified, h)
 }
 
 // updateEndpoint sets a new endpoint for the Wireguard peer
@@ -195,7 +199,9 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	if mod != PeerModifiedNone {
 		p.logger.Info("Peer modified", zap.Any("modified", mod))
 
-		p.OnModified.Invoke(p, &old, mod, ipsAdded, ipsRemoved)
+		for _, h := range p.onModified {
+			h.OnPeerModified(p, &old, mod, ipsAdded, ipsRemoved)
+		}
 	}
 
 	return mod, ipsAdded, ipsRemoved
