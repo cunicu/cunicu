@@ -79,7 +79,7 @@ func (s *Server) RegisterDaemon(d *pkg.Daemon) {
 	}
 
 	if d.EndpointDiscovery != nil {
-		d.EndpointDiscovery.OnConnectionStateChange.Register(s)
+		d.EndpointDiscovery.OnConnectionStateChange(s)
 	}
 }
 
