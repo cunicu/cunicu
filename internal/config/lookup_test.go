@@ -115,26 +115,26 @@ var _ = Describe("lookup", func() {
 	})
 
 	It("can do DNS autoconfiguration", Label("dns-autoconfig"), func() {
-		cfg, err := config.ParseArgs("--domain", "example.com")
+		c, err := config.ParseArgs("--domain", "example.com")
 
 		Expect(err).To(Succeed())
-		Expect(cfg.Community).To(Equal("my-community-password"))
-		Expect(cfg.ICE.Username).To(Equal("user1"))
-		Expect(cfg.ICE.Password).To(Equal("pass1"))
-		Expect(cfg.Backends).To(ConsistOf(
+		Expect(c.Community).To(Equal("my-community-password"))
+		Expect(c.EndpointDisc.ICE.Username).To(Equal("user1"))
+		Expect(c.EndpointDisc.ICE.Password).To(Equal("pass1"))
+		Expect(c.Backends).To(ConsistOf(
 			config.BackendURL{URL: url.URL{Scheme: "p2p"}},
 			config.BackendURL{URL: url.URL{Scheme: "grpc", Host: "example.com:8080"}},
 		))
-		Expect(cfg.ICE.URLs).To(ConsistOf(
+		Expect(c.EndpointDisc.ICE.URLs).To(ConsistOf(
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeSTUN, Host: "stun.example.com.", Port: 3478, Proto: ice.ProtoTypeUDP}},
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeTURN, Host: "turn.example.com.", Port: 3478, Proto: ice.ProtoTypeUDP}},
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeSTUNS, Host: "stun.example.com.", Port: 3478, Proto: ice.ProtoTypeTCP}},
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeTURNS, Host: "turn.example.com.", Port: 5349, Proto: ice.ProtoTypeTCP}},
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeTURN, Host: "turn.example.com.", Port: 3478, Proto: ice.ProtoTypeTCP}},
 		))
-		Expect(cfg.Wireguard.Interfaces).To(ContainElement("wg-test"))
+		Expect(c.Wireguard.Interfaces).To(ContainElement("wg-test"))
 
-		cfg.Dump(GinkgoWriter)
+		c.Dump(GinkgoWriter)
 	})
 
 	AfterEach(func() {

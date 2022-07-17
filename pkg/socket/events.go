@@ -7,7 +7,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
-	icex "riasc.eu/wice/pkg/feat/disc/ice"
+	"riasc.eu/wice/pkg/feat/disc/ep"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
@@ -68,7 +68,7 @@ func (s *Server) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerMo
 	}
 }
 
-func (s *Server) OnConnectionStateChange(p *icex.Peer, cs ice.ConnectionState) {
+func (s *Server) OnConnectionStateChange(p *ep.Peer, cs ice.ConnectionState) {
 	s.events.C <- &pb.Event{
 		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
 

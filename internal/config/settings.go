@@ -48,24 +48,31 @@ type SocketSettings struct {
 	Wait bool   `yaml:"wait,omitempty"`
 }
 
-type WireguardConfigSettings struct {
-	Path  string `yaml:"path,omitempty"`
-	Sync  bool   `yaml:"sync,omitempty"`
-	Watch bool   `yaml:"watch,omitempty"`
+type ConfigSyncSettings struct {
+	Enabled bool   `yaml:"enabled,omitempty"`
+	Path    string `yaml:"path,omitempty"`
+	Watch   bool   `yaml:"watch,omitempty"`
 }
 
-type WireguardRoutesSettings struct {
-	Sync  bool   `yaml:"sync,omitempty"`
-	Table string `yaml:"table,omitempty"`
+type RouteSyncSettings struct {
+	Enabled bool   `yaml:"enabled,omitempty"`
+	Table   string `yaml:"table,omitempty"`
 }
 
 type WireguardSettings struct {
-	Config WireguardConfigSettings `yaml:"config,omitempty"`
-	Routes WireguardRoutesSettings `yaml:"routes,omitempty"`
-
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`
 	Interfaces      []string `yaml:"interfaces,omitempty"`
+}
+
+type AutoConfigSettings struct {
+	Enabled bool `yaml:"enabled,omitempty"`
+}
+
+type EndpointDiscoverySettings struct {
+	Enabled bool `yaml:"enabled,omitempty"`
+
+	ICE ICESettings `yaml:"ice,omitempty"`
 }
 
 type Settings struct {
@@ -74,9 +81,12 @@ type Settings struct {
 
 	Backends []BackendURL `yaml:"backends,omitempty"`
 
-	ICE       ICESettings       `yaml:"ice,omitempty"`
-	Socket    SocketSettings    `yaml:"socket,omitempty"`
-	Wireguard WireguardSettings `yaml:"wg,omitempty"`
+	Socket       SocketSettings            `yaml:"socket,omitempty"`
+	Wireguard    WireguardSettings         `yaml:"wireguard,omitempty"`
+	AutoConfig   AutoConfigSettings        `yaml:"auto_config,omitempty"`
+	ConfigSync   ConfigSyncSettings        `yaml:"config_sync,omitempty"`
+	RouteSync    RouteSyncSettings         `yaml:"route_sync,omitempty"`
+	EndpointDisc EndpointDiscoverySettings `yaml:"endpoint_disc,omitempty"`
 }
 
 func (s *Settings) Dump(wr io.Writer) error {

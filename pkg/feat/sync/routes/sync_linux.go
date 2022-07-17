@@ -7,7 +7,7 @@ import (
 	"riasc.eu/wice/pkg/device"
 )
 
-func (s *Syncer) syncKernel() {
+func (s *RouteSynchronization) syncKernel() {
 	routes, err := netlink.RouteList(nil, unix.AF_INET6)
 	if err != nil {
 		s.logger.Error("Failed to get routes from kernel", zap.Error(err))
@@ -21,7 +21,7 @@ func (s *Syncer) syncKernel() {
 	}
 }
 
-func (s *Syncer) watchKernel() {
+func (s *RouteSynchronization) watchKernel() {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
 
@@ -45,7 +45,7 @@ func (s *Syncer) watchKernel() {
 	}
 }
 
-func (s *Syncer) handleRouteUpdate(ru *netlink.RouteUpdate) {
+func (s *RouteSynchronization) handleRouteUpdate(ru *netlink.RouteUpdate) {
 	s.logger.Debug("Received netlink route update", zap.Any("update", ru))
 
 	if ru.Protocol == device.RouteProtocol {
