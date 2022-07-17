@@ -26,33 +26,33 @@ var _ = test.SetupLogging()
 
 var _ = Describe("parse command line arguments", func() {
 	It("can parse a boolean argument like wg-userspace", func() {
-		cfg, err := config.ParseArgs("--wg-userspace")
+		c, err := config.ParseArgs("--wg-userspace")
 
 		Expect(err).To(Succeed())
-		Expect(cfg.Wireguard.Userspace).To(BeTrue())
+		Expect(c.Wireguard.Userspace).To(BeTrue())
 	})
 
 	It("can parse multiple backends", func() {
-		cfg, err := config.ParseArgs("--backend", "k8s", "--backend", "p2p")
+		c, err := config.ParseArgs("--backend", "k8s", "--backend", "p2p")
 
 		Expect(err).To(Succeed())
-		Expect(cfg.Backends).To(HaveLen(2))
-		Expect(cfg.Backends[0].Scheme).To(Equal("k8s"))
-		Expect(cfg.Backends[1].Scheme).To(Equal("p2p"))
+		Expect(c.Backends).To(HaveLen(2))
+		Expect(c.Backends[0].Scheme).To(Equal("k8s"))
+		Expect(c.Backends[1].Scheme).To(Equal("p2p"))
 	})
 
 	It("can parse a duration value", func() {
-		cfg, err := config.ParseArgs("--ice-restart-timeout", "10s")
+		c, err := config.ParseArgs("--ice-restart-timeout", "10s")
 
 		Expect(err).To(Succeed())
-		Expect(cfg.ICE.RestartTimeout).To(Equal(10 * time.Second))
+		Expect(c.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
 	})
 
 	It("parse an interface list", func() {
-		cfg, err := config.ParseArgs("wg0", "wg1")
+		c, err := config.ParseArgs("wg0", "wg1")
 
 		Expect(err).To(Succeed())
-		Expect(cfg.Wireguard.Interfaces).To(ConsistOf("wg0", "wg1"))
+		Expect(c.Wireguard.Interfaces).To(ConsistOf("wg0", "wg1"))
 	})
 
 	It("fails on invalid arguments", func() {
@@ -98,19 +98,19 @@ var _ = Describe("parse command line arguments", func() {
 					Expect(cfgFile.WriteString("watch_interval: 1337s\n")).To(BeNumerically(">", 0))
 					Expect(cfgFile.Close()).To(Succeed())
 
-					cfg, err := config.ParseArgs("--config", cfgFile.Name())
+					c, err := config.ParseArgs("--config", cfgFile.Name())
 
 					Expect(err).To(Succeed())
-					Expect(cfg.WatchInterval).To(Equal(1337 * time.Second))
+					Expect(c.WatchInterval).To(Equal(1337 * time.Second))
 				})
 
 				Specify("that command line arguments take precedence over settings provided by configuration files", func() {
 					Expect(cfgFile.WriteString("watch_interval: 1337s\n")).To(BeNumerically(">", 0))
 					Expect(cfgFile.Close()).To(Succeed())
 
-					cfg, err := config.ParseArgs("--config", cfgFile.Name(), "--watch-interval", "1m")
+					c, err := config.ParseArgs("--config", cfgFile.Name(), "--watch-interval", "1m")
 					Expect(err).To(Succeed())
-					Expect(cfg.WatchInterval).To(Equal(time.Minute))
+					Expect(c.WatchInterval).To(Equal(time.Minute))
 				})
 			})
 
@@ -125,10 +125,10 @@ var _ = Describe("parse command line arguments", func() {
 					Expect(cfgFile.WriteString(`{ "watch_interval": "1337s" }`)).To(BeNumerically(">", 0))
 					Expect(cfgFile.Close()).To(Succeed())
 
-					cfg, err := config.ParseArgs("--config", cfgFile.Name())
+					c, err := config.ParseArgs("--config", cfgFile.Name())
 
 					Expect(err).To(Succeed())
-					Expect(cfg.WatchInterval).To(Equal(1337 * time.Second))
+					Expect(c.WatchInterval).To(Equal(1337 * time.Second))
 				})
 			})
 
@@ -195,69 +195,69 @@ var _ = Describe("use environment variables", func() {
 	})
 
 	It("accepts settings via environment variables", func() {
-		cfg, err := config.ParseArgs()
+		c, err := config.ParseArgs()
 		Expect(err).To(Succeed())
 
-		Expect(cfg.ICE.CandidateTypes).To(ConsistOf(
+		Expect(c.EndpointDisc.ICE.CandidateTypes).To(ConsistOf(
 			icex.CandidateType{CandidateType: ice.CandidateTypeServerReflexive},
 			icex.CandidateType{CandidateType: ice.CandidateTypeRelay},
 		))
 	})
 
 	It("environment variables are overwritten by command line arguments", func() {
-		cfg, err := config.ParseArgs("--ice-candidate-type", "host")
+		c, err := config.ParseArgs("--ice-candidate-type", "host")
 		Expect(err).To(Succeed())
 
-		Expect(cfg.ICE.CandidateTypes).To(ConsistOf(
+		Expect(c.EndpointDisc.ICE.CandidateTypes).To(ConsistOf(
 			icex.CandidateType{CandidateType: ice.CandidateTypeHost},
 		))
 	})
 })
 
 var _ = Describe("use proper default options", func() {
-	var cfg *config.Config
+	var c *config.Config
 
 	BeforeEach(func() {
 		var err error
-		cfg, err = config.ParseArgs()
+		c, err = config.ParseArgs()
 
 		Expect(err).To(Succeed())
 	})
 
 	It("should have a default STUN URL", func() {
-		Expect(cfg.ICE.URLs).To(HaveLen(1))
-		Expect(cfg.ICE.URLs).To(ContainElement(HaveField("Host", "l.google.com")))
+		Expect(c.EndpointDisc.ICE.URLs).To(HaveLen(1))
+		Expect(c.EndpointDisc.ICE.URLs).To(ContainElement(HaveField("Host", "l.google.com")))
 	})
 })
 
 var _ = Describe("dump", func() {
-	var cfg, cfg2 *config.Config
+	var c1, c2 *config.Config
 
 	BeforeEach(func() {
 		var err error
-		cfg, err = config.ParseArgs("--ice-network-type", "udp4,udp6", "--url", "stun:0l.de", "wg0")
+		c1, err = config.ParseArgs("--ice-network-type", "udp4,udp6", "--url", "stun:0l.de", "wg0")
 		Expect(err).To(Succeed())
 
 		buf := &bytes.Buffer{}
 
-		Expect(cfg.Dump(buf)).To(Succeed())
+		Expect(c1.Dump(buf)).To(Succeed())
 
-		cfg2 = config.NewConfig(nil)
-		cfg2.SetConfigType("yaml")
+		c2 = config.NewConfig(nil)
+		c2.SetConfigType("yaml")
 
-		Expect(cfg2.MergeConfig(buf)).To(Succeed())
-		Expect(cfg2.Load()).To(Succeed())
+		Expect(c2.MergeConfig(buf)).To(Succeed())
+		Expect(c2.Load()).To(Succeed())
 	})
 
 	It("have equal Wireguard interface lists", func() {
-		Expect(cfg.Wireguard.Interfaces).To(Equal(cfg2.Wireguard.Interfaces))
+		Expect(c1.Wireguard.Interfaces).To(Equal(c2.Wireguard.Interfaces))
 	})
 
 	It("have equal ICE network types", func() {
-		Expect(cfg.ICE.NetworkTypes).To(Equal(cfg2.ICE.NetworkTypes))
+		Expect(c1.EndpointDisc.ICE.NetworkTypes).To(Equal(c2.EndpointDisc.ICE.NetworkTypes))
 	})
 
 	It("have equal ICE URLs", func() {
-		Expect(cfg.ICE.URLs).To(Equal(cfg2.ICE.URLs))
+		Expect(c1.EndpointDisc.ICE.URLs).To(Equal(c2.EndpointDisc.ICE.URLs))
 	})
 })

@@ -14,7 +14,7 @@ import (
 type gwHashV4 [2]byte
 type gwHashV6 [8]byte
 
-type Syncer struct {
+type RouteSynchronization struct {
 	watcher *watcher.Watcher
 
 	gwMapV4 map[gwHashV4]*core.Peer
@@ -23,26 +23,26 @@ type Syncer struct {
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, table string) (*Syncer, error) {
-	s := &Syncer{
+func New(w *watcher.Watcher, table string) (*RouteSynchronization, error) {
+	s := &RouteSynchronization{
 		watcher: w,
 		gwMapV4: map[gwHashV4]*core.Peer{},
 		gwMapV6: map[gwHashV6]*core.Peer{},
 		logger:  zap.L().Named("sync.routes"),
 	}
 
-	w.OnInterface.Register(s)
+	w.OnInterface(s)
 
 	go s.watchKernel()
 
 	return s, nil
 }
 
-func (s *Syncer) OnInterfaceAdded(i *core.Interface) {
-	i.OnPeer.Register(s)
+func (s *RouteSynchronization) OnInterfaceAdded(i *core.Interface) {
+	i.OnPeer(s)
 }
 
-func (s *Syncer) OnPeerAdded(p *core.Peer) {
+func (s *RouteSynchronization) OnPeerAdded(p *core.Peer) {
 	ipV4 := p.PublicKey().IPv4Address()
 	hashV4 := *(*gwHashV4)(ipV4.IP[14:])
 
@@ -54,10 +54,10 @@ func (s *Syncer) OnPeerAdded(p *core.Peer) {
 
 	s.syncKernel() // Initial sync
 
-	p.OnModified.Register(s)
+	p.OnModified(s)
 }
 
-func (s *Syncer) OnPeerRemoved(p *core.Peer) {
+func (s *RouteSynchronization) OnPeerRemoved(p *core.Peer) {
 	ipV4 := p.PublicKey().IPv4Address()
 	hashV4 := *(*gwHashV4)(ipV4.IP[14:])
 
@@ -68,7 +68,7 @@ func (s *Syncer) OnPeerRemoved(p *core.Peer) {
 	delete(s.gwMapV6, hashV6)
 }
 
-func (s *Syncer) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (s *RouteSynchronization) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	for _, dst := range ipsAdded {
 		if err := p.Interface.KernelDevice.AddRoute(&dst); err != nil {
 			s.logger.Error("Failed to add route", zap.Error(err))
@@ -94,4 +94,4 @@ func (s *Syncer) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModi
 	}
 }
 
-func (s *Syncer) OnInterfaceRemoved(i *core.Interface) {}
+func (s *RouteSynchronization) OnInterfaceRemoved(i *core.Interface) {}

@@ -16,10 +16,10 @@ import (
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/feat/disc/ice"
-	"riasc.eu/wice/pkg/feat/setup"
-	config_sync "riasc.eu/wice/pkg/feat/sync/config"
-	route_sync "riasc.eu/wice/pkg/feat/sync/routes"
+	ac "riasc.eu/wice/pkg/feat/auto"
+	ep "riasc.eu/wice/pkg/feat/disc/ep"
+	cs "riasc.eu/wice/pkg/feat/sync/config"
+	rs "riasc.eu/wice/pkg/feat/sync/routes"
 	"riasc.eu/wice/pkg/watcher"
 
 	"riasc.eu/wice/pkg/signaling"
@@ -32,10 +32,10 @@ type Daemon struct {
 
 	// Features
 
-	ConfigSyncer      *config_sync.Syncer
-	RouteSyncer       *route_sync.Syncer
-	Setup             *setup.Setup
-	EndpointDiscovery *ice.EndpointDiscovery
+	AutoConfig        *ac.AutoConfiguration
+	ConfigSync        *cs.ConfigSynchronization
+	RouteSync         *rs.RouteSynchronization
+	EndpointDiscovery *ep.EndpointDiscovery
 
 	// Shared
 
@@ -114,17 +114,16 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 func (d *Daemon) setupFeatures() error {
 	var err error
 
-	// TODO: Add configuration setting
-	if true {
-		if d.Setup, err = setup.New(d.Watcher, d.client); err != nil {
-			return fmt.Errorf("failed to create interface setuper: %w", err)
+	if d.config.AutoConfig.Enabled {
+		if d.AutoConfig, err = ac.New(d.Watcher, d.client); err != nil {
+			return fmt.Errorf("failed to start interface auto configuration: %w", err)
 		}
 	}
 
-	if d.config.Wireguard.Config.Sync {
-		if d.ConfigSyncer, err = config_sync.New(d.Watcher, d.client,
-			d.config.Wireguard.Config.Path,
-			d.config.Wireguard.Config.Watch,
+	if d.config.ConfigSync.Enabled {
+		if d.ConfigSync, err = cs.New(d.Watcher, d.client,
+			d.config.ConfigSync.Path,
+			d.config.ConfigSync.Watch,
 			d.config.Wireguard.Userspace); err != nil {
 
 			return fmt.Errorf("failed to start configuration file synchronization: %w", err)
@@ -133,17 +132,16 @@ func (d *Daemon) setupFeatures() error {
 		d.logger.Info("Started configuration file synchronization")
 	}
 
-	if d.config.Wireguard.Routes.Sync {
-		if d.RouteSyncer, err = route_sync.New(d.Watcher, d.config.Wireguard.Routes.Table); err != nil {
+	if d.config.RouteSync.Enabled {
+		if d.RouteSync, err = rs.New(d.Watcher, d.config.RouteSync.Table); err != nil {
 			return fmt.Errorf("failed to start allowed-ips <-> kernel route synchronization: %w", err)
 		}
 
 		d.logger.Info("Started allowed-ips <-> kernel route synchronization")
 	}
 
-	// TODO: Add configuration setting
-	if true {
-		if d.EndpointDiscovery, err = ice.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
+	if d.config.EndpointDisc.Enabled {
+		if d.EndpointDiscovery, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
 			return fmt.Errorf("failed to start endpoint discovery: %w", err)
 		}
 

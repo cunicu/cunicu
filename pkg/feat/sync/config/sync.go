@@ -14,8 +14,8 @@ import (
 	"riasc.eu/wice/pkg/watcher"
 )
 
-// Syncer synchronizes the Wireguard device configuration with an on-disk configuration file.
-type Syncer struct {
+// ConfigSynchronization synchronizes the Wireguard device configuration with an on-disk configuration file.
+type ConfigSynchronization struct {
 	watcher *watcher.Watcher
 	client  *wgctrl.Client
 
@@ -27,8 +27,8 @@ type Syncer struct {
 }
 
 // New creates a new Syncer
-func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, user bool) (*Syncer, error) {
-	s := &Syncer{
+func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, user bool) (*ConfigSynchronization, error) {
+	s := &ConfigSynchronization{
 		watcher: w,
 		client:  client,
 		cfgPath: cfgPath,
@@ -36,7 +36,7 @@ func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, 
 		logger:  zap.L().Named("sync.config"),
 	}
 
-	w.OnInterface.Register(s)
+	w.OnInterface(s)
 
 	if watch {
 		go s.watch()
@@ -46,7 +46,7 @@ func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, 
 }
 
 // OnInterfaceAdded is a handler which is called whenever an interface has been added
-func (s *Syncer) OnInterfaceAdded(i *core.Interface) {
+func (s *ConfigSynchronization) OnInterfaceAdded(i *core.Interface) {
 	cfg := path.Join(s.cfgPath, fmt.Sprintf("%s.conf", i.Name()))
 	if err := i.SyncConfig(cfg); err != nil && !errors.Is(err, os.ErrNotExist) {
 		s.logger.Fatal("Failed to sync interface configuration",
@@ -56,9 +56,9 @@ func (s *Syncer) OnInterfaceAdded(i *core.Interface) {
 	}
 }
 
-func (s *Syncer) OnInterfaceRemoved(i *core.Interface) {}
+func (s *ConfigSynchronization) OnInterfaceRemoved(i *core.Interface) {}
 
-func (s *Syncer) watch() {
+func (s *ConfigSynchronization) watch() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		s.logger.Fatal("failed to create fsnotify watcher", zap.Error(err))
@@ -88,7 +88,7 @@ func (s *Syncer) watch() {
 	}
 }
 
-func (s *Syncer) handleFsnotifyEvent(event fsnotify.Event) {
+func (s *ConfigSynchronization) handleFsnotifyEvent(event fsnotify.Event) {
 	cfg := event.Name
 	filename := path.Base(cfg)
 	extension := path.Ext(filename)
