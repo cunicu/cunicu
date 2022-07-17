@@ -243,7 +243,9 @@ func (p *Peer) onConnectionStateChange(cs ice.ConnectionState) {
 	p.logger.Info("Connection state changed",
 		zap.String("state", strings.ToLower(cs.String())))
 
-	p.Interface.Discovery.OnConnectionStateChange.Invoke(p, cs)
+	for _, h := range p.Interface.Discovery.onConnectionStateChange {
+		h.OnConnectionStateChange(p, cs)
+	}
 
 	if cs == ice.ConnectionStateFailed {
 		p.Restart()

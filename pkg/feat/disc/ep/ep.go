@@ -17,7 +17,7 @@ type EndpointDiscovery struct {
 	Peers      map[*core.Peer]*Peer
 	Interfaces map[*core.Interface]*Interface
 
-	OnConnectionStateChange OnConnectionStateHandlerList
+	onConnectionStateChange []OnConnectionStateHandler
 
 	watcher *watcher.Watcher
 	config  *config.Config
@@ -32,7 +32,7 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 		Peers:      map[*core.Peer]*Peer{},
 		Interfaces: map[*core.Interface]*Interface{},
 
-		OnConnectionStateChange: OnConnectionStateHandlerList{},
+		onConnectionStateChange: []OnConnectionStateHandler{},
 
 		watcher: w,
 		config:  cfg,
@@ -45,6 +45,10 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 	w.RegisterAll(e)
 
 	return e, nil
+}
+
+func (e *EndpointDiscovery) OnConnectionStateChange(h OnConnectionStateHandler) {
+	e.onConnectionStateChange = append(e.onConnectionStateChange, h)
 }
 
 func (e *EndpointDiscovery) OnInterfaceAdded(ci *core.Interface) {
