@@ -35,7 +35,7 @@ type Backend struct {
 
 	term chan struct{}
 
-	onReady signaling.BackendReadyHandlerList
+	onReady []signaling.BackendReadyHandler
 
 	logger *zap.Logger
 }
@@ -55,7 +55,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
 		term:                  make(chan struct{}),
 		config:                defaultConfig,
-		onReady:               signaling.BackendReadyHandlerList{},
+		onReady:               []signaling.BackendReadyHandler{},
 		logger:                logger,
 	}
 
@@ -109,13 +109,15 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	go b.periodicCleanup()
 	b.logger.Debug("Started regular cleanup")
 
-	b.onReady.Invoke(b)
+	for _, h := range b.onReady {
+		h.OnBackendReady(b)
+	}
 
 	return b, nil
 }
 
 func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
-	b.onReady.Register(h)
+	b.onReady = append(b.onReady, h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {

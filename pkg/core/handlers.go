@@ -7,6 +7,24 @@ import (
 	"riasc.eu/wice/internal/wg"
 )
 
+type InterfaceHandler interface {
+	OnInterfaceAdded(i *Interface)
+	OnInterfaceRemoved(i *Interface)
+}
+
+type InterfaceModifiedHandler interface {
+	OnInterfaceModified(i *Interface, old *wg.Device, m InterfaceModifier)
+}
+
+type PeerHandler interface {
+	OnPeerAdded(p *Peer)
+	OnPeerRemoved(p *Peer)
+}
+
+type PeerModifiedHandler interface {
+	OnPeerModified(p *Peer, old *wgtypes.Peer, m PeerModifier, ipsAdded, ipsRemoved []net.IPNet)
+}
+
 type AllHandler interface {
 	InterfaceHandler
 	InterfaceModifiedHandler
