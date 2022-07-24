@@ -21,6 +21,7 @@ var _ = test.SetupLogging()
 var _ = Describe("gRPC backend", func() {
 	var svr *grpc.Server
 	var l *net.TCPListener
+	var u url.URL
 
 	BeforeEach(func() {
 		var err error
@@ -32,16 +33,15 @@ var _ = Describe("gRPC backend", func() {
 		// Start local dummy gRPC server
 		svr = grpc.NewServer()
 		go svr.Serve(l)
-	})
 
-	It("works", func() {
-		u := url.URL{
+		u = url.URL{
 			Scheme:   "grpc",
 			Host:     l.Addr().String(),
 			RawQuery: "insecure=true",
 		}
-		test.RunBackendTest(u.String(), 10)
 	})
+
+	test.BackendTest(&u, 10)
 
 	AfterEach(func() {
 		svr.Stop()

@@ -2,9 +2,9 @@ package signaling
 
 import (
 	"context"
+	"errors"
 	"net/url"
 
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -31,12 +31,6 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig) (Backend, error) {
 	return mb, nil
 }
 
-func (mb *MultiBackend) OnReady(h BackendReadyHandler) {
-	for _, b := range mb.backends {
-		b.OnReady(h)
-	}
-}
-
 func (mb *MultiBackend) Type() pb.BackendReadyEvent_Type {
 	return pb.BackendReadyEvent_MULTI
 }
@@ -51,19 +45,18 @@ func (mb *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb
 	return nil
 }
 
-func (mb *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	chans := []chan *pb.SignalingMessage{}
+func (mb *MultiBackend) SubscribeAll(ctx context.Context, kp *crypto.Key, h MessageHandler) error {
+	return errors.New("not implemented yet") // TODO
+}
 
+func (mb *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error {
 	for _, b := range mb.backends {
-		ch, err := b.Subscribe(ctx, kp)
-		if err != nil {
-			return nil, err
+		if err := b.Subscribe(ctx, kp, h); err != nil {
+			return err
 		}
-
-		chans = append(chans, ch)
 	}
 
-	return util.FanIn(chans...), nil
+	return nil
 }
 
 func (mb *MultiBackend) Close() error {

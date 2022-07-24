@@ -21,34 +21,33 @@ func init() {
 }
 
 type Backend struct {
-	onReady []signaling.BackendReadyHandler
-
 	logger *zap.Logger
 }
 
 func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
 	b := &Backend{
-		onReady: []signaling.BackendReadyHandler{},
-		logger:  logger,
+		logger: logger,
 	}
 
-	for _, h := range b.onReady {
-		h.OnBackendReady(b)
+	for _, h := range cfg.OnReady {
+		h.OnSignalingBackendReady(b)
 	}
 
 	return b, nil
-}
-
-func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
-	b.onReady = append(b.onReady, h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {
 	return pb.BackendReadyEvent_INPROCESS
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	return subs.Subscribe(kp)
+func (b *Backend) SubscribeAll(ctx context.Context, kp *crypto.Key, h signaling.MessageHandler) error {
+	_, err := subs.SubscribeAll(kp, h)
+	return err
+}
+
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
+	_, err := subs.Subscribe(kp, h)
+	return err
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {

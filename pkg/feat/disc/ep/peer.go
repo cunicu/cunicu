@@ -11,6 +11,7 @@ import (
 	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/internal/log"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
@@ -38,8 +39,7 @@ type Peer struct {
 
 	description *pb.SessionDescription
 
-	messages  chan *pb.SignalingMessage
-	doRestart chan any
+	messages chan *pb.SignalingMessage
 
 	logger *zap.Logger
 }
@@ -52,7 +52,6 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		Interface: i,
 		backend:   i.Discovery.backend,
 		config:    i.Discovery.config,
-		doRestart: make(chan any),
 
 		logger: zap.L().Named("ice.peer"),
 	}
@@ -81,7 +80,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	// Initialize signaling channel
 	kp := p.PublicPrivateKeyPair()
 	p.logger.Info("Subscribe to messages from peer", zap.Any("kp", kp))
-	if p.messages, err = p.backend.Subscribe(context.Background(), kp); err != nil {
+	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
 		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
 	}
 
@@ -97,26 +96,14 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		p.logger.Fatal("Failed to gather candidates", zap.Error(err))
 	}
 
-	go p.run()
-
 	return p, nil
 }
 
-func (p *Peer) run() {
-	for {
-		select {
-		case <-p.doRestart:
-			if err := p.restart(); err != nil {
-				p.logger.Fatal("Failed to restart agent", zap.Error(err))
-			}
-
-		case msg := <-p.messages:
-			if err := p.onMessage(msg); err != nil {
-				p.logger.Error("Failed to handle message",
-					zap.Error(err),
-					zap.Any("msg", msg))
-			}
-		}
+func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *pb.SignalingMessage) {
+	if err := p.onMessage(msg); err != nil {
+		p.logger.Error("Failed to handle message",
+			zap.Error(err),
+			zap.Any("msg", msg))
 	}
 }
 
@@ -137,7 +124,9 @@ func (p *Peer) Close() error {
 
 // Restart the ICE agent by creating a new one
 func (p *Peer) Restart() {
-	p.doRestart <- nil
+	if err := p.restart(); err != nil {
+		p.logger.Fatal("Failed to restart agent", zap.Error(err))
+	}
 }
 
 func (p *Peer) restart() error {

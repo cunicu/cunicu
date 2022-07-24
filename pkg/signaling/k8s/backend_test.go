@@ -29,6 +29,8 @@ var testenv *envtest.Environment
 var kcfg *os.File
 
 var _ = Describe("Kubernetes backend", func() {
+	var u url.URL
+
 	BeforeEach(func() {
 		log.SetLogger(zapr.NewLogger(logger.Named("k8s")))
 
@@ -49,21 +51,19 @@ var _ = Describe("Kubernetes backend", func() {
 
 		err = writeKubeconfig(cfg, kcfg)
 		Expect(err).To(Succeed())
+
+		u = url.URL{
+			Scheme:   "k8s",
+			Path:     kcfg.Name(),
+			RawQuery: "namespace=default",
+		}
 	})
 
 	AfterEach(func() {
 		Expect(testenv.Stop()).To(Succeed())
 	})
 
-	It("works", func() {
-		u := url.URL{
-			Scheme:   "k8s",
-			Path:     kcfg.Name(),
-			RawQuery: "namespace=default",
-		}
-
-		test.RunBackendTest(u.String(), 2)
-	})
+	test.BackendTest(&u, 10)
 })
 
 func writeKubeconfig(rc *rest.Config, wr io.Writer) error {

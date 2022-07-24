@@ -2,38 +2,91 @@ package test
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/url"
-	"strings"
-	"sync"
 
-	g "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/log"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"go.uber.org/atomic"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
 
 type readyHandler struct {
-	sync.WaitGroup
+	Count *atomic.Uint32
 }
 
-func (r *readyHandler) OnBackendReady(b signaling.Backend) {
-	r.Done()
+func (r *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
+	r.Count.Inc()
+}
+
+type msgHandler struct {
+	Count    *atomic.Uint32
+	Messages map[crypto.Key]map[crypto.Key][]*pb.SignalingMessage
+}
+
+func NewMessageHandler() *msgHandler {
+	return &msgHandler{
+		Count:    atomic.NewUint32(0),
+		Messages: map[crypto.Key]map[crypto.Key][]*pb.SignalingMessage{},
+	}
+}
+
+func (h *msgHandler) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *pb.SignalingMessage) {
+	h.Count.Inc()
+
+	if _, ok := h.Messages[kp.Ours]; !ok {
+		h.Messages[kp.Ours] = map[crypto.Key][]*pb.SignalingMessage{}
+	}
+
+	if _, ok := h.Messages[kp.Ours][kp.Theirs]; !ok {
+		h.Messages[kp.Ours][kp.Theirs] = []*pb.SignalingMessage{}
+	}
+
+	h.Messages[kp.Ours][kp.Theirs] = append(h.Messages[kp.Ours][kp.Theirs], msg)
+}
+
+func (h *msgHandler) Check(p, o *peer) error {
+	kp := crypto.PublicKeyPair{
+		Ours:   p.key.PublicKey(),
+		Theirs: o.key.PublicKey(),
+	}
+
+	msgs, ok := h.Messages[kp.Ours]
+	if !ok {
+		return errors.New("did not find our key")
+	}
+
+	msgs2, ok := msgs[kp.Theirs]
+	if !ok {
+		return errors.New("did not find their key")
+	}
+
+	found := len(msgs2)
+
+	if found > 1 {
+		return fmt.Errorf("peer %d received %d messages from peer %d", p.id, found, o.id)
+	} else if found == 0 {
+		return fmt.Errorf("peer %d received no messages from peer %d", p.id, o.id)
+	} else {
+		msg := msgs2[0]
+		if msg.Session.Epoch != int64(o.id) {
+			return fmt.Errorf("received invalid msg: epoch == %d != %d", msg.Session.Epoch, o.id)
+		}
+
+		return nil
+	}
 }
 
 type peer struct {
-	id       int64
-	backend  signaling.Backend
-	key      crypto.Key
-	events   chan *pb.Event
-	messages map[int64]chan *pb.SignalingMessage
+	id      int
+	backend signaling.Backend
+	key     crypto.Key
 }
 
-func (p *peer) publish(o *peer) {
-	if p.id == o.id {
-		return
-	}
-
+func (p *peer) publish(o *peer) error {
 	kp := &crypto.KeyPair{
 		Ours:   p.key,
 		Theirs: o.key.PublicKey(),
@@ -43,93 +96,117 @@ func (p *peer) publish(o *peer) {
 		Session: &pb.SessionDescription{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
-			Epoch: p.id,
+			Epoch: int64(p.id),
 		},
 	}
 
-	err := p.backend.Publish(context.Background(), kp, sentMsg)
-	g.Expect(err).To(g.Succeed(), "Failed to publish signaling message: %s", err)
-}
-
-func (p *peer) receive(o *peer) {
-	recvMsg := <-p.messages[o.id]
-
-	g.Expect(recvMsg.Session.Epoch).To(g.Equal(o.id), "Received invalid message")
+	return p.backend.Publish(context.Background(), kp, sentMsg)
 }
 
 // TestBackend creates n peers with separate connections to the signaling backend u
 // and exchanges a test message between each pair of backends
-func RunBackendTest(u string, n int) {
-	// Add a colon to make url.Parse succeed
-	if !strings.Contains(u, ":") {
-		u += ":"
-	}
+func BackendTest(u *url.URL, n int) {
+	var err error
+	var ps []*peer
 
-	uri, err := url.Parse(u)
-	g.Expect(err).To(g.Succeed(), "Failed to parse URL: %s", err)
-
-	ready := &readyHandler{}
-	ready.Add(n)
-
-	cfg := &signaling.BackendConfig{
-		URI: uri,
-	}
-
-	ps := []*peer{}
-	for i := 0; i < n; i++ {
-		p := &peer{
-			id:       int64(i + 100),
-			events:   log.NewEventLogger(),
-			messages: map[int64]chan *pb.SignalingMessage{},
+	BeforeEach(func() {
+		backendReady := &readyHandler{
+			Count: atomic.NewUint32(0),
 		}
 
-		p.backend, err = signaling.NewBackend(cfg)
-		g.Expect(err).To(g.Succeed(), "Failed to create backend: %s", err)
-
-		defer p.backend.Close()
-
-		p.key, err = crypto.GeneratePrivateKey()
-		g.Expect(err).To(g.Succeed(), "Failed to generate private key: %s", err)
-
-		ps = append(ps, p)
-	}
-
-	// Wait until all backends are ready
-	ready.Wait()
-
-	for _, p := range ps {
-		for _, o := range ps {
-			if p == o {
-				continue // Do not send messages to ourself
+		ps = []*peer{}
+		for i := 0; i < n; i++ {
+			p := &peer{
+				id: i + 100,
 			}
 
-			kp := &crypto.KeyPair{
-				Ours:   p.key,
-				Theirs: o.key.PublicKey(),
+			cfg := &signaling.BackendConfig{
+				URI:     u,
+				OnReady: []signaling.BackendReadyHandler{backendReady},
 			}
 
-			p.messages[o.id], err = p.backend.Subscribe(context.Background(), kp)
-			g.Expect(err).To(g.Succeed(), "Failed to subscribe: %s", err)
+			p.backend, err = signaling.NewBackend(cfg)
+			Expect(err).To(Succeed(), "Failed to create backend: %s", err)
+
+			p.key, err = crypto.GeneratePrivateKey()
+			Expect(err).To(Succeed(), "Failed to generate private key: %s", err)
+
+			ps = append(ps, p)
 		}
-	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(n*n - n)
+		// Wait until all backends are ready
+		Eventually(func() int { return int(backendReady.Count.Load()) }).Should(Equal(n))
+	})
 
-	for _, p := range ps {
-		for _, o := range ps {
-			if p.id == o.id {
-				continue // Do not send messages to ourself
+	AfterEach(func() {
+		for _, p := range ps {
+			err := p.backend.Close()
+			Expect(err).To(Succeed())
+		}
+	})
+
+	It("exchanges messages between multiple pairs", func() {
+		mh1 := NewMessageHandler()
+		mh2 := NewMessageHandler()
+		mh3 := NewMessageHandler()
+		mh4 := NewMessageHandler()
+
+		// Subscribe
+		for _, p := range ps {
+			for _, o := range ps {
+				if p == o {
+					continue // Do not send messages to ourself
+				}
+
+				kp := &crypto.KeyPair{
+					Ours:   p.key,
+					Theirs: o.key.PublicKey(),
+				}
+
+				err = p.backend.Subscribe(context.Background(), kp, mh1)
+				Expect(err).To(Succeed())
+
+				err = p.backend.Subscribe(context.Background(), kp, mh2)
+				Expect(err).To(Succeed())
 			}
 
-			go func(p, o *peer) {
-				p.receive(o)
-				wg.Done()
-			}(p, o)
+			err = p.backend.SubscribeAll(context.Background(), &p.key, mh3)
+			Expect(err).To(Succeed())
 
-			p.publish(o)
+			err = p.backend.SubscribeAll(context.Background(), &p.key, mh4)
+			Expect(err).To(Succeed())
 		}
-	}
 
-	wg.Wait()
+		// Send messages
+		for _, p := range ps {
+			for _, o := range ps {
+				if p.id == o.id {
+					continue // Do not send messages to ourself
+				}
+
+				err := p.publish(o)
+				Expect(err).To(Succeed(), "Failed to publish signaling message: %s", err)
+			}
+		}
+
+		// Wait until we have exchanged all messages
+		Eventually(func() int { return int(mh1.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
+		Eventually(func() int { return int(mh2.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
+		Eventually(func() int { return int(mh3.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
+		Eventually(func() int { return int(mh4.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
+
+		// Check if we received the message
+		for _, p := range ps {
+			for _, o := range ps {
+				if p.id == o.id {
+					continue // Do not send messages to ourself
+				}
+
+				Expect(mh1.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
+				Expect(mh2.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
+				Expect(mh3.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
+				Expect(mh4.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
+			}
+		}
+	})
 }

@@ -19,12 +19,14 @@ func init() {
 }
 
 type Backend struct {
+	signaling.SubscriptionsRegistry
+
 	client pb.SignalingClient
 	conn   *grpc.ClientConn
 
-	config BackendConfig
+	isClosing bool
 
-	onReady []signaling.BackendReadyHandler
+	config BackendConfig
 
 	logger *zap.Logger
 }
@@ -33,8 +35,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	var err error
 
 	b := &Backend{
-		onReady: []signaling.BackendReadyHandler{},
-		logger:  logger,
+		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
+		logger:                logger,
 	}
 
 	if err := b.config.Parse(cfg); err != nil {
@@ -47,48 +49,37 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 
 	b.client = pb.NewSignalingClient(b.conn)
 
-	for _, h := range b.onReady {
-		h.OnBackendReady(b)
+	for _, h := range cfg.OnReady {
+		h.OnSignalingBackendReady(b)
 	}
 
 	return b, nil
-}
-
-func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
-	b.onReady = append(b.onReady, h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {
 	return pb.BackendReadyEvent_GRPC
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	params := &pb.SubscribeParams{
-		Key: kp.Ours.PublicKey().Bytes(),
+func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
+	if created, err := b.SubscriptionsRegistry.SubscribeAll(sk, h); err != nil {
+		return err
+	} else if created {
+		pk := sk.PublicKey()
+		return b.subscribeFromServer(ctx, &pk)
 	}
 
-	stream, err := b.client.Subscribe(ctx, params)
-	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe to offers: %s", err)
+	return nil
+}
+
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
+	if created, err := b.SubscriptionsRegistry.Subscribe(kp, h); err != nil {
+		return err
+	} else if created {
+		pk := kp.Ours.PublicKey()
+		return b.subscribeFromServer(ctx, &pk)
 	}
 
-	ch := make(chan *pb.SignalingMessage)
-
-	go func() {
-		for {
-			if env, err := stream.Recv(); err == nil {
-				if msg, err := env.Decrypt(kp); err == nil {
-					ch <- msg
-				} else {
-					b.logger.Error("Failed to decrypt message", zap.Error(err))
-				}
-			} else {
-				b.logger.Error("Failed to receive offer", zap.Error(err))
-			}
-		}
-	}()
-
-	return ch, nil
+	return nil
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
@@ -105,9 +96,42 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.Signa
 }
 
 func (b *Backend) Close() error {
+	b.isClosing = true
+
 	if err := b.conn.Close(); err != nil {
 		return fmt.Errorf("failed to close gRPC connection: %w", err)
 	}
+
+	return nil
+}
+
+func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error {
+	b.logger.Debug("Creating new subscription", zap.Any("pk", pk))
+
+	params := &pb.SubscribeParams{
+		Key: pk.Bytes(),
+	}
+
+	stream, err := b.client.Subscribe(ctx, params)
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to offers: %s", err)
+	}
+
+	go func() {
+		for {
+			if env, err := stream.Recv(); err == nil {
+				if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {
+					b.logger.Error("Failed to decrypt message", zap.Error(err))
+				}
+			} else {
+				if b.isClosing {
+					return
+				}
+
+				b.logger.Error("Failed to receive offer", zap.Error(err))
+			}
+		}
+	}()
 
 	return nil
 }

@@ -6,45 +6,35 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 )
 
 type Subscription struct {
-	*util.FanOut[*pb.SignalingMessage]
+	onMessages    map[crypto.Key][]MessageHandler
+	onAllMessages []MessageHandler
 
-	kp crypto.KeyPair
+	sk crypto.Key
 }
 
 type SubscriptionsRegistry struct {
-	subs     map[crypto.PublicKeyPair]*Subscription
+	subs     map[crypto.Key]*Subscription
 	subsLock sync.RWMutex
 }
 
 func NewSubscriptionsRegistry() SubscriptionsRegistry {
 	return SubscriptionsRegistry{
-		subs: map[crypto.PublicKeyPair]*Subscription{},
+		subs: map[crypto.Key]*Subscription{},
 	}
 }
 
 func (s *SubscriptionsRegistry) NewMessage(env *pb.SignalingEnvelope) error {
-	sender, err := crypto.ParseKeyBytes(env.Sender)
+	pk, err := crypto.ParseKeyBytes(env.Recipient)
 	if err != nil {
 		return fmt.Errorf("invalid key: %w", err)
 	}
 
-	recipient, err := crypto.ParseKeyBytes(env.Recipient)
-	if err != nil {
-		return fmt.Errorf("invalid key: %w", err)
-	}
-
-	pkp := crypto.PublicKeyPair{
-		Ours:   recipient,
-		Theirs: sender,
-	}
-
-	sub, err := s.GetSubscription(&pkp)
+	sub, err := s.GetSubscription(&pk)
 	if err != nil {
 		return err
 	}
@@ -52,29 +42,30 @@ func (s *SubscriptionsRegistry) NewMessage(env *pb.SignalingEnvelope) error {
 	return sub.NewMessage(env)
 }
 
-func (s *SubscriptionsRegistry) NewSubscription(kp *crypto.KeyPair) (*Subscription, error) {
+func (s *SubscriptionsRegistry) NewSubscription(k *crypto.Key) (*Subscription, error) {
 	s.subsLock.Lock()
 	defer s.subsLock.Unlock()
 
-	if _, ok := s.subs[kp.Public()]; ok {
+	if _, ok := s.subs[k.PublicKey()]; ok {
 		return nil, errors.New("already existing")
 	}
 
 	sub := &Subscription{
-		FanOut: util.NewFanOut[*pb.SignalingMessage](16),
-		kp:     *kp,
+		onMessages:    map[crypto.Key][]MessageHandler{},
+		onAllMessages: []MessageHandler{},
+		sk:            *k,
 	}
 
-	s.subs[kp.Public()] = sub
+	s.subs[k.PublicKey()] = sub
 
 	return sub, nil
 }
 
-func (s *SubscriptionsRegistry) GetSubscription(pkp *crypto.PublicKeyPair) (*Subscription, error) {
+func (s *SubscriptionsRegistry) GetSubscription(pk *crypto.Key) (*Subscription, error) {
 	s.subsLock.Lock()
 	defer s.subsLock.Unlock()
 
-	sub, ok := s.subs[*pkp]
+	sub, ok := s.subs[*pk]
 	if !ok {
 		return nil, errors.New("missing subscription")
 	}
@@ -82,61 +73,88 @@ func (s *SubscriptionsRegistry) GetSubscription(pkp *crypto.PublicKeyPair) (*Sub
 	return sub, nil
 }
 
-func (s *SubscriptionsRegistry) GetSubscriptions() ([]crypto.PublicKeyPair, error) {
-	s.subsLock.Lock()
-	defer s.subsLock.Unlock()
+func (s *SubscriptionsRegistry) GetOrCreateSubscription(sk *crypto.Key) (bool, *Subscription, error) {
+	pk := sk.PublicKey()
 
-	pkps := []crypto.PublicKeyPair{}
-	for pkp := range s.subs {
-		pkps = append(pkps, pkp)
-	}
-
-	return pkps, nil
-}
-
-func (s *SubscriptionsRegistry) GetOrCreateSubscription(kp *crypto.KeyPair) (*Subscription, error) {
-	pkp := kp.Public()
-
-	sub, err := s.GetSubscription(&pkp)
+	sub, err := s.GetSubscription(&pk)
 	if err == nil {
-		return sub, nil
+		return false, sub, nil
 	}
 
-	return s.NewSubscription(kp)
+	sub, err = s.NewSubscription(sk)
+
+	return true, sub, err
 }
 
-func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	sub, err := s.GetOrCreateSubscription(kp)
+func (s *SubscriptionsRegistry) SubscribeAll(sk *crypto.Key, h MessageHandler) (bool, error) {
+	created, sub, err := s.GetOrCreateSubscription(sk)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return sub.Add(), nil
+	sub.onAllMessages = append(sub.onAllMessages, h)
+
+	return created, nil
 }
 
-func (s *SubscriptionsRegistry) Unsubscribe(pkp *crypto.PublicKeyPair) {
+func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair, h MessageHandler) (bool, error) {
+	created, sub, err := s.GetOrCreateSubscription(&kp.Ours)
+	if err != nil {
+		return false, err
+	}
+
+	sub.OnMessages(&kp.Theirs, h)
+
+	return created, nil
+}
+
+func (s *SubscriptionsRegistry) Unsubscribe(pk *crypto.Key) {
 	s.subsLock.Lock()
 	defer s.subsLock.Unlock()
 
-	sub, ok := s.subs[*pkp]
-	if !ok {
-		return
-	}
-
-	sub.Close()
-
-	delete(s.subs, *pkp)
+	delete(s.subs, *pk)
 }
 
 func (s *Subscription) NewMessage(env *pb.SignalingEnvelope) error {
-	msg, err := env.Decrypt(&s.kp)
+	pk, err := crypto.ParseKeyBytes(env.Sender)
+	if err != nil {
+		return fmt.Errorf("failed to parse sender key: %w", err)
+	}
+
+	kp := crypto.KeyPair{
+		Ours:   s.sk,
+		Theirs: pk,
+	}
+	pkp := kp.Public()
+
+	msg, err := env.Decrypt(&kp)
 	if err != nil {
 		return err
 	}
 
-	zap.L().Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("kp", s.kp))
+	zap.L().Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("pkp", pkp))
 
-	s.C <- msg
+	for _, cb := range s.onAllMessages {
+		cb.OnSignalingMessage(&pkp, msg)
+	}
+
+	if cbs, ok := s.onMessages[kp.Theirs]; ok {
+		for _, cb := range cbs {
+			cb.OnSignalingMessage(&pkp, msg)
+		}
+	}
 
 	return nil
+}
+
+func (s *Subscription) OnMessages(pk *crypto.Key, h MessageHandler) {
+	if _, ok := s.onMessages[*pk]; ok {
+		s.onMessages[*pk] = append(s.onMessages[*pk], h)
+	} else {
+		s.onMessages[*pk] = []MessageHandler{h}
+	}
+}
+
+func (s *Subscription) OnAllMessages(h MessageHandler) {
+	s.onAllMessages = append(s.onAllMessages, h)
 }

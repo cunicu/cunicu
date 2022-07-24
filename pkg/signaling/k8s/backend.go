@@ -35,8 +35,6 @@ type Backend struct {
 
 	term chan struct{}
 
-	onReady []signaling.BackendReadyHandler
-
 	logger *zap.Logger
 }
 
@@ -55,7 +53,6 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
 		term:                  make(chan struct{}),
 		config:                defaultConfig,
-		onReady:               []signaling.BackendReadyHandler{},
 		logger:                logger,
 	}
 
@@ -97,8 +94,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	b.informer = factory.Wice().V1().SignalingEnvelopes().Informer()
 
 	b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    b.onSignalingEnvelopeAdd,
-		UpdateFunc: b.onSessionDescriptionUpdate,
+		AddFunc:    b.onSignalingEnvelopeAdded,
+		UpdateFunc: b.onSessionDescriptionUpdated,
 	})
 
 	go b.informer.Run(b.term)
@@ -109,33 +106,41 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	go b.periodicCleanup()
 	b.logger.Debug("Started regular cleanup")
 
-	for _, h := range b.onReady {
-		h.OnBackendReady(b)
+	for _, h := range cfg.OnReady {
+		h.OnSignalingBackendReady(b)
 	}
 
 	return b, nil
-}
-
-func (b *Backend) OnReady(h signaling.BackendReadyHandler) {
-	b.onReady = append(b.onReady, h)
 }
 
 func (b *Backend) Type() pb.BackendReadyEvent_Type {
 	return pb.BackendReadyEvent_K8S
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error) {
-	sub, err := b.NewSubscription(kp)
-	if err != nil {
-		return nil, fmt.Errorf("failed create subscription: %w", err)
+func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
+	if _, err := b.SubscriptionsRegistry.SubscribeAll(sk, h); err != nil {
+		return err
 	}
 
 	// Process existing envelopes in cache
-	if err := b.processByKeyPair(kp); err != nil {
-		return nil, err
+	if err := b.reprocess(); err != nil {
+		return err
 	}
 
-	return sub.Add(), nil
+	return nil
+}
+
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
+	if _, err := b.SubscriptionsRegistry.Subscribe(kp, h); err != nil {
+		return err
+	}
+
+	// Process existing envelopes in cache
+	if err := b.reprocess(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
@@ -176,7 +181,7 @@ func (b *Backend) Close() error {
 	return nil // TODO: Shutdown backend
 }
 
-func (b *Backend) onSignalingEnvelopeAdd(obj any) {
+func (b *Backend) onSignalingEnvelopeAdded(obj any) {
 	env := obj.(*v1.SignalingEnvelope)
 
 	b.logger.Debug("New envelope found on API server", zap.String("name", env.ObjectMeta.Name))
@@ -185,7 +190,7 @@ func (b *Backend) onSignalingEnvelopeAdd(obj any) {
 	}
 }
 
-func (b *Backend) onSessionDescriptionUpdate(_ any, new any) {
+func (b *Backend) onSessionDescriptionUpdated(old any, new any) {
 	newEnv := new.(*v1.SignalingEnvelope)
 
 	b.logger.Debug("SignalingEnvelope updated", zap.String("name", newEnv.ObjectMeta.Name))
@@ -195,12 +200,12 @@ func (b *Backend) onSessionDescriptionUpdate(_ any, new any) {
 }
 
 func (b *Backend) process(env *v1.SignalingEnvelope) error {
-	kp, err := env.PublicKeyPair()
+	pkp, err := env.PublicKeyPair()
 	if err != nil {
 		return fmt.Errorf("failed to get key pair from envelope: %w", err)
 	}
 
-	sub, err := b.GetSubscription(&kp)
+	sub, err := b.GetSubscription(&pkp.Ours)
 	if err != nil {
 		return nil // ignore envelopes not addressed to us
 	}
@@ -220,7 +225,7 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 	return nil
 }
 
-func (b *Backend) processByKeyPair(kp *crypto.KeyPair) error {
+func (b *Backend) reprocess() error {
 	store := b.informer.GetStore()
 	for _, obj := range store.List() {
 		if env, ok := obj.(*v1.SignalingEnvelope); ok {
