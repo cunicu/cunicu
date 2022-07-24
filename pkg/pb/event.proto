@@ -4,12 +4,15 @@ package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
+import "signaling.proto";
 
 message Event {
     enum Type {
+        UNKNOWN = 0;
+        
         // Signaling Events
-        BACKEND_READY = 0;
-        SIGNALING_MESSAGE = 1;
+        BACKEND_READY = 10;
+        SIGNALING_MESSAGE = 11;
 
         // Core Events
         PEER_ADDED = 20;
@@ -21,7 +24,10 @@ message Event {
         INTERFACE_MODIFIED = 32;
 
         // ICE Events
-        PEER_CONNECTION_STATE_CHANGED = 23;
+        PEER_CONNECTION_STATE_CHANGED = 40;
+
+        // Signaling Events
+        SIGNALING_MESSAGE = 50;
     }
 
     Type type = 1;
@@ -55,15 +61,7 @@ message PeerConnectionStateChangeEvent {
 }
 
 message BackendReadyEvent {
-    enum Type {
-        MULTI = 0;
-        P2P = 1;
-        K8S = 2;
-        GRPC = 3;
-        INPROCESS = 4;
-    }
-
-    Type type = 1;
+    BackendType type = 1;
 
     string id = 2;
     repeated string listen_addresses = 3;

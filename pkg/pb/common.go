@@ -7,14 +7,21 @@ import (
 	"github.com/pion/ice/v2"
 )
 
-var Success = &Error{
-	Code: Error_SUCCESS,
-}
+var (
+	Success = &Error{
+		Code: Error_SUCCESS,
+	}
 
-var NotSupported = &Error{
-	Code:    Error_ENOTSUP,
-	Message: "not supported yet",
-}
+	ErrNotSupported = &Error{
+		Code:    Error_ENOTSUP,
+		Message: "not supported yet",
+	}
+
+	ErrNotAuthorized = &Error{
+		Code:    Error_EPERM,
+		Message: "not authorized",
+	}
+)
 
 func NewError(e error) *Error {
 	return &Error{

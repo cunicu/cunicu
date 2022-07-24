@@ -61,7 +61,8 @@ var _ = Describe("watcher", func() {
 	})
 
 	AfterEach(OncePerOrdered, func() {
-		w.Stop()
+		err := w.Close()
+		Expect(err).To(Succeed())
 	})
 
 	test := func() {

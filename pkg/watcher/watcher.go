@@ -1,6 +1,7 @@
 package watcher
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -10,8 +11,10 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	errs "riasc.eu/wice/internal/errors"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/crypto"
 )
 
 const (
@@ -85,8 +88,39 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 	}, nil
 }
 
+func (w *Watcher) Close() error {
+	if err := w.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
+		return err
+	}
+
+	if err := w.Interfaces.Close(); err != nil {
+		return fmt.Errorf("failed to close interfaces: %w", err)
+	}
+
+	return nil
+}
+
 func (w *Watcher) OnInterface(h core.InterfaceHandler) {
 	w.onInterface = append(w.onInterface, h)
+}
+
+func (w *Watcher) IsRunning() bool {
+	select {
+	case _, running := <-w.stop:
+		return running
+	default:
+		return true
+	}
+}
+
+func (w *Watcher) Stop() error {
+	if !w.IsRunning() {
+		return errs.ErrAlreadyStopped
+	}
+
+	close(w.stop)
+
+	return nil
 }
 
 func (w *Watcher) Run() {
@@ -128,14 +162,9 @@ out:
 			w.logger.Error("Failed to watch for interface changes", zap.Error(err))
 
 		case <-w.stop:
-			w.logger.Info("Received stop request")
 			break out
 		}
 	}
-}
-
-func (w *Watcher) Stop() {
-	close(w.stop)
 }
 
 func (w *Watcher) Sync() error {
@@ -206,6 +235,16 @@ func (w *Watcher) Sync() error {
 	}
 
 	w.devices = new
+
+	return nil
+}
+
+func (w *Watcher) Peer(intf string, pk *crypto.Key) *core.Peer {
+	i := w.Interfaces.ByName(intf)
+
+	if p, ok := i.Peers[*pk]; ok {
+		return p
+	}
 
 	return nil
 }

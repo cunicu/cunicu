@@ -6,6 +6,7 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 // onCandidate is a callback which gets called for each discovered local ICE candidate
@@ -59,7 +60,7 @@ func (p *Peer) onDescription(sd *pb.SessionDescription) error {
 }
 
 // onMessage is called for each received message via the signaling channel
-func (p *Peer) onMessage(msg *pb.SignalingMessage) error {
+func (p *Peer) onMessage(msg *signaling.Message) error {
 	switch {
 	case msg.Session != nil:
 		if err := p.onDescription(msg.Session); err != nil {

@@ -56,8 +56,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	return b, nil
 }
 
-func (b *Backend) Type() pb.BackendReadyEvent_Type {
-	return pb.BackendReadyEvent_GRPC
+func (b *Backend) Type() pb.BackendType {
+	return pb.BackendType_GRPC
 }
 
 func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
@@ -82,7 +82,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling
 	return nil
 }
 
-func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {
 	env, err := msg.Encrypt(kp)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt message: %w", err)

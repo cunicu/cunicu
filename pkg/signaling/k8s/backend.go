@@ -113,8 +113,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	return b, nil
 }
 
-func (b *Backend) Type() pb.BackendReadyEvent_Type {
-	return pb.BackendReadyEvent_K8S
+func (b *Backend) Type() pb.BackendType {
+	return pb.BackendType_K8S
 }
 
 func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
@@ -143,7 +143,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling
 	return nil
 }
 
-func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error {
+func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {
 	var err error
 
 	b.logger.Debug("Published signaling message",
@@ -164,7 +164,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.Signa
 		},
 	}
 
-	pbEnv.DeepCopyInto(&env.SignalingEnvelope)
+	pbEnv.DeepCopyInto(&env.Envelope)
 
 	if env, err = envs.Create(ctx, env, metav1.CreateOptions{}); err != nil {
 		return fmt.Errorf("failed to create envelope: %w", err)
@@ -210,7 +210,7 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 		return nil // ignore envelopes not addressed to us
 	}
 
-	if err := sub.NewMessage(&env.SignalingEnvelope); err != nil {
+	if err := sub.NewMessage(&env.Envelope); err != nil {
 		return err
 	}
 

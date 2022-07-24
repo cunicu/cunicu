@@ -75,9 +75,10 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	}
 
 	// Defaults
-	c.SetDefault("backends", []string{})
+	c.SetDefault("backends", DefaultBackends)
 	c.SetDefault("watch_interval", "1s")
 	c.SetDefault("socket.path", DefaultSocketPath)
+	c.SetDefault("socket.address", DefaultSocketAddress)
 	c.SetDefault("socket.wait", false)
 	c.SetDefault("auto_config.enabled", true)
 	c.SetDefault("config_sync.enabled", false)
@@ -85,7 +86,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("config_sync.watch", false)
 	c.SetDefault("route_sync.enabled", false)
 	c.SetDefault("route_sync.table", "main")
-	c.SetDefault("endpoint_disc.ice.enabled", true)
+	c.SetDefault("endpoint_disc.enabled", true)
 	c.SetDefault("endpoint_disc.ice.check_interval", "200ms")
 	c.SetDefault("endpoint_disc.ice.keepalive_interval", "2s")
 	c.SetDefault("endpoint_disc.ice.disconnected_timeout", "5s")
@@ -130,8 +131,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringP("username", "U", "", "The `username` for STUN/TURN credentials")
 	flags.StringP("password", "P", "", "The `password` for STUN/TURN credentials")
 
-	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (select from \"host\", \"srflx\", \"prflx\", \"relay\")")
-	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (select from \"udp4\", \"udp6\", \"tcp4\", \"tcp6\")")
+	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (one of host, srflx, prflx, relay)")
+	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")
 	flags.StringSlice("ice-nat-1to1-ip", []string{}, "An `IP` address which will be added as local server reflexive candidates")
 
 	flags.Uint16("ice-port-min", 0, "Minimum `port` for allocation policy for ICE sockets (range: 0-65535)")
@@ -170,29 +171,29 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"socket-wait": "socket.wait",
 
 		// Wireguard
-		"wg-userspace":        "wg.userspace",
-		"wg-interface-filter": "wg.interface_filter",
+		"wg-userspace":        "wireguard.userspace",
+		"wg-interface-filter": "wireguard.interface_filter",
 
 		// Endpoint discovery
 		"endpoint-disc":            "endpoint_disc.enabled",
-		"url":                      "ice.urls",
-		"username":                 "ice.username",
-		"password":                 "ice.password",
-		"ice-candidate-type":       "ice.candidate_types",
-		"ice-network-type":         "ice.network_types",
-		"ice-nat-1to1-ip":          "ice.nat_1to1_ips",
-		"ice-port-min":             "ice.port.min",
-		"ice-port-max":             "ice.port.max",
-		"ice-lite":                 "ice.lite",
-		"ice-mdns":                 "ice.mdns",
-		"ice-max-binding-requests": "ice.max_binding_requests",
-		"ice-insecure-skip-verify": "ice.insecure_skip_verify",
-		"ice-interface-filter":     "ice.interface_filter",
-		"ice-disconnected-timeout": "ice.disconnected_timeout",
-		"ice-failed-timeout":       "ice.failed_timeout",
-		"ice-keepalive-interval":   "ice.keepalive_interval",
-		"ice-check-interval":       "ice.check_interval",
-		"ice-restart-timeout":      "ice.restart_timeout",
+		"url":                      "endpoint_disc.ice.urls",
+		"username":                 "endpoint_disc.ice.username",
+		"password":                 "endpoint_disc.ice.password",
+		"ice-candidate-type":       "endpoint_disc.ice.candidate_types",
+		"ice-network-type":         "endpoint_disc.ice.network_types",
+		"ice-nat-1to1-ip":          "endpoint_disc.ice.nat_1to1_ips",
+		"ice-port-min":             "endpoint_disc.ice.port.min",
+		"ice-port-max":             "endpoint_disc.ice.port.max",
+		"ice-lite":                 "endpoint_disc.ice.lite",
+		"ice-mdns":                 "endpoint_disc.ice.mdns",
+		"ice-max-binding-requests": "endpoint_disc.ice.max_binding_requests",
+		"ice-insecure-skip-verify": "endpoint_disc.ice.insecure_skip_verify",
+		"ice-interface-filter":     "endpoint_disc.ice.interface_filter",
+		"ice-disconnected-timeout": "endpoint_disc.ice.disconnected_timeout",
+		"ice-failed-timeout":       "endpoint_disc.ice.failed_timeout",
+		"ice-keepalive-interval":   "endpoint_disc.ice.keepalive_interval",
+		"ice-check-interval":       "endpoint_disc.ice.check_interval",
+		"ice-restart-timeout":      "endpoint_disc.ice.restart_timeout",
 
 		// Peer discovery
 		"peer-disc": "peer_disc.enabled",

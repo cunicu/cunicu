@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 type topicRegistry struct {
@@ -30,14 +30,14 @@ func (s *topicRegistry) getTopic(pk *crypto.Key) *topic {
 }
 
 type topic struct {
-	subs     map[chan *pb.SignalingEnvelope]bool
+	subs     map[chan *signaling.Envelope]bool
 	subsLock sync.RWMutex
 	subsCond *sync.Cond
 }
 
 func newTopic() *topic {
 	t := &topic{
-		subs: make(map[chan *pb.SignalingEnvelope]bool),
+		subs: make(map[chan *signaling.Envelope]bool),
 	}
 
 	t.subsCond = sync.NewCond(&t.subsLock)
@@ -45,7 +45,7 @@ func newTopic() *topic {
 	return t
 }
 
-func (t *topic) Publish(env *pb.SignalingEnvelope) {
+func (t *topic) Publish(env *signaling.Envelope) {
 	t.subsLock.RLock()
 	defer t.subsLock.RUnlock()
 
@@ -54,11 +54,11 @@ func (t *topic) Publish(env *pb.SignalingEnvelope) {
 	}
 }
 
-func (t *topic) Subscribe() chan *pb.SignalingEnvelope {
+func (t *topic) Subscribe() chan *signaling.Envelope {
 	t.subsLock.Lock()
 	defer t.subsLock.Unlock()
 
-	c := make(chan *pb.SignalingEnvelope)
+	c := make(chan *signaling.Envelope)
 
 	t.subs[c] = true
 
@@ -67,7 +67,7 @@ func (t *topic) Subscribe() chan *pb.SignalingEnvelope {
 	return c
 }
 
-func (t *topic) Unsubscribe(ch chan *pb.SignalingEnvelope) {
+func (t *topic) Unsubscribe(ch chan *signaling.Envelope) {
 	t.subsLock.Lock()
 	defer t.subsLock.Unlock()
 

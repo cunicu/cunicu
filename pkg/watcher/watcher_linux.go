@@ -20,31 +20,42 @@ func (w *Watcher) watchKernel() error {
 	}
 
 	go func() {
-		for lu := range nlu {
-			w.logger.Debug("Received netlink link update",
-				zap.Any("dev", lu.Link.Attrs().Name),
-				zap.Any("type", lu.Header.Type))
+		w.logger.Debug("Start watching for changes of Wireguard kernel devices")
 
-			_, isWg := lu.Link.(*netlink.Wireguard)
-			_, isTun := lu.Link.(*netlink.Tuntap)
-			if !isWg && !isTun {
-				continue
-			}
+	out:
+		for {
+			select {
+			case lu := <-nlu:
+				w.logger.Debug("Received netlink link update",
+					zap.Any("dev", lu.Link.Attrs().Name),
+					zap.Any("type", lu.Header.Type))
 
-			switch lu.Header.Type {
-			case unix.RTM_NEWLINK:
-				w.events <- InterfaceEvent{
-					Op:   InterfaceAdded,
-					Name: lu.Attrs().Name,
+				_, isWg := lu.Link.(*netlink.Wireguard)
+				_, isTun := lu.Link.(*netlink.Tuntap)
+				if !isWg && !isTun {
+					continue
 				}
 
-			case unix.RTM_DELLINK:
-				w.events <- InterfaceEvent{
-					Op:   InterfaceDeleted,
-					Name: lu.Attrs().Name,
+				switch lu.Header.Type {
+				case unix.RTM_NEWLINK:
+					w.events <- InterfaceEvent{
+						Op:   InterfaceAdded,
+						Name: lu.Attrs().Name,
+					}
+
+				case unix.RTM_DELLINK:
+					w.events <- InterfaceEvent{
+						Op:   InterfaceDeleted,
+						Name: lu.Attrs().Name,
+					}
 				}
+
+			case <-w.stop:
+				break out
 			}
 		}
+
+		w.logger.Debug("Stop watching for changes of Wireguard kernel devices")
 	}()
 
 	return nil

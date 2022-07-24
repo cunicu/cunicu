@@ -7,7 +7,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg"
-	"riasc.eu/wice/pkg/socket"
+	"riasc.eu/wice/pkg/rpc"
 )
 
 var (
@@ -79,19 +79,28 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create control socket server to manage daemon
-	svr, err := socket.Listen("unix", cfg.Socket.Path)
+	svr, err := rpc.NewServer(daemon)
 	if err != nil {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}
 
-	svr.RegisterDaemon(daemon)
+	if err := svr.Listen("unix", cfg.Socket.Path); err != nil {
+		logger.Fatal("Failed to listen", zap.Error(err))
+	}
+
+	if err := svr.Listen("tcp", cfg.Socket.Address); err != nil {
+		logger.Fatal("Failed to listen", zap.Error(err))
+	}
 
 	// Delay startup until control socket client has un-waited the daemon
 	if cfg.Socket.Wait {
 		svr.Wait()
 	}
 
-	if err := daemon.Run(); err != nil {
-		logger.Fatal("Failed run daemon", zap.Error(err))
+	// Blocks until stopped
+	daemon.Run()
+
+	if err := daemon.Close(); err != nil {
+		logger.Fatal("Failed to stop daemon", zap.Error(err))
 	}
 }

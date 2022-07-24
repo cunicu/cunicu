@@ -7,7 +7,6 @@ import (
 
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 )
 
 type Subscription struct {
@@ -28,7 +27,7 @@ func NewSubscriptionsRegistry() SubscriptionsRegistry {
 	}
 }
 
-func (s *SubscriptionsRegistry) NewMessage(env *pb.SignalingEnvelope) error {
+func (s *SubscriptionsRegistry) NewMessage(env *Envelope) error {
 	pk, err := crypto.ParseKeyBytes(env.Recipient)
 	if err != nil {
 		return fmt.Errorf("invalid key: %w", err)
@@ -115,7 +114,7 @@ func (s *SubscriptionsRegistry) Unsubscribe(pk *crypto.Key) {
 	delete(s.subs, *pk)
 }
 
-func (s *Subscription) NewMessage(env *pb.SignalingEnvelope) error {
+func (s *Subscription) NewMessage(env *Envelope) error {
 	pk, err := crypto.ParseKeyBytes(env.Sender)
 	if err != nil {
 		return fmt.Errorf("failed to parse sender key: %w", err)

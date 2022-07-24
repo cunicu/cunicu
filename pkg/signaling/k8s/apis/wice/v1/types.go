@@ -2,7 +2,7 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 // +genclient
@@ -11,7 +11,7 @@ type SignalingEnvelope struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	pb.SignalingEnvelope
+	signaling.Envelope
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

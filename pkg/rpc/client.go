@@ -1,4 +1,4 @@
-package socket
+package rpc
 
 import (
 	"bytes"
@@ -23,7 +23,11 @@ import (
 type Client struct {
 	io.Closer
 
+	pb.EndpointDiscoverySocketClient
+	pb.SignalingClient
 	pb.SocketClient
+	pb.WatcherClient
+
 	grpc   *grpc.ClientConn
 	logger *zap.Logger
 
@@ -61,7 +65,11 @@ func Connect(path string) (*Client, error) {
 	logger := zap.L().Named("socket.client").With(zap.String("path", path))
 
 	client := &Client{
-		SocketClient:     pb.NewSocketClient(conn),
+		EndpointDiscoverySocketClient: pb.NewEndpointDiscoverySocketClient(conn),
+		SignalingClient:               pb.NewSignalingClient(conn),
+		SocketClient:                  pb.NewSocketClient(conn),
+		WatcherClient:                 pb.NewWatcherClient(conn),
+
 		grpc:             conn,
 		logger:           logger,
 		Events:           make(chan *pb.Event, 100),

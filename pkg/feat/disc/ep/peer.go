@@ -39,8 +39,6 @@ type Peer struct {
 
 	description *pb.SessionDescription
 
-	messages chan *pb.SignalingMessage
-
 	logger *zap.Logger
 }
 
@@ -99,7 +97,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	return p, nil
 }
 
-func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *pb.SignalingMessage) {
+func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
 	if err := p.onMessage(msg); err != nil {
 		p.logger.Error("Failed to handle message",
 			zap.Error(err),
@@ -156,7 +154,7 @@ func (p *Peer) restart() error {
 func (p *Peer) sendDescription() error {
 	p.description.Epoch++
 
-	msg := &pb.SignalingMessage{
+	msg := &signaling.Message{
 		Session: p.description,
 	}
 

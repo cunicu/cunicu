@@ -30,7 +30,7 @@ func (in *SignalingEnvelope) DeepCopyInto(out *SignalingEnvelope) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	in.SignalingEnvelope.DeepCopyInto(&out.SignalingEnvelope)
+	in.Envelope.DeepCopyInto(&out.Envelope)
 	return
 }
 

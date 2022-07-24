@@ -5,11 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/pkg/socket"
+	"riasc.eu/wice/pkg/rpc"
 )
 
 var (
-	client   *socket.Client
+	client   *rpc.Client
 	sockPath string
 )
 
@@ -26,7 +26,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 func connect(cmd *cobra.Command, args []string) error {
 	var err error
 
-	if client, err = socket.Connect(sockPath); err != nil {
+	if client, err = rpc.Connect(sockPath); err != nil {
 		return fmt.Errorf("failed to connect to control socket: %w", err)
 	}
 
