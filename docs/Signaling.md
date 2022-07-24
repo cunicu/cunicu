@@ -60,9 +60,9 @@ type Backend interface {
 	io.Closer
 
 	// Publish a signaling message to a specific peer
-	Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error
+	Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error
 
 	// Get a stream of messages from a specific peer
-	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *signaling.Message, error)
 }
 ```

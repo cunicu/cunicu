@@ -13,7 +13,7 @@ import (
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show current status of ɯice daemon",
-	RunE:  status,
+	Run:   status,
 	Args:  cobra.NoArgs,
 }
 
@@ -21,7 +21,7 @@ func init() {
 	addClientCommand(RootCmd, statusCmd)
 }
 
-func status(cmd *cobra.Command, args []string) error {
+func status(cmd *cobra.Command, args []string) {
 	sts, err := client.GetStatus(context.Background(), &pb.Void{})
 	if err != nil {
 		logger.Fatal("Failed to retrieve status from daemon", zap.Error(err))
@@ -32,7 +32,7 @@ func status(cmd *cobra.Command, args []string) error {
 		Indent:          "  ",
 		AllowPartial:    true,
 		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		EmitUnpopulated: false,
 	}
 
 	buf, err := mo.Marshal(sts)
@@ -40,7 +40,7 @@ func status(cmd *cobra.Command, args []string) error {
 		logger.Fatal("Failed to marshal", zap.Error(err))
 	}
 
-	_, err = os.Stdout.Write(buf)
-
-	return err
+	if _, err = os.Stdout.Write(buf); err != nil {
+		logger.Fatal("Failed to write to stdout", zap.Error(err))
+	}
 }

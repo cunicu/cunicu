@@ -8,10 +8,13 @@ import (
 )
 
 func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
-	fields = append(fields,
-		zap.String("type", strings.ToLower(e.Type.String())),
-		zap.Any("event", e.Event),
-	)
+	if e.Type != Event_UNKNOWN {
+		fields = append(fields, zap.String("type", strings.ToLower(e.Type.String())))
+	}
+
+	if e.Event != nil {
+		fields = append(fields, zap.Any("event", e.Event))
+	}
 
 	if e.Interface != "" {
 		fields = append(fields, zap.String("interface", e.Interface))

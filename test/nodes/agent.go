@@ -21,7 +21,7 @@ import (
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
-	"riasc.eu/wice/pkg/socket"
+	"riasc.eu/wice/pkg/rpc"
 )
 
 type AgentParams struct {
@@ -35,7 +35,7 @@ type Agent struct {
 	Address net.IPNet
 
 	Command *exec.Cmd
-	Client  *socket.Client
+	Client  *rpc.Client
 
 	WireguardPrivateKey    crypto.Key
 	WireguardClient        *wgctrl.Client
@@ -49,7 +49,7 @@ type Agent struct {
 
 func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Agent, error) {
 
-	// We dont want to log the sub-processes output since we already redirect it to a file
+	// We do not want to log the sub-processes output since we already redirect it to a file
 	opts = append(opts, gopt.LogToDebug(false))
 
 	h, err := m.AddHost(name, opts...)
@@ -133,7 +133,7 @@ func (a *Agent) Start(extraArgs []any) error {
 		}
 	}()
 
-	if a.Client, err = socket.Connect(sockPath); err != nil {
+	if a.Client, err = rpc.Connect(sockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
 

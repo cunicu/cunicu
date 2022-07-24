@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 	"riasc.eu/wice/internal"
+	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/internal/log"
 )
 
@@ -57,17 +58,9 @@ var (
 	date    string
 	// commit  string
 
-	logLevel = level{zapcore.InfoLevel}
+	logLevel = config.Level{Level: zapcore.InfoLevel}
 	logFile  string
 )
-
-type level struct {
-	zapcore.Level
-}
-
-func (l *level) Type() string {
-	return "string"
-}
 
 func init() {
 	RootCmd.SetUsageTemplate(usageTemplate)
@@ -81,7 +74,7 @@ func init() {
 	f.SortFlags = false
 
 	pf := RootCmd.PersistentFlags()
-	pf.VarP(&logLevel, "log-level", "d", "log level (one of \"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", and \"fatal\")")
+	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
 }
 

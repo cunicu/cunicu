@@ -58,7 +58,7 @@ endpoint_disc:
     urls:
     - stun:l.google.com:19302
 
-    # Credentils for STUN/TURN servers configured above
+    # Credentials for STUN/TURN servers configured above
     username: ""
     password: ""
 

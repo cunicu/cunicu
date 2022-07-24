@@ -12,6 +12,7 @@ func NewInterface(i *wgtypes.Device) *Interface {
 
 	return &Interface{
 		Name:         i.Name,
+		Type:         Interface_Type(i.Type),
 		PrivateKey:   i.PrivateKey[:],
 		PublicKey:    i.PublicKey[:],
 		ListenPort:   uint32(i.ListenPort),

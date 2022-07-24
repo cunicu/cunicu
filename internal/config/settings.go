@@ -44,8 +44,9 @@ type ICESettings struct {
 }
 
 type SocketSettings struct {
-	Path string `yaml:"path,omitempty"`
-	Wait bool   `yaml:"wait,omitempty"`
+	Path    string `yaml:"path,omitempty"`
+	Address string `yaml:"address,omitempty"`
+	Wait    bool   `yaml:"wait,omitempty"`
 }
 
 type ConfigSyncSettings struct {

@@ -48,17 +48,19 @@ message PutSignalingMessageParams {
     SignalingEnvelope envelope = 1;
 }
 
-// Control socket
-service Socket {
-    rpc GetStatus(Void) returns (Status) {}
-    rpc StreamEvents(StreamEventsParams) returns (stream Event) {}
+// Control socket services
 
+service Socket {
+    rpc StreamEvents(StreamEventsParams) returns (stream Event) {}
     rpc UnWait(UnWaitParams) returns (Error) {}
     rpc Stop(StopParams) returns (Error) {}
-    
+}
+
+service Watcher {
     rpc Sync(SyncParams) returns (Error) {}
 
-    rpc RestartPeer(RestartPeerParams) returns (Error) {}
+    rpc GetStatus(Void) returns (Status) {}
+
     rpc RemoveInterface(RemoveInterfaceParams) returns (Error) {}
 
     rpc SyncInterfaceConfig(InterfaceConfigParams) returns (Error) {}
@@ -66,6 +68,15 @@ service Socket {
     rpc SetInterfaceConfig(InterfaceConfigParams) returns (Error) {}
 
     // For manual signaling backend
+    rpc GetSignalingMessage(GetSignalingMessageParams) returns (GetSignalingMessageResp) {}
+    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Error) {}
+}
+
+service EndpointDiscoverySocket {
+    rpc RestartPeer(RestartPeerParams) returns (Error) {}
+}
+
+service SignalingSocket {
     rpc GetSignalingMessage(GetSignalingMessageParams) returns (GetSignalingMessageResp) {}
     rpc PutSignalingMessage(PutSignalingMessageParams) returns (Error) {}
 }

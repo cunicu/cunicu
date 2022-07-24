@@ -1,13 +1,12 @@
-package socket
+package rpc
 
 import (
 	"net"
 
-	"github.com/pion/ice/v2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/feat/disc/ep"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
@@ -68,21 +67,6 @@ func (s *Server) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerMo
 	}
 }
 
-func (s *Server) OnConnectionStateChange(p *ep.Peer, cs ice.ConnectionState) {
-	s.events.C <- &pb.Event{
-		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
-
-		Interface: p.Interface.Name(),
-		Peer:      p.PublicKey().Bytes(),
-
-		Event: &pb.Event_PeerConnectionStateChange{
-			PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-				NewState: pb.NewConnectionState(cs),
-			},
-		},
-	}
-}
-
 func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 	s.events.C <- &pb.Event{
 		Type: pb.Event_BACKEND_READY,
@@ -93,4 +77,8 @@ func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 			},
 		},
 	}
+}
+
+func (s *Server) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
+
 }

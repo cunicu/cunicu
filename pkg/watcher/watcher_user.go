@@ -28,6 +28,9 @@ func (w *Watcher) watchUser() error {
 	}
 
 	go func() {
+		w.logger.Debug("Start watching for changes of Wireguard userspace devices")
+
+	out:
 		for {
 			select {
 
@@ -54,8 +57,13 @@ func (w *Watcher) watchUser() error {
 			// Fsnotify errors
 			case w.errors <- <-watcher.Errors:
 				w.logger.Debug("Error while watching for link changes")
+
+			case <-w.stop:
+				break out
 			}
 		}
+
+		w.logger.Debug("Stop watching for changes of Wireguard userspace devices")
 	}()
 
 	return nil

@@ -8,6 +8,15 @@ import "session.proto";
 import "peer.proto";
 import "message.proto";
 
+enum BackendType {
+    MULTI = 0;
+    P2P = 1;
+    K8S = 2;
+    GRPC = 3;
+    INPROCESS = 4;
+    MANUAL = 5;
+}
+
 message SignalingEnvelope {
     bytes sender = 1;
     bytes recipient = 2;

@@ -12,6 +12,7 @@ import (
 	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/internal"
 	"riasc.eu/wice/internal/config"
+	errs "riasc.eu/wice/internal/errors"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
@@ -39,7 +40,7 @@ type Daemon struct {
 
 	// Shared
 
-	Backend signaling.Backend
+	Backend *signaling.MultiBackend
 	client  *wgctrl.Client
 	config  *config.Config
 
@@ -60,20 +61,16 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Create backend
-	var backend signaling.Backend
 
-	if len(cfg.Backends) == 1 {
-		backend, err = signaling.NewBackend(&signaling.BackendConfig{
-			URI: &cfg.Backends[0].URL,
-		})
-	} else {
-		urls := []*url.URL{}
-		for _, u := range cfg.Backends {
-			urls = append(urls, &u.URL)
-		}
-
-		backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{})
+	urls := []*url.URL{}
+	for _, u := range cfg.Backends {
+		urls = append(urls, &u.URL)
 	}
+
+	backend, err := signaling.NewMultiBackend(urls, &signaling.BackendConfig{
+		OnReady: []signaling.BackendReadyHandler{},
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
 	}
@@ -151,31 +148,63 @@ func (d *Daemon) setupFeatures() error {
 	return nil
 }
 
-func (d *Daemon) Run() error {
+func (d *Daemon) Run() {
 	if err := d.CreateInterfacesFromArgs(); err != nil {
-		return fmt.Errorf("failed to create interfaces: %w", err)
+		d.logger.Fatal("failed to create interfaces", zap.Error(err))
 	}
 
 	go d.Watcher.Run()
 
-	for sig := range d.signals {
-		d.logger.Debug("Received signal", zap.String("signal", sig.String()))
-		switch sig {
-		case unix.SIGUSR1:
-			if err := d.Sync(); err != nil {
-				d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
+out:
+	for {
+		select {
+		case sig := <-d.signals:
+			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
+			switch sig {
+			case unix.SIGUSR1:
+				if err := d.Sync(); err != nil {
+					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
+				}
+			default:
+				break out
 			}
-		default:
-			return nil
+
+		case <-d.stop:
+			break out
 		}
 	}
+}
+
+func (d *Daemon) IsRunning() bool {
+	select {
+	case _, running := <-d.stop:
+		return running
+	default:
+		return true
+	}
+}
+
+func (d *Daemon) Stop() error {
+	if !d.IsRunning() {
+		return errs.ErrAlreadyStopped
+	}
+
+	close(d.stop)
 
 	return nil
 }
 
 func (d *Daemon) Close() error {
-	if err := d.Interfaces.Close(); err != nil {
+	if err := d.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
+		return err
+	}
+
+	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close interface: %w", err)
+	}
+
+	if err := d.client.Close(); err != nil {
+		return fmt.Errorf("failed to close Wireguard client: %w", err)
 	}
 
 	return nil
@@ -209,12 +238,6 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 
 		d.Watcher.Interfaces[i.Name()] = i
 	}
-
-	return nil
-}
-
-func (d *Daemon) Stop() error {
-	close(d.stop)
 
 	return nil
 }

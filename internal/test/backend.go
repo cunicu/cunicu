@@ -24,25 +24,25 @@ func (r *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
 
 type msgHandler struct {
 	Count    *atomic.Uint32
-	Messages map[crypto.Key]map[crypto.Key][]*pb.SignalingMessage
+	Messages map[crypto.Key]map[crypto.Key][]*signaling.Message
 }
 
 func NewMessageHandler() *msgHandler {
 	return &msgHandler{
 		Count:    atomic.NewUint32(0),
-		Messages: map[crypto.Key]map[crypto.Key][]*pb.SignalingMessage{},
+		Messages: map[crypto.Key]map[crypto.Key][]*signaling.Message{},
 	}
 }
 
-func (h *msgHandler) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *pb.SignalingMessage) {
+func (h *msgHandler) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
 	h.Count.Inc()
 
 	if _, ok := h.Messages[kp.Ours]; !ok {
-		h.Messages[kp.Ours] = map[crypto.Key][]*pb.SignalingMessage{}
+		h.Messages[kp.Ours] = map[crypto.Key][]*signaling.Message{}
 	}
 
 	if _, ok := h.Messages[kp.Ours][kp.Theirs]; !ok {
-		h.Messages[kp.Ours][kp.Theirs] = []*pb.SignalingMessage{}
+		h.Messages[kp.Ours][kp.Theirs] = []*signaling.Message{}
 	}
 
 	h.Messages[kp.Ours][kp.Theirs] = append(h.Messages[kp.Ours][kp.Theirs], msg)
@@ -92,7 +92,7 @@ func (p *peer) publish(o *peer) error {
 		Theirs: o.key.PublicKey(),
 	}
 
-	sentMsg := &pb.SignalingMessage{
+	sentMsg := &signaling.Message{
 		Session: &pb.SessionDescription{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries

@@ -15,7 +15,7 @@ import (
 	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/pb"
-	"riasc.eu/wice/pkg/socket"
+	"riasc.eu/wice/pkg/rpc"
 )
 
 var _ = Describe("single isolated host", func() {
@@ -56,7 +56,7 @@ var _ = Describe("single isolated host", func() {
 
 		Context("wice", func() {
 			var cmd *exec.Cmd
-			var client *socket.Client
+			var client *rpc.Client
 			var tmpDir string
 
 			BeforeEach(func() {
@@ -69,7 +69,7 @@ var _ = Describe("single isolated host", func() {
 				Expect(err).To(Succeed())
 
 				Eventually(func() error {
-					client, err = socket.Connect(sockPath)
+					client, err = rpc.Connect(sockPath)
 					return err
 				}).Should(Succeed(), "failed to connect to control socket: %w", err)
 			})

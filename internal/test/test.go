@@ -11,6 +11,7 @@ import (
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
@@ -33,8 +34,8 @@ func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
 		}, nil
 }
 
-func GenerateSignalingMessage() *pb.SignalingMessage {
-	return &pb.SignalingMessage{
+func GenerateSignalingMessage() *signaling.Message {
+	return &signaling.Message{
 		Session: &pb.SessionDescription{
 			//#nosec G404 -- This is just test data
 			Epoch: rand.Int63(),

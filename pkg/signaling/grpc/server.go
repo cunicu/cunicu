@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/signaling"
 )
 
 type Server struct {
@@ -56,7 +57,7 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 	return nil
 }
 
-func (s *Server) Publish(ctx context.Context, env *pb.SignalingEnvelope) (*pb.Error, error) {
+func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Error, error) {
 	var err error
 	var pkRecipient, pkSender crypto.Key
 
