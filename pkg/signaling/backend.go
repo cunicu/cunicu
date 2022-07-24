@@ -27,10 +27,16 @@ type BackendPlugin struct {
 
 type BackendConfig struct {
 	URI *url.URL
+
+	OnReady []BackendReadyHandler
 }
 
 type BackendReadyHandler interface {
-	OnBackendReady(b Backend)
+	OnSignalingBackendReady(b Backend)
+}
+
+type MessageHandler interface {
+	OnSignalingMessage(*crypto.PublicKeyPair, *pb.SignalingMessage)
 }
 
 type Backend interface {
@@ -39,10 +45,11 @@ type Backend interface {
 	// Publish a signaling message to a specific peer
 	Publish(ctx context.Context, kp *crypto.KeyPair, msg *pb.SignalingMessage) error
 
-	// Get a stream of messages from a specific peer
-	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *pb.SignalingMessage, error)
+	// Subscribe to messages send by a specific peer
+	Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error
 
-	OnReady(h BackendReadyHandler)
+	// Subscribe to all messages
+	SubscribeAll(ctx context.Context, sk *crypto.Key, h MessageHandler) error
 
 	// Returns the backends type identifier
 	Type() pb.BackendReadyEvent_Type

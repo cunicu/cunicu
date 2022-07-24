@@ -74,10 +74,6 @@ func (s *Server) RegisterDaemon(d *pkg.Daemon) {
 
 	d.Watcher.RegisterAll(s)
 
-	if d.Backend != nil {
-		d.Backend.OnReady(s)
-	}
-
 	if d.EndpointDiscovery != nil {
 		d.EndpointDiscovery.OnConnectionStateChange(s)
 	}

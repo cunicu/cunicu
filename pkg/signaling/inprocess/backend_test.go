@@ -1,6 +1,7 @@
 package inprocess_test
 
 import (
+	"net/url"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -16,6 +17,10 @@ func TestSuite(t *testing.T) {
 
 var _ = test.SetupLogging()
 
-var _ = Specify("inprocess backend", func() {
-	test.RunBackendTest("inprocess", 10)
+var _ = Describe("inprocess backend", func() {
+	u := url.URL{
+		Scheme: "inprocess",
+	}
+
+	test.BackendTest(&u, 10)
 })

@@ -2,7 +2,6 @@ package signaling_test
 
 import (
 	"net/url"
-	"sync/atomic"
 
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/signaling/inprocess"
@@ -11,32 +10,30 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type readyHandler int32
+type readyHandler struct {
+	ready chan any
+}
 
-func (h *readyHandler) OnBackendReady(b signaling.Backend) {
-	atomic.AddInt32((*int32)(h), 1)
+func (h *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
+	close(h.ready)
 }
 
 var _ = It("can create new a new backend", func() {
 	uri, err := url.Parse("inprocess:")
 	Expect(err).To(Succeed(), "Failed to parse URL: %s", err)
 
-	h := readyHandler(0)
-
+	h := &readyHandler{make(chan any)}
 	cfg := &signaling.BackendConfig{
-		URI: uri,
+		URI:     uri,
+		OnReady: []signaling.BackendReadyHandler{h},
 	}
 
 	b, err := signaling.NewBackend(cfg)
 	Expect(err).To(Succeed(), "Failed to create new backend: %s", err)
 
-	b.OnReady(&h)
-
 	_, isInprocessBackend := b.(*inprocess.Backend)
 	Expect(isInprocessBackend).To(BeTrue())
 
 	// Wait until the backend is ready
-	Eventually(func() int32 {
-		return atomic.LoadInt32((*int32)(&h))
-	}).ShouldNot(BeZero())
+	Eventually(h.ready).Should(BeClosed())
 })

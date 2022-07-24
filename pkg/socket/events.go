@@ -83,7 +83,7 @@ func (s *Server) OnConnectionStateChange(p *ep.Peer, cs ice.ConnectionState) {
 	}
 }
 
-func (s *Server) OnBackendReady(b signaling.Backend) {
+func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 	s.events.C <- &pb.Event{
 		Type: pb.Event_BACKEND_READY,
 
