@@ -9,11 +9,11 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/util"
-	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/util"
+	"riasc.eu/wice/pkg/wg"
 )
 
 type Interface struct {

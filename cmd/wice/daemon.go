@@ -5,8 +5,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/internal/config"
 	"riasc.eu/wice/pkg"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/rpc"
 )
 

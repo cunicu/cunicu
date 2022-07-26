@@ -6,11 +6,11 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/watcher"
+	"riasc.eu/wice/pkg/wg"
 )
 
 type EndpointDiscovery struct {

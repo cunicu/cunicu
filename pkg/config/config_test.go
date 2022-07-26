@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"riasc.eu/wice/internal/config"
-	icex "riasc.eu/wice/internal/ice"
-	"riasc.eu/wice/internal/test"
+	"riasc.eu/wice/pkg/config"
+	icex "riasc.eu/wice/pkg/ice"
+	"riasc.eu/wice/pkg/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

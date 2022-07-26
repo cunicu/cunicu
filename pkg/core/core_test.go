@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"kernel.org/pub/linux/libs/security/libcap/cap"
 
-	"riasc.eu/wice/internal/test"
-	"riasc.eu/wice/internal/util"
+	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/util"
 )
 
 func TestSuite(t *testing.T) {

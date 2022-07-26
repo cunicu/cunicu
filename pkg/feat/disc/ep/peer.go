@@ -8,10 +8,10 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/internal/log"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/log"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"

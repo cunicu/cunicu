@@ -9,13 +9,13 @@ import (
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/internal/util"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
+	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
+	"riasc.eu/wice/pkg/wg"
 )
 
 type AutoConfiguration struct {
@@ -55,7 +55,7 @@ func deleteLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
 func New(w *watcher.Watcher, client *wgctrl.Client) (*AutoConfiguration, error) {
 	s := &AutoConfiguration{
 		client: client,
-		logger: zap.L().Named("setup"),
+		logger: zap.L().Named("auto"),
 	}
 
 	w.RegisterAll(s)

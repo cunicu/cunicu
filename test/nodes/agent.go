@@ -17,11 +17,11 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/test"
-	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
+	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/wg"
 )
 
 type AgentParams struct {

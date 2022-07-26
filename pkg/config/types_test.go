@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/config"
+	"riasc.eu/wice/pkg/config"
 )
 
 var _ = Context("regex", func() {

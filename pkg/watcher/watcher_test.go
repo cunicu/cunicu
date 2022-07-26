@@ -12,11 +12,11 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"kernel.org/pub/linux/libs/security/libcap/cap"
-	"riasc.eu/wice/internal/test"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
+	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
 )
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/errors"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/errors"
 	"riasc.eu/wice/pkg/proxy"
 )
 

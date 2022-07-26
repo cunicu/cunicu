@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/selfupdate"
+	"riasc.eu/wice/pkg/selfupdate"
 )
 
 var selfUpdateCmd = &cobra.Command{

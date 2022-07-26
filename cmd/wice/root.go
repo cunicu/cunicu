@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
-	"riasc.eu/wice/internal"
-	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/internal/log"
+	internal "riasc.eu/wice/pkg"
+	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/log"
 )
 
 const (

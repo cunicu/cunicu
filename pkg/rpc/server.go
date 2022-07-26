@@ -8,9 +8,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/util"
 
 	"net"
 )

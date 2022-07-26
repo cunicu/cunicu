@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	t "riasc.eu/wice/internal/util/terminal"
+	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 const (

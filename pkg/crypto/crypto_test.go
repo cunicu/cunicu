@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/test"
 )
 
 func TestSuite(t *testing.T) {

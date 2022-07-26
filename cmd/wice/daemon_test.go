@@ -12,10 +12,10 @@ import (
 	g "github.com/stv0g/gont/pkg"
 	"github.com/vishvananda/netlink"
 	"kernel.org/pub/linux/libs/security/libcap/cap"
-	"riasc.eu/wice/internal/test"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
+	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/util"
 )
 
 var _ = Describe("single isolated host", func() {

@@ -8,8 +8,8 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/util"
 )
 
 type SignalingState int

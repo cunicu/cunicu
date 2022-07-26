@@ -11,7 +11,7 @@ import (
 
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/test"
+	"riasc.eu/wice/pkg/test"
 )
 
 const portMin = 1<<15 + 1<<14

@@ -10,18 +10,17 @@ import (
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"kernel.org/pub/linux/libs/security/libcap/cap"
-	"riasc.eu/wice/internal"
-	"riasc.eu/wice/internal/config"
-	errs "riasc.eu/wice/internal/errors"
-	"riasc.eu/wice/internal/util"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
+	errs "riasc.eu/wice/pkg/errors"
 	ac "riasc.eu/wice/pkg/feat/auto"
 	ep "riasc.eu/wice/pkg/feat/disc/ep"
 	cs "riasc.eu/wice/pkg/feat/sync/config"
 	rs "riasc.eu/wice/pkg/feat/sync/routes"
+	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
+	"riasc.eu/wice/pkg/wg"
 
 	"riasc.eu/wice/pkg/signaling"
 
@@ -87,7 +86,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Backend: backend,
 
 		stop:    make(chan any),
-		signals: internal.SetupSignals(),
+		signals: SetupSignals(),
 
 		logger: logger,
 	}

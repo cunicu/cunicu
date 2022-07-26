@@ -2,7 +2,7 @@ package wg_test
 
 import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

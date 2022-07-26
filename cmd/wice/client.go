@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"riasc.eu/wice/internal/config"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/rpc"
 )
 

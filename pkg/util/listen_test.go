@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/config"
-	"riasc.eu/wice/internal/util"
+	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/util"
 )
 
 var _ = Describe("find bindable port in range", func() {

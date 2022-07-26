@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/wg"
 )
 
 type InterfaceHandler interface {

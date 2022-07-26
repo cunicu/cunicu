@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
-	"riasc.eu/wice/internal/config"
-	icex "riasc.eu/wice/internal/ice"
+	"riasc.eu/wice/pkg/config"
+	icex "riasc.eu/wice/pkg/ice"
 
 	mockdns "github.com/foxcpp/go-mockdns"
 )

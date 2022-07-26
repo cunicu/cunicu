@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/util"
+	"riasc.eu/wice/pkg/util"
 )
 
 var _ = Context("duration", func() {

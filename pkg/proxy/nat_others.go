@@ -5,7 +5,7 @@ package proxy
 import (
 	"net"
 
-	"riasc.eu/wice/internal/errors"
+	"riasc.eu/wice/pkg/errors"
 )
 
 type NAT struct{}

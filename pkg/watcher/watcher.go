@@ -11,10 +11,10 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	errs "riasc.eu/wice/internal/errors"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
+	errs "riasc.eu/wice/pkg/errors"
+	"riasc.eu/wice/pkg/util"
 )
 
 const (
