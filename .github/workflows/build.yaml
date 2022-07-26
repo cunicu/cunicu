@@ -33,7 +33,7 @@ jobs:
         go install honnef.co/go/tools/cmd/staticcheck@latest
 
     - name: Run wice build
-      run: go build ./cmd/wice
+      run: go build -o wice ./cmd
       
     - name: Run vet
       run: go vet --copylocks=false ./...
