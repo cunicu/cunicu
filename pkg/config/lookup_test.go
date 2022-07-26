@@ -114,7 +114,7 @@ var _ = Describe("lookup", func() {
 		Expect(addr.IP.String()).To(Equal("1.2.3.4"))
 	})
 
-	It("can do DNS autoconfiguration", Label("dns-autoconfig"), func() {
+	It("can do DNS auto configuration", Label("dns-auto-config"), func() {
 		c, err := config.ParseArgs("--domain", "example.com")
 
 		Expect(err).To(Succeed())

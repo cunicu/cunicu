@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	gi "github.com/onsi/ginkgo/v2"
+	g "github.com/onsi/gomega"
 	"go.uber.org/atomic"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -109,7 +109,7 @@ func BackendTest(u *url.URL, n int) {
 	var err error
 	var ps []*peer
 
-	BeforeEach(func() {
+	gi.BeforeEach(func() {
 		backendReady := &readyHandler{
 			Count: atomic.NewUint32(0),
 		}
@@ -126,26 +126,26 @@ func BackendTest(u *url.URL, n int) {
 			}
 
 			p.backend, err = signaling.NewBackend(cfg)
-			Expect(err).To(Succeed(), "Failed to create backend: %s", err)
+			g.Expect(err).To(g.Succeed(), "Failed to create backend: %s", err)
 
 			p.key, err = crypto.GeneratePrivateKey()
-			Expect(err).To(Succeed(), "Failed to generate private key: %s", err)
+			g.Expect(err).To(g.Succeed(), "Failed to generate private key: %s", err)
 
 			ps = append(ps, p)
 		}
 
 		// Wait until all backends are ready
-		Eventually(func() int { return int(backendReady.Count.Load()) }).Should(Equal(n))
+		g.Eventually(func() int { return int(backendReady.Count.Load()) }).Should(g.Equal(n))
 	})
 
-	AfterEach(func() {
+	gi.AfterEach(func() {
 		for _, p := range ps {
 			err := p.backend.Close()
-			Expect(err).To(Succeed())
+			g.Expect(err).To(g.Succeed())
 		}
 	})
 
-	It("exchanges messages between multiple pairs", func() {
+	gi.It("exchanges messages between multiple pairs", func() {
 		mh1 := NewMessageHandler()
 		mh2 := NewMessageHandler()
 		mh3 := NewMessageHandler()
@@ -164,17 +164,17 @@ func BackendTest(u *url.URL, n int) {
 				}
 
 				err = p.backend.Subscribe(context.Background(), kp, mh1)
-				Expect(err).To(Succeed())
+				g.Expect(err).To(g.Succeed())
 
 				err = p.backend.Subscribe(context.Background(), kp, mh2)
-				Expect(err).To(Succeed())
+				g.Expect(err).To(g.Succeed())
 			}
 
 			err = p.backend.SubscribeAll(context.Background(), &p.key, mh3)
-			Expect(err).To(Succeed())
+			g.Expect(err).To(g.Succeed())
 
 			err = p.backend.SubscribeAll(context.Background(), &p.key, mh4)
-			Expect(err).To(Succeed())
+			g.Expect(err).To(g.Succeed())
 		}
 
 		// Send messages
@@ -185,15 +185,15 @@ func BackendTest(u *url.URL, n int) {
 				}
 
 				err := p.publish(o)
-				Expect(err).To(Succeed(), "Failed to publish signaling message: %s", err)
+				g.Expect(err).To(g.Succeed(), "Failed to publish signaling message: %s", err)
 			}
 		}
 
 		// Wait until we have exchanged all messages
-		Eventually(func() int { return int(mh1.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
-		Eventually(func() int { return int(mh2.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
-		Eventually(func() int { return int(mh3.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
-		Eventually(func() int { return int(mh4.Count.Load()) }).Should(BeNumerically(">=", n*n-n))
+		g.Eventually(func() int { return int(mh1.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
+		g.Eventually(func() int { return int(mh2.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
+		g.Eventually(func() int { return int(mh3.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
+		g.Eventually(func() int { return int(mh4.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
 
 		// Check if we received the message
 		for _, p := range ps {
@@ -202,10 +202,10 @@ func BackendTest(u *url.URL, n int) {
 					continue // Do not send messages to ourself
 				}
 
-				Expect(mh1.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
-				Expect(mh2.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
-				Expect(mh3.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
-				Expect(mh4.Check(p, o)).To(Succeed(), "Failed to receive message: %s", err)
+				g.Expect(mh1.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
+				g.Expect(mh2.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
+				g.Expect(mh3.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
+				g.Expect(mh4.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
 			}
 		}
 	})

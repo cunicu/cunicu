@@ -147,11 +147,7 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 }
 
 func (s *Subscription) OnMessages(pk *crypto.Key, h MessageHandler) {
-	if _, ok := s.onMessages[*pk]; ok {
-		s.onMessages[*pk] = append(s.onMessages[*pk], h)
-	} else {
-		s.onMessages[*pk] = []MessageHandler{h}
-	}
+	s.onMessages[*pk] = append(s.onMessages[*pk], h)
 }
 
 func (s *Subscription) OnAllMessages(h MessageHandler) {
