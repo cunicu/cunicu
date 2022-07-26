@@ -8,9 +8,9 @@ import (
 
 	wgdevice "golang.zx2c4.com/wireguard/device"
 	"kernel.org/pub/linux/libs/security/libcap/cap"
-	"riasc.eu/wice/internal/test"
-	"riasc.eu/wice/internal/util"
 	"riasc.eu/wice/pkg/device"
+	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/util"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

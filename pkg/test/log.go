@@ -7,7 +7,7 @@ import (
 
 	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal/log"
+	"riasc.eu/wice/pkg/log"
 )
 
 type writerWrapper struct {

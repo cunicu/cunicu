@@ -4,9 +4,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"
-	"riasc.eu/wice/internal/test"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/test"
 )
 
 var _ = Describe("message encryption", func() {

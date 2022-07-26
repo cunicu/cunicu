@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/wg"
 )
 
 var (

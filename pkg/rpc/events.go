@@ -4,11 +4,11 @@ import (
 	"net"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/wg"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/wg"
 )
 
 func (s *Server) OnInterfaceAdded(i *core.Interface) {

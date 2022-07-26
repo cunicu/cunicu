@@ -3,7 +3,7 @@
 package proxy
 
 import (
-	"riasc.eu/wice/internal/errors"
+	"riasc.eu/wice/pkg/errors"
 )
 
 import (

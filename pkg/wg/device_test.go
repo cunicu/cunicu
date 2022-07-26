@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/internal/wg"
+	"riasc.eu/wice/pkg/wg"
 )
 
 var _ = Context("device", func() {

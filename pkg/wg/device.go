@@ -8,8 +8,8 @@ import (
 
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/internal/util"
-	t "riasc.eu/wice/internal/util/terminal"
+	"riasc.eu/wice/pkg/util"
+	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 type Device wgtypes.Device

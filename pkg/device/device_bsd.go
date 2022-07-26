@@ -6,7 +6,7 @@ import (
 	"net"
 	"os/exec"
 
-	"riasc.eu/wice/internal/errors"
+	"riasc.eu/wice/pkg/errors"
 )
 
 type BSDKernelDevice struct {

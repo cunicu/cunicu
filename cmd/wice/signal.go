@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"riasc.eu/wice/internal"
+	"riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/signaling/grpc"
 )
 
@@ -35,9 +35,8 @@ func signal(cmd *cobra.Command, args []string) {
 
 	svr := grpc.NewServer()
 
-	sigs := internal.SetupSignals()
 	go func() {
-		for sig := range sigs {
+		for sig := range pkg.SetupSignals() {
 			switch sig {
 			default:
 				svr.Stop()

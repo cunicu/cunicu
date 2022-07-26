@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"riasc.eu/wice/internal/config"
+	"riasc.eu/wice/pkg/config"
 )
 
 func FindRandomPortToListen(network string, min, max int) (int, error) {
