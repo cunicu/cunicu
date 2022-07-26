@@ -23,7 +23,7 @@ It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion
 
 To use ɯice follow these steps on each host:
 
-1.  Install ɯice: `go install riasc.eu/wice/cmd/wice@latest`
+1.  Install ɯice: `go install riasc.eu/wice/cmd@latest`
 2.  Configure your Wireguard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
 3.  Start the ɯice daemon by running: `sudo wice daemon`
 

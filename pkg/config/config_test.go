@@ -191,7 +191,7 @@ var _ = Describe("parse command line arguments", func() {
 
 var _ = Describe("use environment variables", func() {
 	BeforeEach(func() {
-		os.Setenv("WICE_ICE_CANDIDATE_TYPES", "srflx,relay")
+		os.Setenv("WICE_ENDPOINT_DISC_ICE_CANDIDATE_TYPES", "srflx,relay")
 	})
 
 	It("accepts settings via environment variables", func() {

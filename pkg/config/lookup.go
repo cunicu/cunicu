@@ -46,9 +46,9 @@ func (c *Config) lookupTXT(name string) error {
 	}
 
 	txtSettingMap := map[string]string{
-		"community":    "community",
-		"ice-username": "ice.username",
-		"ice-password": "ice.password",
+		"community":                  "community",
+		"endpoint-disc-ice-username": "endpoint_disc.ice.username",
+		"endpoint-disc-ice-password": "endpoint_disc.ice.password",
 	}
 
 	for txtName, settingName := range txtSettingMap {
@@ -118,7 +118,7 @@ func (c *Config) lookupSRV(name string) error {
 	}
 
 	// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
-	c.SetDefault("ice.urls", urls)
+	c.SetDefault("endpoint_disc.ice.urls", urls)
 
 	return nil
 }
