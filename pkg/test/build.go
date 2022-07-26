@@ -53,7 +53,7 @@ func BuildBinary(coverage bool) (string, error) {
 			return "", fmt.Errorf("failed to find base dir: %w", err)
 		}
 
-		var pkg = filepath.Join(base, "cmd/wice")
+		var pkg = filepath.Join(base, "cmd")
 		var cmd *exec.Cmd
 		if coverage {
 			//#nosec G204 -- Just for testing

@@ -28,7 +28,7 @@ var logger = test.SetupLogging()
 var testenv *envtest.Environment
 var kcfg *os.File
 
-var _ = Describe("Kubernetes backend", func() {
+var _ = Describe("Kubernetes backend", Pending, func() {
 	var u url.URL
 
 	BeforeEach(func() {

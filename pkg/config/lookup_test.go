@@ -32,7 +32,7 @@ var _ = Describe("lookup", func() {
 				ghttp.VerifyHeader(http.Header{
 					"User-agent": []string{"wice"},
 				}),
-				ghttp.RespondWith(http.StatusOK, "wg: { interfaces: [ wg-test ] }",
+				ghttp.RespondWith(http.StatusOK, "wireguard: { interfaces: [ wg-test ] }",
 					http.Header{
 						"Content-type": []string{"text/yaml"},
 					}),
@@ -46,8 +46,8 @@ var _ = Describe("lookup", func() {
 					"wice-backend=p2p",
 					"wice-backend=grpc://example.com:8080",
 					"wice-community=my-community-password",
-					"wice-ice-username=user1",
-					"wice-ice-password=pass1",
+					"wice-endpoint-disc-ice-username=user1",
+					"wice-endpoint-disc-ice-password=pass1",
 					fmt.Sprintf("wice-config=%s%s", webSrv.URL(), cfgPath),
 				},
 			},
@@ -105,7 +105,6 @@ var _ = Describe("lookup", func() {
 		Expect(err).To(Succeed())
 
 		dnsSrv.PatchNet(net.DefaultResolver)
-
 	})
 
 	It("check mock dns server", func() {
