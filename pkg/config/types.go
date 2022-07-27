@@ -14,11 +14,12 @@ type Regexp struct {
 }
 
 func (r *Regexp) UnmarshalText(text []byte) error {
-	if re, err := regexp.Compile(string(text)); err != nil {
+	re, err := regexp.Compile(string(text))
+	if err != nil {
 		return err
-	} else {
-		r.Regexp = *re
 	}
+
+	r.Regexp = *re
 
 	return nil
 }
@@ -37,11 +38,12 @@ func (u *BackendURL) UnmarshalText(text []byte) error {
 		str += ":"
 	}
 
-	if up, err := url.Parse(str); err != nil {
+	up, err := url.Parse(str)
+	if err != nil {
 		return err
-	} else {
-		u.URL = *up
 	}
+
+	u.URL = *up
 
 	return nil
 }

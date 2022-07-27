@@ -123,11 +123,7 @@ func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.
 	}
 
 	// Process existing envelopes in cache
-	if err := b.reprocess(); err != nil {
-		return err
-	}
-
-	return nil
+	return b.reprocess()
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
@@ -136,11 +132,7 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling
 	}
 
 	// Process existing envelopes in cache
-	if err := b.reprocess(); err != nil {
-		return err
-	}
-
-	return nil
+	return b.reprocess()
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {

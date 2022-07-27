@@ -27,7 +27,7 @@ type msgHandler struct {
 	Messages map[crypto.Key]map[crypto.Key][]*signaling.Message
 }
 
-func NewMessageHandler() *msgHandler {
+func newMessageHandler() *msgHandler {
 	return &msgHandler{
 		Count:    atomic.NewUint32(0),
 		Messages: map[crypto.Key]map[crypto.Key][]*signaling.Message{},
@@ -146,10 +146,10 @@ func BackendTest(u *url.URL, n int) {
 	})
 
 	gi.It("exchanges messages between multiple pairs", func() {
-		mh1 := NewMessageHandler()
-		mh2 := NewMessageHandler()
-		mh3 := NewMessageHandler()
-		mh4 := NewMessageHandler()
+		mh1 := newMessageHandler()
+		mh2 := newMessageHandler()
+		mh3 := newMessageHandler()
+		mh4 := newMessageHandler()
 
 		// Subscribe
 		for _, p := range ps {
