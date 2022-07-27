@@ -48,7 +48,7 @@ type Backend interface {
 	// Subscribe to messages send by a specific peer
 	Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error
 
-	// Subscribe to all messages
+	// Subscribe to all messages irrespectively of sender
 	SubscribeAll(ctx context.Context, sk *crypto.Key, h MessageHandler) error
 
 	// Returns the backends type identifier
