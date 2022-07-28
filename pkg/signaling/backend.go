@@ -35,10 +35,6 @@ type BackendReadyHandler interface {
 	OnSignalingBackendReady(b Backend)
 }
 
-type MessageHandler interface {
-	OnSignalingMessage(*crypto.PublicKeyPair, *Message)
-}
-
 type Backend interface {
 	io.Closer
 
