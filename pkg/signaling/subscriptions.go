@@ -9,6 +9,10 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 )
 
+var (
+	ErrNotSubscribed = errors.New("missing subscription")
+)
+
 type Subscription struct {
 	onMessages    map[crypto.Key][]MessageHandler
 	onAllMessages []MessageHandler
@@ -66,7 +70,7 @@ func (s *SubscriptionsRegistry) GetSubscription(pk *crypto.Key) (*Subscription, 
 
 	sub, ok := s.subs[*pk]
 	if !ok {
-		return nil, errors.New("missing subscription")
+		return nil, ErrNotSubscribed
 	}
 
 	return sub, nil
