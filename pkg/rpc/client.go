@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	ginsecure "google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
@@ -57,7 +57,7 @@ func Connect(path string) (*Client, error) {
 	}
 
 	tgt := fmt.Sprintf("unix://%s", path)
-	conn, err := grpc.Dial(tgt, grpc.WithTransportCredentials(ginsecure.NewCredentials()))
+	conn, err := grpc.Dial(tgt, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
