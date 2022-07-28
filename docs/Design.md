@@ -48,6 +48,10 @@
     -   Inotify for new UAPI sockets in /var/run/wireguard
     -   Netlink subscription for link updates (patch is pending)
 
+## Architecture
+
+![](images/architecture.svg)
+
 ## Related RFCs
 
 -   [RFC6544][rfc6544] TCP Candidates with Interactive Connectivity Establishment (ICE)
