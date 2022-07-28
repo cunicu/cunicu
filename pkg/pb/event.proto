@@ -25,9 +25,6 @@ message Event {
 
         // ICE Events
         PEER_CONNECTION_STATE_CHANGED = 40;
-
-        // Signaling Events
-        SIGNALING_MESSAGE = 50;
     }
 
     Type type = 1;

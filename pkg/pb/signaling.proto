@@ -14,7 +14,6 @@ enum BackendType {
     K8S = 2;
     GRPC = 3;
     INPROCESS = 4;
-    MANUAL = 5;
 }
 
 message SignalingEnvelope {
