@@ -19,6 +19,9 @@ type Peer struct {
 
 	Interface *Interface
 
+	LastReceiveTime  time.Time
+	LastTransmitTime time.Time
+
 	onModified []PeerModifiedHandler
 
 	client *wgctrl.Client
@@ -165,6 +168,8 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	old := p.Peer
 	mod := PeerModifiedNone
 
+	now := time.Now()
+
 	// Compare peer properties
 	if new.PresharedKey != old.PresharedKey {
 		mod |= PeerModifiedPresharedKey
@@ -180,9 +185,11 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	}
 	if new.ReceiveBytes != old.ReceiveBytes {
 		mod |= PeerModifiedReceiveBytes
+		p.LastReceiveTime = now
 	}
 	if new.TransmitBytes != old.TransmitBytes {
 		mod |= PeerModifiedTransmitBytes
+		p.LastTransmitTime = now
 	}
 	if new.ProtocolVersion != old.ProtocolVersion {
 		mod |= PeerModifiedProtocolVersion
