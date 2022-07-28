@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -16,6 +17,8 @@ type SignalingState int
 
 type Peer struct {
 	wgtypes.Peer
+
+	Name string
 
 	Interface *Interface
 
@@ -56,17 +59,21 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 
 // String returns the peers public key as a base64-encoded string
 func (p *Peer) String() string {
-	return p.PublicKey().String()
+	if p.Name != "" {
+		return fmt.Sprintf("%s[%s]", p.Name, p.PublicKey().String())
+	} else {
+		return fmt.Sprintf("[%s]", p.PublicKey().String())
+	}
 }
 
-// PublicKey returns the Curve25199 public key of the Wireguard peer
+// PublicKey returns the Curve25199 public key of the WireGuard peer
 func (p *Peer) PublicKey() crypto.Key {
 	return crypto.Key(p.Peer.PublicKey)
 }
 
 // PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
-func (p *Peer) PublicKeyPair() *crypto.KeyPair {
-	return &crypto.KeyPair{
+func (p *Peer) PublicKeyPair() *crypto.PublicKeyPair {
+	return &crypto.PublicKeyPair{
 		Ours:   p.Interface.PublicKey(),
 		Theirs: p.PublicKey(),
 	}
