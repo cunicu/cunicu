@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"net"
 	"os"
+	"time"
 )
 
 func CmpEndpoint(a, b *net.UDPAddr) int {
@@ -56,4 +57,16 @@ func IsATTY() bool {
 	fi, _ := os.Stdout.Stat()
 
 	return (fi.Mode() & os.ModeCharDevice) != 0
+}
+
+func LastTime(ts ...time.Time) time.Time {
+	var lt time.Time
+
+	for _, t := range ts {
+		if t.After(lt) {
+			lt = t
+		}
+	}
+
+	return lt
 }
