@@ -8,4 +8,4 @@ For a detailed documentation of the `wice` command-line tool please have a look 
 
 ## Daemon
 
-Sending a `SIGUSR1` signal to the daemon will trigger an immediate synchronization of all Wireguard interfaces.
+Sending a `SIGUSR1` signal to the daemon will trigger an immediate synchronization of all WireGuard interfaces.

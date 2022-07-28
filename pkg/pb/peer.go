@@ -37,7 +37,7 @@ func (p *Peer) Peer() wgtypes.Peer {
 	for _, allowedIP := range p.AllowedIps {
 		_, ipnet, err := net.ParseCIDR(allowedIP)
 		if err != nil {
-			panic(fmt.Errorf("failed to parse Wireguard AllowedIP: %w", err))
+			panic(fmt.Errorf("failed to parse WireGuard AllowedIP: %w", err))
 		}
 
 		allowedIPs = append(allowedIPs, *ipnet)
@@ -45,7 +45,7 @@ func (p *Peer) Peer() wgtypes.Peer {
 
 	endpoint, err := net.ResolveUDPAddr("udp", p.Endpoint)
 	if err != nil {
-		panic(fmt.Errorf("failed to parse Wireguard Endpoint: %w", err))
+		panic(fmt.Errorf("failed to parse WireGuard Endpoint: %w", err))
 	}
 
 	q := wgtypes.Peer{

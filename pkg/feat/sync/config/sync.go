@@ -14,7 +14,7 @@ import (
 	"riasc.eu/wice/pkg/watcher"
 )
 
-// ConfigSynchronization synchronizes the Wireguard device configuration with an on-disk configuration file.
+// ConfigSynchronization synchronizes the WireGuard device configuration with an on-disk configuration file.
 type ConfigSynchronization struct {
 	watcher *watcher.Watcher
 	client  *wgctrl.Client
@@ -66,7 +66,7 @@ func (s *ConfigSynchronization) watch() {
 
 	if _, err := os.Stat(s.cfgPath); !os.IsNotExist(err) {
 		if err := watcher.Add(s.cfgPath); err != nil {
-			s.logger.Fatal("Failed to watch Wireguard configuration directory",
+			s.logger.Fatal("Failed to watch WireGuard configuration directory",
 				zap.Error(err),
 				zap.String("path", s.cfgPath))
 		}
@@ -83,7 +83,7 @@ func (s *ConfigSynchronization) watch() {
 
 		// Fsnotify errors
 		case err := <-watcher.Errors:
-			s.logger.Error("Error while watching for Wireguard configuration files", zap.Error(err))
+			s.logger.Error("Error while watching for WireGuard configuration files", zap.Error(err))
 		}
 	}
 }
@@ -129,6 +129,6 @@ func (s *ConfigSynchronization) handleFsnotifyEvent(event fsnotify.Event) {
 		}
 	} else if event.Op&(fsnotify.Rename) != 0 {
 		// TODO: This is not supported yet
-		s.logger.Warn("We do not support tracking renamed Wireguard configuration files yet")
+		s.logger.Warn("We do not support tracking renamed WireGuard configuration files yet")
 	}
 }

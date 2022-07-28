@@ -10,7 +10,7 @@ type AgentList []*Agent
 
 func (al AgentList) Start(args []any) error {
 	if err := al.ForEachAgentPair(func(a, b *Agent) error {
-		return a.AddWireguardPeer(b)
+		return a.AddWireGuardPeer(b)
 	}); err != nil {
 		return fmt.Errorf("failed to add wireguard peers")
 	}
@@ -71,6 +71,6 @@ func (al AgentList) WaitConnected() error {
 
 func (al AgentList) PingPeers() error {
 	return al.ForEachAgentPair(func(a, b *Agent) error {
-		return a.PingWireguardPeer(b)
+		return a.PingWireGuardPeer(b)
 	})
 }

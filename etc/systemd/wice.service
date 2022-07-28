@@ -1,5 +1,5 @@
 [Unit]
-Description=Wireguard Interactive Connectivity Establishment
+Description=WireGuard Interactive Connectivity Establishment
 
 Wants=network-online.target
 After=network-online.target

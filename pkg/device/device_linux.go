@@ -28,7 +28,7 @@ func NewKernelDevice(name string) (KernelDevice, error) {
 	link.LinkAttrs.Name = name
 
 	if err := netlink.LinkAdd(link); err != nil {
-		return nil, fmt.Errorf("failed to create Wireguard interface: %w", err)
+		return nil, fmt.Errorf("failed to create WireGuard interface: %w", err)
 	}
 
 	return &LinuxKernelDevice{
@@ -84,7 +84,7 @@ func (i *LinuxKernelDevice) Delete() error {
 	i.logger.Debug("Deleting kernel device")
 
 	if err := netlink.LinkDel(i.link); err != nil {
-		return fmt.Errorf("failed to delete Wireguard device: %w", err)
+		return fmt.Errorf("failed to delete WireGuard device: %w", err)
 	}
 
 	return nil

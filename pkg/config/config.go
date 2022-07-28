@@ -98,7 +98,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefault("endpoint_disc.ice.port.max", EphemeralPortMax)
 
 	// Feature flags
-	flags.BoolP("config-sync", "C", true, "Enable synchronization on-disk Wireguard configuration files")
+	flags.BoolP("config-sync", "C", true, "Enable synchronization on-disk WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
 	flags.BoolP("route-sync", "R", true, "Enable synchronization of AllowedIPs and Kernel routing table")
 	flags.BoolP("auto-config", "S", true, "Enable setup of link-local addresses")
@@ -109,19 +109,19 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	// Daemon flags
 	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
-	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on Wireguard interfaces")
+	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on WireGuard interfaces")
 
 	// Socket
-	flags.StringP("socket", "s", "", "The `path` of the unix socket used by other wice commands")
+	flags.StringP("socket", "s", "", "The `path` of the unix socket used by other ɯice commands")
 	flags.Bool("socket-wait", false, "Wait until first client connected to control socket before continuing start")
 
-	// Wireguard
-	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering Wireguard interfaces (e.g. \"wg-.*\")")
-	flags.BoolP("wg-userspace", "u", false, "Create new interfaces with userspace Wireguard implementation")
+	// WireGuard
+	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering WireGuard interfaces (e.g. \"wg-.*\")")
+	flags.BoolP("wg-userspace", "u", false, "Create new interfaces with userspace WireGuard implementation")
 
 	// Config sync
-	flags.StringP("config-path", "w", "", "The `directory` of Wireguard wg/wg-quick configuration files")
-	flags.BoolP("config-watch", "W", false, "Watch and synchronize changes to the Wireguard configuration files")
+	flags.StringP("config-path", "w", "", "The `directory` of WireGuard wg/wg-quick configuration files")
+	flags.BoolP("config-watch", "W", false, "Watch and synchronize changes to the WireGuard configuration files")
 
 	// Route sync
 	flags.StringP("route-table", "T", "main", "Kernel routing table to use")
@@ -170,7 +170,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"socket":      "socket.path",
 		"socket-wait": "socket.wait",
 
-		// Wireguard
+		// WireGuard
 		"wg-userspace":        "wireguard.userspace",
 		"wg-interface-filter": "wireguard.interface_filter",
 
@@ -298,7 +298,7 @@ func (c *Config) Setup(args []string) error {
 	}
 
 	// We append the interfaces here because Config.Load() will overwrite them otherwise
-	c.Wireguard.Interfaces = append(c.Wireguard.Interfaces, args...)
+	c.WireGuard.Interfaces = append(c.WireGuard.Interfaces, args...)
 
 	return nil
 }

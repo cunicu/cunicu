@@ -129,7 +129,7 @@ func (s *AutoConfiguration) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod 
 
 }
 
-// fixupInterface fixes the Wireguard device configuration by applying missing settings
+// fixupInterface fixes the WireGuard device configuration by applying missing settings
 func (s *AutoConfiguration) fixupInterface(i *core.Interface) error {
 	cfg := wgtypes.Config{}
 	logger := s.logger.With(zap.String("intf", i.Name()))
@@ -147,7 +147,7 @@ func (s *AutoConfiguration) fixupInterface(i *core.Interface) error {
 	if i.ListenPort == 0 {
 		logger.Warn("Device has no listen port. Setting a random one..")
 
-		port, err := util.FindNextPortToListen("udp", config.WireguardDefaultPort, config.EphemeralPortMax)
+		port, err := util.FindNextPortToListen("udp", config.WireGuardDefaultPort, config.EphemeralPortMax)
 		if err != nil {
 			return fmt.Errorf("failed set listen port: %w", err)
 		}

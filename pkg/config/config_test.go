@@ -29,7 +29,7 @@ var _ = Describe("parse command line arguments", func() {
 		c, err := config.ParseArgs("--wg-userspace")
 
 		Expect(err).To(Succeed())
-		Expect(c.Wireguard.Userspace).To(BeTrue())
+		Expect(c.WireGuard.Userspace).To(BeTrue())
 	})
 
 	It("can parse multiple backends", func() {
@@ -52,7 +52,7 @@ var _ = Describe("parse command line arguments", func() {
 		c, err := config.ParseArgs("wg0", "wg1")
 
 		Expect(err).To(Succeed())
-		Expect(c.Wireguard.Interfaces).To(ConsistOf("wg0", "wg1"))
+		Expect(c.WireGuard.Interfaces).To(ConsistOf("wg0", "wg1"))
 	})
 
 	It("fails on invalid arguments", func() {
@@ -61,7 +61,7 @@ var _ = Describe("parse command line arguments", func() {
 		Expect(err).To(HaveOccurred())
 	})
 
-	It("should not load anything from domains without wice auto-configuration", func() {
+	It("should not load anything from domains without ɯice auto-configuration", func() {
 		_, err := config.ParseArgs("-A", "google.com")
 
 		Expect(err).To(
@@ -249,8 +249,8 @@ var _ = Describe("dump", func() {
 		Expect(c2.Load()).To(Succeed())
 	})
 
-	It("have equal Wireguard interface lists", func() {
-		Expect(c1.Wireguard.Interfaces).To(Equal(c2.Wireguard.Interfaces))
+	It("have equal WireGuard interface lists", func() {
+		Expect(c1.WireGuard.Interfaces).To(Equal(c2.WireGuard.Interfaces))
 	})
 
 	It("have equal ICE network types", func() {

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	// Singleton for compiled wice executable
+	// Singleton for compiled ɯice executable
 	binary      string
 	binaryMutex sync.Mutex
 
@@ -64,7 +64,7 @@ func BuildBinary(coverage bool) (string, error) {
 		}
 
 		if out, err := cmd.CombinedOutput(); err != nil {
-			return "", fmt.Errorf("failed to build wice: %w\n%s", err, out)
+			return "", fmt.Errorf("failed to build ɯice: %w\n%s", err, out)
 		}
 	}
 

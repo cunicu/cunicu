@@ -17,7 +17,7 @@ import (
 )
 
 type Interface struct {
-	// Wireguard handle of device
+	// WireGuard handle of device
 	wg.Device
 
 	// OS abstractions for kernel device
@@ -53,22 +53,22 @@ func (i *Interface) Close() error {
 	return nil
 }
 
-// Name returns the Wireguard interface name
+// Name returns the WireGuard interface name
 func (i *Interface) Name() string {
 	return i.Device.Name
 }
 
-// PublicKey returns the Curve25519 public key of the Wireguard interface
+// PublicKey returns the Curve25519 public key of the WireGuard interface
 func (i *Interface) PublicKey() crypto.Key {
 	return crypto.Key(i.Device.PublicKey)
 }
 
-// PublicKey returns the Curve25519 private key of the Wireguard interface
+// PublicKey returns the Curve25519 private key of the WireGuard interface
 func (i *Interface) PrivateKey() crypto.Key {
 	return crypto.Key(i.Device.PrivateKey)
 }
 
-func (i *Interface) WireguardConfig() *wgtypes.Config {
+func (i *Interface) WireGuardConfig() *wgtypes.Config {
 	cfg := &wgtypes.Config{
 		PrivateKey:   (*wgtypes.Key)(i.PrivateKey().Bytes()),
 		ListenPort:   &i.ListenPort,
@@ -76,7 +76,7 @@ func (i *Interface) WireguardConfig() *wgtypes.Config {
 	}
 
 	for _, peer := range i.Peers {
-		cfg.Peers = append(cfg.Peers, *peer.WireguardConfig())
+		cfg.Peers = append(cfg.Peers, *peer.WireGuardConfig())
 	}
 
 	return cfg
@@ -84,7 +84,7 @@ func (i *Interface) WireguardConfig() *wgtypes.Config {
 
 func (i *Interface) DumpConfig(wr io.Writer) error {
 	cfg := wg.Config{
-		Config: *i.WireguardConfig(),
+		Config: *i.WireGuardConfig(),
 	}
 	return cfg.Dump(wr)
 }

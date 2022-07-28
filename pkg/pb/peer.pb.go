@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Type of the Wireguard interface impelementation
+// Type of the WireGuard interface impelementation
 type PeerDescription_InterfaceType int32
 
 const (
@@ -85,7 +85,7 @@ type PeerDescription struct {
 	Hostname string `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
 	// List of allowed IPs
 	AllowedIps []string `protobuf:"bytes,3,rep,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
-	// Wireguard endpoint address
+	// WireGuard endpoint address
 	Endpoint string `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// Version of ɯice agent
 	WiceVersion   string                        `protobuf:"bytes,5,opt,name=wice_version,json=wiceVersion,proto3" json:"wice_version,omitempty"`

@@ -30,7 +30,7 @@ func NewUserDevice(name string) (KernelDevice, error) {
 		zap.String("type", "user"),
 	)
 
-	wgLogger := newWireguardLogger()
+	wgLogger := newWireGuardLogger()
 
 	dev := &UserDevice{
 		logger: logger,
@@ -80,7 +80,7 @@ func NewUserDevice(name string) (KernelDevice, error) {
 	return dev, nil
 }
 
-func newWireguardLogger() *device.Logger {
+func newWireGuardLogger() *device.Logger {
 	logger := zap.L().Named("wireguard").Sugar()
 
 	return &device.Logger{

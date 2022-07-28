@@ -1,3 +1,3 @@
-// This feature package synchronizes existing Wireguard configuration files with the device.
+// This package synchronizes existing WireGuard configuration files with the kernel/userspace WireGuard device.
 
 package config

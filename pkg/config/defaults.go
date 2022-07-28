@@ -9,7 +9,7 @@ const (
 	EphemeralPortMin = (1 << 15) + (1 << 14)
 	EphemeralPortMax = (1 << 16) - 1
 
-	WireguardDefaultPort = 51820
+	WireGuardDefaultPort = 51820
 )
 
 var (

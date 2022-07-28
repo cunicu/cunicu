@@ -4,7 +4,7 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 )
 
-// InterfaceList stores all Wireguard interfaces indexed by their unique ifindex
+// InterfaceList stores all WireGuard interfaces indexed by their unique ifindex
 type InterfaceList map[string]*Interface
 
 func (l *InterfaceList) Close() error {

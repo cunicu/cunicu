@@ -6,7 +6,7 @@ option go_package = "riasc.eu/wice/pkg/pb";
 import "common.proto";
 
 message PeerDescription {
-    // Type of the Wireguard interface impelementation
+    // Type of the WireGuard interface impelementation
     enum InterfaceType {
         UNKNOWN = 0;
 	    LINUX_KERNEL = 1;
@@ -21,7 +21,7 @@ message PeerDescription {
     // List of allowed IPs
     repeated string allowed_ips = 3;
 
-    // Wireguard endpoint address
+    // WireGuard endpoint address
     string endpoint = 4;
 
     // Version of ɯice agent

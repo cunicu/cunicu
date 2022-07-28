@@ -2,6 +2,6 @@
 
 package watcher
 
-func WatchWireguardKernelInterfaces(chan InterfaceEvent, chan error) error {
+func WatchWireGuardKernelInterfaces(chan InterfaceEvent, chan error) error {
 	return nil
 }

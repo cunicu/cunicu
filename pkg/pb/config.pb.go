@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Wireguard interface configuration
+// WireGuard interface configuration
 // See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#Config
 type InterfaceConfig struct {
 	state         protoimpl.MessageState
@@ -101,7 +101,7 @@ func (x *InterfaceConfig) GetPeers() []*PeerConfig {
 	return nil
 }
 
-// Wireguard peer configuration
+// WireGuard peer configuration
 // See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#PeerConfig
 type PeerConfig struct {
 	state         protoimpl.MessageState

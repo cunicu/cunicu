@@ -3,7 +3,7 @@ syntax = "proto3";
 package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
-// Wireguard interface configuration
+// WireGuard interface configuration
 // See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#Config
 message InterfaceConfig {
 	bytes private_key = 1;
@@ -14,7 +14,7 @@ message InterfaceConfig {
     repeated PeerConfig peers = 5;
 }
 
-// Wireguard peer configuration
+// WireGuard peer configuration
 // See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#PeerConfig
 message PeerConfig {
 	bytes public_key = 1;

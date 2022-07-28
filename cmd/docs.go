@@ -15,7 +15,7 @@ var (
 
 	docsCmd = &cobra.Command{
 		Use:    "docs",
-		Short:  "Generate documentation for the wice commands",
+		Short:  "Generate documentation for the ɯice commands",
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

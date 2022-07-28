@@ -20,21 +20,21 @@ backends:
 - grpc://localhost:8080?insecure=true
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
 
-# Wireguard settings
+# WireGuard settings
 wg:
   # Use wg / wg-quick configuration files
   config:
       path: /etc/wireguard
       sync: false
     
-  # Create Wireguard interfaces using bundled wireguard-go Userspace implementation
-  # This will be the default if there is no Wireguard kernel module present.
+  # Create WireGuard interfaces using bundled wireguard-go Userspace implementation
+  # This will be the default if there is no WireGuard kernel module present.
   userspace: false
 
-  # Ignore Wireguard interface which do not match this regular expression
+  # Ignore WireGuard interface which do not match this regular expression
   interface_filter: .*
 
-  # A list of Wireguard interfaces which should be configured
+  # A list of WireGuard interfaces which should be configured
   interfaces:
   - wg-vpn
 
@@ -102,14 +102,14 @@ ice:
   # A keepalive interval of 0 means we never send keepalive packets
   keepalive_interval: 2s
 
-# Settings for forwarding / proxying encapsulated Wireguard traffic between
-# pion/ice and the Kernel Wireguard interfaces
+# Settings for forwarding / proxying encapsulated WireGuard traffic between
+# pion/ice and the Kernel WireGuard interfaces
 proxy:
   # Use NFtables to setup a port redirect / NAT for server reflexive candidates
   nft: true
 
   # Use a RAW socket with an attached eBPF socket filter to receive STUN packets while
-  # all other data is directly received by the ListenPort of a kernel-space Wireguard interface.
+  # all other data is directly received by the ListenPort of a kernel-space WireGuard interface.
   ebpf: true
 ```
 

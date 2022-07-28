@@ -137,7 +137,7 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) error {
 	return n.NFConn.Flush()
 }
 
-// Perform SNAT to the source port of Wireguard UDP traffic to match port of our local ICE candidate
+// Perform SNAT to the source port of WireGuard UDP traffic to match port of our local ICE candidate
 func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) error {
 
 	var destIP []byte
