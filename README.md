@@ -1,6 +1,6 @@
 <p align="center" >
     <img style="width: 50%; margin: 4em 0" src="docs/images/wice_logo.svg" alt="wice logo" />
-    <h1 align="center">Wireguard Interactive Connectivity Establishment</h1>
+    <h1 align="center">WireGuard Interactive Connectivity Establishment</h1>
 </p>
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/stv0g/wice/build?style=flat-square)](https://github.com/stv0g/wice/actions)
@@ -15,23 +15,23 @@
 
 ## 🚧 ɯice is currently still in an Alpha state and not usable yet
 
-[ɯice][wice] is a user-space daemon managing [Wireguard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
+[ɯice][wice] is a user-space daemon managing [WireGuard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
-It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of Wireguard in a single binary for environments in which Wireguard kernel support has not landed yet.
+It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of WireGuard in a single binary for environments in which WireGuard kernel support has not landed yet.
 
 ## Getting started
 
 To use ɯice follow these steps on each host:
 
 1.  Install ɯice: `go install riasc.eu/wice/cmd@latest`
-2.  Configure your Wireguard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
+2.  Configure your WireGuard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
 3.  Start the ɯice daemon by running: `sudo wice daemon`
 
-Make sure that in step 2. you have created Wireguard keys and exchanged them by hand between the hosts.
-ɯice does not (yet) discover available peers. You are responsible to add the peers to the Wireguard interface by yourself.
+Make sure that in step 2. you have created WireGuard keys and exchanged them by hand between the hosts.
+ɯice does not (yet) discover available peers. You are responsible to add the peers to the WireGuard interface by yourself.
 
 After the ɯice daemons have been started, they will attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
-These _ICE candidates_ are then exchanged via the signaling server and ɯice will update the endpoint addresses of the Wireguard peers accordingly.
+These _ICE candidates_ are then exchanged via the signaling server and ɯice will update the endpoint addresses of the WireGuard peers accordingly.
 Once this has been done, the ɯice logs should show a line `state=connected`.
 
 ## Documentation

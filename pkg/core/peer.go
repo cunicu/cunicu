@@ -77,8 +77,8 @@ func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
 	}
 }
 
-// PeerConfig return the Wireguard peer configuration
-func (p *Peer) WireguardConfig() *wgtypes.PeerConfig {
+// PeerConfig return the WireGuard peer configuration
+func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	cfg := &wgtypes.PeerConfig{
 		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
 		Endpoint:   p.Endpoint,
@@ -100,7 +100,7 @@ func (p *Peer) OnModified(h PeerModifiedHandler) {
 	p.onModified = append(p.onModified, h)
 }
 
-// updateEndpoint sets a new endpoint for the Wireguard peer
+// UpdateEndpoint sets a new endpoint for the WireGuard peer
 func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
@@ -122,7 +122,7 @@ func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 	return nil
 }
 
-// AddAllowedIP adds a new IP network to the allowed ip list of the Wireguard peer
+// AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
 func (p *Peer) AddAllowedIP(a *net.IPNet) error {
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
@@ -139,7 +139,7 @@ func (p *Peer) AddAllowedIP(a *net.IPNet) error {
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
 
-// RemoveAllowedIP removes a new IP network from the allowed ip list of the Wireguard peer
+// RemoveAllowedIP removes a new IP network from the allowed ip list of the WireGuard peer
 func (p *Peer) RemoveAllowedIP(a *net.IPNet) error {
 	ips := util.FilterSlice(p.Peer.AllowedIPs, func(b net.IPNet) bool {
 		return util.CmpNet(a, &b) != 0

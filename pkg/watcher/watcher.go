@@ -45,7 +45,7 @@ func (e InterfaceEvent) String() string {
 	return fmt.Sprintf("%s %s", e.Name, e.Op)
 }
 
-// Watcher monitors both userspace and kernel for changes to Wireguard interfaces
+// Watcher monitors both userspace and kernel for changes to WireGuard interfaces
 type Watcher struct {
 	Interfaces    core.InterfaceList
 	InterfaceLock sync.RWMutex
@@ -143,7 +143,7 @@ func (w *Watcher) Run() {
 out:
 	for {
 		select {
-		// We still a need periodic sync we can not (yet) monitor Wireguard interfaces
+		// We still a need periodic sync we can not (yet) monitor WireGuard interfaces
 		// for changes via a netlink socket (patch is pending)
 		case <-ticker.C:
 			w.logger.Debug("Starting periodic interface sync")
@@ -174,7 +174,7 @@ func (w *Watcher) Sync() error {
 	var old = w.devices
 
 	if new, err = w.client.Devices(); err != nil {
-		return fmt.Errorf("failed to list Wireguard interfaces: %w", err)
+		return fmt.Errorf("failed to list WireGuard interfaces: %w", err)
 	}
 
 	// Ignore devices which do not match the filter

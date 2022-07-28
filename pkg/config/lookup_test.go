@@ -131,7 +131,7 @@ var _ = Describe("lookup", func() {
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeTURNS, Host: "turn.example.com.", Port: 5349, Proto: ice.ProtoTypeTCP}},
 			icex.URL{URL: ice.URL{Scheme: ice.SchemeTypeTURN, Host: "turn.example.com.", Port: 3478, Proto: ice.ProtoTypeTCP}},
 		))
-		Expect(c.Wireguard.Interfaces).To(ContainElement("wg-test"))
+		Expect(c.WireGuard.Interfaces).To(ContainElement("wg-test"))
 
 		c.Dump(GinkgoWriter)
 	})

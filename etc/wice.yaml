@@ -6,25 +6,25 @@ backends:
 - grpc://localhost:8080?insecure=true
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
 
-# Wireguard settings
+# WireGuard settings
 wireguard:
   # Use wg / wg-quick configuration files
   config:
       path: /etc/wireguard
       sync: false
     
-  # Create Wireguard interfaces using bundled wireguard-go Userspace implementation
-  # This will be the default if there is no Wireguard kernel module present.
+  # Create WireGuard interfaces using bundled wireguard-go Userspace implementation
+  # This will be the default if there is no WireGuard kernel module present.
   userspace: false
 
-  # Ignore Wireguard interface which do not match this regular expression
+  # Ignore WireGuard interface which do not match this regular expression
   interface_filter: .*
 
-  # A list of Wireguard interfaces which should be configured
+  # A list of WireGuard interfaces which should be configured
   interfaces:
   - wg-vpn
 
-  # Port range for ListenPort setting of newly created Wireguard interfaces
+  # Port range for ListenPort setting of newly created WireGuard interfaces
   # wice will select the first available port in this range.
   port:
     min: 52820

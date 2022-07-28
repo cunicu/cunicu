@@ -10,7 +10,7 @@ import (
 
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Wireguard Suite")
+	RunSpecs(t, "WireGuard Suite")
 }
 
 var _ = test.SetupLogging()

@@ -60,7 +60,7 @@ func (s *GrpcSignalingNode) Start(_ ...any) error {
 
 	cmd, err := test.BuildBinary(false)
 	if err != nil {
-		return fmt.Errorf("failed to build wice: %w", err)
+		return fmt.Errorf("failed to build ɯice: %w", err)
 	}
 
 	if _, _, s.Command, err = s.Host.Start(cmd, args...); err != nil {

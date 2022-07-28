@@ -33,10 +33,10 @@ func init() {
 }
 
 func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// Create Wireguard netlink socket
+	// Create WireGuard netlink socket
 	client, err := wgctrl.New()
 	if err != nil {
-		logger.Fatal("Failed to create Wireguard client", zap.Error(err))
+		logger.Fatal("Failed to create WireGuard client", zap.Error(err))
 	}
 
 	devs, err := client.Devices()

@@ -1,6 +1,6 @@
 # Session Signaling
 
-Lets assume two Wireguard peers $P_a$ & $P_b$ are seeking to establish a ICE session.
+Lets assume two WireGuard peers $P_a$ & $P_b$ are seeking to establish a ICE session.
 
 The smaller public key (PK) of the two peers takes the role of the controlling agent.
 In this example PA has the role of the controlling agent as: $PK(P_a) < PK(P_b)$.

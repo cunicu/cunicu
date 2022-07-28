@@ -37,10 +37,10 @@ type Agent struct {
 	Command *exec.Cmd
 	Client  *rpc.Client
 
-	WireguardPrivateKey    crypto.Key
-	WireguardClient        *wgctrl.Client
-	WireguardInterfaceName string
-	WireguardListenPort    int
+	WireGuardPrivateKey    crypto.Key
+	WireGuardClient        *wgctrl.Client
+	WireGuardInterfaceName string
+	WireGuardListenPort    int
 
 	ListenAddresses []multiaddr.Multiaddr
 
@@ -62,20 +62,20 @@ func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Age
 		Address:         addr,
 		ListenAddresses: []multiaddr.Multiaddr{},
 
-		WireguardListenPort:    51822,
-		WireguardInterfaceName: "wg0",
+		WireGuardListenPort:    51822,
+		WireGuardInterfaceName: "wg0",
 
 		logger: *zap.L().Named("agent." + name),
 	}
 
 	if err := a.RunFunc(func() error {
-		a.WireguardClient, err = wgctrl.New()
+		a.WireGuardClient, err = wgctrl.New()
 		return err
 	}); err != nil {
-		return nil, fmt.Errorf("failed to create Wireguard client: %w", err)
+		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
 	}
 
-	if err := a.AddWireguardInterface(); err != nil {
+	if err := a.AddWireGuardInterface(); err != nil {
 		return nil, fmt.Errorf("failed to create wireguard interface: %w", err)
 	}
 
@@ -158,11 +158,11 @@ func (a *Agent) Close() error {
 	return a.Stop()
 }
 
-func (a *Agent) AddWireguardInterface() error {
+func (a *Agent) AddWireGuardInterface() error {
 	var err error
 
-	a.WireguardInterfaceName = "wg0"
-	a.WireguardPrivateKey, err = crypto.GeneratePrivateKey()
+	a.WireGuardInterfaceName = "wg0"
+	a.WireGuardPrivateKey, err = crypto.GeneratePrivateKey()
 	if err != nil {
 		return fmt.Errorf("failed to generate private key: %w", err)
 	}
@@ -170,7 +170,7 @@ func (a *Agent) AddWireguardInterface() error {
 	l := &netlink.Wireguard{
 		LinkAttrs: netlink.NewLinkAttrs(),
 	}
-	l.LinkAttrs.Name = a.WireguardInterfaceName
+	l.LinkAttrs.Name = a.WireGuardInterfaceName
 
 	nlh := a.NetlinkHandle()
 
@@ -190,21 +190,21 @@ func (a *Agent) AddWireguardInterface() error {
 		return fmt.Errorf("failed to assign IP address: %w", err)
 	}
 
-	pk := wgtypes.Key(a.WireguardPrivateKey)
+	pk := wgtypes.Key(a.WireGuardPrivateKey)
 
 	cfg := wgtypes.Config{
 		PrivateKey: &pk,
-		ListenPort: &a.WireguardListenPort,
+		ListenPort: &a.WireGuardListenPort,
 	}
 
-	return a.ConfigureWireguardInterface(cfg)
+	return a.ConfigureWireGuardInterface(cfg)
 }
 
-func (a *Agent) AddWireguardPeer(peer *Agent) error {
+func (a *Agent) AddWireGuardPeer(peer *Agent) error {
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
-				PublicKey: wgtypes.Key(peer.WireguardPrivateKey.PublicKey()),
+				PublicKey: wgtypes.Key(peer.WireGuardPrivateKey.PublicKey()),
 				AllowedIPs: []net.IPNet{
 					{
 						IP:   peer.Address.IP,
@@ -215,26 +215,26 @@ func (a *Agent) AddWireguardPeer(peer *Agent) error {
 		},
 	}
 
-	return a.ConfigureWireguardInterface(cfg)
+	return a.ConfigureWireGuardInterface(cfg)
 }
 
-func (a *Agent) ConfigureWireguardInterface(cfg wgtypes.Config) error {
+func (a *Agent) ConfigureWireGuardInterface(cfg wgtypes.Config) error {
 	if err := a.RunFunc(func() error {
-		return a.WireguardClient.ConfigureDevice(a.WireguardInterfaceName, cfg)
+		return a.WireGuardClient.ConfigureDevice(a.WireGuardInterfaceName, cfg)
 	}); err != nil {
-		return fmt.Errorf("failed to configure Wireguard link: %w", err)
+		return fmt.Errorf("failed to configure WireGuard link: %w", err)
 	}
 
 	return nil
 }
 
 func (a *Agent) WaitReady(p *Agent) error {
-	a.Client.WaitForPeerConnectionState(p.WireguardPrivateKey.PublicKey(), ice.ConnectionStateConnected)
+	a.Client.WaitForPeerConnectionState(p.WireGuardPrivateKey.PublicKey(), ice.ConnectionStateConnected)
 
 	return nil
 }
 
-func (a *Agent) PingWireguardPeer(peer *Agent) error {
+func (a *Agent) PingWireGuardPeer(peer *Agent) error {
 	os.Setenv("LC_ALL", "C") // fix issues with parsing of -W and -i options
 
 	if out, _, err := a.Run("ping", "-c", 5, "-w", 20, "-i", 0.1, peer.Address.IP); err != nil {
@@ -265,9 +265,9 @@ func (a *Agent) WaitBackendReady() error {
 	return nil
 }
 
-func (a *Agent) DumpWireguardInterfaces() error {
+func (a *Agent) DumpWireGuardInterfaces() error {
 	return a.RunFunc(func() error {
-		devs, err := a.WireguardClient.Devices()
+		devs, err := a.WireGuardClient.Devices()
 		if err != nil {
 			return err
 		}
@@ -286,6 +286,6 @@ func (a *Agent) DumpWireguardInterfaces() error {
 func (a *Agent) Dump() {
 	a.logger.Info("Details for agent")
 
-	a.DumpWireguardInterfaces()
+	a.DumpWireGuardInterfaces()
 	a.Run("ip", "addr", "show")
 }

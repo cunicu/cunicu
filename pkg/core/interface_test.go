@@ -31,12 +31,12 @@ var _ = Describe("interface", func() {
 
 		// 	BeforeEach(func() {
 		// 		cfgPath = GinkgoT().TempDir()
-		// 		listenPort = config.WireguardDefaultPort + rand.Intn(1000)
+		// 		listenPort = config.WireGuardDefaultPort + rand.Intn(1000)
 		// 		privKey, err = crypto.GeneratePrivateKey()
 		// 		Expect(err).To(Succeed())
 
-		// 		cfg.Settings.Wireguard.Config.Sync = true
-		// 		cfg.Settings.Wireguard.Config.Path = cfgPath
+		// 		cfg.Settings.WireGuard.Config.Sync = true
+		// 		cfg.Settings.WireGuard.Config.Path = cfgPath
 
 		// 		wgCfg := wg.Config{
 		// 			Config: wgtypes.Config{

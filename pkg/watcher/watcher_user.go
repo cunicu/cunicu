@@ -28,7 +28,7 @@ func (w *Watcher) watchUser() error {
 	}
 
 	go func() {
-		w.logger.Debug("Start watching for changes of Wireguard userspace devices")
+		w.logger.Debug("Start watching for changes of WireGuard userspace devices")
 
 	out:
 		for {
@@ -63,7 +63,7 @@ func (w *Watcher) watchUser() error {
 			}
 		}
 
-		w.logger.Debug("Stop watching for changes of Wireguard userspace devices")
+		w.logger.Debug("Stop watching for changes of WireGuard userspace devices")
 	}()
 
 	return nil

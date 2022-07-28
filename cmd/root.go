@@ -45,7 +45,7 @@ var (
 	RootCmd = &cobra.Command{
 		Use:   "wice",
 		Short: "ɯice",
-		Long:  "Wireguard Interactive Connectivity Establishment",
+		Long:  "WireGuard Interactive Connectivity Establishment",
 
 		// The main wice command is just an alias for "wice daemon"
 		Run:               daemon,

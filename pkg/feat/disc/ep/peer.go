@@ -60,7 +60,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		return nil, fmt.Errorf("failed to generate ICE agent configuration: %w", err)
 	}
 
-	// Do not use Wireguard interfaces for ICE
+	// Do not use WireGuard interfaces for ICE
 	origFilter := p.agentConfig.InterfaceFilter
 	p.agentConfig.InterfaceFilter = func(name string) bool {
 		return origFilter(name) && i.Discovery.watcher.Interfaces.ByName(name) == nil

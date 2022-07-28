@@ -60,7 +60,7 @@ type RouteSyncSettings struct {
 	Table   string `yaml:"table,omitempty"`
 }
 
-type WireguardSettings struct {
+type WireGuardSettings struct {
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`
 	Interfaces      []string `yaml:"interfaces,omitempty"`
@@ -83,7 +83,7 @@ type Settings struct {
 	Backends []BackendURL `yaml:"backends,omitempty"`
 
 	Socket       SocketSettings            `yaml:"socket,omitempty"`
-	Wireguard    WireguardSettings         `yaml:"wireguard,omitempty"`
+	WireGuard    WireGuardSettings         `yaml:"wireguard,omitempty"`
 	AutoConfig   AutoConfigSettings        `yaml:"auto_config,omitempty"`
 	ConfigSync   ConfigSyncSettings        `yaml:"config_sync,omitempty"`
 	RouteSync    RouteSyncSettings         `yaml:"route_sync,omitempty"`

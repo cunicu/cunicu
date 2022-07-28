@@ -49,7 +49,7 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 		return nil, fmt.Errorf("failed to setup NAT: %w", err)
 	}
 
-	// Redirect non-STUN traffic directed at UDP muxes to Wireguard interface via in-kernel port redirect / NAT
+	// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
 	if err := i.nat.RedirectNonSTUN(lPortHost, i.ListenPort); err != nil {
 		return nil, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 	}

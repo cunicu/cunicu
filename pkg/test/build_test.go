@@ -31,6 +31,6 @@ var _ = Describe("build", func() {
 		command := exec.Command(bin, "--help")
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).To(Succeed())
-		Eventually(session.Out).Should(gbytes.Say(`Wireguard Interactive Connectivity Establishment`))
+		Eventually(session.Out).Should(gbytes.Say(`WireGuard Interactive Connectivity Establishment`))
 	})
 })

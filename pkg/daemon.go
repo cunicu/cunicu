@@ -56,7 +56,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Check permissions
 	if !util.HasCapabilities(cap.NET_ADMIN) {
-		return nil, errors.New("insufficient privileges. Pleas run wice as root user or with NET_ADMIN capabilities")
+		return nil, errors.New("insufficient privileges. Please run ɯice as root user or with NET_ADMIN capabilities")
 	}
 
 	// Create backend
@@ -120,7 +120,7 @@ func (d *Daemon) setupFeatures() error {
 		if d.ConfigSync, err = cs.New(d.Watcher, d.client,
 			d.config.ConfigSync.Path,
 			d.config.ConfigSync.Watch,
-			d.config.Wireguard.Userspace); err != nil {
+			d.config.WireGuard.Userspace); err != nil {
 
 			return fmt.Errorf("failed to start configuration file synchronization: %w", err)
 		}
@@ -203,7 +203,7 @@ func (d *Daemon) Close() error {
 	}
 
 	if err := d.client.Close(); err != nil {
-		return fmt.Errorf("failed to close Wireguard client: %w", err)
+		return fmt.Errorf("failed to close WireGuard client: %w", err)
 	}
 
 	return nil
@@ -216,16 +216,16 @@ func (d *Daemon) CreateInterfacesFromArgs() error {
 		return err
 	}
 
-	for _, intfName := range d.config.Wireguard.Interfaces {
+	for _, intfName := range d.config.WireGuard.Interfaces {
 		dev := devs.GetByName(intfName)
 		if dev != nil {
 			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", intfName))
 			continue
 		}
 
-		i, err := core.CreateInterface(intfName, d.config.Wireguard.Userspace, d.client)
+		i, err := core.CreateInterface(intfName, d.config.WireGuard.Userspace, d.client)
 		if err != nil {
-			return fmt.Errorf("failed to create Wireguard device: %w", err)
+			return fmt.Errorf("failed to create WireGuard device: %w", err)
 		}
 
 		if d.logger.Core().Enabled(zap.DebugLevel) {

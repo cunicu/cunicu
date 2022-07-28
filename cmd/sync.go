@@ -12,7 +12,7 @@ var (
 	syncCmd = &cobra.Command{
 		Use:   "sync",
 		Short: "Synchronize interfaces",
-		Long:  "Synchronizes the internal daemon state with the state of the Wireguard interfaces",
+		Long:  "Synchronizes the internal daemon state with the state of the WireGuard interfaces",
 		RunE:  sync,
 		Args:  cobra.RangeArgs(0, 1),
 	}

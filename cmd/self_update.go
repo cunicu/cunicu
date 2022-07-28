@@ -14,9 +14,9 @@ import (
 
 var selfUpdateCmd = &cobra.Command{
 	Use:   "self-update [flags]",
-	Short: "Update the wice binary",
+	Short: "Update the ɯice binary",
 	Long: `
-The command "self-update" downloads the latest stable release of wice from
+The command "self-update" downloads the latest stable release of ɯice from
 GitHub and replaces the currently running binary. After download, the
 authenticity of the binary is verified using the GPG signature on the release
 files.
@@ -75,6 +75,6 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 	}
 
 	if v != version {
-		logger.Info("Successfully updated wice", zap.String("version", v))
+		logger.Info("Successfully updated ɯice", zap.String("version", v))
 	}
 }

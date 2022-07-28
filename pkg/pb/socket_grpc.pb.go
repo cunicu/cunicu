@@ -210,6 +210,9 @@ type WatcherClient interface {
 	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
 	AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
 	SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
+	// For manual signaling backend
+	GetSignalingMessage(ctx context.Context, in *GetSignalingMessageParams, opts ...grpc.CallOption) (*GetSignalingMessageResp, error)
+	PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error)
 }
 
 type watcherClient struct {
@@ -274,6 +277,24 @@ func (c *watcherClient) SetInterfaceConfig(ctx context.Context, in *InterfaceCon
 	return out, nil
 }
 
+func (c *watcherClient) GetSignalingMessage(ctx context.Context, in *GetSignalingMessageParams, opts ...grpc.CallOption) (*GetSignalingMessageResp, error) {
+	out := new(GetSignalingMessageResp)
+	err := c.cc.Invoke(ctx, "/wice.Watcher/GetSignalingMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, "/wice.Watcher/PutSignalingMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WatcherServer is the server API for Watcher service.
 // All implementations must embed UnimplementedWatcherServer
 // for forward compatibility
@@ -284,6 +305,9 @@ type WatcherServer interface {
 	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
 	AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
 	SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
+	// For manual signaling backend
+	GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error)
+	PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error)
 	mustEmbedUnimplementedWatcherServer()
 }
 
@@ -308,6 +332,12 @@ func (UnimplementedWatcherServer) AddInterfaceConfig(context.Context, *Interface
 }
 func (UnimplementedWatcherServer) SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetInterfaceConfig not implemented")
+}
+func (UnimplementedWatcherServer) GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSignalingMessage not implemented")
+}
+func (UnimplementedWatcherServer) PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutSignalingMessage not implemented")
 }
 func (UnimplementedWatcherServer) mustEmbedUnimplementedWatcherServer() {}
 
@@ -430,6 +460,42 @@ func _Watcher_SetInterfaceConfig_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Watcher_GetSignalingMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSignalingMessageParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WatcherServer).GetSignalingMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Watcher/GetSignalingMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WatcherServer).GetSignalingMessage(ctx, req.(*GetSignalingMessageParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Watcher_PutSignalingMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutSignalingMessageParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WatcherServer).PutSignalingMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Watcher/PutSignalingMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WatcherServer).PutSignalingMessage(ctx, req.(*PutSignalingMessageParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Watcher_ServiceDesc is the grpc.ServiceDesc for Watcher service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -460,6 +526,14 @@ var Watcher_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetInterfaceConfig",
 			Handler:    _Watcher_SetInterfaceConfig_Handler,
+		},
+		{
+			MethodName: "GetSignalingMessage",
+			Handler:    _Watcher_GetSignalingMessage_Handler,
+		},
+		{
+			MethodName: "PutSignalingMessage",
+			Handler:    _Watcher_PutSignalingMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -15,7 +15,7 @@ import (
 var (
 	wgCmd = &cobra.Command{
 		Use:   "wg",
-		Short: "Wireguard commands",
+		Short: "WireGuard commands",
 		Args:  cobra.NoArgs,
 	}
 

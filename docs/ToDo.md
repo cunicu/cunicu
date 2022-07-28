@@ -8,7 +8,7 @@ Please also have a look at the current [GitHub issues](https://github.com/stv0g/
     -   <https://www.springerprofessional.de/en/decentralized-access-control-technique-with-multi-tier-authentic/19543988>
     -   <https://link.springer.com/chapter/10.1007%2F978-3-319-28865-9_28>
 
--   Single socket per Wireguard interface / ICE Agent
+-   Single socket per WireGuard interface / ICE Agent
 
 -   Update proxy instances instead of recreating them.
     -   Avoids possible packet loss during change of candidate pairs

@@ -2,6 +2,6 @@
 
 package wg
 
-func WireguardModuleExists() bool {
+func WireGuardModuleExists() bool {
 	return false
 }
