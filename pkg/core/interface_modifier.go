@@ -5,13 +5,15 @@ import "strings"
 type InterfaceModifier int
 
 const (
-	InterfaceModifiedNone         InterfaceModifier = 0
-	InterfaceModifiedName         InterfaceModifier = (1 << 0)
-	InterfaceModifiedType         InterfaceModifier = (1 << 1)
-	InterfaceModifiedPrivateKey   InterfaceModifier = (1 << 2)
-	InterfaceModifiedListenPort   InterfaceModifier = (1 << 3)
-	InterfaceModifiedFirewallMark InterfaceModifier = (1 << 4)
-	InterfaceModifiedPeers        InterfaceModifier = (1 << 5)
+	InterfaceModifiedName         InterfaceModifier = (1 << iota)
+	InterfaceModifiedType         InterfaceModifier = (1 << iota)
+	InterfaceModifiedPrivateKey   InterfaceModifier = (1 << iota)
+	InterfaceModifiedListenPort   InterfaceModifier = (1 << iota)
+	InterfaceModifiedFirewallMark InterfaceModifier = (1 << iota)
+	InterfaceModifiedPeers        InterfaceModifier = (1 << iota)
+	InterfaceModifierCount                          = iota
+
+	InterfaceModifiedNone InterfaceModifier = 0
 )
 
 var (
@@ -28,7 +30,7 @@ var (
 func (i InterfaceModifier) Strings() []string {
 	modifiers := []string{}
 
-	for j := 0; j <= 5; j++ {
+	for j := 0; j <= InterfaceModifierCount; j++ {
 		if i&(1<<j) != 0 {
 			modifiers = append(modifiers, InterfaceModifiersStrings[j])
 		}

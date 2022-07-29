@@ -55,7 +55,7 @@ var _ = Describe("watcher", func() {
 
 		h = core.NewMockHandler()
 
-		w.RegisterAll(h)
+		w.OnAll(h)
 
 		go w.Run()
 	})

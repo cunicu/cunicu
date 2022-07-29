@@ -31,15 +31,11 @@ func New(w *watcher.Watcher, table string) (*RouteSynchronization, error) {
 		logger:  zap.L().Named("sync.routes"),
 	}
 
-	w.OnInterface(s)
+	w.OnPeer(s)
 
 	go s.watchKernel()
 
 	return s, nil
-}
-
-func (s *RouteSynchronization) OnInterfaceAdded(i *core.Interface) {
-	i.OnPeer(s)
 }
 
 func (s *RouteSynchronization) OnPeerAdded(p *core.Peer) {
@@ -66,6 +62,8 @@ func (s *RouteSynchronization) OnPeerRemoved(p *core.Peer) {
 
 	delete(s.gwMapV4, hashV4)
 	delete(s.gwMapV6, hashV6)
+
+	// TODO: do we also remove the routes from the kernel?
 }
 
 func (s *RouteSynchronization) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
@@ -93,5 +91,3 @@ func (s *RouteSynchronization) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m
 			zap.Any("peer", p.PublicKey()))
 	}
 }
-
-func (s *RouteSynchronization) OnInterfaceRemoved(i *core.Interface) {}

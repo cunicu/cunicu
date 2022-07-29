@@ -42,7 +42,7 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 		logger: zap.L().Named("ep-disc"),
 	}
 
-	w.RegisterAll(e)
+	w.OnAll(e)
 
 	return e, nil
 }

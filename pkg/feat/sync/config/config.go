@@ -12,6 +12,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/watcher"
+	"riasc.eu/wice/pkg/wg"
 )
 
 // ConfigSynchronization synchronizes the WireGuard device configuration with an on-disk configuration file.
@@ -57,6 +58,9 @@ func (s *ConfigSynchronization) OnInterfaceAdded(i *core.Interface) {
 }
 
 func (s *ConfigSynchronization) OnInterfaceRemoved(i *core.Interface) {}
+
+func (s *ConfigSynchronization) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+}
 
 func (s *ConfigSynchronization) watch() {
 	watcher, err := fsnotify.NewWatcher()

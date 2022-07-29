@@ -49,8 +49,8 @@ func NewServer(d *pkg.Daemon) (*Server, error) {
 	s.watcher = NewWatcherServer(s, d.Watcher)
 	s.signaling = NewSignalingServer(s, d.Backend)
 
-	if d.EndpointDiscovery != nil {
-		s.ep = NewEndpointDiscoveryServer(s, d.EndpointDiscovery)
+	if d.EPDisc != nil {
+		s.ep = NewEndpointDiscoveryServer(s, d.EPDisc)
 	}
 
 	return s, nil
@@ -66,7 +66,7 @@ func (s *Server) Listen(network string, address string) error {
 
 	l, err := net.Listen(network, address)
 	if err != nil {
-		return fmt.Errorf("failed to listen on %s %s", network, address)
+		return fmt.Errorf("failed to listen on %s/%s: %w", network, address, err)
 	}
 
 	go s.grpc.Serve(l)

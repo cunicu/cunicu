@@ -10,43 +10,19 @@ import (
 type InterfaceHandler interface {
 	OnInterfaceAdded(i *Interface)
 	OnInterfaceRemoved(i *Interface)
-}
-
-type InterfaceModifiedHandler interface {
 	OnInterfaceModified(i *Interface, old *wg.Device, m InterfaceModifier)
 }
 
 type PeerHandler interface {
 	OnPeerAdded(p *Peer)
 	OnPeerRemoved(p *Peer)
-}
-
-type PeerModifiedHandler interface {
 	OnPeerModified(p *Peer, old *wgtypes.Peer, m PeerModifier, ipsAdded, ipsRemoved []net.IPNet)
 }
 
 type AllHandler interface {
 	InterfaceHandler
-	InterfaceModifiedHandler
 	PeerHandler
-	PeerModifiedHandler
 }
-
-type NopHandler struct {
-	AllHandler
-}
-
-func (n *NopHandler) OnInterfaceAdded(i *Interface) {}
-
-func (n *NopHandler) OnInterfaceRemoved(i *Interface) {}
-
-func (n *NopHandler) OnInterfaceModified(i *Interface, old *wg.Device, m InterfaceModifier) {}
-
-func (n *NopHandler) OnPeerAdded(p *Peer) {}
-
-func (n *NopHandler) OnPeerRemoved(p *Peer) {}
-
-func (n *NopHandler) OnPeerModified(p *Peer, old *wgtypes.Peer, m PeerModifier, _, _ []net.IPNet) {}
 
 type Event any
 

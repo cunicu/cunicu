@@ -5,15 +5,18 @@ import "strings"
 type PeerModifier uint32
 
 const (
-	PeerModifiedNone              PeerModifier = 0
-	PeerModifiedPresharedKey      PeerModifier = (1 << 0)
-	PeerModifiedEndpoint          PeerModifier = (1 << 1)
-	PeerModifiedKeepaliveInterval PeerModifier = (1 << 2)
-	PeerModifiedHandshakeTime     PeerModifier = (1 << 3)
-	PeerModifiedReceiveBytes      PeerModifier = (1 << 4)
-	PeerModifiedTransmitBytes     PeerModifier = (1 << 5)
-	PeerModifiedAllowedIPs        PeerModifier = (1 << 6)
-	PeerModifiedProtocolVersion   PeerModifier = (1 << 7)
+	PeerModifiedPresharedKey      PeerModifier = (1 << iota)
+	PeerModifiedEndpoint          PeerModifier = (1 << iota)
+	PeerModifiedKeepaliveInterval PeerModifier = (1 << iota)
+	PeerModifiedHandshakeTime     PeerModifier = (1 << iota)
+	PeerModifiedReceiveBytes      PeerModifier = (1 << iota)
+	PeerModifiedTransmitBytes     PeerModifier = (1 << iota)
+	PeerModifiedAllowedIPs        PeerModifier = (1 << iota)
+	PeerModifiedProtocolVersion   PeerModifier = (1 << iota)
+	PeerModifiedName              PeerModifier = (1 << iota)
+	PeerModifierCount                          = iota
+
+	PeerModifiedNone PeerModifier = 0
 )
 
 var (
@@ -26,13 +29,14 @@ var (
 		"transmit-bytes",
 		"allowed-ips",
 		"protocol-version",
+		"name",
 	}
 )
 
 func (i PeerModifier) Strings() []string {
 	modifiers := []string{}
 
-	for j := 0; j <= 7; j++ {
+	for j := 0; j <= PeerModifierCount; j++ {
 		if i&(1<<j) != 0 {
 			modifiers = append(modifiers, peerModifiersStrings[j])
 		}

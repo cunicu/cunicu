@@ -100,10 +100,6 @@ func (w *Watcher) Close() error {
 	return nil
 }
 
-func (w *Watcher) OnInterface(h core.InterfaceHandler) {
-	w.onInterface = append(w.onInterface, h)
-}
-
 func (w *Watcher) IsRunning() bool {
 	select {
 	case _, running := <-w.stop:

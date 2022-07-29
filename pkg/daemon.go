@@ -17,6 +17,7 @@ import (
 	ac "riasc.eu/wice/pkg/feat/auto"
 	ep "riasc.eu/wice/pkg/feat/disc/ep"
 	cs "riasc.eu/wice/pkg/feat/sync/config"
+	hs "riasc.eu/wice/pkg/feat/sync/hosts"
 	rs "riasc.eu/wice/pkg/feat/sync/routes"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
@@ -32,10 +33,11 @@ type Daemon struct {
 
 	// Features
 
-	AutoConfig        *ac.AutoConfiguration
-	ConfigSync        *cs.ConfigSynchronization
-	RouteSync         *rs.RouteSynchronization
-	EndpointDiscovery *ep.EndpointDiscovery
+	AutoConfig *ac.AutoConfiguration
+	ConfigSync *cs.ConfigSynchronization
+	HostsSync  *hs.HostsSynchronization
+	RouteSync  *rs.RouteSynchronization
+	EPDisc     *ep.EndpointDiscovery
 
 	// Shared
 
@@ -52,21 +54,38 @@ type Daemon struct {
 func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	var err error
 
-	logger := zap.L().Named("daemon")
-
 	// Check permissions
 	if !util.HasCapabilities(cap.NET_ADMIN) {
 		return nil, errors.New("insufficient privileges. Please run ɯice as root user or with NET_ADMIN capabilities")
 	}
 
-	// Create backend
+	d := &Daemon{
+		config: cfg,
 
+		stop:    make(chan any),
+		signals: SetupSignals(),
+	}
+
+	d.logger = zap.L().Named("daemon")
+
+	// Create WireGuard netlink socket
+	d.client, err = wgctrl.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
+	}
+
+	// Create watcher
+	if d.Watcher, err = watcher.New(d.client, cfg.WatchInterval, &cfg.WireGuard.InterfaceFilter.Regexp); err != nil {
+		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
+	}
+
+	// Create backend
 	urls := []*url.URL{}
 	for _, u := range cfg.Backends {
 		urls = append(urls, &u.URL)
 	}
 
-	backend, err := signaling.NewMultiBackend(urls, &signaling.BackendConfig{
+	d.Backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{
 		OnReady: []signaling.BackendReadyHandler{},
 	})
 
@@ -74,30 +93,9 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
 	}
 
-	// Create Wireguard netlink socket
-	client, err := wgctrl.New()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Wireguard client: %w", err)
-	}
-
-	d := &Daemon{
-		config:  cfg,
-		client:  client,
-		Backend: backend,
-
-		stop:    make(chan any),
-		signals: SetupSignals(),
-
-		logger: logger,
-	}
-
-	if d.Watcher, err = watcher.New(d.client, cfg.WatchInterval, &cfg.Wireguard.InterfaceFilter.Regexp); err != nil {
-		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
-	}
-
-	// Check if Wireguard interface can be created by the kernel
-	if !cfg.Wireguard.Userspace {
-		cfg.Wireguard.Userspace = !wg.KernelModuleExists()
+	// Check if WireGuard interface can be created by the kernel
+	if !cfg.WireGuard.Userspace {
+		cfg.WireGuard.Userspace = !wg.KernelModuleExists()
 	}
 
 	if err := d.setupFeatures(); err != nil {
@@ -137,11 +135,19 @@ func (d *Daemon) setupFeatures() error {
 	}
 
 	if d.config.EndpointDisc.Enabled {
-		if d.EndpointDiscovery, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
+		if d.EPDisc, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
 			return fmt.Errorf("failed to start endpoint discovery: %w", err)
 		}
 
 		d.logger.Info("Started endpoint discovery")
+	}
+
+	if d.config.HostSync.Enabled {
+		if d.HostsSync, err = hs.New(d.Watcher); err != nil {
+			return fmt.Errorf("failed to start host name synchronization: %w", err)
+		}
+
+		d.logger.Info("Started host name synchronization")
 	}
 
 	return nil
