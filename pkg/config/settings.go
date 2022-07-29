@@ -70,6 +70,10 @@ type AutoConfigSettings struct {
 	Enabled bool `yaml:"enabled,omitempty"`
 }
 
+type HostSyncSettings struct {
+	Enabled bool `yaml:"enabled,omitempty"`
+}
+
 type EndpointDiscoverySettings struct {
 	Enabled bool `yaml:"enabled,omitempty"`
 
@@ -87,6 +91,7 @@ type Settings struct {
 	AutoConfig   AutoConfigSettings        `yaml:"auto_config,omitempty"`
 	ConfigSync   ConfigSyncSettings        `yaml:"config_sync,omitempty"`
 	RouteSync    RouteSyncSettings         `yaml:"route_sync,omitempty"`
+	HostSync     HostSyncSettings          `yaml:"host_sync,omitempty"`
 	EndpointDisc EndpointDiscoverySettings `yaml:"endpoint_disc,omitempty"`
 }
 

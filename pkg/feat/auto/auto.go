@@ -58,7 +58,7 @@ func New(w *watcher.Watcher, client *wgctrl.Client) (*AutoConfiguration, error) 
 		logger: zap.L().Named("auto"),
 	}
 
-	w.RegisterAll(s)
+	w.OnAll(s)
 
 	return s, nil
 }

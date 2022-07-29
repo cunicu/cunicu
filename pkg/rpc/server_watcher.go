@@ -22,7 +22,7 @@ func NewWatcherServer(s *Server, w *watcher.Watcher) *WatcherServer {
 
 	pb.RegisterWatcherServer(s.grpc, ws)
 
-	w.RegisterAll(s)
+	w.OnAll(s)
 
 	return ws
 }

@@ -29,13 +29,13 @@ type Interface struct {
 
 	client *wgctrl.Client
 
-	onModified []InterfaceModifiedHandler
+	onModified []InterfaceHandler
 	onPeer     []PeerHandler
 
 	logger *zap.Logger
 }
 
-func (i *Interface) OnModified(h InterfaceModifiedHandler) {
+func (i *Interface) OnModified(h InterfaceHandler) {
 	i.onModified = append(i.onModified, h)
 }
 
@@ -155,9 +155,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	i.LastSync = time.Now()
 
 	if mod != InterfaceModifiedNone {
-		i.logger.Info("Interface modified",
-			zap.Any("modified", mod),
-		)
+		i.logger.Info("Interface modified", zap.Strings("modified", mod.Strings()))
 
 		for _, h := range i.onModified {
 			h.OnInterfaceModified(i, &old, mod)
@@ -173,11 +171,11 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 
 		i.logger.Info("Peer removed", zap.Any("peer", p.PublicKey()))
 
+		delete(i.Peers, p.PublicKey())
+
 		for _, h := range i.onPeer {
 			h.OnPeerRemoved(p)
 		}
-
-		delete(i.Peers, p.PublicKey())
 	}
 
 	for _, wgp := range peersAdded {
@@ -290,7 +288,7 @@ func NewInterface(wgDev *wgtypes.Device, kDev device.KernelDevice, client *wgctr
 		logger:       logger,
 		Peers:        map[crypto.Key]*Peer{},
 
-		onModified: []InterfaceModifiedHandler{},
+		onModified: []InterfaceHandler{},
 		onPeer:     []PeerHandler{},
 	}
 
