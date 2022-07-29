@@ -5,8 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"riasc.eu/wice/pkg"
-	"riasc.eu/wice/pkg/signaling/grpc"
+	grpcx "riasc.eu/wice/pkg/signaling/grpc"
 )
 
 var (
@@ -18,11 +20,13 @@ var (
 	}
 
 	listenAddress string
+	secure        = false
 )
 
 func init() {
 	pf := signalCmd.PersistentFlags()
-	pf.StringVarP(&listenAddress, "listen", "L", ":443", "listen address")
+	pf.StringVarP(&listenAddress, "listen", "L", ":8080", "listen address")
+	pf.BoolVarP(&secure, "secure", "S", false, "listen with TLS")
 
 	RootCmd.AddCommand(signalCmd)
 }
@@ -33,7 +37,13 @@ func signal(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to listen", zap.Error(err))
 	}
 
-	svr := grpc.NewServer()
+	// Disable TLS
+	opts := []grpc.ServerOption{}
+	if !secure {
+		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
+	}
+
+	svr := grpcx.NewServer(opts...)
 
 	go func() {
 		for sig := range pkg.SetupSignals() {
