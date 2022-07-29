@@ -21,7 +21,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer() *Server {
+func NewServer(opt ...grpc.ServerOption) *Server {
 	logger := zap.L().Named("server")
 
 	s := &Server{
