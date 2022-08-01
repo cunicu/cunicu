@@ -167,6 +167,11 @@ docker_manifests:
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
+publishers:
+- name: Gemfury
+  cmd: |
+    curl -F package=@{{ .ArtifactPath }} https://{{ .Env.GEMFURY_TOKEN }}@push.fury.io/wice/
+
 changelog:
   sort: asc
   filters:
