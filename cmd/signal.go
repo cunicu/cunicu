@@ -7,8 +7,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"riasc.eu/wice/pkg"
 	grpcx "riasc.eu/wice/pkg/signaling/grpc"
+	"riasc.eu/wice/pkg/util"
 )
 
 var (
@@ -46,7 +46,7 @@ func signal(cmd *cobra.Command, args []string) {
 	svr := grpcx.NewServer(opts...)
 
 	go func() {
-		for sig := range pkg.SetupSignals() {
+		for sig := range util.SetupSignals() {
 			switch sig {
 			default:
 				svr.Stop()

@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
-	internal "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/log"
+	"riasc.eu/wice/pkg/util"
 )
 
 const (
@@ -66,7 +66,7 @@ func init() {
 	RootCmd.SetUsageTemplate(usageTemplate)
 
 	cobra.OnInitialize(
-		internal.SetupRand,
+		util.SetupRand,
 		setupLogging,
 	)
 

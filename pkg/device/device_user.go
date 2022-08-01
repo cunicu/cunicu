@@ -1,15 +1,12 @@
 package device
 
 import (
-	"errors"
 	"fmt"
 	"net"
 
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
-	"golang.zx2c4.com/wireguard/ipc"
 	"golang.zx2c4.com/wireguard/tun"
 )
 
@@ -51,12 +48,6 @@ func NewUserDevice(name string) (KernelDevice, error) {
 		name = realName
 	}
 
-	// Open UAPI file
-	fileUAPI, err := ipc.UAPIOpen(name)
-	if err != nil {
-		return nil, fmt.Errorf("UAPI listen error: %w", err)
-	}
-
 	// Create new device
 	bind := conn.NewDefaultBind()
 	dev.userDevice = device.NewDevice(tunDev, bind, wgLogger)
@@ -67,9 +58,9 @@ func NewUserDevice(name string) (KernelDevice, error) {
 		return nil, err
 	}
 
-	// Open UApi socket
-	if dev.userAPI, err = ipc.UAPIListen(name, fileUAPI); err != nil {
-		return nil, fmt.Errorf("failed to listen on UAPI socket: %w", err)
+	// Open UAPI socket
+	if dev.userAPI, err = ListenUAPI(name); err != nil {
+		return nil, err
 	}
 
 	// Handle UApi requests
@@ -107,8 +98,6 @@ func (i *UserDevice) handleUserAPI() {
 	for {
 		if conn, err := i.userAPI.Accept(); err == nil {
 			go i.userDevice.IpcHandle(conn)
-		} else if errors.Is(err, unix.EALREADY) {
-			i.logger.Warn("Failed to accept UAPI connection", zap.Error(err))
 		}
 	}
 }

@@ -2,8 +2,9 @@ package util
 
 import (
 	"bytes"
-	"crypto/rand"
+	crand "crypto/rand"
 	"encoding/base64"
+	mrand "math/rand"
 	"net"
 	"os"
 	"time"
@@ -37,7 +38,7 @@ func CmpNet(a, b *net.IPNet) int {
 // case the caller should not continue.
 func GenerateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
-	_, err := rand.Read(b)
+	_, err := crand.Read(b)
 	// Note that err == nil only if we read len(b) bytes.
 	if err != nil {
 		return nil, err
@@ -69,4 +70,8 @@ func LastTime(ts ...time.Time) time.Time {
 	}
 
 	return lt
+}
+
+func SetupRand() {
+	mrand.Seed(time.Now().UTC().UnixNano())
 }

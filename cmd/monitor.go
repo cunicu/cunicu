@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-	"riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/util"
 )
 
 var monitorCmd = &cobra.Command{
@@ -29,7 +29,7 @@ func init() {
 }
 
 func monitor(cmd *cobra.Command, args []string) {
-	signals := pkg.SetupSignals()
+	signals := util.SetupSignals()
 
 	logger := logger.Named("events")
 
