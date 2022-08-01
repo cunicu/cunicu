@@ -2,10 +2,10 @@
 
 package routes
 
-func (s *Syncer) syncKernel() {
-	s.logger.Warn("Kernel to WireGuard route synchronization is not supported on this platform.")
+func (s *RouteSynchronization) syncKernel() {
+	s.logger.Error("Kernel to WireGuard route synchronization is not supported on this platform.")
 }
 
-func (s *Syncer) watchKernel() {
-
+func (s *RouteSynchronization) watchKernel() {
+	s.logger.Error("Kernel to WireGuard route synchronization is not supported on this platform.")
 }
