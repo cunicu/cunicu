@@ -40,7 +40,11 @@ archives:
 - builds:
   - wice
 
-  format: bz2
+  # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
+  files:
+  - none*
+
+  format: gz
 
   format_overrides:
   - goos: windows
@@ -51,13 +55,21 @@ nfpms:
   homepage: https://github.com/stv0g/wice/
   maintainer: Steffen Vogel <post@steffenvogel.de>
   license: Apache 2.0
+
   formats:
   - apk
   - deb
   - rpm
+
+  recommends:
+  - wireguard-tools
+
   contents:
   - src: "./etc/systemd/wice.service"
-    dst: "/usr/lib/systemd/system"
+    dst: "/usr/lib/systemd/system/wice.service"
+  - src: "./etc/wice.yaml"
+    dst: "/etc/wice.yaml"
+    type: config
   - src: "./docs/usage/man/*.3"
     dst: "/usr/share/man/man3"
 
