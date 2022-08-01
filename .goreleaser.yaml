@@ -120,10 +120,10 @@ dockers:
   goarch: arm
   goarm: "6"
   image_templates:
-  - "ghcr.io/tv0g/{{ .ProjectName }}:latest-armv6"
-  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}-armv6"
-  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv6"
-  - "ghcr.io/tv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv6"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-armv6"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-armv6"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv6"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv6"
   build_flag_templates:
   - --platform=linux/arm/v6
   - --label=org.opencontainers.image.title={{ .ProjectName }}
