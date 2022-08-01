@@ -71,11 +71,12 @@ func (t NetworkType) MarshalText() ([]byte, error) {
 }
 
 func (u *URL) UnmarshalText(text []byte) error {
-	if up, err := ice.ParseURL(string(text)); err != nil {
+	up, err := ice.ParseURL(string(text))
+	if err != nil {
 		return err
-	} else {
-		u.URL = *up
 	}
+
+	u.URL = *up
 
 	return nil
 }

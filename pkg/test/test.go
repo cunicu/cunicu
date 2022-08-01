@@ -2,9 +2,10 @@ package test
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/hex"
 	"math"
-	"math/rand"
+	"math/big"
 	"net"
 	"os"
 	"path/filepath"
@@ -35,10 +36,14 @@ func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
 }
 
 func GenerateSignalingMessage() *signaling.Message {
+	r, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	if err != nil {
+		panic(err)
+	}
+
 	return &signaling.Message{
 		Session: &pb.SessionDescription{
-			//#nosec G404 -- This is just test data
-			Epoch: rand.Int63(),
+			Epoch: r.Int64(),
 		},
 	}
 }
@@ -75,6 +80,9 @@ func Entropy(data []byte) float64 {
 // TempFileName generates a temporary filename for use in testing or whatever
 func TempFileName(prefix, suffix string) string {
 	randBytes := make([]byte, 16)
-	rand.Read(randBytes)
+	if _, err := rand.Read(randBytes); err != nil {
+		panic(err)
+	}
+
 	return filepath.Join(os.TempDir(), prefix+hex.EncodeToString(randBytes)+suffix)
 }

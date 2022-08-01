@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type pionLoggerFactory struct {
+type PionLoggerFactory struct {
 	Base *zap.Logger
 }
 
@@ -60,7 +60,7 @@ func (l *pionLeveledLogger) Errorf(format string, args ...any) {
 	l.SugaredLogger.Errorf(format, args...)
 }
 
-func (f *pionLoggerFactory) NewLogger(scope string) logging.LeveledLogger {
+func (f *PionLoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 	var lvl zapcore.Level
 	if lvlStr := os.Getenv("PION_LOG"); lvlStr != "" {
 		if err := lvl.UnmarshalText([]byte(lvlStr)); err != nil {
@@ -89,8 +89,8 @@ func (f *pionLoggerFactory) NewLogger(scope string) logging.LeveledLogger {
 	}
 }
 
-func NewPionLoggerFactory(base *zap.Logger) *pionLoggerFactory {
-	return &pionLoggerFactory{Base: base}
+func NewPionLoggerFactory(base *zap.Logger) *PionLoggerFactory {
+	return &PionLoggerFactory{Base: base}
 }
 
 type pionCore struct {

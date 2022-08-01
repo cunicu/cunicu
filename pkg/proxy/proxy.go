@@ -48,7 +48,7 @@ func (p *Proxy) Close() error {
 
 func (p *Proxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
 	// By default we proxy through the userspace
-	var ep *net.UDPAddr = nil
+	var ep *net.UDPAddr
 
 	if cp.Local.Type() == ice.CandidateTypeHost || cp.Local.Type() == ice.CandidateTypeServerReflexive {
 		ep = &net.UDPAddr{
