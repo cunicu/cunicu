@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
@@ -55,7 +54,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	var err error
 
 	// Check permissions
-	if !util.HasCapabilities(cap.NET_ADMIN) {
+	if !util.HasAdminPrivileges() {
 		return nil, errors.New("insufficient privileges. Please run ɯice as root user or with NET_ADMIN capabilities")
 	}
 

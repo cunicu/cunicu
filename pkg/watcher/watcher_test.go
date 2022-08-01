@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
@@ -30,7 +29,7 @@ func TestSuite(t *testing.T) {
 var _ = test.SetupLogging()
 
 var _ = BeforeSuite(func() {
-	if !util.HasCapabilities(cap.NET_ADMIN) {
+	if !util.HasAdminPrivileges() {
 		Skip("Insufficient privileges")
 	}
 })

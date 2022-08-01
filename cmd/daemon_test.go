@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	"github.com/vishvananda/netlink"
-	"kernel.org/pub/linux/libs/security/libcap/cap"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
 	"riasc.eu/wice/pkg/test"
@@ -25,7 +24,7 @@ var _ = Describe("single isolated host", func() {
 	var h1 *g.Host
 
 	BeforeEach(func() {
-		if !util.HasCapabilities(cap.NET_ADMIN) {
+		if !util.HasAdminPrivileges() {
 			Skip("Insufficient privileges")
 		}
 

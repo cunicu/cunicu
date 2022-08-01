@@ -13,3 +13,7 @@ func HasCapabilities(caps ...cap.Value) bool {
 
 	return true
 }
+
+func HasAdminPrivileges() bool {
+	return HasCapabilities(cap.NET_ADMIN)
+}
