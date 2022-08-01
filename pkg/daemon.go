@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
@@ -62,7 +61,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		config: cfg,
 
 		stop:    make(chan any),
-		signals: SetupSignals(),
+		signals: util.SetupSignals(),
 	}
 
 	d.logger = zap.L().Named("daemon")
@@ -165,7 +164,7 @@ out:
 		case sig := <-d.signals:
 			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
 			switch sig {
-			case unix.SIGUSR1:
+			case util.SigUpdate:
 				if err := d.Sync(); err != nil {
 					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
 				}

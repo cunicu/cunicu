@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"syscall"
 
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/config"
@@ -26,11 +26,11 @@ type AutoConfiguration struct {
 
 func addLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
 	if pk.IsSet() {
-		if err := dev.AddAddress(pk.IPv4Address()); err != nil && !errors.Is(err, unix.EEXIST) {
+		if err := dev.AddAddress(pk.IPv4Address()); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign IPv4 link-local address: %w", err)
 		}
 
-		if err := dev.AddAddress(pk.IPv6Address()); err != nil && !errors.Is(err, unix.EEXIST) {
+		if err := dev.AddAddress(pk.IPv6Address()); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign IPv6 link-local address: %w", err)
 		}
 	}

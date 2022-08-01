@@ -44,6 +44,8 @@ jobs:
         exclude:
         - os: windows
           arch: arm
+        - os: darwin
+          arch: arm
 
     env:
       GOOS: ${{ matrix.os }}
@@ -55,15 +57,23 @@ jobs:
 
     - name: Install dependencies
       if: ${{ matrix.os == 'linux' }}
-      run: sudo apt-get install -y coturn protobuf-compiler make
+      run: sudo apt-get install -y
+              coturn
+              protobuf-compiler
+              make
 
     - name: Install dependencies
       if: ${{ matrix.os == 'darwin' }}
-      run: brew install coturn protobuf make
+      run: brew install
+            coturn
+            protobuf
+            make
 
     - name: Install dependencies
       if: ${{ matrix.os == 'windows' }}
-      run: choco install make protoc
+      run: choco install
+            protoc
+            make
 
     - name: Setup Go
       uses: actions/setup-go@v3
@@ -73,9 +83,7 @@ jobs:
         cache: true
     
     - name: Install build and test dependencies
-      env:
-        GOARCH: amd64
-        GOOS: linux
+      if: ${{ matrix.arch == 'amd64' }}
       run: |
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

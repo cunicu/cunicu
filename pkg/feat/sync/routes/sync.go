@@ -3,9 +3,9 @@ package routes
 import (
 	"errors"
 	"net"
+	"syscall"
 
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/watcher"
@@ -80,7 +80,7 @@ func (s *RouteSynchronization) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m
 	}
 
 	for _, dst := range ipsRemoved {
-		if err := p.Interface.KernelDevice.DeleteRoute(&dst); err != nil && !errors.Is(err, unix.ESRCH) {
+		if err := p.Interface.KernelDevice.DeleteRoute(&dst); err != nil && !errors.Is(err, syscall.ESRCH) {
 			s.logger.Error("Failed to delete route", zap.Error(err))
 			continue
 		}
