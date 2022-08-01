@@ -47,7 +47,7 @@ func (i *Interface) Close() error {
 	i.logger.Info("Closing interface")
 
 	if err := i.KernelDevice.Close(); err != nil {
-		return err
+		return fmt.Errorf("failed to close kernel interface: %w", err)
 	}
 
 	return nil
@@ -162,7 +162,9 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 		}
 	}
 
-	for _, wgp := range peersRemoved {
+	for j := range peersRemoved {
+		wgp := peersRemoved[j]
+
 		p, ok := i.Peers[crypto.Key(wgp.PublicKey)]
 		if !ok {
 			i.logger.Warn("Failed to find matching peer", zap.Any("peer", wgp.PublicKey))
@@ -178,10 +180,12 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 		}
 	}
 
-	for _, wgp := range peersAdded {
+	for j := range peersAdded {
+		wgp := &peersAdded[j]
+
 		i.logger.Info("Peer added", zap.Any("peer", wgp.PublicKey))
 
-		p, err := NewPeer(&wgp, i)
+		p, err := NewPeer(wgp, i)
 		if err != nil {
 			i.logger.Fatal("Failed to setup peer",
 				zap.Error(err),
@@ -195,23 +199,26 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 			h.OnPeerAdded(p)
 		}
 
-		p.Sync(&wgp)
+		p.Sync(wgp)
 	}
 
-	for _, wgp := range peersKept {
+	for j := range peersKept {
+		wgp := &peersKept[j]
+
 		p, ok := i.Peers[crypto.Key(wgp.PublicKey)]
 		if !ok {
 			i.logger.Warn("Failed to find matching peer", zap.Any("peer", wgp.PublicKey))
 			continue
 		}
 
-		p.Sync(&wgp)
+		p.Sync(wgp)
 	}
 
 	return mod, peersAdded, peersRemoved
 }
 
 func (i *Interface) SyncConfig(cfgFilename string) error {
+	//#nosec G304 -- Filenames are limited to WireGuard config directory
 	cfgFile, err := os.Open(cfgFilename)
 	if err != nil {
 		return fmt.Errorf("failed to open config file %s: %w", cfgFilename, err)
@@ -267,15 +274,15 @@ func (i *Interface) RemovePeer(pk crypto.Key) error {
 	return i.client.ConfigureDevice(i.Name(), cfg)
 }
 
-func NewInterface(wgDev *wgtypes.Device, kDev device.KernelDevice, client *wgctrl.Client) (*Interface, error) {
+func NewInterface(wgDev *wgtypes.Device, kernelDev device.KernelDevice, client *wgctrl.Client) (*Interface, error) {
 	var err error
 
 	logger := zap.L().Named("interface").With(
 		zap.String("intf", wgDev.Name),
 	)
 
-	if kDev == nil {
-		kDev, err = device.FindDevice(wgDev.Name)
+	if kernelDev == nil {
+		kernelDev, err = device.FindDevice(wgDev.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -283,7 +290,7 @@ func NewInterface(wgDev *wgtypes.Device, kDev device.KernelDevice, client *wgctr
 
 	i := &Interface{
 		Device:       wg.Device(*wgDev),
-		KernelDevice: kDev,
+		KernelDevice: kernelDev,
 		client:       client,
 		logger:       logger,
 		Peers:        map[crypto.Key]*Peer{},
@@ -308,7 +315,7 @@ func CreateInterface(name string, user bool, client *wgctrl.Client) (*Interface,
 		newDevice = device.NewKernelDevice
 	}
 
-	kDev, err := newDevice(name)
+	kernelDev, err := newDevice(name)
 	if err != nil {
 		return nil, err
 	}
@@ -319,7 +326,7 @@ func CreateInterface(name string, user bool, client *wgctrl.Client) (*Interface,
 		return nil, err
 	}
 
-	i, err := NewInterface(wgDev, kDev, client)
+	i, err := NewInterface(wgDev, kernelDev, client)
 	if err != nil {
 		return nil, err
 	}

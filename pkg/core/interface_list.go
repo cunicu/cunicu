@@ -9,7 +9,9 @@ type InterfaceList map[string]*Interface
 
 func (l *InterfaceList) Close() error {
 	for _, intf := range *l {
-		intf.Close()
+		if err := intf.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil

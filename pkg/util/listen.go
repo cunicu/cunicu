@@ -52,7 +52,7 @@ func FindNextPortToListen(network string, start, end int) (int, error) {
 func canListenOnPort(network string, port int) bool {
 	if conn, err := net.ListenUDP(network, &net.UDPAddr{Port: port}); err == nil {
 		return conn.Close() == nil
-	} else {
-		return false
 	}
+
+	return false
 }

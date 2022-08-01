@@ -7,7 +7,8 @@ import (
 )
 
 func readLines(fn string) ([]string, error) {
-	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0755)
+	//#nosec G304 -- Filename is hard coded.
+	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
@@ -27,6 +28,7 @@ func readLines(fn string) ([]string, error) {
 }
 
 func writeLines(fn string, lines []string) error {
+	//#nosec G304 -- Filename is hard coded.
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %w", err)

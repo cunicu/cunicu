@@ -41,7 +41,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 
 	if fn != "" {
 		if path := path.Dir(fn); path != "" {
-			if err := os.MkdirAll(path, 0755); err != nil {
+			if err := os.MkdirAll(path, 0750); err != nil {
 				panic(err)
 			}
 		}

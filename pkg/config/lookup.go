@@ -101,14 +101,17 @@ func (c *Config) lookupSRV(name string) error {
 			s := svc
 			p := proto
 			g.Go(func() error {
-				if us, err := lookupICEUrlSRV(name, s, p); err != nil {
+				us, err := lookupICEUrlSRV(name, s, p)
+				if err != nil {
 					return err
-				} else {
-					mu.Lock()
-					urls = append(urls, us...)
-					mu.Unlock()
-					return nil
 				}
+
+				mu.Lock()
+				defer mu.Unlock()
+
+				urls = append(urls, us...)
+
+				return nil
 			})
 		}
 	}

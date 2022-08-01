@@ -22,6 +22,6 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) error {
 	return errors.ErrNotSupported
 }
 
-func (N *NAT) Close() error {
+func (n *NAT) Close() error {
 	return errors.ErrNotSupported
 }

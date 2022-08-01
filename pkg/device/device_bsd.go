@@ -31,16 +31,16 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet) error {
 	return exec.Command("route", "add", "-net", dst.String(), "-interface", i.Name).Run()
 }
 
-func (i *BSDKernelDevice) Index() int {
-	return i.index
+func (d *BSDKernelDevice) Index() int {
+	return d.index
 }
 
-func (i *BSDKernelDevice) MTU() int {
+func (d *BSDKernelDevice) MTU() int {
 	// MTU is a route attribute which we need to adjust for all routes added for the interface
 	return -1
 }
 
-func (i *BSDKernelDevice) SetMTU(mtu int) error {
+func (d *BSDKernelDevice) SetMTU(mtu int) error {
 	// MTU is a route attribute which we need to adjust for all routes added for the interface
 	return errors.ErrNotSupported
 }

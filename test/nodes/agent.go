@@ -252,11 +252,12 @@ func (a *Agent) WaitBackendReady() error {
 
 	if be, ok := evt.Event.(*pb.Event_BackendReady); ok {
 		for _, la := range be.BackendReady.ListenAddresses {
-			if ma, err := multiaddr.NewMultiaddr(la); err != nil {
+			ma, err := multiaddr.NewMultiaddr(la)
+			if err != nil {
 				return fmt.Errorf("failed to decode listen address: %w", err)
-			} else {
-				a.ListenAddresses = append(a.ListenAddresses, ma)
 			}
+
+			a.ListenAddresses = append(a.ListenAddresses, ma)
 		}
 	} else {
 		zap.L().Warn("Missing signaling details")

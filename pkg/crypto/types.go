@@ -125,7 +125,9 @@ func (k Key) IPv6Address() *net.IPNet {
 // IPv4Address derives an IPv4 link local address from they key
 func (k Key) IPv4Address() *net.IPNet {
 	hash, _ := siphash.New64(addrHashKey[:])
-	hash.Write(k[:])
+	if _, err := hash.Write(k[:]); err != nil {
+		panic(err)
+	}
 
 	sum := hash.Sum64()
 	sum2 := uint64(0)

@@ -97,7 +97,7 @@ func (i *UserDevice) Close() error {
 	}
 
 	if err := i.KernelDevice.Close(); err != nil {
-		return err
+		return fmt.Errorf("failed to close kernel device: %w", err)
 	}
 
 	return nil

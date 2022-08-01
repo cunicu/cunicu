@@ -52,11 +52,12 @@ func Color(str string, mods ...string) string {
 func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]any) (int, error) {
 	n := 0
 	for k, v := range kv {
-		if b, err := FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v); err != nil {
+		b, err := FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v)
+		if err != nil {
 			return b, err
-		} else {
-			n += b
 		}
+
+		n += b
 	}
 
 	return n, nil

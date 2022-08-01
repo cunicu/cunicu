@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pion/ice/v2"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/feat/disc/ep"
 	"riasc.eu/wice/pkg/pb"
@@ -58,7 +59,9 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEv
 			},
 		}
 
-		stream.Send(e)
+		if err := stream.Send(e); err != nil {
+			s.logger.Error("Failed to send", zap.Error(err))
+		}
 	}
 }
 
