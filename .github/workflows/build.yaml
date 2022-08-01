@@ -12,19 +12,70 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build for ${{ matrix.os }} on ${{ matrix.arch }}${{ matrix.arch == 'arm' && format('-v{0}', matrix.arm_v6 || matrix.arm_v7) || ''}}
+    runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - linux
+        - darwin
+        - windows
+
+        arch:
+        - amd64
+        - arm64
+        - arm
+
+        include:
+        - os: linux
+          runner: ubuntu-latest
+        - os: darwin
+          runner: macos-latest
+        - os: windows
+          runner: windows-latest
+
+        - arch: arm
+          arm_v6: 6
+        - arch: arm
+          arm_v7: 7
+
+        exclude:
+        - os: windows
+          arch: arm
+
+    env:
+      GOOS: ${{ matrix.os }}
+      GOARCH: ${{ matrix.arch }}
+      GOARM: ${{ matrix.arm_v6 || matrix.arm_v7 || '' }}
+
     steps:
     - uses: actions/checkout@v2
 
     - name: Install dependencies
+      if: ${{ matrix.os == 'linux' }}
       run: sudo apt-get install -y coturn protobuf-compiler make
 
+    - name: Install dependencies
+      if: ${{ matrix.os == 'darwin' }}
+      run: brew install coturn protobuf make
+
+    - name: Install dependencies
+      if: ${{ matrix.os == 'windows' }}
+      run: choco install make protoc
+
     - name: Setup Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.18
+        go-version-file: 'go.mod'
+        check-latest: true
+        cache: true
     
     - name: Install build and test dependencies
+      env:
+        GOARCH: amd64
+        GOOS: linux
       run: |
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -36,21 +87,26 @@ jobs:
       run: go build -o wice ./cmd
       
     - name: Run vet
+      if: ${{ matrix.os == 'linux' }}
       run: go vet --copylocks=false ./...
 
     - name: Run staticcheck
+      if: ${{ matrix.os == 'linux' }}
       run: staticcheck ./...
 
     - name: Run root-less tests
+      if: ${{ matrix.arch == 'amd64' }}
       run: make tests
 
     # - name: Run tests requiring root access
+    #   if: ${{ matrix.os == 'linux' && matrix.arch == 'amd64' }}
     #   run: |
     #     sudo --preserve-env \
     #       env "PATH=$PATH" \
     #       make tests
 
     - name: Report test coverage to Codacy
+      if: ${{ matrix.os == 'linux' && matrix.arch == 'amd64' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       env:
         CODACY_REPORTER_TMP_FOLDER: .codacy
@@ -60,6 +116,7 @@ jobs:
         force-coverage-parser: go
 
     - name: Report test coverage to Codecov
+      if: ${{ matrix.os == 'linux' && matrix.arch == 'amd64' }}
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
