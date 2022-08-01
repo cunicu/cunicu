@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
 	"golang.org/x/net/context/ctxhttp"
 )
 
@@ -50,14 +49,14 @@ type githubError struct {
 
 // GitHubLatestRelease uses the GitHub API to get information about the latest
 // release of a repository.
-func GitHubLatestRelease(ctx context.Context, owner, repo string) (Release, error) {
+func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	ctx, cancel := context.WithTimeout(ctx, githubAPITimeout)
 	defer cancel()
 
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", githubUser, githubRepo)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return Release{}, err
+		return nil, err
 	}
 
 	// pin API version 3
@@ -65,7 +64,7 @@ func GitHubLatestRelease(ctx context.Context, owner, repo string) (Release, erro
 
 	res, err := ctxhttp.Do(ctx, http.DefaultClient, req)
 	if err != nil {
-		return Release{}, err
+		return nil, err
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -73,39 +72,36 @@ func GitHubLatestRelease(ctx context.Context, owner, repo string) (Release, erro
 		if strings.Contains(content, "application/json") {
 			// try to decode error message
 			var msg githubError
-			jerr := json.NewDecoder(res.Body).Decode(&msg)
-			if jerr == nil {
-				return Release{}, fmt.Errorf("unexpected status %v (%v) returned, message:\n  %v", res.StatusCode, res.Status, msg.Message)
+			if err := json.NewDecoder(res.Body).Decode(&msg); err == nil {
+				return nil, fmt.Errorf("unexpected status %v (%v) returned, message: %v", res.StatusCode, res.Status, msg.Message)
 			}
 		}
 
 		_ = res.Body.Close()
-		return Release{}, fmt.Errorf("unexpected status %v (%v) returned", res.StatusCode, res.Status)
+		return nil, fmt.Errorf("unexpected status %v (%v) returned", res.StatusCode, res.Status)
 	}
 
 	buf, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		_ = res.Body.Close()
-		return Release{}, err
+		return nil, err
 	}
 
-	err = res.Body.Close()
-	if err != nil {
-		return Release{}, err
+	if err = res.Body.Close(); err != nil {
+		return nil, err
 	}
 
-	var release Release
-	err = json.Unmarshal(buf, &release)
-	if err != nil {
-		return Release{}, err
+	release := &Release{}
+	if err = json.Unmarshal(buf, release); err != nil {
+		return nil, err
 	}
 
 	if release.TagName == "" {
-		return Release{}, fmt.Errorf("tag name for latest release is empty")
+		return nil, fmt.Errorf("tag name for latest release is empty")
 	}
 
 	if !strings.HasPrefix(release.TagName, "v") {
-		return Release{}, fmt.Errorf("tag name %q is invalid, does not start with 'v'", release.TagName)
+		return nil, fmt.Errorf("tag name %q is invalid, does not start with 'v'", release.TagName)
 	}
 
 	release.Version = release.TagName[1:]
@@ -119,7 +115,7 @@ func getGithubData(ctx context.Context, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	// request binary data
+	// Request binary data
 	req.Header.Set("Accept", "application/octet-stream")
 
 	res, err := ctxhttp.Do(ctx, http.DefaultClient, req)
@@ -137,15 +133,14 @@ func getGithubData(ctx context.Context, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	err = res.Body.Close()
-	if err != nil {
+	if err = res.Body.Close(); err != nil {
 		return nil, err
 	}
 
 	return buf, nil
 }
 
-func getGithubDataFile(ctx context.Context, assets []Asset, suffix string, logger *zap.Logger) (filename string, data []byte, err error) {
+func getGithubDataFile(ctx context.Context, assets []Asset, suffix string) (filename string, data []byte, err error) {
 	var url string
 	for _, a := range assets {
 		if strings.HasSuffix(a.Name, suffix) {
@@ -159,7 +154,6 @@ func getGithubDataFile(ctx context.Context, assets []Asset, suffix string, logge
 		return "", nil, fmt.Errorf("unable to find file with suffix %v", suffix)
 	}
 
-	logger.Info("Downloading", zap.String("url", filename))
 	data, err = getGithubData(ctx, url)
 	if err != nil {
 		return "", nil, err
