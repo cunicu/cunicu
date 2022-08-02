@@ -107,7 +107,7 @@ func (d *Daemon) setupFeatures() error {
 	var err error
 
 	if d.config.AutoConfig.Enabled {
-		if d.AutoConfig, err = ac.New(d.Watcher, d.client); err != nil {
+		if d.AutoConfig, err = ac.New(d.Watcher, d.config, d.client); err != nil {
 			return fmt.Errorf("failed to start interface auto configuration: %w", err)
 		}
 	}

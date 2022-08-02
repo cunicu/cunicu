@@ -261,3 +261,8 @@ var _ = Describe("dump", func() {
 		Expect(c1.EndpointDisc.ICE.URLs).To(Equal(c2.EndpointDisc.ICE.URLs))
 	})
 })
+
+var _ = It("can parse the default config file", func() {
+	_, err := config.ParseArgs("--config", "../../etc/wice.yaml")
+	Expect(err).To(Succeed())
+})

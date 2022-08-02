@@ -64,6 +64,8 @@ type WireGuardSettings struct {
 	Userspace       bool     `yaml:"userspace,omitempty"`
 	InterfaceFilter Regexp   `yaml:"interface_filter,omitempty"`
 	Interfaces      []string `yaml:"interfaces,omitempty"`
+
+	Port PortSettings `yaml:"port,omitempty"`
 }
 
 type AutoConfigSettings struct {

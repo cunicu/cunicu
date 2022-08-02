@@ -20,6 +20,7 @@ import (
 
 type AutoConfiguration struct {
 	client *wgctrl.Client
+	config *config.Config
 
 	logger *zap.Logger
 }
@@ -52,9 +53,10 @@ func deleteLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
 	return nil
 }
 
-func New(w *watcher.Watcher, client *wgctrl.Client) (*AutoConfiguration, error) {
+func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoConfiguration, error) {
 	s := &AutoConfiguration{
 		client: client,
+		config: cfg,
 		logger: zap.L().Named("auto"),
 	}
 
@@ -147,7 +149,7 @@ func (s *AutoConfiguration) fixupInterface(i *core.Interface) error {
 	if i.ListenPort == 0 {
 		logger.Warn("Device has no listen port. Setting a random one..")
 
-		port, err := util.FindNextPortToListen("udp", config.WireGuardDefaultPort, config.EphemeralPortMax)
+		port, err := util.FindNextPortToListen("udp", s.config.WireGuard.Port.Min, s.config.WireGuard.Port.Max)
 		if err != nil {
 			return fmt.Errorf("failed set listen port: %w", err)
 		}
