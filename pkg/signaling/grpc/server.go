@@ -73,6 +73,7 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Erro
 
 	// Publishing a message to a topic in which we are the only subscriber is
 	// meaningless as the message will have no audience.
+	// TODO: This is DoS-able. We should probably return some "comeback-and-retry" status code here.
 	t.WaitForSubs(1)
 
 	t.Publish(env)
