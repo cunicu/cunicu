@@ -12,45 +12,51 @@ on:
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }} on ${{ matrix.arch }}${{ matrix.arch == 'arm' && format('-v{0}', matrix.arm_v6 || matrix.arm_v7) || ''}}
+    name: Build for ${{ matrix.os }} on ${{ matrix.arch }}${{ matrix.arch == 'arm' && format('-v{0}', matrix.arm) || ''}}
     runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
       matrix:
-        os:
-        - linux
-        - darwin
-        - windows
-
-        arch:
-        - amd64
-        - arm64
-        - arm
-
         include:
         - os: linux
+          arch: amd64
           runner: ubuntu-latest
+
+        - os: linux
+          arch: arm64
+          runner: ubuntu-latest
+
+        - os: linux
+          arch: arm
+          arm: 6
+          runner: ubuntu-latest
+
+        - os: linux
+          arch: arm
+          arm: 7
+          runner: ubuntu-latest
+
         - os: darwin
+          arch: arm64
           runner: macos-latest
+
+        - os: darwin
+          arch: amd64
+          runner: macos-latest
+
         - os: windows
+          arch: arm64
           runner: windows-latest
 
-        - arch: arm
-          arm_v6: 6
-        - arch: arm
-          arm_v7: 7
-
-        exclude:
         - os: windows
-          arch: arm
-        - os: darwin
-          arch: arm
+          arch: amd64
+          runner: windows-latest
 
     env:
       GOOS: ${{ matrix.os }}
       GOARCH: ${{ matrix.arch }}
-      GOARM: ${{ matrix.arm_v6 || matrix.arm_v7 || '' }}
+      GOARM: ${{ matrix.arm || '' }}
 
     steps:
     - uses: actions/checkout@v2
@@ -83,7 +89,9 @@ jobs:
         cache: true
     
     - name: Install build and test dependencies
-      if: ${{ matrix.arch == 'amd64' }}
+      if: ${{ matrix.arch == 'amd64' || matrix.os == 'linux' }}
+      env:
+        GOARCH: amd64
       run: |
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
