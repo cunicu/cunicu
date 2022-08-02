@@ -107,6 +107,13 @@ var _ = Describe("lookup", func() {
 		dnsSrv.PatchNet(net.DefaultResolver)
 	})
 
+	AfterEach(func() {
+		mockdns.UnpatchNet(net.DefaultResolver)
+
+		err := dnsSrv.Close()
+		Expect(err).To(Succeed())
+	})
+
 	It("check mock dns server", func() {
 		addr, err := net.ResolveIPAddr("ip", "example.com")
 		Expect(err).To(Succeed())
