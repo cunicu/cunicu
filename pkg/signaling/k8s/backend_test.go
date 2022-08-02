@@ -46,7 +46,7 @@ var _ = Describe("Kubernetes backend", Pending, func() {
 		cfg, err := testenv.Start()
 		Expect(err).To(Succeed())
 
-		kcfg, err = os.CreateTemp("/tmp", "kubeconfig-*.yaml")
+		kcfg, err = os.CreateTemp("", "kubeconfig-*.yaml")
 		Expect(err).To(Succeed())
 
 		err = writeKubeconfig(cfg, kcfg)
