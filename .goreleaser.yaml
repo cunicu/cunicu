@@ -157,7 +157,7 @@ dockers:
   - --label=org.opencontainers.image.licenses=Apache-2.0
 
 docker_manifests:
-- name_template: "ghcr.io/stv0g/{{ .ProjectName }}:{{ .Version }}"
+- name_template: "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}"
   image_templates:
   - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-amd64"
   - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv6"
