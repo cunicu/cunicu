@@ -1,18 +1,18 @@
 module riasc.eu/wice
 
-go 1.18
+go 1.19
 
 require (
 	github.com/aead/siphash v1.0.1
 	github.com/foxcpp/go-mockdns v1.0.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/zapr v1.2.3
-	github.com/google/nftables v0.0.0-20220611213346-a346d51f53b3
+	github.com/google/nftables v0.0.0-20220729163259-ec1e802faf94
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiformats/go-multiaddr v0.6.0
 	github.com/onsi/ginkgo/v2 v2.1.4
-	github.com/onsi/gomega v1.19.0
-	github.com/pion/ice/v2 v2.2.6
+	github.com/onsi/gomega v1.20.0
+	github.com/pion/ice/v2 v2.2.7
 	github.com/pion/logging v0.2.2
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
@@ -22,21 +22,21 @@ require (
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
-	golang.zx2c4.com/wireguard v0.0.0-20220601130007-6a08d81f6bc4
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
+	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sys v0.0.0-20220731174439-a90be440212d
+	golang.zx2c4.com/wireguard v0.0.0-20220703234212-c31a7b1ab478
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20220504211119-3d4a969bb56b
-	google.golang.org/grpc v1.47.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/ini.v1 v1.66.6
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.24.3
 	k8s.io/client-go v0.24.3
 	k8s.io/klog/v2 v2.70.1
-	kernel.org/pub/linux/libs/security/libcap/cap v1.2.64
+	kernel.org/pub/linux/libs/security/libcap/cap v1.2.65
 	sigs.k8s.io/controller-runtime v0.12.3
 )
 
@@ -63,7 +63,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/josharian/native v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.0.14 // indirect
+	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mdlayher/genetlink v1.2.0 // indirect
@@ -94,7 +94,7 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/spf13/afero v1.8.2 // indirect
+	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
@@ -104,19 +104,19 @@ require (
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	golang.org/x/tools v0.1.11 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20211104114900-415007cec224 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220627200112-0a929928cb33 // indirect
+	google.golang.org/genproto v0.0.0-20220802133213-ce4fa296bf78 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.24.3 // indirect
 	k8s.io/apiextensions-apiserver v0.24.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20220627174259-011e075b9cb8 // indirect
-	k8s.io/utils v0.0.0-20220713171938-56c0de1e6f5e // indirect
-	kernel.org/pub/linux/libs/security/libcap/psx v1.2.64 // indirect
+	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
+	kernel.org/pub/linux/libs/security/libcap/psx v1.2.65 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
