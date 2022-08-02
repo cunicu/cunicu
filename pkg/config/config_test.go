@@ -90,7 +90,7 @@ var _ = Describe("parse command line arguments", func() {
 			Context("file with explicit path", func() {
 				BeforeEach(func() {
 					var err error
-					cfgFile, err = os.CreateTemp("/tmp", "wice-*.yaml")
+					cfgFile, err = os.CreateTemp("", "wice-*.yaml")
 					Expect(err).To(Succeed())
 				})
 
