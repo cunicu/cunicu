@@ -71,7 +71,6 @@ jobs:
     - name: Install dependencies
       if: ${{ matrix.os == 'darwin' }}
       run: brew install
-            coturn
             protobuf
             make
 
@@ -112,7 +111,7 @@ jobs:
 
     - name: Run root-less tests
       if: ${{ matrix.arch == 'amd64' }}
-      run: make tests
+      run: make tests GINKGO_EXTRA_OPTS="--skip-package=./test/cases,./pkg/device"
 
     # - name: Run tests requiring root access
     #   if: ${{ matrix.os == 'linux' && matrix.arch == 'amd64' }}

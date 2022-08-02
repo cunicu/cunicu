@@ -1,3 +1,5 @@
+//go:build linux
+
 package main_test
 
 import (
@@ -9,7 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	g "github.com/stv0g/gont/pkg"
+	gont "github.com/stv0g/gont/pkg"
 	"github.com/vishvananda/netlink"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
@@ -20,15 +22,15 @@ import (
 var _ = Describe("single isolated host", func() {
 	var err error
 
-	var n *g.Network
-	var h1 *g.Host
+	var n *gont.Network
+	var h1 *gont.Host
 
 	BeforeEach(func() {
 		if !util.HasAdminPrivileges() {
 			Skip("Insufficient privileges")
 		}
 
-		n, err = g.NewNetwork("")
+		n, err = gont.NewNetwork("")
 		Expect(err).To(Succeed())
 
 		h1, err = n.AddHost("h1")
