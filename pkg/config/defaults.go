@@ -30,6 +30,8 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("route_sync.table", "main")
 	c.SetDefault("host_sync.enabled", true)
 	c.SetDefault("endpoint_disc.enabled", true)
+	c.SetDefault("wireguard.port.min", WireGuardDefaultPort)
+	c.SetDefault("wireguard.port.max", EphemeralPortMax)
 	c.SetDefault("endpoint_disc.ice.check_interval", "200ms")
 	c.SetDefault("endpoint_disc.ice.keepalive_interval", "2s")
 	c.SetDefault("endpoint_disc.ice.disconnected_timeout", "5s")
