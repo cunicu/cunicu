@@ -286,9 +286,8 @@ func (c *Config) Setup(args []string) error {
 func (c *Config) MergeRemoteConfig(url *url.URL) error {
 	if url.Scheme != "https" {
 		host, _, _ := net.SplitHostPort(url.Host)
-		ip, err := net.ResolveIPAddr("ip", host)
-		if err != nil || !ip.IP.IsLoopback() {
-			return errors.New("remote configuration must by provided via HTTPS")
+		if host != "localhost" && host != "127.0.0.1" && host != "::1" && host != "[::1]" {
+			return errors.New("remote configuration must be provided via HTTPS")
 		}
 	}
 

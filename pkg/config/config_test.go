@@ -70,6 +70,7 @@ var _ = Describe("parse command line arguments", func() {
 				Or(
 					MatchError(ContainSubstring("no such host")),
 					MatchError(ContainSubstring("i/o timeout")),
+					MatchError(ContainSubstring("DNS name does not exist")), // raised by Windows
 				),
 			),
 		)
