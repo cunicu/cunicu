@@ -65,7 +65,7 @@ function detectOS() {
 
 # runs the given command as root (detects if we are root already)
 function runAsRoot() {
-  if (( ${EUID} != 0 )) && [[ "${USE_SUDO}" == "true" ]]; then
+  if (( EUID != 0 )) && [[ "${USE_SUDO}" == "true" ]]; then
     sudo "${@}"
   else
     "${@}"
@@ -238,7 +238,7 @@ function verifyChecksumSignature() {
 # failTrap is executed if an error occurs.
 function failTrap() {
   result=$?
-  if (( "${result}" != "0" )); then
+  if (( result != 0 )); then
     if [[ -n "${INPUT_ARGUMENTS}" ]]; then
       echo -e "Failed to install ${BINARY_NAME} with the arguments provided: ${INPUT_ARGUMENTS}"
       help
@@ -258,7 +258,7 @@ function testVersion() {
   set +e
   
   WICE="$(command -v ${BINARY_NAME})"
-  if (( "$?" != 0 )); then
+  if (( ? != 0 )); then
     echo -e "${BINARY_NAME} not found. Is ${INSTALL_DIR} on your "'$PATH?'
     exit 1
   fi
@@ -300,7 +300,7 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     '--version'|-v)
       shift
-      if (( $# != 0 )); then
+      if (( # != 0 )); then
         DESIRED_TAG="${1}"
       else
         echo -e "Please provide the desired version. e.g. --version v0.1.0"
