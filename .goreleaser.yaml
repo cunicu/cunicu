@@ -175,8 +175,15 @@ snapshot:
 
 publishers:
 - name: Gemfury
-  cmd: |
-    curl -F package=@{{ .ArtifactPath }} https://{{ .Env.GEMFURY_TOKEN }}@push.fury.io/wice/
+  cmd: >-
+    bash -c "
+      if [[ ${ARTIFACT_PATH} == *.rpm || ${ARTIFACT_PATH} == *.deb || ${ARTIFACT_PATH} == *.apk ]]; then
+        curl -F package=@${ARTIFACT_PATH} https://${GEMFURY_TOKEN}@push.fury.io/wice/
+      fi
+    "
+  env:
+  - GEMFURY_TOKEN={{ .Env.GEMFURY_TOKEN }}
+  - ARTIFACT_PATH={{ .ArtifactPath }}
 
 changelog:
   sort: asc
