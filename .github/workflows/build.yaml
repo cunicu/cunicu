@@ -130,11 +130,9 @@ jobs:
       run: go build -o wice ./cmd
       
     - name: Run vet
-      if: ${{ matrix.target_os == 'linux' }}
       run: go vet --copylocks=false ./...
 
     - name: Run staticcheck
-      if: ${{ matrix.target_os == 'linux' }}
       run: staticcheck ./...
 
     - name: Run root-less tests
