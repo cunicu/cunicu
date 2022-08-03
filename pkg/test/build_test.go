@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -26,7 +27,10 @@ var _ = Describe("build", func() {
 		fi, err := os.Stat(bin)
 		Expect(err).To(Succeed())
 		Expect(fi.Mode().IsRegular()).To(BeTrue())
-		Expect(fi.Mode() & 0100).NotTo(BeZero())
+
+		if runtime.GOOS != "windows" {
+			Expect(fi.Mode() & 0100).NotTo(BeZero())
+		}
 
 		command := exec.Command(bin, "--help")
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
