@@ -241,7 +241,7 @@ func (c *Config) Setup(args []string) error {
 	if len(c.ConfigFiles) > 0 {
 		// Merge config files from the flags.
 		for _, file := range c.ConfigFiles {
-			if u, err := url.Parse(file); err == nil && u.Scheme != "" {
+			if u, err := url.Parse(file); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 				if err := c.MergeRemoteConfig(u); err != nil {
 					return fmt.Errorf("failed to load remote config: %w", err)
 				}
@@ -300,6 +300,7 @@ func (c *Config) MergeRemoteConfig(url *url.URL) error {
 		URL:    url,
 		Header: http.Header{},
 	}
+
 	// TODO: Add version info
 	req.Header.Set("User-Agent", "wice")
 
