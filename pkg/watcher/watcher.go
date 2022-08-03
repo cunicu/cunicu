@@ -18,8 +18,6 @@ import (
 )
 
 const (
-	wireguardSockDir = "/var/run/wireguard/"
-
 	InterfaceAdded InterfaceEventOp = iota
 	InterfaceDeleted
 )

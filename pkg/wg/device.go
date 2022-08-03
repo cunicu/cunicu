@@ -14,6 +14,18 @@ import (
 
 type Device wgtypes.Device
 
+type Devices []*wgtypes.Device
+
+func (devs *Devices) GetByName(name string) *wgtypes.Device {
+	for _, dev := range *devs {
+		if dev.Name == name {
+			return dev
+		}
+	}
+
+	return nil
+}
+
 func (d *Device) DumpEnv(wr io.Writer) error {
 	var color, hideKeys bool
 
