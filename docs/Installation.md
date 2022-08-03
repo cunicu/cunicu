@@ -10,11 +10,11 @@ These binary versions can be manually downloaded and installed.
 
 ## By Hand
 
-1. [Download your desired version](https://github.com/stv0g/wice/releases)
-2. Unzip it: `gunzip wice_0.0.1_linux_amd64.gz`
-3. Move the unzipped binary to its desired destination: `mv wice_0.0.1_linux_amd64 /usr/local/bin/wice`
-5. Make it executable: `chmod +x /usr/local/bin/wice`
-6. From there, you should be able to run the client and add the stable repo: `wice help`.
+1.  [Download your desired version](https://github.com/stv0g/wice/releases)
+2.  Unzip it: `gunzip wice_0.0.1_linux_amd64.gz`
+3.  Move the unzipped binary to its desired destination: `mv wice_0.0.1_linux_amd64 /usr/local/bin/wice`
+4.  Make it executable: `chmod +x /usr/local/bin/wice`
+5.  From there, you should be able to run the client and add the stable repo: `wice help`.
 
 **Note:** ɯice automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
 Testing of other OSes are the responsibility of the community requesting ɯice for the OS in question.
@@ -27,9 +27,9 @@ You can fetch that script, and then execute it locally.
 It's well documented so that you can read through it and understand what it is doing before you run it.
 
 ```bash
-$ curl -fsSL -o get_wice.sh https://raw.githubusercontent.com/stv0g/wice/master/scripts/get_wice.sh
-$ chmod 700 get_wice.sh
-$ ./get_wice.sh
+curl -fsSL -o get_wice.sh https://raw.githubusercontent.com/stv0g/wice/master/scripts/get_wice.sh
+chmod 700 get_wice.sh
+./get_wice.sh
 ```
 
 Yes, you can `curl https://raw.githubusercontent.com/stv0g/wice/master/scripts/get_wice.sh | bash` if you want to live on the edge.
@@ -66,14 +66,14 @@ Building ɯice is fairly easy and allows you to install the latest unreleased ve
 
 You must have a working Go environment.
 
-```
-$ go install riasc.eu/wice/cmd@latest
+```bash
+go install riasc.eu/wice/cmd@latest
 ```
 
 If required, it will fetch the dependencies and cache them, and validate configuration.
 It will then compile ɯice and place it in `${GOPATH}/bin/wice`.
 
-##  Conclusion
+## Conclusion
 
 In most cases, installation is as simple as getting a pre-built ɯice binary.
 This document covers additional cases for those who want to do more sophisticated things with ɯice.
