@@ -3,11 +3,13 @@
 package device
 
 import (
+	"fmt"
 	"net"
 	"os/exec"
+	"regexp"
+	"strconv"
 
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/errors"
 )
 
 type BSDKernelDevice struct {
@@ -52,11 +54,11 @@ func (d *BSDKernelDevice) Close() error {
 
 func (d *BSDKernelDevice) AddAddress(ip *net.IPNet) error {
 
-	return exec.Command("ifconfig", d.Name(), ip.IP.String(), "netmask", ip.Mask.String(), "alias").Run()
+	return exec.Command("ifconfig", d.Name(), ip.String(), "alias").Run()
 }
 
 func (d *BSDKernelDevice) DeleteAddress(ip *net.IPNet) error {
-	return exec.Command("ifconfig", d.Name(), ip.IP.String(), "netmask", ip.Mask.String(), "delete").Run()
+	return exec.Command("ifconfig", d.Name(), ip.String(), "-alias").Run()
 }
 
 func (d *BSDKernelDevice) AddRoute(dst *net.IPNet) error {
@@ -65,21 +67,35 @@ func (d *BSDKernelDevice) AddRoute(dst *net.IPNet) error {
 
 func (d *BSDKernelDevice) DeleteRoute(dst *net.IPNet) error {
 	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
-
 }
 
 func (d *BSDKernelDevice) Index() int {
 	return d.index
 }
 
+var mtuRegex = regexp.MustCompile(`(?m)mtu (\d+)`)
+
 func (d *BSDKernelDevice) MTU() int {
-	// MTU is a route attribute which we need to adjust for all routes added for the interface
-	return -1
+	out, err := exec.Command("ifconfig", d.Name()).Output()
+	if err != nil {
+		return -1
+	}
+
+	mtuStr := mtuRegex.FindString(string(out))
+	if mtuStr == "" {
+		return -1
+	}
+
+	mtu, err := strconv.Atoi(mtuStr)
+	if err != nil {
+		return -1
+	}
+
+	return mtu
 }
 
 func (d *BSDKernelDevice) SetMTU(mtu int) error {
-	// MTU is a route attribute which we need to adjust for all routes added for the interface
-	return errors.ErrNotSupported
+	return exec.Command("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu)).Run()
 }
 
 func (d *BSDKernelDevice) SetUp() error {
