@@ -110,7 +110,7 @@ function checkDesiredVersion() {
   local latest_release_url="${GITHUB_URL}/releases"
 
   if [[ -z "${DESIRED_TAG}" ]]; then
-    TAG=$(wget ${latest_release_url} -O - 2>&1 | grep 'href="/stv0g/wice/releases/tag/v.[0-9]*.[0-9]*.[0-9]*\"' | sed -E 's/.*\/stv0g\/wice\/releases\/tag\/(v[0-9\.]+)".*/\1/g' | head -1)
+    TAG=$(wget ${latest_release_url} -O - 2>&1 | grep 'href="/stv0g/wice/releases/tag/v[0-9]*.[0-9]*.[0-9]*\"' | sed -E 's/.*\/stv0g\/wice\/releases\/tag\/(v[0-9\.]+)".*/\1/g' | head -1)
     echo "Latest available version of ${BINARY_NAME} is ${TAG}"
   else
     TAG=${DESIRED_TAG}
@@ -130,7 +130,7 @@ function checkInstalledVersion() {
       return 0
     else
       echo "New version of ${BINARY_NAME} is available: ${TAG}."
-      echo "Updating from ${BINARY_NAME} version ${installed_version}."
+      echo "Updating from ${BINARY_NAME} version v${installed_version} to ${TAG}"
       return 1
     fi
   else
@@ -146,9 +146,7 @@ function downloadBinary() {
     suffix="zip"
   fi
 
-  TMP_ROOT="$(mktemp -dt wice-installer-XXXXXX)"
-  echo ${TMP_ROOT}
-  
+  TMP_ROOT="$(mktemp -dt wice-installer-XXXXXX)"  
   DIST_FILE="wice_${VERSION}_${OS}_${ARCH}.${suffix}"
 
   downloadFile "${DIST_FILE}"
