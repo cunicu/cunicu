@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"sync"
 )
@@ -24,7 +23,7 @@ func FindBaseDir() (string, error) {
 	}
 
 	for p != "." {
-		if _, err := os.Stat(path.Join(p, ".git")); err != nil {
+		if _, err := os.Stat(filepath.Join(p, ".git")); err != nil {
 			if os.IsNotExist(err) {
 				p = filepath.Dir(p)
 			} else {
@@ -47,7 +46,7 @@ func BuildBinary(coverage bool) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		binary = path.Join(binaryDir, "wice")
+		binary = filepath.Join(binaryDir, "wice")
 
 		base, err := FindBaseDir()
 		if err != nil {

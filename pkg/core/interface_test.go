@@ -45,7 +45,7 @@ var _ = Describe("interface", func() {
 		// 			},
 		// 		}
 
-		// 		f, err := os.OpenFile(path.Join(cfgPath, fmt.Sprintf("%s.conf", intfName)), os.O_CREATE|os.O_WRONLY, 0755)
+		// 		f, err := os.OpenFile(filepath.Join(cfgPath, fmt.Sprintf("%s.conf", intfName)), os.O_CREATE|os.O_WRONLY, 0755)
 		// 		Expect(err).To(Succeed())
 
 		// 		err = wgCfg.Dump(f)
