@@ -28,10 +28,13 @@ builds:
   goos:
   - linux
   - darwin
+  - windows
+
   goarch:
   - amd64
   - arm64
   - arm
+  
   goarm:
   - "6"
   - "7"
