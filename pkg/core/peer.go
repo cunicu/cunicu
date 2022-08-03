@@ -61,9 +61,9 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 func (p *Peer) String() string {
 	if p.Name != "" {
 		return fmt.Sprintf("%s[%s]", p.Name, p.PublicKey().String())
-	} else {
-		return fmt.Sprintf("[%s]", p.PublicKey().String())
 	}
+
+	return fmt.Sprintf("[%s]", p.PublicKey().String())
 }
 
 // PublicKey returns the Curve25199 public key of the WireGuard peer

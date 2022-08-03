@@ -28,6 +28,7 @@ func readLines(fn string) ([]string, error) {
 }
 
 func writeLines(fn string, lines []string) error {
+	//#nosec G302 -- /etc/hosts must be world readable
 	//#nosec G304 -- Filename is hard coded.
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {

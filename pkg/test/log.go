@@ -36,7 +36,9 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	outputPaths := []string{"ginkgo:"}
 
 	if truncate {
-		os.Truncate(fn, 0)
+		if err := os.Truncate(fn, 0); err != nil {
+			panic(err)
+		}
 	}
 
 	if fn != "" {
