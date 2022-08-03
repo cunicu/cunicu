@@ -6,17 +6,17 @@ import (
 	"strings"
 )
 
-type host struct {
+type Host struct {
 	IP      net.IP
 	Names   []string
 	Comment string
 }
 
-func ParseHost(line string) (host, error) {
+func ParseHost(line string) (Host, error) {
 	tokenStrs := strings.Split(line, "#")
 	ipNameStrs := strings.Fields(tokenStrs[0])
 
-	h := host{}
+	h := Host{}
 
 	if len(tokenStrs) > 1 {
 		h.Comment = strings.TrimSpace(tokenStrs[1])
@@ -35,7 +35,7 @@ func ParseHost(line string) (host, error) {
 	return h, nil
 }
 
-func (h *host) Line() (string, error) {
+func (h *Host) Line() (string, error) {
 	parts := []string{
 		h.IP.String(),
 	}

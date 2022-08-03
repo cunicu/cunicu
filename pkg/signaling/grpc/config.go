@@ -47,6 +47,7 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	} else {
 		// Use system certificate store
 		cfg := &tls.Config{
+			//#nosec G402 -- Users should have the freedom to disable verification for self-signed certificates
 			InsecureSkipVerify: skipVerify,
 		}
 		creds = credentials.NewTLS(cfg)

@@ -34,8 +34,8 @@ func New(w *watcher.Watcher) (*HostsSynchronization, error) {
 	return s, nil
 }
 
-func (s *HostsSynchronization) hosts() []host {
-	hosts := []host{}
+func (s *HostsSynchronization) hosts() []Host {
+	hosts := []Host{}
 
 	for _, i := range s.watcher.Interfaces {
 		for _, p := range i.Peers {
@@ -46,7 +46,7 @@ func (s *HostsSynchronization) hosts() []host {
 			// We use a shorted version of the public key as a DNS name here
 			pkName := p.PublicKey().String()[:8]
 
-			h := host{
+			h := Host{
 				IP:    p.PublicKey().IPv6Address().IP,
 				Names: []string{pkName},
 				Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
@@ -84,11 +84,12 @@ func (s *HostsSynchronization) updateHostsFile() error {
 	// Add new hosts
 	hosts := s.hosts()
 	for _, h := range hosts {
-		if line, err := h.Line(); err != nil {
+		line, err := h.Line()
+		if err != nil {
 			return err
-		} else {
-			lines = append(lines, line)
 		}
+
+		lines = append(lines, line)
 	}
 
 	// Remove double new lines
