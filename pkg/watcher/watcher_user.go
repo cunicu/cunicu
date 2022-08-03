@@ -8,6 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"go.uber.org/zap"
+	"riasc.eu/wice/pkg/wg"
 )
 
 func normalizeSocketName(name string) string {
@@ -21,9 +22,9 @@ func (w *Watcher) watchUser() error {
 		return fmt.Errorf("failed to create fsnotify watcher: %w", err)
 	}
 
-	if _, err := os.Stat(wireguardSockDir); !os.IsNotExist(err) {
-		if err := watcher.Add(wireguardSockDir); err != nil {
-			return fmt.Errorf("failed to watch %s: %w", wireguardSockDir, err)
+	if _, err := os.Stat(wg.SocketPath); !os.IsNotExist(err) {
+		if err := watcher.Add(wg.SocketPath); err != nil {
+			return fmt.Errorf("failed to watch %s: %w", wg.SocketPath, err)
 		}
 	}
 

@@ -2,25 +2,11 @@ package device
 
 import (
 	"net"
-
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 const (
 	RouteProtocol = 98
 )
-
-type Devices []*wgtypes.Device
-
-func (devs *Devices) GetByName(name string) *wgtypes.Device {
-	for _, dev := range *devs {
-		if dev.Name == name {
-			return dev
-		}
-	}
-
-	return nil
-}
 
 type KernelDevice interface {
 	Close() error

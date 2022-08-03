@@ -10,7 +10,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/device"
 	errs "riasc.eu/wice/pkg/errors"
 	ac "riasc.eu/wice/pkg/feat/auto"
 	ep "riasc.eu/wice/pkg/feat/disc/ep"
@@ -232,7 +231,7 @@ func (d *Daemon) Close() error {
 }
 
 func (d *Daemon) CreateInterfacesFromArgs() error {
-	var devs device.Devices
+	var devs wg.Devices
 	devs, err := d.client.Devices()
 	if err != nil {
 		return err
