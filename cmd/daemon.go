@@ -88,10 +88,6 @@ func daemon(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to listen", zap.Error(err))
 	}
 
-	if err := svr.Listen("tcp", cfg.Socket.Address); err != nil {
-		logger.Fatal("Failed to listen", zap.Error(err))
-	}
-
 	// Delay startup until control socket client has un-waited the daemon
 	if cfg.Socket.Wait {
 		svr.Wait()
