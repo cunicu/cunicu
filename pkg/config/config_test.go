@@ -227,7 +227,7 @@ var _ = Describe("use proper default options", func() {
 
 	It("should have a default STUN URL", func() {
 		Expect(c.EndpointDisc.ICE.URLs).To(HaveLen(1))
-		Expect(c.EndpointDisc.ICE.URLs).To(ContainElement(HaveField("Host", "l.google.com")))
+		Expect(c.EndpointDisc.ICE.URLs).To(ContainElement(HaveField("Host", "stun.l.google.com")))
 	})
 })
 
