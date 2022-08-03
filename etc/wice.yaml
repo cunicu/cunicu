@@ -1,4 +1,3 @@
-domain: 0l.de
 watch_interval: 1s
 community: "some-common-password"
 
@@ -7,12 +6,7 @@ backends:
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
 
 # WireGuard settings
-wireguard:
-  # Use wg / wg-quick configuration files
-  config:
-      path: /etc/wireguard
-      sync: false
-    
+wireguard:  
   # Create WireGuard interfaces using bundled wireguard-go Userspace implementation
   # This will be the default if there is no WireGuard kernel module present.
   userspace: false
@@ -38,21 +32,29 @@ socket:
   # Mostly useful for testing automation
   wait: false
 
+# Synchronize WireGuard interface configurations with wg(8) config-files.
+config_sync:
+  enabled: false
+  
+  # Directory where Wireguard configuration files are located.
+  # We expect the same format as used by wg(8) and wg-quick(8).
+  # Filenames must match the interface name with a '.conf' suffix.
+  path: /etc/wireguard
+
+  # Watch the configuration files for changes and apply them accordingly.
+  watch: false
+  
+# Synchronize WireGuard AllowedIPs with Kernel routing table
 route_sync:
   enabled: true
 
   table: main
 
-config_sync:
-  enabled: true
-
-  watch: true
-
-# Endpoint Discovery
+# Discover the WireGuard endpoint of peers
 endpoint_disc:
   enabled: true
 
-  # Interactive Connectivity Establishment
+  # Interactive Connectivity Establishment parameters
   ice:
     # A list of STUN and TURN servers used by ICE
     urls:
@@ -67,7 +69,7 @@ endpoint_disc:
     insecure_skip_verify: false
 
     # Limit available network and candidate types
-    network-types: [udp4, udp6, tcp4, tcp6]
+    network_types: [udp4, udp6, tcp4, tcp6]
     candidate_types: [host, srflx, prflx ,relay]
 
     # Regular expression whitelist of interfaces which are used to gather ICE candidates.

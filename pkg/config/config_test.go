@@ -262,7 +262,7 @@ var _ = Describe("dump", func() {
 	})
 })
 
-var _ = It("can parse the default config file", func() {
+var _ = It("can parse the example config file", func() {
 	_, err := config.ParseArgs("--config", "../../etc/wice.yaml")
 	Expect(err).To(Succeed())
 })
