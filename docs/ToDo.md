@@ -31,3 +31,5 @@ Please also have a look at the current [GitHub issues](https://github.com/stv0g/
 -   Use mermaid actor diagram for signaling docs
 
 -   Use RTT & packet loss for selecting ICE relay candidates
+
+-   Move all the ToDo in this document to GitHub issues 
