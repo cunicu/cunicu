@@ -2,7 +2,7 @@ watch_interval: 1s
 community: "some-common-password"
 
 backends:
-- grpc://localhost:8080?insecure=true
+- grpc://localhost:8080?insecure=true&skip_verify=true
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
 
 # WireGuard settings
@@ -58,7 +58,7 @@ endpoint_disc:
   ice:
     # A list of STUN and TURN servers used by ICE
     urls:
-    - stun:l.google.com:19302
+    - stun:stun.l.google.com:19302
 
     # Credentials for STUN/TURN servers configured above
     username: ""
