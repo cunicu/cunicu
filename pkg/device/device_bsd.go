@@ -1,4 +1,4 @@
-// go:build darwin || dragonfly || freebsd || netbsd
+// go:build darwin || freebsd
 
 package device
 
