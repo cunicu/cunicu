@@ -35,13 +35,14 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 
 	outputPaths := []string{"ginkgo:"}
 
-	if truncate {
-		if err := os.Truncate(fn, 0); err != nil {
-			panic(err)
-		}
-	}
-
 	if fn != "" {
+		// Truncate log file if requested
+		if truncate {
+			//#nosec G104 -- May fail if file does not exist yet
+			os.Truncate(fn, 0)
+		}
+
+		// Create parent directories for log file
 		if path := path.Dir(fn); path != "" {
 			if err := os.MkdirAll(path, 0750); err != nil {
 				panic(err)
