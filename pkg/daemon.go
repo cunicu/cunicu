@@ -152,8 +152,12 @@ func (d *Daemon) setupFeatures() error {
 }
 
 func (d *Daemon) Run() {
+	if err := wg.CleanupUserSockets(); err != nil {
+		d.logger.Fatal("Failed to cleanup stale sockets", zap.Error(err))
+	}
+
 	if err := d.CreateInterfacesFromArgs(); err != nil {
-		d.logger.Fatal("failed to create interfaces", zap.Error(err))
+		d.logger.Fatal("Failed to create interfaces", zap.Error(err))
 	}
 
 	go d.Watcher.Run()
