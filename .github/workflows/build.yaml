@@ -59,7 +59,7 @@ jobs:
 
         - target_os: darwin
           target_arch: arm64
-          host_os: dawrin
+          host_os: darwin
           host_arch: amd64
           runner: macos-latest
 
@@ -138,7 +138,7 @@ jobs:
       run: staticcheck ./...
 
     - name: Run root-less tests
-      if: ${{ matrix.target_arch == 'amd64' }}
+      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
       run: make tests
 
     # - name: Run tests requiring root access
