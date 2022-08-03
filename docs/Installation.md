@@ -12,8 +12,8 @@ These binary versions can be manually downloaded and installed.
 
 1. [Download your desired version](https://github.com/stv0g/wice/releases)
 2. Unzip it: `gunzip wice_0.0.1_linux_amd64.gz`
-3. Find the `wice` binary in the unpacked directory, and move it to its desired destination: `mv wice /usr/local/bin/`
-5. Make the `wice` binary executable: `chmod +x /usr/local/bin/wice`
+3. Move the unzipped binary to its desired destination: `mv wice_0.0.1_linux_amd64 /usr/local/bin/wice`
+5. Make it executable: `chmod +x /usr/local/bin/wice`
 6. From there, you should be able to run the client and add the stable repo: `wice help`.
 
 **Note:** ɯice automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
