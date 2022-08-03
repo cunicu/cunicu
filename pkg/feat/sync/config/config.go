@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
@@ -48,7 +49,7 @@ func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, 
 
 // OnInterfaceAdded is a handler which is called whenever an interface has been added
 func (s *ConfigSynchronization) OnInterfaceAdded(i *core.Interface) {
-	cfg := path.Join(s.cfgPath, fmt.Sprintf("%s.conf", i.Name()))
+	cfg := filepath.Join(s.cfgPath, fmt.Sprintf("%s.conf", i.Name()))
 	if err := i.SyncConfig(cfg); err != nil && !errors.Is(err, os.ErrNotExist) {
 		s.logger.Fatal("Failed to sync interface configuration",
 			zap.Error(err),
