@@ -151,6 +151,16 @@ func (d *Daemon) setupFeatures() error {
 	return nil
 }
 
+func (d *Daemon) closeFeatures() error {
+	if d.EPDisc != nil {
+		if err := d.EPDisc.Close(); err != nil {
+			return fmt.Errorf("failed to stop endpoint discovery: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func (d *Daemon) Run() {
 	if err := wg.CleanupUserSockets(); err != nil {
 		d.logger.Fatal("Failed to cleanup stale sockets", zap.Error(err))
@@ -203,6 +213,10 @@ func (d *Daemon) Stop() error {
 
 func (d *Daemon) Close() error {
 	if err := d.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
+		return err
+	}
+
+	if err := d.closeFeatures(); err != nil {
 		return err
 	}
 

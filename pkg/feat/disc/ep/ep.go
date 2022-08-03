@@ -1,6 +1,7 @@
 package ep
 
 import (
+	"fmt"
 	"net"
 
 	"go.uber.org/zap"
@@ -45,6 +46,22 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 	w.OnAll(e)
 
 	return e, nil
+}
+
+func (e *EndpointDiscovery) Close() error {
+	for _, p := range e.Peers {
+		if err := p.Close(); err != nil {
+			return fmt.Errorf("failed to close peer: %w", err)
+		}
+	}
+
+	for _, i := range e.Interfaces {
+		if err := i.Close(); err != nil {
+			return fmt.Errorf("failed to close interface: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (e *EndpointDiscovery) OnConnectionStateChange(h OnConnectionStateHandler) {
