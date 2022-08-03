@@ -152,10 +152,10 @@ function downloadBinary() {
   downloadFile "${DIST_FILE}"
 }
 
-# verifyFile verifies the SHA256 checksum of the binary package
+# verifyBinary verifies the SHA256 checksum of the binary package
 # and the GPG signatures for both the package and checksum file
 # (depending on settings in environment).
-function verifyFile() {
+function verifyBinary() {
   if [[ "${VERIFY_CHECKSUM}" == "true" ]]; then
     verifyChecksum
   fi
@@ -166,8 +166,8 @@ function verifyFile() {
   fi
 }
 
-# installFile installs the wice binary.
-function installFile() {
+# installBinary installs the wice binary.
+function installBinary() {
   gunzip -c "${TMP_ROOT}/${DIST_FILE}" > "${TMP_ROOT}/${BINARY_NAME}"
 
   runAsRoot cp "${TMP_ROOT}/${BINARY_NAME}" "${INSTALL_DIR}"
@@ -255,15 +255,10 @@ function failTrap() {
 
 # testVersion tests the installed client to make sure it is working.
 function testVersion() {
-  set +e
-  
-  WICE="$(command -v ${BINARY_NAME})"
-  if (( ? != 0 )); then
-    echo -e "${BINARY_NAME} not found. Is ${INSTALL_DIR} on your "'$PATH?'
+  if ! checkInstalledVersion; then
+    echo -e "Failed to install new version. Is ${INSTALL_DIR} in your PATH?"
     exit 1
   fi
-
-  set -e
 }
 
 # showHelp provides possible cli installation arguments
@@ -332,9 +327,9 @@ checkDesiredVersion
 
 if ! checkInstalledVersion; then
   downloadBinary
-  verifyFile
-  installFile
+  verifyBinary
+  installBinary
+  testVersion
 fi
 
-testVersion
 cleanup
