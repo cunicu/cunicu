@@ -163,6 +163,12 @@ docker_manifests:
   - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv6"
   - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv7"
   - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
+- name_template: "ghcr.io/stv0g/{{ .ProjectName }}:latest"
+  image_templates:
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-amd64"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv6"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv7"
+  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
