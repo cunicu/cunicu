@@ -68,8 +68,6 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoCo
 func (s *AutoConfig) OnInterfaceAdded(i *core.Interface) {
 	logger := s.logger.With(zap.String("intf", i.Name()))
 
-	i.OnPeer(s)
-
 	if err := s.fixupInterface(i); err != nil {
 		logger.Error("Failed to fix interface", zap.Error(err))
 	}
