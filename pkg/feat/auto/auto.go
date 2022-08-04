@@ -18,7 +18,7 @@ import (
 	"riasc.eu/wice/pkg/wg"
 )
 
-type AutoConfiguration struct {
+type AutoConfig struct {
 	client *wgctrl.Client
 	config *config.Config
 
@@ -53,8 +53,8 @@ func deleteLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
 	return nil
 }
 
-func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoConfiguration, error) {
-	s := &AutoConfiguration{
+func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoConfig, error) {
+	s := &AutoConfig{
 		client: client,
 		config: cfg,
 		logger: zap.L().Named("auto"),
@@ -65,7 +65,7 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoCo
 	return s, nil
 }
 
-func (s *AutoConfiguration) OnInterfaceAdded(i *core.Interface) {
+func (s *AutoConfig) OnInterfaceAdded(i *core.Interface) {
 	logger := s.logger.With(zap.String("intf", i.Name()))
 
 	i.OnPeer(s)
@@ -85,9 +85,9 @@ func (s *AutoConfiguration) OnInterfaceAdded(i *core.Interface) {
 	}
 }
 
-func (s *AutoConfiguration) OnInterfaceRemoved(i *core.Interface) {}
+func (s *AutoConfig) OnInterfaceRemoved(i *core.Interface) {}
 
-func (s *AutoConfiguration) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
+func (s *AutoConfig) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 
 	// Update link-local addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
@@ -104,7 +104,7 @@ func (s *AutoConfiguration) OnInterfaceModified(i *core.Interface, old *wg.Devic
 	}
 }
 
-func (s *AutoConfiguration) OnPeerAdded(p *core.Peer) {
+func (s *AutoConfig) OnPeerAdded(p *core.Peer) {
 	logger := s.logger.With(
 		zap.String("intf", p.Interface.Name()),
 		zap.Any("peer", p.PublicKey()))
@@ -125,14 +125,14 @@ func (s *AutoConfiguration) OnPeerAdded(p *core.Peer) {
 	}
 }
 
-func (s *AutoConfiguration) OnPeerRemoved(p *core.Peer) {}
+func (s *AutoConfig) OnPeerRemoved(p *core.Peer) {}
 
-func (s *AutoConfiguration) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (s *AutoConfig) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 
 }
 
 // fixupInterface fixes the WireGuard device configuration by applying missing settings
-func (s *AutoConfiguration) fixupInterface(i *core.Interface) error {
+func (s *AutoConfig) fixupInterface(i *core.Interface) error {
 	cfg := wgtypes.Config{}
 	logger := s.logger.With(zap.String("intf", i.Name()))
 
