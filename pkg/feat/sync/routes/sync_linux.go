@@ -1,13 +1,43 @@
 package routes
 
 import (
+	"errors"
+	"net/netip"
+	"syscall"
+
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
 )
 
-func (s *RouteSynchronization) syncKernel() {
+func (s *RouteSync) removeKernel(p *core.Peer) error {
+	// TODO: Handle IPv4 routes
+
+	pk := p.PublicKey()
+	gwV4, _ := netip.AddrFromSlice(pk.IPv4Address().IP)
+	gwV6, _ := netip.AddrFromSlice(pk.IPv6Address().IP)
+
+	routes, err := netlink.RouteList(nil, unix.AF_INET6)
+	if err != nil {
+		s.logger.Error("Failed to get routes from kernel", zap.Error(err))
+	}
+
+	for _, route := range routes {
+		gw, _ := netip.AddrFromSlice(route.Gw)
+		if gwV4.Compare(gw) == 0 || gwV6.Compare(gw) == 0 {
+			if err := p.Interface.KernelDevice.DeleteRoute(route.Dst); err != nil && !errors.Is(err, syscall.ESRCH) {
+				s.logger.Error("Failed to delete route", zap.Error(err))
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *RouteSync) syncKernel() {
 	routes, err := netlink.RouteList(nil, unix.AF_INET6)
 	if err != nil {
 		s.logger.Error("Failed to get routes from kernel", zap.Error(err))
@@ -21,11 +51,11 @@ func (s *RouteSynchronization) syncKernel() {
 	}
 }
 
-func (s *RouteSynchronization) watchKernel() {
+func (s *RouteSync) watchKernel() {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
 
-	if err := netlink.RouteSubscribeWithOptions(rus, nil, netlink.RouteSubscribeOptions{
+	if err := netlink.RouteSubscribeWithOptions(rus, s.stop, netlink.RouteSubscribeOptions{
 		ErrorCallback: func(err error) {
 			errs <- err
 		},
@@ -41,11 +71,14 @@ func (s *RouteSynchronization) watchKernel() {
 
 		case err := <-errs:
 			s.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
+
+		case <-s.stop:
+			return
 		}
 	}
 }
 
-func (s *RouteSynchronization) handleRouteUpdate(ru *netlink.RouteUpdate) {
+func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) {
 	s.logger.Debug("Received netlink route update", zap.Any("update", ru))
 
 	if ru.Protocol == device.RouteProtocol {
@@ -58,19 +91,14 @@ func (s *RouteSynchronization) handleRouteUpdate(ru *netlink.RouteUpdate) {
 		return
 	}
 
-	if ru.Gw.To16() == nil {
-		s.logger.Debug("Ignoring non-IPv6 gateway", zap.Any("gw", ru.Gw))
-		return
-	}
-
 	if !ru.Gw.IsLinkLocalUnicast() {
 		s.logger.Debug("Ignoring non-link-local gateway", zap.Any("gw", ru.Gw))
 		return
 	}
 
-	hash := *(*gwHashV6)(ru.Gw[8:])
+	gw, _ := netip.AddrFromSlice(ru.Gw)
 
-	p, ok := s.gwMapV6[hash]
+	p, ok := s.gwMap[gw]
 	if !ok {
 		s.logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
 		return
