@@ -128,7 +128,7 @@ func (d *Daemon) setupFeatures() error {
 			return fmt.Errorf("failed to start allowed-ips <-> kernel route synchronization: %w", err)
 		}
 
-		d.logger.Info("Started allowed-ips <-> kernel route synchronization")
+		d.logger.Info("Started route synchronization")
 	}
 
 	if d.config.EndpointDisc.Enabled {
