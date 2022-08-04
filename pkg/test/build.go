@@ -10,7 +10,7 @@ import (
 
 var (
 	// Singleton for compiled ɯice executable
-	binary      string
+	binaryPath  string
 	binaryMutex sync.Mutex
 
 	packageName = "riasc.eu/wice"
@@ -41,12 +41,12 @@ func BuildBinary(coverage bool) (string, error) {
 	binaryMutex.Lock()
 	defer binaryMutex.Unlock()
 
-	if binary == "" {
+	if binaryPath == "" {
 		binaryDir, err := os.MkdirTemp("", "wice-build-*")
 		if err != nil {
 			return "", err
 		}
-		binary = filepath.Join(binaryDir, "wice")
+		binaryPath = filepath.Join(binaryDir, "wice")
 
 		base, err := FindBaseDir()
 		if err != nil {
@@ -57,10 +57,10 @@ func BuildBinary(coverage bool) (string, error) {
 		var cmd *exec.Cmd
 		if coverage {
 			//#nosec G204 -- Just for testing
-			cmd = exec.Command("go", "test", "-o", binary, "-buildvcs=false", "-cover", "-covermode=count", "-coverpkg="+packageName+"/...", "-c", "-tags", "testmain", pkg)
+			cmd = exec.Command("go", "test", "-o", binaryPath, "-buildvcs=false", "-cover", "-covermode=count", "-coverpkg="+packageName+"/...", "-c", "-tags", "testmain", pkg)
 		} else {
 			//#nosec G204 -- Just for testing
-			cmd = exec.Command("go", "build", "-buildvcs=false", "-o", binary, pkg)
+			cmd = exec.Command("go", "build", "-buildvcs=false", "-o", binaryPath, pkg)
 		}
 
 		if out, err := cmd.CombinedOutput(); err != nil {
@@ -68,5 +68,5 @@ func BuildBinary(coverage bool) (string, error) {
 		}
 	}
 
-	return binary, nil
+	return binaryPath, nil
 }
