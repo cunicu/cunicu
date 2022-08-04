@@ -45,18 +45,6 @@ func GenerateSignalingMessage() *signaling.Message {
 	}
 }
 
-func ParseIP(s string) (net.IPNet, error) {
-	ip, netw, err := net.ParseCIDR(s)
-	if err != nil {
-		return net.IPNet{}, err
-	}
-
-	return net.IPNet{
-		IP:   ip,
-		Mask: netw.Mask,
-	}, nil
-}
-
 func Entropy(data []byte) float64 {
 	if len(data) == 0 {
 		return 0
