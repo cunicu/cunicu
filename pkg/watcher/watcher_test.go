@@ -17,6 +17,7 @@ import (
 	"riasc.eu/wice/pkg/test"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
+	"riasc.eu/wice/pkg/wg"
 )
 
 func TestSuite(t *testing.T) {
@@ -90,8 +91,10 @@ var _ = Describe("watcher", func() {
 				oldListenPort := i.ListenPort
 				newListenPort := oldListenPort + 1
 
-				err = i.Configure(wgtypes.Config{
-					ListenPort: &newListenPort,
+				err = i.Configure(&wg.Config{
+					Config: wgtypes.Config{
+						ListenPort: &newListenPort,
+					},
 				})
 				Expect(err).To(Succeed())
 
