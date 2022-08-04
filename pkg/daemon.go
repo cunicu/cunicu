@@ -131,20 +131,20 @@ func (d *Daemon) setupFeatures() error {
 		d.logger.Info("Started route synchronization")
 	}
 
-	if d.config.EndpointDisc.Enabled {
-		if d.EPDisc, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
-			return fmt.Errorf("failed to start endpoint discovery: %w", err)
-		}
-
-		d.logger.Info("Started endpoint discovery")
-	}
-
 	if d.config.HostSync.Enabled {
 		if d.HostsSync, err = hs.New(d.Watcher); err != nil {
 			return fmt.Errorf("failed to start host name synchronization: %w", err)
 		}
 
 		d.logger.Info("Started host name synchronization")
+	}
+
+	if d.config.EndpointDisc.Enabled {
+		if d.EPDisc, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
+			return fmt.Errorf("failed to start endpoint discovery: %w", err)
+		}
+
+		d.logger.Info("Started endpoint discovery")
 	}
 
 	return nil
