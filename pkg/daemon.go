@@ -30,10 +30,10 @@ type Daemon struct {
 
 	// Features
 
-	AutoConfig *ac.AutoConfiguration
-	ConfigSync *cs.ConfigSynchronization
-	HostsSync  *hs.HostsSynchronization
-	RouteSync  *rs.RouteSynchronization
+	AutoConfig *ac.AutoConfig
+	ConfigSync *cs.ConfigSync
+	HostsSync  *hs.HostsSync
+	RouteSync  *rs.RouteSync
 	EPDisc     *ep.EndpointDiscovery
 
 	// Shared

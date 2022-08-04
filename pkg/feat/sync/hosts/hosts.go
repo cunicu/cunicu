@@ -18,15 +18,15 @@ const (
 	hostsPath          = "/etc/hosts"
 )
 
-type HostsSynchronization struct {
+type HostsSync struct {
 	watcher *watcher.Watcher
 	logger  *zap.Logger
 }
 
-func New(w *watcher.Watcher) (*HostsSynchronization, error) {
-	s := &HostsSynchronization{
+func New(w *watcher.Watcher) (*HostsSync, error) {
+	s := &HostsSync{
 		watcher: w,
-		logger:  zap.L().Named("sync.names"),
+		logger:  zap.L().Named("sync.hosts"),
 	}
 
 	w.OnPeer(s)
@@ -34,7 +34,7 @@ func New(w *watcher.Watcher) (*HostsSynchronization, error) {
 	return s, nil
 }
 
-func (s *HostsSynchronization) hosts() []Host {
+func (s *HostsSync) hosts() []Host {
 	hosts := []Host{}
 
 	for _, i := range s.watcher.Interfaces {
@@ -66,7 +66,7 @@ func (s *HostsSynchronization) hosts() []Host {
 	return hosts
 }
 
-func (s *HostsSynchronization) updateHostsFile() error {
+func (s *HostsSync) updateHostsFile() error {
 	lines, err := readLines(hostsPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -104,19 +104,19 @@ func (s *HostsSynchronization) updateHostsFile() error {
 	return nil
 }
 
-func (s *HostsSynchronization) OnPeerAdded(p *core.Peer) {
+func (s *HostsSync) OnPeerAdded(p *core.Peer) {
 	if err := s.updateHostsFile(); err != nil {
 		s.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
-func (s *HostsSynchronization) OnPeerRemoved(p *core.Peer) {
+func (s *HostsSync) OnPeerRemoved(p *core.Peer) {
 	if err := s.updateHostsFile(); err != nil {
 		s.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
-func (s *HostsSynchronization) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (s *HostsSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	// Only update if the name has changed
 	if m.Is(core.PeerModifiedName) {
 		if err := s.updateHostsFile(); err != nil {
