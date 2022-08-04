@@ -39,10 +39,7 @@ func NewServer(d *pkg.Daemon) (*Server, error) {
 
 	s.waitGroup.Add(1)
 
-	s.grpc = grpc.NewServer(
-		grpc.UnaryInterceptor(s.UnaryInterceptor),
-		grpc.StreamInterceptor(s.StreamInterceptor),
-	)
+	s.grpc = grpc.NewServer()
 
 	// Register services
 	s.daemon = NewDaemonServer(s, d)
