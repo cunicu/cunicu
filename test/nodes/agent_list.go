@@ -14,7 +14,7 @@ func (al AgentList) Start(args []any) error {
 	if err := al.ForEachAgentPair(func(a, b *Agent) error {
 		return a.AddWireGuardPeer(b)
 	}); err != nil {
-		return fmt.Errorf("failed to add wireguard peers")
+		return fmt.Errorf("failed to add WireGuard peers: %w", err)
 	}
 
 	if err := al.ForEachAgent(func(a *Agent) error {

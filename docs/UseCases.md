@@ -4,7 +4,7 @@
 
 **Invocation:** `wice`
 
-## Start user-space wireguard daemon
+## Start user-space WireGuard daemon
 
 **Invocation:** `wice wg1`
 
