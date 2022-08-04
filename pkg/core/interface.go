@@ -229,7 +229,7 @@ func (i *Interface) SyncConfig(cfgFilename string) error {
 		return fmt.Errorf("failed to parse configuration: %s", err)
 	}
 
-	if err := i.Configure(cfg.Config); err != nil {
+	if err := i.Configure(cfg); err != nil {
 		return fmt.Errorf("failed to configure interface: %w", err)
 	}
 
@@ -238,13 +238,25 @@ func (i *Interface) SyncConfig(cfgFilename string) error {
 	return nil
 }
 
-func (i *Interface) Configure(cfg wgtypes.Config) error {
-	if err := i.client.ConfigureDevice(i.Name(), cfg); err != nil {
+func (i *Interface) Configure(cfg *wg.Config) error {
+	if err := i.client.ConfigureDevice(i.Name(), cfg.Config); err != nil {
 		return fmt.Errorf("failed to sync interface config: %s", err)
 	}
 
-	// TODO: Emulate wg-quick behavior here?
-	//       E.g. all Pre/Post-Up/Down scripts
+	for _, addr := range cfg.Address {
+		if err := i.KernelDevice.AddAddress(&addr); err != nil {
+			return err
+		}
+	}
+
+	if cfg.MTU != nil {
+		if err := i.KernelDevice.SetMTU(*cfg.MTU); err != nil {
+			return err
+		}
+	}
+
+	// TODO: Emulate more wg-quick behavior here
+	//       E.g. Pre/Post-Up/Down scripts, Table, DNS
 
 	return nil
 }
