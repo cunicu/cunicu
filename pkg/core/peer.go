@@ -127,7 +127,7 @@ func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 		return fmt.Errorf("failed to update peer endpoint: %w", err)
 	}
 
-	p.logger.Debug("Peer endpoint updated", zap.Any("endpoint", addr))
+	p.logger.Debug("Peer endpoint updated", zap.Any("ep", addr))
 
 	return nil
 }
@@ -166,7 +166,7 @@ func (p *Peer) RemoveAllowedIP(a *net.IPNet) error {
 		},
 	}
 
-	p.logger.Debug("Adding new allowed IP", zap.String("ip", a.String()))
+	p.logger.Debug("Remove allowed IP", zap.String("ip", a.String()))
 
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }

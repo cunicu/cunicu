@@ -299,10 +299,14 @@ func NewInterface(wgDev *wgtypes.Device, kernelDev device.KernelDevice, client *
 		onPeer:     []PeerHandler{},
 	}
 
+	i.logger.Info("Added new interface",
+		zap.String("pk", i.PrivateKey().PublicKey().String()),
+		zap.String("type", i.Type.String()),
+		zap.Int("num_peers", len(i.Peers)),
+	)
+
 	// We purposefully prune the peer list here for an full initial sync of all peers
 	i.Device.Peers = nil
-
-	i.logger.Info("Added new interface")
 
 	return i, nil
 }
