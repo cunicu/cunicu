@@ -7,13 +7,12 @@ import (
 	"math/rand"
 	"net"
 	"net/url"
-	"os"
 	"os/exec"
 	"time"
 
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/test"
+	"golang.org/x/sys/unix"
 )
 
 const portMin = 1<<15 + 1<<14
@@ -29,8 +28,8 @@ type GrpcSignalingNode struct {
 	logger *zap.Logger
 }
 
-func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
-	h, err := n.AddHost(name)
+func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (SignalingNode, error) {
+	h, err := n.AddHost(name, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -44,28 +43,20 @@ func NewGrpcSignalingNode(n *g.Network, name string) (SignalingNode, error) {
 	return t, nil
 }
 
-func (s *GrpcSignalingNode) Start(_ ...any) error {
+func (s *GrpcSignalingNode) Start(binary, dir string, extraArgs ...any) error {
 	var err error
-	var logPath = fmt.Sprintf("logs/%s.log", s.Name())
 
-	if err := os.RemoveAll(logPath); err != nil {
-		return fmt.Errorf("failed to remove old log file: %w", err)
-	}
+	logPath := fmt.Sprintf("%s.log", s.Name())
 
-	var args = []any{
+	args := []any{
 		"signal",
 		"--log-level", "debug",
 		"--log-file", logPath,
-		"--log-file", logPath,
 		"--listen", fmt.Sprintf(":%d", s.port),
 	}
+	args = append(args, extraArgs...)
 
-	cmd, err := test.BuildBinary(false)
-	if err != nil {
-		return fmt.Errorf("failed to build ɯice: %w", err)
-	}
-
-	if _, _, s.Command, err = s.Host.Start(cmd, args...); err != nil {
+	if _, _, s.Command, err = s.StartWith(binary, nil, dir, args...); err != nil {
 		s.logger.Error("Failed to start", zap.Error(err))
 	}
 
@@ -81,7 +72,17 @@ func (s *GrpcSignalingNode) Stop() error {
 		return nil
 	}
 
-	return s.Command.Process.Kill()
+	s.logger.Info("Stopping signaling node")
+
+	if err := s.Command.Process.Signal(unix.SIGTERM); err != nil {
+		return err
+	}
+
+	if _, err := s.Command.Process.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *GrpcSignalingNode) Close() error {

@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
@@ -29,7 +30,7 @@ func SetupLogging() *zap.Logger {
 func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	if err := zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
 		return &writerWrapper{ginkgo.GinkgoWriter}, nil
-	}); err != nil {
+	}); err != nil && !strings.Contains(err.Error(), "already registered") {
 		panic(err)
 	}
 

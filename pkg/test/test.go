@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"math"
 	"math/big"
-	"net"
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -39,8 +38,8 @@ func GenerateSignalingMessage() *signaling.Message {
 	}
 
 	return &signaling.Message{
-		Session: &pb.SessionDescription{
-			Epoch: r.Int64(),
+		Candidate: &pb.Candidate{
+			Port: int32(r.Int64()),
 		},
 	}
 }

@@ -10,15 +10,10 @@ import (
 
 type AgentList []*Agent
 
-func (al AgentList) Start(args []any) error {
-	if err := al.ForEachAgentPair(func(a, b *Agent) error {
-		return a.AddWireGuardPeer(b)
-	}); err != nil {
-		return fmt.Errorf("failed to add WireGuard peers: %w", err)
-	}
-
+func (al AgentList) Start(binary, dir string, extraArgs ...any) error {
+	// Start all agents
 	if err := al.ForEachAgent(func(a *Agent) error {
-		return a.Start(args)
+		return a.Start(binary, dir, extraArgs...)
 	}); err != nil {
 		return fmt.Errorf("failed to start agent: %w", err)
 	}
@@ -26,20 +21,20 @@ func (al AgentList) Start(args []any) error {
 	return nil
 }
 
-func (al AgentList) Stop() error {
+func (al AgentList) Close() error {
 	return al.ForEachAgent(func(a *Agent) error {
-		return a.Stop()
+		return a.Close()
 	})
 }
 
 func (al AgentList) ForEachAgent(cb func(a *Agent) error) error {
 	g := errgroup.Group{}
 
-	for _, node := range al {
-		n := node
+	for _, a := range al {
+		a := a
 
 		g.Go(func() error {
-			return cb(n)
+			return cb(a)
 		})
 	}
 
@@ -52,11 +47,11 @@ func (al AgentList) ForEachAgentPair(cb func(a, b *Agent) error) error {
 	for _, n := range al {
 		for _, p := range al {
 			if n != p {
-				peer := p
-				node := n
+				p := p // avoid aliasing
+				n := n
 
 				g.Go(func() error {
-					return cb(node, peer)
+					return cb(n, p)
 				})
 			}
 		}
@@ -65,14 +60,44 @@ func (al AgentList) ForEachAgentPair(cb func(a, b *Agent) error) error {
 	return g.Wait()
 }
 
+func (al AgentList) ForEachInterfacePair(cb func(a, b *WireGuardInterface) error) error {
+	g := errgroup.Group{}
+
+	for _, n := range al {
+		for _, p := range al {
+			if n != p {
+				for _, ni := range n.WireGuardInterfaces {
+					for _, pi := range p.WireGuardInterfaces {
+						pi := pi // avoid aliasing
+						ni := ni
+
+						g.Go(func() error {
+							return cb(ni, pi)
+						})
+					}
+				}
+			}
+		}
+	}
+
+	return g.Wait()
+}
+
 func (al AgentList) WaitConnected() error {
-	return al.ForEachAgentPair(func(a, b *Agent) error {
-		return a.WaitReady(b)
+	return al.ForEachInterfacePair(func(a, b *WireGuardInterface) error {
+		return a.WaitConnectionReady(b)
 	})
 }
 
 func (al AgentList) PingPeers() error {
-	return al.ForEachAgentPair(func(a, b *Agent) error {
-		return a.PingWireGuardPeer(b)
+	return al.ForEachInterfacePair(func(a, b *WireGuardInterface) error {
+		return a.PingPeer(b)
+	})
+}
+
+func (al AgentList) Dump() {
+	al.ForEachAgent(func(a *Agent) error {
+		a.Dump()
+		return nil
 	})
 }

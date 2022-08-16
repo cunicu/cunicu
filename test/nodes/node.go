@@ -9,7 +9,7 @@ import (
 type Node interface {
 	g.Node
 
-	Start(args ...any) error
+	Start(binary, dir string, args ...any) error
 	Stop() error
 	Close() error
 }

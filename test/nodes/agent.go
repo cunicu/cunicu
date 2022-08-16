@@ -5,69 +5,71 @@ package nodes
 import (
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
-	"github.com/multiformats/go-multiaddr"
-	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
-	gopt "github.com/stv0g/gont/pkg/options"
-	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
+	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
-	"riasc.eu/wice/pkg/test"
 	"riasc.eu/wice/pkg/wg"
 )
 
-type AgentParams struct {
-	Arguments []any
+type AgentOption interface {
+	Apply(a *Agent)
 }
 
-// Agent is a host running ɯice
+// Agent is a host running the ɯice daemon.
+//
+// Each agent can have one or more WireGuard interfaces configured which are managed
+// by a single daemon.
 type Agent struct {
 	*g.Host
-
-	Address net.IPNet
 
 	Command *exec.Cmd
 	Client  *rpc.Client
 
-	WireGuardPrivateKey    crypto.Key
-	WireGuardClient        *wgctrl.Client
-	WireGuardInterfaceName string
-	WireGuardListenPort    int
+	WireGuardClient *wgctrl.Client
 
-	ListenAddresses []multiaddr.Multiaddr
+	ExtraArgs           []any
+	WireGuardInterfaces []*WireGuardInterface
 
-	logger zap.Logger
+	// Path of a wg-quick(8) configuration file describing the interface rather than a kernel device
+	// Will only be created if non-empty
+	WireGuardConfigPath string
+
+	logger *zap.Logger
 }
 
-func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Agent, error) {
-
-	// We do not want to log the sub-processes output since we already redirect it to a file
-	opts = append(opts, gopt.LogToDebug(false))
-
+func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	h, err := m.AddHost(name, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create host: %w", err)
 	}
 
 	a := &Agent{
-		Host:            h,
-		Address:         addr,
-		ListenAddresses: []multiaddr.Multiaddr{},
+		Host: h,
 
-		WireGuardListenPort:    51822,
-		WireGuardInterfaceName: "wg0",
+		WireGuardInterfaces: []*WireGuardInterface{},
+		WireGuardConfigPath: wg.ConfigPath,
+		ExtraArgs:           []any{},
 
-		logger: *zap.L().Named("agent." + name),
+		logger: zap.L().Named("agent." + name),
 	}
 
+	// Apply agent options
+	for _, opt := range opts {
+		if aopt, ok := opt.(AgentOption); ok {
+			aopt.Apply(a)
+		}
+	}
+
+	// Get wgctrl handle in host netns
 	if err := a.RunFunc(func() error {
 		a.WireGuardClient, err = wgctrl.New()
 		return err
@@ -75,42 +77,19 @@ func NewAgent(m *g.Network, name string, addr net.IPNet, opts ...g.Option) (*Age
 		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
 	}
 
-	if err := a.AddWireGuardInterface(); err != nil {
-		return nil, fmt.Errorf("failed to create wireguard interface: %w", err)
+	// Create and configure WireGuard interfaces
+	if err := a.ConfigureWireGuardInterfaces(); err != nil {
+		return nil, err
 	}
 
 	return a, nil
 }
 
-func NewAgents(n *g.Network, numNodes int, opts ...g.Option) (AgentList, error) {
-	al := AgentList{}
-
-	for i := 1; i <= numNodes; i++ {
-		addr := net.IPNet{
-			IP:   net.IPv4(172, 16, 0, byte(i)),
-			Mask: net.IPv4Mask(255, 255, 0, 0),
-		}
-
-		node, err := NewAgent(n, fmt.Sprintf("n%d", i), addr, opts...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create node: %w", err)
-		}
-
-		al = append(al, node)
-	}
-
-	return al, nil
-}
-
-func (a *Agent) Start(extraArgs []any) error {
+func (a *Agent) Start(binary, dir string, extraArgs ...any) error {
 	var err error
 
 	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
-	var logPath = fmt.Sprintf("logs/%s.log", a.Name())
-
-	if err := os.RemoveAll(logPath); err != nil {
-		return fmt.Errorf("failed to remove old log file: %w", err)
-	}
+	var logPath = fmt.Sprintf("%s.log", a.Name())
 
 	args := []any{
 		"daemon",
@@ -118,20 +97,18 @@ func (a *Agent) Start(extraArgs []any) error {
 		"--socket-wait",
 		"--log-file", logPath,
 		"--log-level", "debug",
+		"--config-path", a.WireGuardConfigPath,
 	}
+	args = append(args, a.ExtraArgs...)
 	args = append(args, extraArgs...)
 
 	if err := os.RemoveAll(sockPath); err != nil {
 		log.Fatal(err)
 	}
 
-	go func() {
-		var out []byte
-		if out, a.Command, err = test.RunWice(a.Host, args...); err != nil {
-			a.logger.Error("Failed to start", zap.Error(err))
-			os.Stdout.Write(out)
-		}
-	}()
+	if _, _, a.Command, err = a.StartWith(binary, nil, dir, args...); err != nil {
+		a.logger.Error("Failed to start", zap.Error(err))
+	}
 
 	if a.Client, err = rpc.Connect(sockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
@@ -145,7 +122,17 @@ func (a *Agent) Stop() error {
 		return nil
 	}
 
-	return a.Command.Process.Kill()
+	a.logger.Info("Stopping agent node")
+
+	if err := a.Command.Process.Signal(unix.SIGTERM); err != nil {
+		return err
+	}
+
+	if _, err := a.Command.Process.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *Agent) Close() error {
@@ -155,92 +142,7 @@ func (a *Agent) Close() error {
 		}
 	}
 
-	return a.Stop()
-}
-
-func (a *Agent) AddWireGuardInterface() error {
-	var err error
-
-	a.WireGuardInterfaceName = "wg0"
-	a.WireGuardPrivateKey, err = crypto.GeneratePrivateKey()
-	if err != nil {
-		return fmt.Errorf("failed to generate private key: %w", err)
-	}
-
-	l := &netlink.Wireguard{
-		LinkAttrs: netlink.NewLinkAttrs(),
-	}
-	l.LinkAttrs.Name = a.WireGuardInterfaceName
-
-	nlh := a.NetlinkHandle()
-
-	if err := nlh.LinkAdd(l); err != nil {
-		return fmt.Errorf("failed to create link: %w", err)
-	}
-
-	if err := nlh.LinkSetUp(l); err != nil {
-		return fmt.Errorf("failed to set link up: %w", err)
-	}
-
-	nlAddr := netlink.Addr{
-		IPNet: &a.Address,
-	}
-
-	if err := nlh.AddrAdd(l, &nlAddr); err != nil {
-		return fmt.Errorf("failed to assign IP address: %w", err)
-	}
-
-	pk := wgtypes.Key(a.WireGuardPrivateKey)
-
-	cfg := wgtypes.Config{
-		PrivateKey: &pk,
-		ListenPort: &a.WireGuardListenPort,
-	}
-
-	return a.ConfigureWireGuardInterface(cfg)
-}
-
-func (a *Agent) AddWireGuardPeer(peer *Agent) error {
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				PublicKey: wgtypes.Key(peer.WireGuardPrivateKey.PublicKey()),
-				AllowedIPs: []net.IPNet{
-					{
-						IP:   peer.Address.IP,
-						Mask: net.CIDRMask(32, 32),
-					},
-				},
-			},
-		},
-	}
-
-	return a.ConfigureWireGuardInterface(cfg)
-}
-
-func (a *Agent) ConfigureWireGuardInterface(cfg wgtypes.Config) error {
-	if err := a.RunFunc(func() error {
-		return a.WireGuardClient.ConfigureDevice(a.WireGuardInterfaceName, cfg)
-	}); err != nil {
-		return fmt.Errorf("failed to configure WireGuard link: %w", err)
-	}
-
-	return nil
-}
-
-func (a *Agent) WaitReady(p *Agent) error {
-	a.Client.WaitForPeerConnectionState(p.WireGuardPrivateKey.PublicKey(), ice.ConnectionStateConnected)
-
-	return nil
-}
-
-func (a *Agent) PingWireGuardPeer(peer *Agent) error {
-	os.Setenv("LC_ALL", "C") // fix issues with parsing of -W and -i options
-
-	if out, _, err := a.Run("ping", "-c", 5, "-w", 20, "-i", 0.1, peer.Address.IP); err != nil {
-		os.Stdout.Write(out)
-		os.Stdout.Sync()
-
+	if err := a.Stop(); err != nil {
 		return err
 	}
 
@@ -248,19 +150,16 @@ func (a *Agent) PingWireGuardPeer(peer *Agent) error {
 }
 
 func (a *Agent) WaitBackendReady() error {
-	evt := a.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
+	a.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
 
-	if be, ok := evt.Event.(*pb.Event_BackendReady); ok {
-		for _, la := range be.BackendReady.ListenAddresses {
-			ma, err := multiaddr.NewMultiaddr(la)
-			if err != nil {
-				return fmt.Errorf("failed to decode listen address: %w", err)
-			}
+	return nil
+}
 
-			a.ListenAddresses = append(a.ListenAddresses, ma)
+func (a *Agent) ConfigureWireGuardInterfaces() error {
+	for _, i := range a.WireGuardInterfaces {
+		if err := i.Create(); err != nil {
+			return err
 		}
-	} else {
-		zap.L().Warn("Missing signaling details")
 	}
 
 	return nil
@@ -289,4 +188,14 @@ func (a *Agent) Dump() {
 
 	a.DumpWireGuardInterfaces()
 	a.Run("ip", "addr", "show")
+}
+
+func (a *Agent) Shadowed(path string) string {
+	for _, ed := range a.EmptyDirs {
+		if strings.HasPrefix(path, ed) {
+			return filepath.Join(a.BasePath, "files", path)
+		}
+	}
+
+	return path
 }

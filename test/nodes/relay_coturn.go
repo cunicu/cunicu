@@ -12,6 +12,8 @@ import (
 
 	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
+	"go.uber.org/zap"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -24,13 +26,17 @@ type CoturnNode struct {
 	Command *exec.Cmd
 
 	Config map[string]string
+
+	logger *zap.Logger
 }
 
-func NewCoturnNode(n *g.Network, name string) (RelayNode, error) {
-	h, err := n.AddHost(name)
+func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (RelayNode, error) {
+	h, err := n.AddHost(name, opts...)
 	if err != nil {
 		return nil, err
 	}
+
+	logPath := fmt.Sprintf("%s.log", name)
 
 	t := &CoturnNode{
 		Host: h,
@@ -43,11 +49,12 @@ func NewCoturnNode(n *g.Network, name string) (RelayNode, error) {
 			"new-log-timestamp":        "",
 			"new-log-timestamp-format": "%H:%M:%S",
 			"log-binding":              "",
-			"log-file":                 fmt.Sprintf("logs/%s.log", name),
+			"log-file":                 logPath,
 			"listening-port":           strconv.Itoa(stunPort),
 			"realm":                    "wice",
 			"cli-password":             "wice",
 		},
+		logger: zap.L().Named("relay." + name),
 	}
 
 	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username(), t.Password())
@@ -63,15 +70,19 @@ func (c *CoturnNode) Password() string {
 	return "password1"
 }
 
-func (c *CoturnNode) Start(_ ...any) error {
+func (c *CoturnNode) Start(binary, dir string, extraArgs ...any) error {
 	var err error
+
+	// TODO:
+	binary = "turnserver"
 
 	// Delete previous log file
 	os.Remove(c.Config["log-file"])
 
-	var args = []any{
+	args := []any{
 		"-n",
 	}
+	args = append(args, extraArgs...)
 
 	for key, value := range c.Config {
 		opt := fmt.Sprintf("--%s", key)
@@ -82,7 +93,7 @@ func (c *CoturnNode) Start(_ ...any) error {
 		args = append(args, opt)
 	}
 
-	if _, _, c.Command, err = c.Host.Start("turnserver", args...); err != nil {
+	if _, _, c.Command, err = c.StartWith(binary, nil, dir, args...); err != nil {
 		return fmt.Errorf("failed to start turnserver: %w", err)
 	}
 
@@ -98,7 +109,17 @@ func (c *CoturnNode) Stop() error {
 		return nil
 	}
 
-	return c.Command.Process.Kill()
+	c.logger.Info("Stopping relay node")
+
+	if err := c.Command.Process.Signal(unix.SIGTERM); err != nil {
+		return err
+	}
+
+	if _, err := c.Command.Process.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *CoturnNode) Close() error {

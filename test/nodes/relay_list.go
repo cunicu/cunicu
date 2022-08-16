@@ -11,23 +11,23 @@ import (
 type RelayList []RelayNode
 
 func AddRelayNodes(n *g.Network, numNodes int, opts ...g.Option) (RelayList, error) {
-	nodes := RelayList{}
+	ns := RelayList{}
 
 	for i := 1; i <= numNodes; i++ {
-		node, err := NewCoturnNode(n, fmt.Sprintf("n%d", i))
+		n, err := NewCoturnNode(n, fmt.Sprintf("n%d", i))
 		if err != nil {
 			return nil, fmt.Errorf("failed to create relay: %w", err)
 		}
 
-		nodes = append(nodes, node)
+		ns = append(ns, n)
 	}
 
-	return nodes, nil
+	return ns, nil
 }
 
-func (nl *RelayList) Start() error {
-	for _, n := range *nl {
-		if err := n.Start(); err != nil {
+func (l RelayList) Start(dir string, extraArgs ...any) error {
+	for _, n := range l {
+		if err := n.Start("", dir, extraArgs...); err != nil {
 			return err
 		}
 	}
@@ -35,9 +35,9 @@ func (nl *RelayList) Start() error {
 	return nil
 }
 
-func (nl *RelayList) Stop() error {
-	for _, n := range *nl {
-		if err := n.Stop(); err != nil {
+func (l RelayList) Close() error {
+	for _, n := range l {
+		if err := n.Close(); err != nil {
 			return err
 		}
 	}
