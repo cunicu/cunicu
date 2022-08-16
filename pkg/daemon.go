@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
 
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/device"
 	errs "riasc.eu/wice/pkg/errors"
 	ac "riasc.eu/wice/pkg/feat/auto"
-	ep "riasc.eu/wice/pkg/feat/disc/ep"
+	ep "riasc.eu/wice/pkg/feat/disc/epice"
 	cs "riasc.eu/wice/pkg/feat/sync/config"
 	hs "riasc.eu/wice/pkg/feat/sync/hosts"
 	rs "riasc.eu/wice/pkg/feat/sync/routes"
@@ -21,8 +20,6 @@ import (
 	"riasc.eu/wice/pkg/wg"
 
 	"riasc.eu/wice/pkg/signaling"
-
-	"go.uber.org/zap/zapio"
 )
 
 type Daemon struct {
@@ -42,6 +39,8 @@ type Daemon struct {
 	client  *wgctrl.Client
 	config  *config.Config
 
+	devices []device.Device
+
 	stop chan any
 
 	logger *zap.Logger
@@ -56,8 +55,8 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	d := &Daemon{
-		config: cfg,
-
+		config:  cfg,
+		devices: []device.Device{},
 		stop:    make(chan any),
 	}
 
@@ -163,8 +162,8 @@ func (d *Daemon) Run() error {
 		return fmt.Errorf("failed to cleanup stale userspace sockets: %w", err)
 	}
 
-	if err := d.CreateInterfacesFromArgs(); err != nil {
-		d.logger.Fatal("Failed to create interfaces", zap.Error(err))
+	if err := d.CreateDevicesFromArgs(); err != nil {
+		return fmt.Errorf("failed to create devices: %w", err)
 	}
 
 	signals := util.SetupSignals(util.SigUpdate)
@@ -229,36 +228,39 @@ func (d *Daemon) Close() error {
 		return fmt.Errorf("failed to close WireGuard client: %w", err)
 	}
 
+	for _, dev := range d.devices {
+		if err := dev.Delete(); err != nil {
+			return fmt.Errorf("failed to delete device: %w", err)
+		}
+	}
+
 	return nil
 }
 
-func (d *Daemon) CreateInterfacesFromArgs() error {
+func (d *Daemon) CreateDevicesFromArgs() error {
 	var devs wg.Devices
-	devs, err := d.client.Devices()
-	if err != nil {
-		return err
+	var err error
+
+	if devs, err = d.client.Devices(); err != nil {
+		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
-	for _, intfName := range d.config.WireGuard.Interfaces {
-		dev := devs.GetByName(intfName)
-		if dev != nil {
-			d.logger.Warn("Interface already exists. Skipping..", zap.Any("intf", intfName))
-			continue
+	for _, devName := range d.config.WireGuard.Interfaces {
+		if !d.config.WireGuard.InterfaceFilter.MatchString(devName) {
+			return fmt.Errorf("device '%s' is not matched by WireGuard interface filter '%s'",
+				devName, d.config.WireGuard.InterfaceFilter.String())
 		}
 
-		i, err := core.CreateInterface(intfName, d.config.WireGuard.Userspace, d.client)
+		if wgdev := devs.GetByName(devName); wgdev != nil {
+			return fmt.Errorf("device '%s' already exists", devName)
+		}
+
+		dev, err := device.NewDevice(devName, d.config.WireGuard.Userspace)
 		if err != nil {
 			return fmt.Errorf("failed to create WireGuard device: %w", err)
 		}
 
-		if d.logger.Core().Enabled(zap.DebugLevel) {
-			d.logger.Debug("Initialized interface:")
-			if err := i.DumpConfig(&zapio.Writer{Log: d.logger}); err != nil {
-				return err
-			}
-		}
-
-		d.Watcher.Interfaces[i.Name()] = i
+		d.devices = append(d.devices, dev)
 	}
 
 	return nil

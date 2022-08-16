@@ -10,6 +10,7 @@ const (
 
 type KernelDevice interface {
 	Close() error
+	Delete() error
 
 	// Getter
 
@@ -28,4 +29,17 @@ type KernelDevice interface {
 
 	DeleteAddress(ip *net.IPNet) error
 	DeleteRoute(dst *net.IPNet) error
+}
+
+func NewDevice(name string, user bool) (kernelDev Device, err error) {
+	if user {
+		kernelDev, err = NewUserDevice(name)
+	} else {
+		kernelDev, err = NewKernelDevice(name)
+	}
+	if err != nil {
+		return
+	}
+
+	return kernelDev, nil
 }

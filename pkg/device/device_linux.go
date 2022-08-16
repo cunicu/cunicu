@@ -12,10 +12,6 @@ import (
 )
 
 type LinuxKernelDevice struct {
-	// This device has been created by wice.
-	// Indicates that the device should be deleted during shutdown.
-	created bool
-
 	link netlink.Link
 
 	logger *zap.Logger
@@ -45,19 +41,12 @@ func FindDevice(name string) (KernelDevice, error) {
 	}
 
 	return &LinuxKernelDevice{
-		created: false,
-		link:    link,
-		logger:  zap.L().Named("device").With(zap.String("dev", name)),
+		link:   link,
+		logger: zap.L().Named("device").With(zap.String("dev", name)),
 	}, nil
 }
 
 func (i *LinuxKernelDevice) Close() error {
-	if i.created {
-		if err := i.Delete(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
