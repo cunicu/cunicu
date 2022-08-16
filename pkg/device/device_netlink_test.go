@@ -24,7 +24,7 @@ func randIPNet() *net.IPNet {
 
 var _ = Describe("device", func() {
 	var err error
-	var d device.KernelDevice
+	var d device.Device
 	var devName string
 
 	getAddrs := func() []*net.IPNet {

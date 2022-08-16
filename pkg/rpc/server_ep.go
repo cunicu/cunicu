@@ -7,7 +7,7 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/feat/disc/ep"
+	"riasc.eu/wice/pkg/feat/disc/epice"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -15,10 +15,10 @@ type EndpointDiscoveryServer struct {
 	pb.UnimplementedEndpointDiscoverySocketServer
 
 	*Server
-	*ep.EndpointDiscovery
+	*epice.EndpointDiscovery
 }
 
-func NewEndpointDiscoveryServer(s *Server, ep *ep.EndpointDiscovery) *EndpointDiscoveryServer {
+func NewEndpointDiscoveryServer(s *Server, ep *epice.EndpointDiscovery) *EndpointDiscoveryServer {
 	eps := &EndpointDiscoveryServer{
 		Server:            s,
 		EndpointDiscovery: ep,
@@ -65,7 +65,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEv
 	}
 }
 
-func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *ep.Peer, cs ice.ConnectionState) {
+func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, cs ice.ConnectionState) {
 	s.events.C <- &pb.Event{
 		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
 

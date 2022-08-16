@@ -118,19 +118,21 @@ func (w *Watcher) Stop() error {
 }
 
 func (w *Watcher) Run() {
+	w.logger.Debug("Started initial synchronization")
+	if err := w.Sync(); err != nil {
+		w.logger.Fatal("Initial synchronization failed", zap.Error(err))
+	}
+	w.logger.Debug("Finished initial synchronization")
+
 	if err := w.watchUser(); err != nil {
 		w.logger.Fatal("Failed to watch userspace interfaces", zap.Error(err))
 	}
+	w.logger.Debug("Started watching for changes of WireGuard userspace devices")
 
 	if err := w.watchKernel(); err != nil {
 		w.logger.Fatal("Failed to watch kernel interfaces", zap.Error(err))
 	}
-
-	w.logger.Debug("Starting initial synchronization")
-	if err := w.Sync(); err != nil {
-		w.logger.Fatal("Initial synchronization failed", zap.Error(err))
-	}
-	w.logger.Debug("Completed initial synchronization")
+	w.logger.Debug("Started watching for changes of WireGuard kernel devices")
 
 	ticker := time.NewTicker(w.interval)
 
@@ -201,13 +203,16 @@ func (w *Watcher) Sync() error {
 	for _, wgd := range added {
 		w.logger.Info("Interface added", zap.String("intf", wgd.Name))
 
-		i, err := core.NewInterface(wgd, nil, w.client)
+		i, err := core.NewInterface(wgd, w.client)
 		if err != nil {
 			w.logger.Fatal("Failed to create new interface",
 				zap.Error(err),
 				zap.String("intf", wgd.Name),
 			)
 		}
+
+		// We purposefully prune the peer list here to force full initial sync of all peers
+		i.Device.Peers = nil
 
 		w.Interfaces[wgd.Name] = i
 

@@ -7,9 +7,10 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"golang.zx2c4.com/wireguard/device"
+	wgdevice "golang.zx2c4.com/wireguard/device"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/device"
 )
 
 var _ = Describe("interface", func() {
@@ -31,7 +32,7 @@ var _ = Describe("interface", func() {
 
 		// 	BeforeEach(func() {
 		// 		cfgPath = GinkgoT().TempDir()
-		// 		listenPort = config.WireGuardDefaultPort + rand.Intn(1000)
+		// 		listenPort = wg.DefaultPort + rand.Intn(1000)
 		// 		privKey, err = crypto.GeneratePrivateKey()
 		// 		Expect(err).To(Succeed())
 
@@ -78,7 +79,7 @@ var _ = Describe("interface", func() {
 			})
 
 			It("has the default MTU initially", func() {
-				Expect(i.KernelDevice.MTU()).To(Equal(device.DefaultMTU))
+				Expect(i.KernelDevice.MTU()).To(Equal(wgdevice.DefaultMTU))
 			})
 
 			It("can set the MTU", func() {
@@ -98,7 +99,13 @@ var _ = Describe("interface", func() {
 		// Generate unique name per test
 		intfName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
 
-		i, err = core.CreateInterface(intfName, user, c)
+		_, err := device.NewDevice(intfName, user)
+		Expect(err).To(Succeed())
+
+		wgd, err := c.Device(intfName)
+		Expect(err).To(Succeed())
+
+		i, err = core.NewInterface(wgd, c)
 		Expect(err).To(Succeed())
 	})
 

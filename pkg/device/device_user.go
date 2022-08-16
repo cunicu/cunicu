@@ -1,20 +1,29 @@
 package device
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"os"
+	"sync"
 
 	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 	"golang.zx2c4.com/wireguard/tun"
+	"riasc.eu/wice/pkg/wg"
+)
+
+var (
+	userDevices     = map[string]*UserDevice{}
+	userDevicesLock sync.Mutex
 )
 
 type UserDevice struct {
-	KernelDevice
+	Device
 
-	userDevice *device.Device
-	userAPI    net.Listener
+	device *device.Device
+	api    net.Listener
+	Bind   *wg.UserBind
 
 	logger *zap.Logger
 }
@@ -22,18 +31,21 @@ type UserDevice struct {
 func NewUserDevice(name string) (*UserDevice, error) {
 	var err error
 
-	logger := zap.L().Named("interface").With(
-		zap.String("intf", name),
+	logger := zap.L().Named("device").With(
+		zap.String("dev", name),
 		zap.String("type", "user"),
 	)
 
-	wgLogger := newWireGuardLogger()
-
-	dev := &UserDevice{
-		logger: logger,
+	wgLogger := logger.Named("wg").Sugar()
+	wgDeviceLogger := &device.Logger{
+		Verbosef: wgLogger.Debugf,
+		Errorf:   wgLogger.Errorf,
 	}
 
-	logger.Debug("Starting in-process wireguard-go interface")
+	dev := &UserDevice{
+		Bind:   wg.NewUserBind(),
+		logger: logger,
+	}
 
 	// Create TUN device
 	tunDev, err := tun.CreateTUN(name, device.DefaultMTU)
@@ -48,46 +60,40 @@ func NewUserDevice(name string) (*UserDevice, error) {
 		name = realName
 	}
 
-	// Create new device
-	bind := conn.NewDefaultBind()
-	dev.userDevice = device.NewDevice(tunDev, bind, wgLogger)
-
-	logger.Debug("Device started")
-
-	if dev.KernelDevice, err = FindDevice(name); err != nil {
-		return nil, err
-	}
-
 	// Open UAPI socket
-	if dev.userAPI, err = ListenUAPI(name); err != nil {
+	if dev.api, err = ListenUAPI(name); err != nil {
 		return nil, err
 	}
 
 	// Handle UApi requests
 	go dev.handleUserAPI()
 
-	logger.Debug("UAPI listener started for interface")
+	// Create new device
+	dev.device = device.NewDevice(tunDev, dev.Bind, wgDeviceLogger)
+
+	if dev.Device, err = FindKernelDevice(name); err != nil {
+		return nil, err
+	}
+
+	logger.Info("Started in-process wireguard-go interface")
+
+	// Register user device
+	userDevicesLock.Lock()
+	defer userDevicesLock.Unlock()
+
+	userDevices[name] = dev
 
 	return dev, nil
 }
 
-func newWireGuardLogger() *device.Logger {
-	logger := zap.L().Named("wireguard").Sugar()
-
-	return &device.Logger{
-		Verbosef: logger.Debugf,
-		Errorf:   logger.Errorf,
-	}
-}
-
 func (i *UserDevice) Close() error {
-	i.userDevice.Close()
+	i.device.Close()
 
-	if err := i.userAPI.Close(); err != nil {
+	if err := i.api.Close(); err != nil {
 		return err
 	}
 
-	if err := i.KernelDevice.Close(); err != nil {
+	if err := i.Device.Close(); err != nil {
 		return fmt.Errorf("failed to close kernel device: %w", err)
 	}
 
@@ -100,8 +106,32 @@ func (i *UserDevice) Delete() error {
 
 func (i *UserDevice) handleUserAPI() {
 	for {
-		if conn, err := i.userAPI.Accept(); err == nil {
-			go i.userDevice.IpcHandle(conn)
+		conn, err := i.api.Accept()
+		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			} else {
+				i.logger.Error("Failed to accept new user api connection", zap.Error(err))
+				continue
+			}
+		} else if i.device == nil {
+			i.logger.Warn("Dropping user api connection as device is not ready yet")
+			continue
 		}
+
+		i.logger.Debug("Handle new IPC connection", zap.String("socket", conn.LocalAddr().String()))
+		go i.device.IpcHandle(conn)
 	}
+}
+
+func FindUserDevice(name string) (Device, error) {
+	// Register user device
+	userDevicesLock.Lock()
+	defer userDevicesLock.Unlock()
+
+	if dev, ok := userDevices[name]; ok {
+		return dev, nil
+	}
+
+	return nil, os.ErrNotExist
 }

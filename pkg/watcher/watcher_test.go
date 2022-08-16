@@ -40,7 +40,7 @@ var _ = Describe("watcher", func() {
 	var c *wgctrl.Client
 	var w *watcher.Watcher
 	var devName string
-	var newDevice func(string) (device.KernelDevice, error)
+	var newDevice func(string) (device.Device, error)
 	var h *core.EventsHandler
 
 	BeforeEach(OncePerOrdered, func() {
@@ -69,7 +69,7 @@ var _ = Describe("watcher", func() {
 		Describe("can watch changes", Ordered, func() {
 			var i *core.Interface
 			var p *core.Peer
-			var d device.KernelDevice
+			var d device.Device
 
 			It("adding interface", func() {
 				d, err = newDevice(devName)
@@ -165,7 +165,9 @@ var _ = Describe("watcher", func() {
 
 	Describe("kernel", func() {
 		BeforeEach(func() {
-			newDevice = device.NewKernelDevice
+			newDevice = func(s string) (device.Device, error) {
+				return device.NewKernelDevice(s)
+			}
 		})
 
 		test()
@@ -173,7 +175,9 @@ var _ = Describe("watcher", func() {
 
 	Describe("user", func() {
 		BeforeEach(func() {
-			newDevice = device.NewUserDevice
+			newDevice = func(s string) (device.Device, error) {
+				return device.NewUserDevice(s)
+			}
 		})
 
 		test()

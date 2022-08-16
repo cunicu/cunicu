@@ -34,11 +34,6 @@ type Peer struct {
 
 // NewPeer creates a peer and initiates a new ICE agent
 func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
-	logger := zap.L().Named("peer").With(
-		zap.String("intf", i.Name()),
-		zap.Any("peer", wgp.PublicKey),
-	)
-
 	p := &Peer{
 		Interface: i,
 		Peer:      *wgp,
@@ -46,7 +41,10 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 		onModified: []PeerHandler{},
 
 		client: i.client,
-		logger: logger,
+		logger: zap.L().Named("peer").With(
+			zap.String("intf", i.Name()),
+			zap.Any("peer", wgp.PublicKey),
+		),
 	}
 
 	// We intentionally prune the AllowedIP list here for the initial sync
