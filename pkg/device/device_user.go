@@ -19,7 +19,7 @@ type UserDevice struct {
 	logger *zap.Logger
 }
 
-func NewUserDevice(name string) (KernelDevice, error) {
+func NewUserDevice(name string) (*UserDevice, error) {
 	var err error
 
 	logger := zap.L().Named("interface").With(

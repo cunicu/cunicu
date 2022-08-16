@@ -17,7 +17,7 @@ type LinuxKernelDevice struct {
 	logger *zap.Logger
 }
 
-func NewKernelDevice(name string) (KernelDevice, error) {
+func NewKernelDevice(name string) (*LinuxKernelDevice, error) {
 	link := &netlink.Wireguard{
 		LinkAttrs: netlink.NewLinkAttrs(),
 	}
@@ -28,9 +28,10 @@ func NewKernelDevice(name string) (KernelDevice, error) {
 	}
 
 	return &LinuxKernelDevice{
-		created: true,
-		link:    link,
-		logger:  zap.L().Named("device").With(zap.String("dev", name)),
+		link: link,
+		logger: zap.L().Named("device").With(
+			zap.String("dev", name),
+			zap.String("type", "kernel")),
 	}, nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
+	"riasc.eu/wice/pkg/errors"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -18,7 +19,7 @@ type BSDKernelDevice struct {
 	logger  *zap.Logger
 }
 
-func NewKernelDevice(name string) (KernelDevice, error) {
+func NewKernelDevice(name string) (*BSDKernelDevice, error) {
 	if err := exec.Command("ifconfig", "wg", "create", "name", name).Run(); err != nil {
 		return nil, err
 	}
@@ -35,7 +36,9 @@ func FindDevice(name string) (KernelDevice, error) {
 	return &BSDKernelDevice{
 		created: false,
 		index:   i.Index,
-		logger:  zap.L().Named("device").With(zap.String("dev", name)),
+		logger: zap.L().Named("device").With(
+			zap.String("dev", name),
+			zap.String("type", "kernel")),
 	}, nil
 }
 
