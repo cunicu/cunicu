@@ -72,8 +72,8 @@ func (h *msgHandler) Check(p, o *peer) error {
 		return fmt.Errorf("peer %d received no messages from peer %d", p.id, o.id)
 	} else {
 		msg := msgs2[0]
-		if msg.Session.Epoch != int64(o.id) {
-			return fmt.Errorf("received invalid msg: epoch == %d != %d", msg.Session.Epoch, o.id)
+		if msg.Candidate.Port != int32(o.id) {
+			return fmt.Errorf("received invalid msg: epoch == %d != %d", msg.Candidate.Port, o.id)
 		}
 
 		return nil
@@ -93,10 +93,10 @@ func (p *peer) publish(o *peer) error {
 	}
 
 	sentMsg := &signaling.Message{
-		Session: &pb.SessionDescription{
+		Candidate: &pb.Candidate{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
-			Epoch: int64(p.id),
+			Port: int32(p.id),
 		},
 	}
 
