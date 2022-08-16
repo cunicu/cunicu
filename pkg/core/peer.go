@@ -87,7 +87,7 @@ func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
 	}
 }
 
-// PeerConfig return the WireGuard peer configuration
+// WireGuardConfig return the WireGuard peer configuration
 func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	cfg := &wgtypes.PeerConfig{
 		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
@@ -106,6 +106,7 @@ func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	return cfg
 }
 
+// OnModified registers a new handler which is called whenever the peer has been modified
 func (p *Peer) OnModified(h PeerHandler) {
 	p.onModified = append(p.onModified, h)
 }
@@ -211,7 +212,7 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	p.Peer = *new
 
 	if mod != PeerModifiedNone {
-		p.logger.Info("Peer modified", zap.Strings("modified", mod.Strings()))
+		p.logger.Info("Peer has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range p.onModified {
 			h.OnPeerModified(p, &old, mod, ipsAdded, ipsRemoved)

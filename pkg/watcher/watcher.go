@@ -140,11 +140,11 @@ out:
 		// We still a need periodic sync we can not (yet) monitor WireGuard interfaces
 		// for changes via a netlink socket (patch is pending)
 		case <-ticker.C:
-			w.logger.Debug("Starting periodic interface sync")
+			w.logger.Debug("Started periodic interface synchronization")
 			if err := w.Sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}
-			w.logger.Debug("Completed periodic interface sync")
+			w.logger.Debug("Completed periodic interface synchronization")
 
 		case event := <-w.events:
 			w.logger.Debug("Received interface event", zap.String("event", event.String()))

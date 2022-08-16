@@ -99,7 +99,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 
 	// Compare device properties
 	if new.Name != old.Name {
-		i.logger.Info("Name changed",
+		i.logger.Info("Name has changed",
 			zap.Any("old", old.Name),
 			zap.Any("new", new.Name),
 		)
@@ -109,7 +109,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 
 	// Compare device properties
 	if new.Type != old.Type {
-		i.logger.Info("Type changed",
+		i.logger.Info("Type has changed",
 			zap.Any("old", old.Type),
 			zap.Any("new", new.Type),
 		)
@@ -118,7 +118,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	}
 
 	if new.FirewallMark != old.FirewallMark {
-		i.logger.Info("FirewallMark changed",
+		i.logger.Info("Firewall mark has changed",
 			zap.Any("old", old.FirewallMark),
 			zap.Any("new", new.FirewallMark),
 		)
@@ -127,7 +127,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	}
 
 	if new.PrivateKey != old.PrivateKey {
-		i.logger.Info("PrivateKey changed",
+		i.logger.Info("PrivateKey has changed",
 			zap.Any("old", old.PrivateKey),
 			zap.Any("new", new.PrivateKey),
 		)
@@ -136,7 +136,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	}
 
 	if new.ListenPort != old.ListenPort {
-		i.logger.Info("ListenPort changed",
+		i.logger.Info("ListenPort has changed",
 			zap.Any("old", old.ListenPort),
 			zap.Any("new", new.ListenPort),
 		)
@@ -155,7 +155,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	i.LastSync = time.Now()
 
 	if mod != InterfaceModifiedNone {
-		i.logger.Info("Interface modified", zap.Strings("modified", mod.Strings()))
+		i.logger.Info("Interface has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range i.onModified {
 			h.OnInterfaceModified(i, &old, mod)

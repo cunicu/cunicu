@@ -133,7 +133,7 @@ func (d *Daemon) setupFeatures() error {
 			return fmt.Errorf("failed to start host name synchronization: %w", err)
 		}
 
-		d.logger.Info("Started host name synchronization")
+		d.logger.Info("Started /etc/hosts synchronization")
 	}
 
 	if d.config.EndpointDisc.Enabled {
@@ -141,7 +141,7 @@ func (d *Daemon) setupFeatures() error {
 			return fmt.Errorf("failed to start endpoint discovery: %w", err)
 		}
 
-		d.logger.Info("Started endpoint discovery")
+		d.logger.Info("Started ICE endpoint discovery")
 	}
 
 	return nil
