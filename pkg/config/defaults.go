@@ -24,7 +24,7 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("socket.wait", false)
 	c.SetDefault("auto_config.enabled", true)
 	c.SetDefault("config_sync.enabled", true)
-	c.SetDefault("config_sync.path", "/etc/wireguard")
+	c.SetDefault("config_sync.path", wg.ConfigPath)
 	c.SetDefault("config_sync.watch", false)
 	c.SetDefault("route_sync.enabled", true)
 	c.SetDefault("route_sync.table", "main")
