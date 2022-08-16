@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/pkg"
+	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/rpc"
 )
@@ -73,7 +73,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create daemon
-	daemon, err := pkg.NewDaemon(cfg)
+	daemon, err := wice.NewDaemon(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create daemon", zap.Error(err))
 	}
