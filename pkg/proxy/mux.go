@@ -9,7 +9,7 @@ import (
 	"riasc.eu/wice/pkg/log"
 )
 
-func CreateUDPMux(listenPort int) (ice.UDPMux, int, error) {
+func CreateUDPMux() (ice.UDPMux, int, error) {
 	conn, err := net.ListenUDP("udp", nil)
 	if err != nil {
 		return nil, 0, err
@@ -25,7 +25,7 @@ func CreateUDPMux(listenPort int) (ice.UDPMux, int, error) {
 	return mux, lAddr.Port, nil
 }
 
-func CreateUDPMuxSrflx() (ice.UniversalUDPMux, int, error) {
+func CreateUniversalUDPMux() (ice.UniversalUDPMux, int, error) {
 	// We do not need a filtered connection here as we anyway need to redirect
 	// the non-STUN traffic via nftables
 
@@ -38,7 +38,7 @@ func CreateUDPMuxSrflx() (ice.UniversalUDPMux, int, error) {
 
 	mux := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: conn,
-		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmuxsrflx"),
+		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux-universal"),
 	})
 
 	return mux, lAddr.Port, nil

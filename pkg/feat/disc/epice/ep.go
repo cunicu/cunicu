@@ -1,4 +1,4 @@
-package ep
+package epice
 
 import (
 	"fmt"

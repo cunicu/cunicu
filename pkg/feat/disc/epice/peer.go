@@ -1,16 +1,17 @@
-package ep
+package epice
 
 import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
+	"os"
+	"time"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/log"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
@@ -18,7 +19,9 @@ import (
 )
 
 const (
-	ConnectionStateConnecting = 100
+	ConnectionStateIdle       = 100
+	ConnectionStateConnecting = 101
+	ConnectionStateClosing    = 102
 )
 
 type Peer struct {
@@ -29,15 +32,15 @@ type Peer struct {
 	config *config.Config
 
 	backend signaling.Backend
-	proxy   *proxy.Proxy
+	proxy   proxy.Proxy
 
+	// TODO: Avoid races around connection state
 	ConnectionState ice.ConnectionState
 
 	agentConfig *ice.AgentConfig
 	agent       *ice.Agent
 	conn        *ice.Conn
-
-	description *pb.SessionDescription
+	credentials pb.Credentials
 
 	logger *zap.Logger
 }
@@ -51,7 +54,10 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		backend:   i.Discovery.backend,
 		config:    i.Discovery.config,
 
-		logger: zap.L().Named("ice.peer"),
+		logger: zap.L().Named("ice.peer").With(
+			zap.String("intf", i.Name()),
+			zap.Any("peer", cp.PublicKey()),
+		),
 	}
 
 	// Prepare ICE agent configuration
@@ -71,42 +77,36 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	p.agentConfig.LoggerFactory = log.NewPionLoggerFactory(p.logger)
 
 	// Setup proxy
-	if p.proxy, err = proxy.NewProxy(i.nat, cp.Interface.ListenPort); err != nil {
-		return nil, fmt.Errorf("failed to setup proxy: %w", err)
+	if dev, ok := i.KernelDevice.(*device.UserDevice); ok {
+		if p.proxy, err = proxy.NewUserProxy(dev.Bind); err != nil {
+			return nil, fmt.Errorf("failed to setup proxy: %w", err)
+		}
+	} else if i.nat != nil {
+		if p.proxy, err = proxy.NewKernelProxy(i.nat, cp.Interface.ListenPort); err != nil {
+			return nil, fmt.Errorf("failed to setup proxy: %w", err)
+		}
+	} else {
+		return nil, fmt.Errorf("failed tp setup peer. Neither NAT or Bind is configured")
 	}
 
 	// Initialize signaling channel
 	kp := p.PublicPrivateKeyPair()
-	p.logger.Info("Subscribe to messages from peer", zap.Any("kp", kp))
 	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
 		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
 	}
 
-	// Initialize ICE agent
-	if p.agent, err = p.newAgent(); err != nil {
-		return nil, fmt.Errorf("failed to create agent: %w", err)
-	}
+	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
-	p.description = p.newDescription()
-
-	p.logger.Info("Starting gathering local ICE candidates")
-	if err := p.agent.GatherCandidates(); err != nil {
-		p.logger.Fatal("Failed to gather candidates", zap.Error(err))
-	}
+	// Initialize new agent by simulating a closed event
+	p.onConnectionStateChange(ice.ConnectionStateClosed)
 
 	return p, nil
 }
 
-func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
-	if err := p.onMessage(msg); err != nil {
-		p.logger.Error("Failed to handle message",
-			zap.Error(err),
-			zap.Any("msg", msg))
-	}
-}
-
 // Close destroys the peer as well as the ICE agent and proxies
 func (p *Peer) Close() error {
+	p.ConnectionState = ConnectionStateClosing
+
 	if err := p.agent.Close(); err != nil {
 		return fmt.Errorf("failed to close ICE agent: %w", err)
 	}
@@ -115,54 +115,81 @@ func (p *Peer) Close() error {
 		return fmt.Errorf("failed to close proxy: %w", err)
 	}
 
-	p.logger.Info("Closed peer")
-
 	return nil
 }
 
 // Restart the ICE agent by creating a new one
-func (p *Peer) Restart() {
-	if err := p.restart(); err != nil {
-		p.logger.Fatal("Failed to restart agent", zap.Error(err))
-	}
-}
-
-func (p *Peer) restart() error {
-	var err error
-
+func (p *Peer) Restart() error {
 	p.logger.Debug("Restarting ICE session")
 
 	if err := p.agent.Close(); err != nil {
 		return fmt.Errorf("failed to close agent: %w", err)
 	}
-	p.logger.Debug("Agent closed")
 
-	if p.agent, err = p.newAgent(); err != nil {
-		return fmt.Errorf("failed to create agent: %w", err)
-	}
-
-	p.description = p.newDescription()
-
-	p.logger.Info("Starting gathering local ICE candidates")
-	if err := p.agent.GatherCandidates(); err != nil {
-		return fmt.Errorf("failed to gather candidates: %w", err)
-	}
+	// The new agent will be recreated in the onConnectionStateChange() handler
+	// once the old agent has been properly closed
 
 	return nil
 }
 
-func (p *Peer) sendDescription() error {
-	p.description.Epoch++
+func (p *Peer) sendCredentials(need bool) error {
+	p.credentials.NeedCreds = need
 
 	msg := &signaling.Message{
-		Session: p.description,
+		Credentials: &p.credentials,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
+		return err
+	}
+
+	p.logger.Debug("Sent credentials", zap.Any("creds", msg.Credentials))
+
+	return nil
+}
+
+func (p *Peer) sendCandidate(c ice.Candidate) error {
+	msg := &signaling.Message{
+		Candidate: pb.NewCandidate(c),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
+		return err
+	}
+
+	p.logger.Debug("Sent candidate", zap.Any("candidate", msg.Candidate))
+
+	return nil
+}
+
+// TODO: Send this via the peer discovery feature instead
+func (p *Peer) sendPeerDescription() error {
+	hn, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("failed to get hostname: %w", err)
+	}
+
+	desc := &pb.PeerDescription{
+		Key:           p.Interface.PublicKey().Bytes(),
+		Hostname:      hn,
+		InterfaceType: pb.NewInterfaceType(p.Interface.Type),
+	}
+
+	msg := &signaling.Message{
+		Peer: desc,
 	}
 
 	if err := p.backend.Publish(context.Background(), p.PublicPrivateKeyPair(), msg); err != nil {
 		return err
 	}
 
-	p.logger.Debug("Send session description", zap.Any("description", p.description))
+	p.logger.Debug("Send peer description", zap.Any("description", desc))
 
 	return nil
 }
@@ -170,6 +197,13 @@ func (p *Peer) sendDescription() error {
 func (p *Peer) newAgent() (*ice.Agent, error) {
 	var agent *ice.Agent
 	var err error
+
+	p.logger.Info("Creating new agent")
+
+	p.credentials = pb.NewCredentials()
+
+	p.agentConfig.LocalUfrag = p.credentials.Ufrag
+	p.agentConfig.LocalPwd = p.credentials.Pwd
 
 	// Setup new ICE Agent
 	if agent, err = ice.NewAgent(p.agentConfig); err != nil {
@@ -191,25 +225,9 @@ func (p *Peer) newAgent() (*ice.Agent, error) {
 		return nil, fmt.Errorf("failed to setup on connection state handler: %w", err)
 	}
 
-	p.ConnectionState = ice.ConnectionStateNew
-	p.logger.Debug("Agent created")
+	p.ConnectionState = ConnectionStateIdle
 
 	return agent, nil
-}
-
-// newDescription initializes a new offer before it gets send via the signaling channel
-func (p *Peer) newDescription() *pb.SessionDescription {
-	ufrag, pwd, err := p.agent.GetLocalUserCredentials()
-	if err != nil {
-		p.logger.Error("Failed to get local user credentials", zap.Error(err))
-	}
-
-	return &pb.SessionDescription{
-		Epoch:      0,
-		Ufrag:      ufrag,
-		Pwd:        pwd,
-		Candidates: []*pb.Candidate{},
-	}
 }
 
 // isControlling determines if the peer is controlling the ICE session
@@ -222,50 +240,30 @@ func (p *Peer) isControlling() bool {
 	return pkOur.Cmp(&pkTheir) == -1
 }
 
-// onConnectionStateChange is a callback which gets called by the ICE agent
-// whenever the state of the ICE connection has changed
-func (p *Peer) onConnectionStateChange(cs ice.ConnectionState) {
-	p.ConnectionState = cs
-
-	p.logger.Info("Connection state changed",
-		zap.String("state", strings.ToLower(cs.String())))
-
-	for _, h := range p.Interface.Discovery.onConnectionStateChange {
-		h.OnConnectionStateChange(p, cs)
-	}
-
-	if cs == ice.ConnectionStateFailed {
-		p.Restart()
-	}
-}
-
 // isSessionRestart checks if a received offer should restart the
 // ICE session by comparing ufrag & pwd with previously used values.
-func (p *Peer) isSessionRestart(o *pb.SessionDescription) bool {
+func (p *Peer) isSessionRestart(c *pb.Credentials) bool {
 	ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
 	if err != nil {
 		p.logger.Error("Failed to get local credentials", zap.Error(err))
 	}
 
-	credsChanged := (ufrag != "" && pwd != "") && (ufrag != o.Ufrag || pwd != o.Pwd)
+	credsChanged := (ufrag != "" && pwd != "") && (c.Ufrag != "" && c.Pwd != "") && (ufrag != c.Ufrag || pwd != c.Pwd)
 
 	return p.conn != nil && credsChanged
 }
 
-func (p *Peer) addCandidates(sd *pb.SessionDescription) error {
-	for _, c := range sd.Candidates {
-		ic, err := c.ICECandidate()
-		if err != nil {
-			p.logger.Error("Failed to decode description. Ignoring...", zap.Error(err))
-			continue
-		}
-
-		if err := p.agent.AddRemoteCandidate(ic); err != nil {
-			return fmt.Errorf("failed to add remote candidate: %w", err)
-		}
-
-		p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
+func (p *Peer) addRemoteCandidate(c *pb.Candidate) error {
+	ic, err := c.ICECandidate()
+	if err != nil {
+		return fmt.Errorf("failed to remote candidate: %w", err)
 	}
+
+	if err := p.agent.AddRemoteCandidate(ic); err != nil {
+		return fmt.Errorf("failed to add remote candidate: %w", err)
+	}
+
+	p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
 
 	return nil
 }
@@ -273,7 +271,7 @@ func (p *Peer) addCandidates(sd *pb.SessionDescription) error {
 func (p *Peer) connect(ufrag, pwd string) error {
 	var err error
 
-	p.ConnectionState = ConnectionStateConnecting
+	// TODO: use proper context
 	if p.isControlling() {
 		p.logger.Debug("Dialing...")
 		p.conn, err = p.agent.Dial(context.Background(), ufrag, pwd)
@@ -284,10 +282,6 @@ func (p *Peer) connect(ufrag, pwd string) error {
 	if err != nil {
 		return err
 	}
-
-	p.logger.Debug("Connection established",
-		zap.Any("localAddress", p.conn.LocalAddr()),
-		zap.Any("remoteAddress", p.conn.RemoteAddr()))
 
 	cp, err := p.agent.GetSelectedCandidatePair()
 	if err != nil {
