@@ -25,7 +25,7 @@ type AutoConfig struct {
 	logger *zap.Logger
 }
 
-func addLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
+func addLinkLocalAddresses(dev device.Device, pk crypto.Key) error {
 	if pk.IsSet() {
 		if err := dev.AddAddress(pk.IPv4Address()); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign IPv4 link-local address: %w", err)
@@ -39,7 +39,7 @@ func addLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
 	return nil
 }
 
-func deleteLinkLocalAddresses(dev device.KernelDevice, pk crypto.Key) error {
+func deleteLinkLocalAddresses(dev device.Device, pk crypto.Key) error {
 	if pk.IsSet() {
 		if err := dev.DeleteAddress(pk.IPv4Address()); err != nil {
 			return fmt.Errorf("failed to assign IPv4 link-local address: %w", err)

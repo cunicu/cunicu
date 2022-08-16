@@ -35,7 +35,7 @@ func NewKernelDevice(name string) (*LinuxKernelDevice, error) {
 	}, nil
 }
 
-func FindDevice(name string) (KernelDevice, error) {
+func FindKernelDevice(name string) (Device, error) {
 	link, err := netlink.LinkByName(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get link details: %w", err)

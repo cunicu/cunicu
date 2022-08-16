@@ -59,7 +59,4 @@ message PeerConnectionStateChangeEvent {
 
 message BackendReadyEvent {
     BackendType type = 1;
-
-    string id = 2;
-    repeated string listen_addresses = 3;
 }

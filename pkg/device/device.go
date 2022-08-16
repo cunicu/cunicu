@@ -2,13 +2,14 @@ package device
 
 import (
 	"net"
+	"os"
 )
 
 const (
 	RouteProtocol = 98
 )
 
-type KernelDevice interface {
+type Device interface {
 	Close() error
 	Delete() error
 
@@ -42,4 +43,14 @@ func NewDevice(name string, user bool) (kernelDev Device, err error) {
 	}
 
 	return kernelDev, nil
+}
+
+func FindDevice(name string) (Device, error) {
+	if dev, err := FindUserDevice(name); err == nil {
+		return dev, nil
+	} else if dev, err := FindKernelDevice(name); err == nil {
+		return dev, nil
+	}
+
+	return nil, os.ErrNotExist
 }

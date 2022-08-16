@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
 )
@@ -109,8 +110,8 @@ func (s *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 
 	if event.Op&(fsnotify.Create|fsnotify.Write) != 0 {
 		if i == nil {
-			if i, err := core.CreateInterface(name, s.user, s.client); err != nil {
-				s.logger.Error("Failed to create new interface",
+			if i, err := device.NewDevice(name, s.user); err != nil {
+				s.logger.Error("Failed to create new device",
 					zap.Error(err),
 					zap.String("intf", i.Name()),
 					zap.String("config_file", cfg))

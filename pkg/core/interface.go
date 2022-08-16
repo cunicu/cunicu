@@ -21,7 +21,7 @@ type Interface struct {
 	wg.Device
 
 	// OS abstractions for kernel device
-	KernelDevice device.KernelDevice
+	KernelDevice device.Device
 
 	Peers map[crypto.Key]*Peer
 
@@ -243,6 +243,8 @@ func (i *Interface) Configure(cfg *wg.Config) error {
 		return fmt.Errorf("failed to sync interface config: %s", err)
 	}
 
+	// TODO: remove old addresses?
+
 	for _, addr := range cfg.Address {
 		if err := i.KernelDevice.AddAddress(&addr); err != nil {
 			return err
@@ -286,29 +288,24 @@ func (i *Interface) RemovePeer(pk crypto.Key) error {
 	return i.client.ConfigureDevice(i.Name(), cfg)
 }
 
-func NewInterface(wgDev *wgtypes.Device, kernelDev device.KernelDevice, client *wgctrl.Client) (*Interface, error) {
+func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, error) {
 	var err error
 
-	logger := zap.L().Named("interface").With(
-		zap.String("intf", wgDev.Name),
-	)
-
-	if kernelDev == nil {
-		kernelDev, err = device.FindDevice(wgDev.Name)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	i := &Interface{
-		Device:       wg.Device(*wgDev),
-		KernelDevice: kernelDev,
-		client:       client,
-		logger:       logger,
-		Peers:        map[crypto.Key]*Peer{},
+		Device: wg.Device(*wgDev),
+		client: client,
+		Peers:  map[crypto.Key]*Peer{},
 
 		onModified: []InterfaceHandler{},
 		onPeer:     []PeerHandler{},
+
+		logger: zap.L().Named("interface").With(
+			zap.String("intf", wgDev.Name),
+		),
+	}
+
+	if i.KernelDevice, err = device.FindDevice(wgDev.Name); err != nil {
+		return nil, err
 	}
 
 	i.logger.Info("Added new interface",
@@ -316,36 +313,6 @@ func NewInterface(wgDev *wgtypes.Device, kernelDev device.KernelDevice, client *
 		zap.String("type", i.Type.String()),
 		zap.Int("num_peers", len(i.Peers)),
 	)
-
-	// We purposefully prune the peer list here for an full initial sync of all peers
-	i.Device.Peers = nil
-
-	return i, nil
-}
-
-func CreateInterface(name string, user bool, client *wgctrl.Client) (*Interface, error) {
-	var newDevice func(name string) (device.KernelDevice, error)
-	if user {
-		newDevice = device.NewUserDevice
-	} else {
-		newDevice = device.NewKernelDevice
-	}
-
-	kernelDev, err := newDevice(name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Connect to UAPI
-	wgDev, err := client.Device(name)
-	if err != nil {
-		return nil, err
-	}
-
-	i, err := NewInterface(wgDev, kernelDev, client)
-	if err != nil {
-		return nil, err
-	}
 
 	return i, nil
 }

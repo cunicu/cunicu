@@ -10,13 +10,13 @@ import (
 )
 
 func ListenUAPI(name string) (net.Listener, error) {
-	fileUAPI, err := ipc.UAPIOpen(name)
+	file, err := ipc.UAPIOpen(name)
 	if err != nil {
 		return nil, fmt.Errorf("UAPI listen error: %w", err)
 	}
 
 	var listener net.Listener
-	if listener, err = ipc.UAPIListen(name, fileUAPI); err != nil {
+	if listener, err = ipc.UAPIListen(name, file); err != nil {
 		return nil, fmt.Errorf("failed to listen on UAPI socket: %w", err)
 	}
 
