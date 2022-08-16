@@ -38,3 +38,11 @@ func (d *WindowsKernelDevice) SetUp() error {
 func (d *WindowsKernelDevice) SetDown() error {
 	return errors.ErrNotSupported
 }
+
+func (d *WindowsKernelDevice) Close() error {
+	return nil
+}
+
+func (d *WindowsKernelDevice) Delete() error {
+	return errors.NotSupported
+}

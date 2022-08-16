@@ -94,6 +94,10 @@ func (i *UserDevice) Close() error {
 	return nil
 }
 
+func (i *UserDevice) Delete() error {
+	return nil
+}
+
 func (i *UserDevice) handleUserAPI() {
 	for {
 		if conn, err := i.userAPI.Accept(); err == nil {
