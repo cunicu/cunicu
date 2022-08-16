@@ -70,11 +70,8 @@ func (c *CoturnNode) Password() string {
 	return "password1"
 }
 
-func (c *CoturnNode) Start(binary, dir string, extraArgs ...any) error {
+func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
 	var err error
-
-	// TODO:
-	binary = "turnserver"
 
 	// Delete previous log file
 	os.Remove(c.Config["log-file"])
@@ -93,7 +90,7 @@ func (c *CoturnNode) Start(binary, dir string, extraArgs ...any) error {
 		args = append(args, opt)
 	}
 
-	if _, _, c.Command, err = c.StartWith(binary, nil, dir, args...); err != nil {
+	if _, _, c.Command, err = c.StartWith("turnserver", nil, dir, args...); err != nil {
 		return fmt.Errorf("failed to start turnserver: %w", err)
 	}
 

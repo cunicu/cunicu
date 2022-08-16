@@ -40,7 +40,7 @@ var _ = Describe("watcher", func() {
 	var c *wgctrl.Client
 	var w *watcher.Watcher
 	var devName string
-	var newDevice func(string) (device.Device, error)
+	var user bool
 	var h *core.EventsHandler
 
 	BeforeEach(OncePerOrdered, func() {
@@ -72,7 +72,7 @@ var _ = Describe("watcher", func() {
 			var d device.Device
 
 			It("adding interface", func() {
-				d, err = newDevice(devName)
+				d, err = device.NewDevice(devName, user)
 				Expect(err).To(Succeed())
 
 				Eventually(func(g Gomega) {
@@ -165,9 +165,7 @@ var _ = Describe("watcher", func() {
 
 	Describe("kernel", func() {
 		BeforeEach(func() {
-			newDevice = func(s string) (device.Device, error) {
-				return device.NewKernelDevice(s)
-			}
+			user = false
 		})
 
 		test()
@@ -175,9 +173,7 @@ var _ = Describe("watcher", func() {
 
 	Describe("user", func() {
 		BeforeEach(func() {
-			newDevice = func(s string) (device.Device, error) {
-				return device.NewUserDevice(s)
-			}
+			user = true
 		})
 
 		test()

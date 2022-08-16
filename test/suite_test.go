@@ -11,7 +11,6 @@ import (
 	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/util"
 )
 
@@ -19,8 +18,6 @@ var (
 	persist    bool
 	capture    bool
 	binaryPath string
-
-	logger *zap.Logger
 )
 
 // Register your flags in an init function.  This ensures they are registered _before_ `go test` calls flag.Parse().

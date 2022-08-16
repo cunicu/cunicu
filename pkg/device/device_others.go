@@ -6,10 +6,10 @@ import (
 	"riasc.eu/wice/pkg/errors"
 )
 
-func FindDevice(name string) (KernelDevice, error) {
+func FindKernelDevice(name string) (Device, error) {
 	return nil, errors.ErrNotSupported
 }
 
-func NewKernelDevice(name string) (KernelDevice, error) {
+func NewKernelDevice(name string) (Device, error) {
 	return nil, errors.ErrNotSupported
 }

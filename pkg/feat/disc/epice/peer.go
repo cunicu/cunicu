@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"os"
 	"time"
 
 	"github.com/pion/ice/v2"
@@ -164,32 +163,6 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 	}
 
 	p.logger.Debug("Sent candidate", zap.Any("candidate", msg.Candidate))
-
-	return nil
-}
-
-// TODO: Send this via the peer discovery feature instead
-func (p *Peer) sendPeerDescription() error {
-	hn, err := os.Hostname()
-	if err != nil {
-		return fmt.Errorf("failed to get hostname: %w", err)
-	}
-
-	desc := &pb.PeerDescription{
-		Key:           p.Interface.PublicKey().Bytes(),
-		Hostname:      hn,
-		InterfaceType: pb.NewInterfaceType(p.Interface.Type),
-	}
-
-	msg := &signaling.Message{
-		Peer: desc,
-	}
-
-	if err := p.backend.Publish(context.Background(), p.PublicPrivateKeyPair(), msg); err != nil {
-		return err
-	}
-
-	p.logger.Debug("Send peer description", zap.Any("description", desc))
 
 	return nil
 }

@@ -7,7 +7,6 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
-	"riasc.eu/wice/pkg/errors"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -24,10 +23,10 @@ func NewKernelDevice(name string) (*BSDKernelDevice, error) {
 		return nil, err
 	}
 
-	return FindDevice(name)
+	return FindKernelDevice(name)
 }
 
-func FindDevice(name string) (KernelDevice, error) {
+func FindKernelDevice(name string) (*BSDKernelDevice, error) {
 	i, err := net.InterfaceByName(name)
 	if err != nil {
 		return nil, err
@@ -56,7 +55,7 @@ func (d *BSDKernelDevice) Close() error {
 }
 
 func (d *BSDKernelDevice) Delete() error {
-	return exec.Command("ifconfig", name, "destroy").Run()
+	return exec.Command("ifconfig", d.Name(), "destroy").Run()
 }
 
 func (d *BSDKernelDevice) AddAddress(ip *net.IPNet) error {

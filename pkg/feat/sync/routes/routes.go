@@ -1,3 +1,4 @@
+// Package routes synchronizes the kernel routing table with the AllowedIPs of each WireGuard peer
 package routes
 
 import (
