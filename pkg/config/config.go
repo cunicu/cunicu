@@ -83,7 +83,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.BoolP("config-sync", "C", true, "Enable synchronization of WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
 	flags.BoolP("route-sync", "R", true, "Enable synchronization of AllowedIPs and Kernel routing table")
-	flags.BoolP("auto-config", "S", true, "Enable setup of link-local addresses")
+	flags.BoolP("auto-config", "S", true, "Enable setup of link-local addresses and missing interface options")
 
 	// Config flags
 	flags.StringVarP(&c.Domain, "domain", "A", "", "A DNS `domain` name used for DNS auto-configuration")
