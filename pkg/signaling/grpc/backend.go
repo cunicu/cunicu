@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -23,8 +24,6 @@ type Backend struct {
 
 	client pb.SignalingClient
 	conn   *grpc.ClientConn
-
-	isClosing bool
 
 	config BackendConfig
 
@@ -89,15 +88,13 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 	}
 
 	if _, err = b.client.Publish(ctx, env); err != nil {
-		return fmt.Errorf("failed to publish offer: %w", err)
+		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
 	return nil
 }
 
 func (b *Backend) Close() error {
-	b.isClosing = true
-
 	if err := b.conn.Close(); err != nil {
 		return fmt.Errorf("failed to close gRPC connection: %w", err)
 	}
@@ -117,6 +114,13 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 		return fmt.Errorf("failed to subscribe to offers: %s", err)
 	}
 
+	// Wait until subscription has been created
+	// This avoids a race between Subscribe()/Publish() when two subscribers are subscribing
+	// to each other.
+	if _, err := stream.Recv(); err != nil {
+		return fmt.Errorf("failed receive sync envelope: %s", err)
+	}
+
 	go func() {
 		for {
 			if env, err := stream.Recv(); err == nil {
@@ -124,11 +128,12 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 					b.logger.Error("Failed to decrypt message", zap.Error(err))
 				}
 			} else {
-				if b.isClosing {
-					return
+				if err != io.EOF {
+					// TODO: Attempt reconnect?
+					b.logger.Error("Received error", zap.Error(err))
 				}
 
-				b.logger.Error("Failed to receive offer", zap.Error(err))
+				return
 			}
 		}
 	}()
