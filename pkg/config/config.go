@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/pion/ice/v2"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -284,6 +285,28 @@ func (c *Config) Setup(args []string) error {
 
 	// We append the interfaces here because Config.Load() will overwrite them otherwise
 	c.WireGuard.Interfaces = append(c.WireGuard.Interfaces, args...)
+
+	if err := c.Check(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) Check() error {
+	if len(c.EndpointDisc.ICE.URLs) > 0 && len(c.EndpointDisc.ICE.CandidateTypes) > 0 {
+		needsURL := false
+		for _, ct := range c.EndpointDisc.ICE.CandidateTypes {
+			if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
+				needsURL = true
+			}
+		}
+
+		if !needsURL {
+			c.logger.Warn("Ignoring supplied ICE URLs as there are no selected candidate types which would use them")
+			c.EndpointDisc.ICE.URLs = nil
+		}
+	}
 
 	return nil
 }
