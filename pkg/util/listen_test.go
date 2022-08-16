@@ -23,11 +23,6 @@ var _ = Describe("find bindable port in range", func() {
 			Expect(err).To(MatchError("minimal port must be larger than maximal port number"))
 		})
 
-		It("works with max = 0", func() {
-			_, err := util.FindNextPortToListen("udp", 10010, 0)
-			Expect(err).To(Succeed())
-		})
-
 		It("fails for unsupported network type", func() {
 			_, err := util.FindNextPortToListen("tcp", 10010, 10020)
 			Expect(err).To(MatchError("unsupported network: tcp"))
