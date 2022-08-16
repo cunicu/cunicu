@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"riasc.eu/wice/pkg"
+	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -12,10 +12,10 @@ type DaemonServer struct {
 	pb.UnimplementedSocketServer
 
 	*Server
-	*pkg.Daemon
+	*wice.Daemon
 }
 
-func NewDaemonServer(s *Server, d *pkg.Daemon) *DaemonServer {
+func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
 	ds := &DaemonServer{
 		Server: s,
 		Daemon: d,

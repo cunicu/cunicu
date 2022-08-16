@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"riasc.eu/wice/pkg"
+	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/util"
 
@@ -31,7 +31,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer(d *pkg.Daemon) (*Server, error) {
+func NewServer(d *wice.Daemon) (*Server, error) {
 	s := &Server{
 		events: util.NewFanOut[*pb.Event](0),
 		logger: zap.L().Named("socket.server"),
