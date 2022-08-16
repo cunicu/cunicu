@@ -78,3 +78,13 @@ func FilterSlice[T any](s []T, cmp func(T) bool) []T {
 
 	return t
 }
+
+func MapSlice[T any](s []T, cb func(T) T) []T {
+	n := []T{}
+
+	for _, t := range s {
+		n = append(n, cb(t))
+	}
+
+	return n
+}
