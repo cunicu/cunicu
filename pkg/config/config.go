@@ -78,7 +78,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefaults()
 
 	// Feature flags
-	flags.BoolP("config-sync", "C", true, "Enable synchronization on-disk WireGuard configuration files")
+	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
+	flags.BoolP("config-sync", "C", true, "Enable synchronization of WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
 	flags.BoolP("route-sync", "R", true, "Enable synchronization of AllowedIPs and Kernel routing table")
 	flags.BoolP("auto-config", "S", true, "Enable setup of link-local addresses")
@@ -137,6 +138,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"config-path":  "config_sync.path",
 		"config-watch": "config_sync.watch",
 
+		// Host sync
+		"host-sync": "host_sync.enabled",
+
 		// Route sync
 		"route-sync":  "route_sync.enabled",
 		"route-table": "route_sync.table",
@@ -182,6 +186,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	showAdvancedFlags := os.Getenv("WICE_ADVANCED_CLI") != ""
 	advancedFlags := map[string]bool{
+		"host-sync":                true,
 		"config-sync":              true,
 		"route-sync":               true,
 		"endpoint-disc":            true,
