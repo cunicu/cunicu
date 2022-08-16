@@ -19,7 +19,7 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	// ICE URLs
 	cfg.Urls = []*ice.URL{}
 	for _, u := range c.EndpointDisc.ICE.URLs {
-		p := &u.URL
+		p := u.URL
 
 		// Set ICE credentials for TURN/TURNS servers
 		if p.Scheme == ice.SchemeTypeTURN || p.Scheme == ice.SchemeTypeTURNS {
@@ -27,7 +27,7 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 			p.Password = c.EndpointDisc.ICE.Password
 		}
 
-		cfg.Urls = append(cfg.Urls, p)
+		cfg.Urls = append(cfg.Urls, &p)
 
 	}
 
