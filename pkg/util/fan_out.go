@@ -36,19 +36,29 @@ func (f *FanOut[T]) Add() chan T {
 	ch := make(chan T, f.buf)
 
 	f.lock.Lock()
+	defer f.lock.Unlock()
+
 	f.subs[ch] = struct{}{}
-	f.lock.Unlock()
 
 	return ch
 }
 
 func (f *FanOut[T]) Remove(ch chan T) {
 	f.lock.Lock()
+	defer f.lock.Unlock()
+
 	delete(f.subs, ch)
-	f.lock.Unlock()
 }
 
 func (f *FanOut[T]) Close() error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	for ch := range f.subs {
+		close(ch)
+	}
+
 	close(f.C)
+
 	return nil
 }
