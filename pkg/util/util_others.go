@@ -13,9 +13,12 @@ const (
 	SigUpdate = unix.SIGUSR1
 )
 
-func SetupSignals() chan os.Signal {
+func SetupSignals(extraSignals ...os.Signal) chan os.Signal {
+	signals := []os.Signal{unix.SIGINT, unix.SIGTERM}
+	signals = append(signals, extraSignals...)
+
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt, SigUpdate)
+	signal.Notify(ch, signals...)
 
 	return ch
 }

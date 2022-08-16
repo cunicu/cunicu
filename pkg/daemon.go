@@ -42,8 +42,7 @@ type Daemon struct {
 	client  *wgctrl.Client
 	config  *config.Config
 
-	stop    chan any
-	signals chan os.Signal
+	stop chan any
 
 	logger *zap.Logger
 }
@@ -60,7 +59,6 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		config: cfg,
 
 		stop:    make(chan any),
-		signals: util.SetupSignals(),
 	}
 
 	d.logger = zap.L().Named("daemon")
@@ -160,21 +158,23 @@ func (d *Daemon) closeFeatures() error {
 	return nil
 }
 
-func (d *Daemon) Run() {
+func (d *Daemon) Run() error {
 	if err := wg.CleanupUserSockets(); err != nil {
-		d.logger.Fatal("Failed to cleanup stale sockets", zap.Error(err))
+		return fmt.Errorf("failed to cleanup stale userspace sockets: %w", err)
 	}
 
 	if err := d.CreateInterfacesFromArgs(); err != nil {
 		d.logger.Fatal("Failed to create interfaces", zap.Error(err))
 	}
 
+	signals := util.SetupSignals(util.SigUpdate)
+
 	go d.Watcher.Run()
 
 out:
 	for {
 		select {
-		case sig := <-d.signals:
+		case sig := <-signals:
 			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
 			switch sig {
 			case util.SigUpdate:
@@ -189,6 +189,8 @@ out:
 			break out
 		}
 	}
+
+	return nil
 }
 
 func (d *Daemon) IsRunning() bool {

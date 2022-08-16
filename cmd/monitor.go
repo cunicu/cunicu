@@ -41,7 +41,7 @@ out:
 	for {
 		select {
 		case sig := <-signals:
-			logger.Info("Received signal", zap.Any("signal", sig))
+			logger.Debug("Received signal", zap.Any("signal", sig))
 			break out
 
 		case evt := <-client.Events:
