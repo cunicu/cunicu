@@ -48,9 +48,16 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 	ch := top.Subscribe()
 	defer top.Unsubscribe(ch)
 
+	// We send an empty envelope to signal the subscriber that the subscription
+	// has been created. This avoids a race between Subscribe() & Publish() from the
+	// clients view-point.
+	if err := stream.Send(&pb.SignalingEnvelope{}); err != nil {
+		s.logger.Error("Failed to send sync envelope", zap.Error(err))
+	}
+
 	for env := range ch {
 		if err := stream.Send(env); err != nil && err != io.EOF {
-			s.logger.Error("Failed to receive envelope", zap.Error(err))
+			s.logger.Error("Failed to send envelope", zap.Error(err))
 		}
 	}
 
@@ -71,17 +78,18 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Erro
 
 	t := s.getTopic(&pkRecipient)
 
-	// Publishing a message to a topic in which we are the only subscriber is
-	// meaningless as the message will have no audience.
-	// TODO: This is DoS-able. We should probably return some "comeback-and-retry" status code here.
-	t.WaitForSubs(1)
-
 	t.Publish(env)
 
 	s.logger.Debug("Published envelope",
 		zap.Any("recipient", pkRecipient),
-		zap.Any("sender", pkSender),
-		zap.Int("num_subs", len(t.subs)))
+		zap.Any("sender", pkSender))
 
 	return pb.Success, nil
+}
+
+func (s *Server) GracefulStop() {
+	// Close all subscription streams
+	s.topicRegistry.Close()
+
+	s.Server.GracefulStop()
 }

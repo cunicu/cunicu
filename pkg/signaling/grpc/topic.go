@@ -3,9 +3,9 @@ package grpc
 import (
 	"sync"
 
-	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/util"
 )
 
 type topicRegistry struct {
@@ -13,74 +13,59 @@ type topicRegistry struct {
 	topicsLock sync.Mutex
 }
 
-func (s *topicRegistry) getTopic(pk *crypto.Key) *topic {
-	s.topicsLock.Lock()
-	defer s.topicsLock.Unlock()
+func (r *topicRegistry) getTopic(pk *crypto.Key) *topic {
+	r.topicsLock.Lock()
+	defer r.topicsLock.Unlock()
 
-	top, ok := s.topics[*pk]
+	top, ok := r.topics[*pk]
 	if ok {
 		return top
 	}
 
 	top = newTopic()
 
-	s.topics[*pk] = top
+	r.topics[*pk] = top
 
 	return top
 }
 
+func (r *topicRegistry) Close() error {
+	r.topicsLock.Lock()
+	defer r.topicsLock.Unlock()
+
+	for _, t := range r.topics {
+		if err := t.Close(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type topic struct {
-	subs     map[chan *signaling.Envelope]bool
-	subsLock sync.RWMutex
-	subsCond *sync.Cond
+	subs *util.FanOut[*signaling.Envelope]
 }
 
 func newTopic() *topic {
 	t := &topic{
-		subs: make(map[chan *signaling.Envelope]bool),
+		subs: util.NewFanOut[*signaling.Envelope](128),
 	}
-
-	t.subsCond = sync.NewCond(&t.subsLock)
 
 	return t
 }
 
 func (t *topic) Publish(env *signaling.Envelope) {
-	t.subsLock.RLock()
-	defer t.subsLock.RUnlock()
-
-	for s := range t.subs {
-		s <- env
-	}
+	t.subs.C <- env
 }
 
 func (t *topic) Subscribe() chan *signaling.Envelope {
-	t.subsLock.Lock()
-	defer t.subsLock.Unlock()
-
-	c := make(chan *signaling.Envelope)
-
-	t.subs[c] = true
-
-	t.subsCond.Broadcast()
-
-	return c
+	return t.subs.Add()
 }
 
 func (t *topic) Unsubscribe(ch chan *signaling.Envelope) {
-	t.subsLock.Lock()
-	defer t.subsLock.Unlock()
-
-	close(ch)
-	delete(t.subs, ch)
+	t.subs.Remove(ch)
 }
 
-func (t *topic) WaitForSubs(num int) {
-	t.subsLock.Lock()
-	defer t.subsLock.Unlock()
-
-	for len(t.subs) < num {
-		zap.L().Info("Wait for subs", zap.Int("have", len(t.subs)), zap.Int("want", num))
-		t.subsCond.Wait()
-	}
+func (t *topic) Close() error {
+	return t.subs.Close()
 }
