@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-
-	"riasc.eu/wice/pkg/config"
 )
 
 func FindRandomPortToListen(network string, min, max int) (int, error) {
@@ -29,10 +27,6 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 }
 
 func FindNextPortToListen(network string, start, end int) (int, error) {
-	if end == 0 {
-		end = config.EphemeralPortMax
-	}
-
 	if end < start {
 		return -1, fmt.Errorf("minimal port must be larger than maximal port number")
 	}
