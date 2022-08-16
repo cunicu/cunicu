@@ -1,3 +1,5 @@
+//go:build linux
+
 package test_test
 
 import (
@@ -32,8 +34,6 @@ type Network struct {
 	SignalingNodes nodes.SignalingList
 	RelayNodes     nodes.RelayList
 	AgentNodes     nodes.AgentList
-
-	logger *zap.Logger
 }
 
 func (n *Network) Start() {

@@ -3,6 +3,7 @@
 package test_test
 
 import (
+	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/wg"
 	"riasc.eu/wice/test/nodes"
@@ -14,6 +15,10 @@ import (
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 	gfopt "github.com/stv0g/gont/pkg/options/filters"
+)
+
+var (
+	logger *zap.Logger
 )
 
 /* Simple local-area switched topology

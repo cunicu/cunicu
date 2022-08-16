@@ -1,4 +1,6 @@
-package options
+//go:build linux
+
+package wg
 
 import (
 	"net"

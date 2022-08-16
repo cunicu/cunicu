@@ -26,6 +26,7 @@ var _ = Describe("device", func() {
 	var err error
 	var d device.Device
 	var devName string
+	var user bool
 
 	getAddrs := func() []*net.IPNet {
 		intf, _ := net.InterfaceByName(devName)
@@ -40,6 +41,11 @@ var _ = Describe("device", func() {
 	}
 
 	test := func() {
+		BeforeEach(func() {
+			d, err = device.NewDevice(devName, user)
+			Expect(err).To(Succeed())
+		})
+
 		It("have a matching name", func() {
 			Expect(d.Name()).To(Equal(devName))
 		})
@@ -162,8 +168,7 @@ var _ = Describe("device", func() {
 
 	When("using a kernel device", func() {
 		BeforeEach(OncePerOrdered, func() {
-			d, err = device.NewKernelDevice(devName)
-			Expect(err).To(Succeed())
+			user = false
 		})
 
 		test()
@@ -171,8 +176,7 @@ var _ = Describe("device", func() {
 
 	When("using a userspace device", func() {
 		BeforeEach(OncePerOrdered, func() {
-			d, err = device.NewUserDevice(devName)
-			Expect(err).To(Succeed())
+			user = true
 		})
 
 		test()

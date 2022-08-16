@@ -1,3 +1,5 @@
+//go:build linux
+
 package test_test
 
 import (

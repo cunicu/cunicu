@@ -1,3 +1,5 @@
+//go:build linux
+
 package nodes
 
 import (
@@ -35,7 +37,7 @@ type WireGuardInterface struct {
 
 func (i *WireGuardInterface) Apply(a *Agent) {
 	if i.agent != nil {
-		panic(fmt.Errorf("Cant assign interface to more than a single agent"))
+		panic(fmt.Errorf("can not assign interface to more than a single agent"))
 	}
 
 	i.agent = a

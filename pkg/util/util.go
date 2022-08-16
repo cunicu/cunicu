@@ -7,6 +7,8 @@ import (
 	mrand "math/rand"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -74,4 +76,14 @@ func LastTime(ts ...time.Time) time.Time {
 
 func SetupRand() {
 	mrand.Seed(time.Now().UTC().UnixNano())
+}
+
+func SetupSignals(extraSignals ...os.Signal) chan os.Signal {
+	signals := []os.Signal{syscall.SIGINT, syscall.SIGTERM}
+	signals = append(signals, extraSignals...)
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, signals...)
+
+	return ch
 }

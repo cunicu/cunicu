@@ -1,3 +1,4 @@
+// Package hosts synchronizes /etc/hosts with pairs of peer hostname and their respective link-local IP addresses
 package hosts
 
 import (

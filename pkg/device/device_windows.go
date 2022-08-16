@@ -44,5 +44,5 @@ func (d *WindowsKernelDevice) Close() error {
 }
 
 func (d *WindowsKernelDevice) Delete() error {
-	return errors.NotSupported
+	return errors.ErrNotSupported
 }

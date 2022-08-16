@@ -2,10 +2,19 @@
 
 package routes
 
-func (s *RouteSynchronization) syncKernel() {
-	s.logger.Error("Kernel to WireGuard route synchronization is not supported on this platform.")
+import (
+	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/errors"
+)
+
+func (s *RouteSync) removeKernel(p *core.Peer) error {
+	return errors.ErrNotSupported
 }
 
-func (s *RouteSynchronization) watchKernel() {
+func (s *RouteSync) syncKernel() error {
+	return errors.ErrNotSupported
+}
+
+func (s *RouteSync) watchKernel() {
 	s.logger.Error("Kernel to WireGuard route synchronization is not supported on this platform.")
 }
