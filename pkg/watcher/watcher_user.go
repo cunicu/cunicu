@@ -29,8 +29,6 @@ func (w *Watcher) watchUser() error {
 	}
 
 	go func() {
-		w.logger.Debug("Start watching for changes of WireGuard userspace devices")
-
 	out:
 		for {
 			select {

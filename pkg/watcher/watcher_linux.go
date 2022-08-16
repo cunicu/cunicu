@@ -20,8 +20,6 @@ func (w *Watcher) watchKernel() error {
 	}
 
 	go func() {
-		w.logger.Debug("Start watching for changes of WireGuard kernel devices")
-
 	out:
 		for {
 			select {
