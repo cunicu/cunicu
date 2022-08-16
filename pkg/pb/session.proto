@@ -3,23 +3,13 @@ syntax = "proto3";
 package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
-import "candidate.proto";
-
-// SDP-like session description
-// See: https://www.rfc-editor.org/rfc/rfc8866.html
-message SessionDescription {
-    // Session epoch, incremented with each offer
-    int64 epoch = 1;
-
-    // Indicates that an agent is a lite implementation.
-    bool lite = 2;
-
+message Credentials {
     // ICE username fragment
-    string ufrag = 3;
+    string ufrag = 1;
 
     // ICE password
-    string pwd = 4;
+    string pwd = 2;
 
-    // List of ICE candidates used for connectivity checks 
-	repeated Candidate candidates = 5;
+    // Flag to indicate that the sending peer requests the credentials of the receiving peer
+    bool need_creds = 3;
 }

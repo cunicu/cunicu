@@ -1,4 +1,4 @@
-package ep
+package epice
 
 import "github.com/pion/ice/v2"
 
