@@ -94,9 +94,13 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Blocks until stopped
-	daemon.Run()
+	if err := daemon.Run(); err != nil {
+		logger.Fatal("Failed start daemon", zap.Error(err))
+	}
 
 	if err := daemon.Close(); err != nil {
 		logger.Fatal("Failed to stop daemon", zap.Error(err))
 	}
+
+	logger.Info("Gracefully shut down agent")
 }

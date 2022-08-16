@@ -46,11 +46,11 @@ func signal(cmd *cobra.Command, args []string) {
 	svr := grpcx.NewServer(opts...)
 
 	go func() {
-		for sig := range util.SetupSignals() {
-			switch sig {
-			default:
-				svr.Stop()
-			}
+		signals := util.SetupSignals()
+		for sig := range signals {
+			logger.Debug("Received signal", zap.Any("signal", sig))
+
+			svr.GracefulStop()
 		}
 	}()
 
@@ -59,4 +59,6 @@ func signal(cmd *cobra.Command, args []string) {
 	if err := svr.Serve(l); err != nil {
 		logger.Fatal("Failed to start gRPC server", zap.Error(err))
 	}
+
+	logger.Info("Gracefully stopped gRPC signaling server")
 }
