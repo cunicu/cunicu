@@ -1,6 +1,6 @@
 # Session Signaling
 
-Lets assume two WireGuard peers $P_a$ & $P_b$ are seeking to establish a ICE session.
+Lets assume two peers $P_a$ & $P_b$ are seeking to establish a ICE session.
 
 The smaller public key (PK) of the two peers takes the role of the controlling agent.
 In this example PA has the role of the controlling agent as: $PK(P_a) < PK(P_b)$.
@@ -18,6 +18,30 @@ sequenceDiagram
 
     Pb ->> b: SessionDescription(Pb -> Pa)
     b ->> Pa: SessionDescription(Pb -> Pa)
+```
+
+```mermaid title="ICE ConnectionState state diagram"
+stateDiagram-v2 
+    [*] --> Idle: Send initial PeerDescription
+
+    note right of Idle
+        Waiting for remote agent to be ready
+    end note
+
+    Idle --> New: Received initial PeerDescription<br>Create new ICE Agent
+
+    note right of New
+        Start gathering local candidates
+    end note
+
+    New --> Connecting
+    Connecting --> Checking
+    Checking --> Connected
+    Connected --> Disconnected
+    Checking --> Failed
+    Completed --> Closed
+    Failed --> Closed
+    Disconnected --> Closed
 ```
 
 ## Session Description
@@ -45,24 +69,36 @@ Checkout the [`Backend`](../pkg/signaling/backend.go) interface for implementing
 
 A backend must:
 
--   Allow the exchange of _envelopes_ between peers using their public keys.
--   Guarantee a reliable delivery of _envelopes_.
--   Not require not open _envelopes_ (require the knowledge of private keys).
+-   Must facilitate a reliable delivery _envelopes_ between peers using their public keys as addresses.
+-   Must support delivery of _envelopes_ to a group of recipients (e.g. multicast).
 -   May deliver the _envelopes_ out-of-order.
--   Shall be stateless (not buffer any _envelopes_ if the recipient is not yet know or reachable).
+-   May discard _envelopes_ if the recipient is not yet known or reachable.
+-   Shall be stateless. It shall not buffer or record any _envelopes_.
 
 ### Interface
 
 All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/stv0g/wice/blob/master/pkg/signaling/backend.go):
 
 ```go
+type Message = pb.SignalingMessage
+
+type MessageHandler interface {
+	OnSignalingMessage(*crypto.PublicKeyPair, *Message)
+}
+
 type Backend interface {
 	io.Closer
 
 	// Publish a signaling message to a specific peer
-	Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error
+	Publish(ctx context.Context, kp *crypto.KeyPair, msg *Message) error
 
-	// Get a stream of messages from a specific peer
-	Subscribe(ctx context.Context, kp *crypto.KeyPair) (chan *signaling.Message, error)
+	// Subscribe to messages send by a specific peer
+	Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error
+
+	// Subscribe to all messages irrespectively of sender
+	SubscribeAll(ctx context.Context, sk *crypto.Key, h MessageHandler) error
+
+	// Returns the backends type identifier
+	Type() pb.BackendType
 }
 ```
