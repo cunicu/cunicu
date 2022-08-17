@@ -3,6 +3,7 @@
 package wg
 
 import (
+	"fmt"
 	"net"
 
 	g "github.com/stv0g/gont/pkg"
@@ -38,7 +39,9 @@ func AddressIPv4(a, b, c, d byte, m int) Address {
 	}
 }
 
-func AddressIP(str string) Address {
+func AddressIP(fmts string, args ...any) Address {
+	str := fmt.Sprintf(fmts, args...)
+
 	ip, n, _ := net.ParseCIDR(str)
 
 	return Address{
