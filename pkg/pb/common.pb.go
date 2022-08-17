@@ -20,21 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ICE Connection state from pion/ice/ice.go
 type ConnectionState int32
 
 const (
-	ConnectionState_NEW          ConnectionState = 0   // ConnectionStateNew ICE agent is gathering addresses
-	ConnectionState_CHECKING     ConnectionState = 1   // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
-	ConnectionState_CONNECTED    ConnectionState = 2   // ConnectionStateConnected ICE agent has a pairing, but is still checking other pairs
-	ConnectionState_COMPLETED    ConnectionState = 3   // ConnectionStateCompleted ICE agent has finished
-	ConnectionState_FAILED       ConnectionState = 4   // ConnectionStateFailed ICE agent never could successfully connect
-	ConnectionState_DISCONNECTED ConnectionState = 5   // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
-	ConnectionState_CLOSED       ConnectionState = 6   // ConnectionStateClosed ICE agent has finished and is no longer handling requests
-	ConnectionState_UNKNOWN      ConnectionState = 100 // ConnectionStateUnknown ICE agent has not been created yet
-	ConnectionState_IDLE         ConnectionState = 101 // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
-	ConnectionState_CONNECTING   ConnectionState = 102 // ConnectionStateConnecting ICE agent is now connecting to the remote
-	ConnectionState_CLOSING      ConnectionState = 103 // ConnectionStateClosing ICE agent is now closing
+	// ICE Connection state from pion/ice/ice.go
+	ConnectionState_NEW          ConnectionState = 0 // ConnectionStateNew ICE agent is gathering addresses
+	ConnectionState_CHECKING     ConnectionState = 1 // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
+	ConnectionState_CONNECTED    ConnectionState = 2 // ConnectionStateConnected ICE agent has a pairing, but is still checking other pairs
+	ConnectionState_COMPLETED    ConnectionState = 3 // ConnectionStateCompleted ICE agent has finished
+	ConnectionState_FAILED       ConnectionState = 4 // ConnectionStateFailed ICE agent never could successfully connect
+	ConnectionState_DISCONNECTED ConnectionState = 5 // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
+	ConnectionState_CLOSED       ConnectionState = 6 // ConnectionStateClosed ICE agent has finished and is no longer handling requests
+	// Extended ICE Connection state from wice/pkg/ice/types.go
+	ConnectionState_UNKNOWN    ConnectionState = 100 // ConnectionStateUnknown ICE agent has not been created yet
+	ConnectionState_IDLE       ConnectionState = 101 // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
+	ConnectionState_CONNECTING ConnectionState = 102 // ConnectionStateConnecting ICE agent is now connecting to the remote
+	ConnectionState_CLOSING    ConnectionState = 103 // ConnectionStateClosing ICE agent is now closing
 )
 
 // Enum value maps for ConnectionState.
