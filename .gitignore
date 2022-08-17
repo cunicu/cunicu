@@ -4,4 +4,5 @@ dist/
 /wice
 *.log
 *.out
+*.out.*
 lcov.info
