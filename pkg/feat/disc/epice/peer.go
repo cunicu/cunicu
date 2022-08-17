@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/pion/ice/v2"
@@ -11,16 +12,11 @@ import (
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
+	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/log"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
-)
-
-const (
-	ConnectionStateIdle       = 100
-	ConnectionStateConnecting = 101
-	ConnectionStateClosing    = 102
 )
 
 type Peer struct {
@@ -34,7 +30,7 @@ type Peer struct {
 	proxy   proxy.Proxy
 
 	// TODO: Avoid races around connection state
-	ConnectionState ice.ConnectionState
+	ConnectionState icex.ConnectionState
 
 	agentConfig *ice.AgentConfig
 	agent       *ice.Agent
@@ -48,10 +44,12 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	var err error
 
 	p := &Peer{
-		Peer:      cp,
-		Interface: i,
-		backend:   i.Discovery.backend,
-		config:    i.Discovery.config,
+		Peer:            cp,
+		Interface:       i,
+		ConnectionState: icex.ConnectionStateUnknown,
+
+		backend: i.Discovery.backend,
+		config:  i.Discovery.config,
 
 		logger: zap.L().Named("ice.peer").With(
 			zap.String("intf", i.Name()),
@@ -104,7 +102,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 
 // Close destroys the peer as well as the ICE agent and proxies
 func (p *Peer) Close() error {
-	p.ConnectionState = ConnectionStateClosing
+	p.setConnectionState(icex.ConnectionStateClosing)
 
 	if err := p.agent.Close(); err != nil {
 		return fmt.Errorf("failed to close ICE agent: %w", err)
@@ -198,7 +196,7 @@ func (p *Peer) newAgent() (*ice.Agent, error) {
 		return nil, fmt.Errorf("failed to setup on connection state handler: %w", err)
 	}
 
-	p.ConnectionState = ConnectionStateIdle
+	p.setConnectionState(icex.ConnectionStateIdle)
 
 	return agent, nil
 }
@@ -271,4 +269,22 @@ func (p *Peer) connect(ufrag, pwd string) error {
 	}
 
 	return nil
+}
+
+func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState {
+	prev := p.ConnectionState
+	p.ConnectionState = new
+
+	// Suppress initial invocation of handler from NewPeer()
+	if prev != icex.ConnectionStateUnknown {
+		p.logger.Info("Connection state changed",
+			zap.String("new", strings.ToLower(new.String())),
+			zap.String("previous", strings.ToLower(prev.String())))
+
+		for _, h := range p.Interface.Discovery.onConnectionStateChange {
+			h.OnConnectionStateChange(p, new, prev)
+		}
+	}
+
+	return prev
 }

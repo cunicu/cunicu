@@ -54,7 +54,8 @@ message InterfaceModifiedEvent {
 }
 
 message PeerConnectionStateChangeEvent {
-    ConnectionState new_state = 3;
+    ConnectionState new_state = 1;
+    ConnectionState prev_state = 2;
 }
 
 message BackendReadyEvent {
