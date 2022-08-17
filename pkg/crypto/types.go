@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"net"
-	"path"
 
 	"github.com/aead/siphash"
 	"golang.org/x/crypto/curve25519"
@@ -42,10 +41,6 @@ func GenerateKeyFromPassword(pw string) Key {
 	key[31] |= 64
 
 	return *(*Key)(key)
-}
-
-func PrivateKeyFromStrings(names ...string) Key {
-	return GenerateKeyFromPassword(path.Join(names...))
 }
 
 func GenerateKey() (Key, error) {
