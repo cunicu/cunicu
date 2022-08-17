@@ -5,9 +5,11 @@ package nodes
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/pion/ice/v2"
 	"github.com/vishvananda/netlink"
@@ -16,6 +18,8 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/wg"
 )
+
+type WireGuardPeerSelectorFunc func(i, j *WireGuardInterface) bool
 
 type WireGuardInterfaceOption interface {
 	Apply(i *WireGuardInterface)
@@ -32,6 +36,7 @@ type WireGuardInterface struct {
 
 	WriteConfigFile      bool
 	SetupKernelInterface bool
+	PeerSelector         WireGuardPeerSelectorFunc
 
 	agent *Agent
 }
@@ -48,6 +53,7 @@ func (i *WireGuardInterface) Apply(a *Agent) {
 
 func NewWireGuardInterface(name string) *WireGuardInterface {
 	lp := wg.DefaultPort
+	sk, _ := crypto.GeneratePrivateKey()
 
 	return &WireGuardInterface{
 		Name:                 name,
@@ -55,17 +61,12 @@ func NewWireGuardInterface(name string) *WireGuardInterface {
 		WriteConfigFile:      false,
 		Config: wgtypes.Config{
 			ListenPort: &lp,
+			PrivateKey: (*wgtypes.Key)(&sk),
 		},
 	}
 }
 
 func (i *WireGuardInterface) Create() error {
-	// Generate private key if not provided
-	if i.PrivateKey == nil {
-		sk := crypto.PrivateKeyFromStrings(i.agent.Name(), i.Name)
-		i.PrivateKey = (*wgtypes.Key)(&sk)
-	}
-
 	if i.WriteConfigFile {
 		if err := i.WriteConfig(); err != nil {
 			return fmt.Errorf("failed to write config file: %w", err)
@@ -130,7 +131,7 @@ func (i *WireGuardInterface) SetupKernel() error {
 	return i.Configure(i.Config)
 }
 
-func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) error {
+func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) {
 	aIPs := []net.IPNet{}
 	for _, addr := range peer.Addresses {
 		var mask net.IPMask
@@ -146,14 +147,11 @@ func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) error {
 		})
 	}
 
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				PublicKey:  wgtypes.Key(peer.PrivateKey.PublicKey()),
-				AllowedIPs: aIPs,
-			},
-		},
-	}
+	i.Peers = append(i.Peers, wgtypes.PeerConfig{
+		PublicKey:  wgtypes.Key(peer.PrivateKey.PublicKey()),
+		AllowedIPs: aIPs,
+	})
+}
 
 func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterface) error {
 	env := []string{"LC_ALL=C"} // fix issues with parsing of -W and -i options

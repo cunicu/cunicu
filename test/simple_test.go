@@ -3,6 +3,8 @@
 package test_test
 
 import (
+	"fmt"
+
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/wg"
@@ -51,6 +53,10 @@ var _ = Context("simple", Serial, func() {
 			gopt.EmptyDir(wg.ConfigPath),
 			gopt.EmptyDir(wg.SocketPath),
 		)
+
+		n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
+			wopt.FullMeshPeers,
+		)
 	})
 
 	AfterEach(func() {
@@ -88,48 +94,33 @@ var _ = Context("simple", Serial, func() {
 
 		By("Initializing agent nodes")
 
-		wopts1 := gopt.Customize(n.WireGuardInterfaceOptions,
-			wopt.AddressIP("172.16.0.1/16"),
-			wopt.PeerFromNames("n2", "wg0",
-				wopt.AllowedIPStr("172.16.0.2/32"),
-			),
-		)
+		CreateAgent := func(i int) *nodes.Agent {
+			name := fmt.Sprintf("n%d", i)
+			n, err := nodes.NewAgent(n.Network, name,
+				gopt.Customize(n.AgentOptions,
+					gopt.Interface("eth0", sw1,
+						gopt.AddressIP("10.0.1.%d/16", i),
+						gopt.AddressIP("fc::1:%d/64", i),
+					),
+					wopt.Interface("wg0",
+						gopt.Customize(n.WireGuardInterfaceOptions,
+							wopt.AddressIP("172.16.0.%d/16", i),
+						)...),
+				)...)
+			Expect(err).To(Succeed(), "Failed to create agent node: %s", err)
 
-		aopts1 := gopt.Customize(n.AgentOptions,
-			gopt.Interface("eth0", sw1,
-				gopt.AddressIP("10.0.1.1/16"),
-				gopt.AddressIP("fc::1:1/64"),
-			),
-			wopt.Interface("wg0", wopts1...),
-		)
-
-		n1, err := nodes.NewAgent(nw, "n1", aopts1...)
-		Expect(err).To(Succeed(), "Failed to create agent node: %s", err)
-
-		wopts2 := gopt.Customize(n.WireGuardInterfaceOptions,
-			wopt.AddressIP("172.16.0.2/16"),
-			wopt.PeerFromNames("n1", "wg0",
-				wopt.AllowedIPStr("172.16.0.1/32"),
-			),
-		)
-
-		aopts2 := gopt.Customize(n.AgentOptions,
-			gopt.Interface("eth0", sw1,
-				gopt.AddressIP("10.0.1.2/16"),
-				gopt.AddressIP("fc::1:2/64"),
-			),
-			wopt.Interface("wg0", wopts2...),
-		)
-
-		n2, err := nodes.NewAgent(nw, "n2", aopts2...)
-		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
+			return n
+		}
 
 		By("Starting network")
 
 		n.Network = nw
 		n.RelayNodes = nodes.RelayList{r1}
 		n.SignalingNodes = nodes.SignalingList{s1}
-		n.AgentNodes = nodes.AgentList{n1, n2}
+		n.AgentNodes = nodes.AgentList{
+			CreateAgent(1),
+			CreateAgent(2),
+		}
 
 		n.Start()
 	})
