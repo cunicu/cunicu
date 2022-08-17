@@ -22,26 +22,27 @@ sequenceDiagram
 
 ```mermaid title="ICE ConnectionState state diagram"
 stateDiagram-v2 
-    [*] --> Idle: Send initial PeerDescription
-
-    note right of Idle
-        Waiting for remote agent to be ready
+    [*] --> Unknown
+    
+    note right of Unknown
+        No agent exists
     end note
 
-    Idle --> New: Received initial PeerDescription<br>Create new ICE Agent
+    Unknown --> Idle: 1. Create new agent<br>2. Send local credentials
 
-    note right of New
-        Start gathering local candidates
-    end note
+    Idle --> New: On remote credentials<br>1. Start gathering local candidates
 
-    New --> Connecting
+    New --> Connecting: On remote candidate<br>1. Connect
     Connecting --> Checking
     Checking --> Connected
-    Connected --> Disconnected
     Checking --> Failed
+    Completed --> Disconnected
+    Connected --> Disconnected
+    Connected --> Completed
     Completed --> Closed
-    Failed --> Closed
     Disconnected --> Closed
+    Closed --> Idle: 1. Create new agent<br>2. Send local credentials
+    Failed --> Closed
 ```
 
 ## Session Description
