@@ -68,6 +68,15 @@ func (n *Network) Start() {
 		extraArgs = append(extraArgs, "--backend", s.URL())
 	}
 
+	By("Adding peers")
+
+	n.AgentNodes.ForEachInterfacePair(func(a, b *nodes.WireGuardInterface) error {
+		if a.PeerSelector != nil && a.PeerSelector(a, b) {
+			a.AddPeer(b)
+		}
+		return nil
+	})
+
 	By("Starting agent nodes")
 
 	err = n.AgentNodes.Start(binaryPath, n.BasePath, extraArgs...)

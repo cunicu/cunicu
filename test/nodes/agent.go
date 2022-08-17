@@ -78,16 +78,16 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
 	}
 
-	// Create and configure WireGuard interfaces
-	if err := a.ConfigureWireGuardInterfaces(); err != nil {
-		return nil, err
-	}
-
 	return a, nil
 }
 
 func (a *Agent) Start(binary, dir string, extraArgs ...any) error {
 	var err error
+
+	// Create and configure WireGuard interfaces
+	if err := a.ConfigureWireGuardInterfaces(); err != nil {
+		return fmt.Errorf("failed to configure WireGuard interfaces: %w", err)
+	}
 
 	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
 	var logPath = fmt.Sprintf("%s.log", a.Name())

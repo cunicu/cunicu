@@ -54,7 +54,7 @@ var _ = Context("scaling", Serial, func() {
 				"--ice-candidate-type=srflx",
 			},
 		)
-		NumAgents = 2
+		NumAgents = 4
 	})
 
 	AfterEach(func() {
@@ -93,29 +93,18 @@ var _ = Context("scaling", Serial, func() {
 		By("Initializing agent nodes")
 
 		for i := 1; i <= NumAgents; i++ {
-			wgopts := []g.Option{
-				wopt.AddressIPv4(172, 16, 0, byte(i), 16),
-			}
-
-			for j := 1; j <= NumAgents; j++ {
-				if i != j {
-					wgopts = append(wgopts,
-						wopt.PeerFromNames(fmt.Sprintf("n%d", j), "wg0",
-							wopt.AllowedIPv4(172, 16, 0, byte(j), 32),
-						),
-					)
-				}
-			}
-
-			opts := gopt.Customize(n.AgentOptions,
-				gopt.Interface("eth0", sw1,
-					gopt.AddressIPv4(10, 0, 1, byte(i), 16),
-					gopt.AddressIP(fmt.Sprintf("fc::1:%d/64", i)),
-				),
-				wopt.Interface("wg0", wgopts...),
+			node, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
+				gopt.Customize(n.AgentOptions,
+					gopt.Interface("eth0", sw1,
+						gopt.AddressIPv4(10, 0, 1, byte(i), 16),
+						gopt.AddressIP(fmt.Sprintf("fc::1:%d/64", i)),
+					),
+					wopt.Interface("wg0",
+						wopt.AddressIPv4(172, 16, 0, byte(i), 16),
+						wopt.FullMeshPeers,
+					),
+				)...,
 			)
-
-			node, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i), opts...)
 			Expect(err).To(Succeed(), "Failed to create node: %s", err)
 
 			n.AgentNodes = append(n.AgentNodes, node)

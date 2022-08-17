@@ -88,8 +88,3 @@ func Peer(pk crypto.Key, opts ...nodes.WireGuardPeerOption) *nodes.WireGuardPeer
 
 	return p
 }
-
-func PeerFromNames(agentName, intfName string, opts ...nodes.WireGuardPeerOption) *nodes.WireGuardPeer {
-	sk := crypto.PrivateKeyFromStrings(agentName, intfName)
-	return Peer(sk.PublicKey(), opts...)
-}

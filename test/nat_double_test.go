@@ -127,9 +127,7 @@ var _ = Context("nat double", Serial, func() {
 			gopt.DefaultGatewayIP("fc:1::1"),
 			wopt.Interface("wg0",
 				wopt.AddressIP("172.16.0.1/16"),
-				wopt.PeerFromNames("n2", "wg0",
-					wopt.AllowedIPStr("172.16.0.2/32"),
-				),
+				wopt.FullMeshPeers,
 			),
 		)
 
@@ -161,9 +159,7 @@ var _ = Context("nat double", Serial, func() {
 			gopt.DefaultGatewayIP("fc:1::1"),
 			wopt.Interface("wg0",
 				wopt.AddressIP("172.16.0.2/16"),
-				wopt.PeerFromNames("n1", "wg0",
-					wopt.AllowedIPStr("172.16.0.1/32"),
-				),
+				wopt.FullMeshPeers,
 			),
 		)
 
