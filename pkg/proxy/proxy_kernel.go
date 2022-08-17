@@ -101,7 +101,7 @@ func (p *KernelProxy) copy(dst io.Writer, src io.Reader) {
 
 		n, err := src.Read(buf)
 		if err != nil {
-			if errors.Is(err, io.EOF) {
+			if errors.Is(err, ice.ErrClosed) || errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
 				return
 			}
 
