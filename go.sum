@@ -544,6 +544,8 @@ github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PK
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stv0g/gont v1.5.4 h1:LUoQrsBmOPjc5Z3HVKe2e84dNqoZCCllVERkRQuU3Vg=
 github.com/stv0g/gont v1.5.4/go.mod h1:7A5ZW774xtgEH/rBhQak4n4VGY7MH5kH6gzbiUI166A=
+github.com/stv0g/gont v1.5.5 h1:Whrb/q2pWd+73VnIL8EI4sGNeWMXOzSJi5JqESDlds0=
+github.com/stv0g/gont v1.5.5/go.mod h1:7A5ZW774xtgEH/rBhQak4n4VGY7MH5kH6gzbiUI166A=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/subosito/gotenv v1.4.0 h1:yAzM1+SmVcz5R4tXGsNMu1jUl2aOJXoiWUCEwwnGrvs=
 github.com/subosito/gotenv v1.4.0/go.mod h1:mZd6rFysKEcUhUHXJk0C/08wAgyDBFuwEYL7vWWGaGo=

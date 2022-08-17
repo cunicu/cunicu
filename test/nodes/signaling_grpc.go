@@ -4,7 +4,6 @@ package nodes
 
 import (
 	"fmt"
-	"math/rand"
 	"net"
 	"net/url"
 	"os/exec"
@@ -14,9 +13,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 )
-
-const portMin = 1<<15 + 1<<14
-const portMax = 1<<16 - 1
 
 type GrpcSignalingNode struct {
 	*g.Host
@@ -36,7 +32,7 @@ func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (Signalin
 
 	t := &GrpcSignalingNode{
 		Host:   h,
-		port:   rand.Intn(portMax-portMin) + portMin,
+		port:   8080,
 		logger: zap.L().Named("node.signal").With(zap.String("node", name)),
 	}
 
