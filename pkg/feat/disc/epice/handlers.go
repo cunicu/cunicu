@@ -1,7 +1,7 @@
 package epice
 
-import "github.com/pion/ice/v2"
+import icex "riasc.eu/wice/pkg/ice"
 
 type OnConnectionStateHandler interface {
-	OnConnectionStateChange(*Peer, ice.ConnectionState)
+	OnConnectionStateChange(p *Peer, new, prev icex.ConnectionState)
 }

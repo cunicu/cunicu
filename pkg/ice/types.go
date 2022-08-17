@@ -84,3 +84,27 @@ func (u *URL) UnmarshalText(text []byte) error {
 func (u URL) MarshalText() ([]byte, error) {
 	return []byte(u.String()), nil
 }
+
+const (
+	ConnectionStateUnknown    ConnectionState = 100
+	ConnectionStateIdle       ConnectionState = 101
+	ConnectionStateConnecting ConnectionState = 102
+	ConnectionStateClosing    ConnectionState = 103
+)
+
+type ConnectionState ice.ConnectionState
+
+func (cs ConnectionState) String() string {
+	switch cs {
+	case ConnectionStateUnknown:
+		return "Unknown"
+	case ConnectionStateIdle:
+		return "Idle"
+	case ConnectionStateConnecting:
+		return "Connecting"
+	case ConnectionStateClosing:
+		return "Closing"
+	default:
+		return ice.ConnectionState(cs).String()
+	}
+}

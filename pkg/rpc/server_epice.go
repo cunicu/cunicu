@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/feat/disc/epice"
+	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -65,7 +65,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEv
 	}
 }
 
-func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, cs ice.ConnectionState) {
+func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, new, prev icex.ConnectionState) {
 	s.events.C <- &pb.Event{
 		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
 
@@ -74,7 +74,8 @@ func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, cs ice.
 
 		Event: &pb.Event_PeerConnectionStateChange{
 			PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-				NewState: pb.NewConnectionState(cs),
+				NewState:  pb.NewConnectionState(new),
+				PrevState: pb.NewConnectionState(prev),
 			},
 		},
 	}

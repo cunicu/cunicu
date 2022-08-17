@@ -5,15 +5,21 @@ option go_package = "riasc.eu/wice/pkg/pb";
 
 message Void {}
 
-// ICE Connection state from pion/ice/ice.go
 enum ConnectionState {
-    NEW = 0;              // ConnectionStateNew ICE agent is gathering addresses
+	// ICE Connection state from pion/ice/ice.go
+	NEW = 0;              // ConnectionStateNew ICE agent is gathering addresses
 	CHECKING = 1;         // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
 	CONNECTED = 2;        // ConnectionStateConnected ICE agent has a pairing, but is still checking other pairs
 	COMPLETED = 3;        // ConnectionStateCompleted ICE agent has finished
 	FAILED = 4;           // ConnectionStateFailed ICE agent never could successfully connect
 	DISCONNECTED = 5;     // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
 	CLOSED = 6;           // ConnectionStateClosed ICE agent has finished and is no longer handling requests
+
+	// Extended ICE Connection state from wice/pkg/ice/types.go
+	UNKNOWN = 100;        // ConnectionStateUnknown ICE agent has not been created yet
+	IDLE = 101;           // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
+	CONNECTING = 102;     // ConnectionStateConnecting ICE agent is now connecting to the remote
+	CLOSING = 103;        // ConnectionStateClosing ICE agent is now closing
 }
 
 // An UNIX timestamp since 1970-01-01 (UTC)

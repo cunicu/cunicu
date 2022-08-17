@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
+	icex "riasc.eu/wice/pkg/ice"
 )
 
 var (
@@ -57,7 +58,7 @@ func (t *Timestamp) Time() time.Time {
 	return time.Unix(t.Seconds, int64(t.Nanos))
 }
 
-func NewConnectionState(s ice.ConnectionState) ConnectionState {
+func NewConnectionState(s icex.ConnectionState) ConnectionState {
 	switch s {
 	case ice.ConnectionStateNew:
 		return ConnectionState_NEW
@@ -73,6 +74,15 @@ func NewConnectionState(s ice.ConnectionState) ConnectionState {
 		return ConnectionState_DISCONNECTED
 	case ice.ConnectionStateClosed:
 		return ConnectionState_CLOSED
+
+	case icex.ConnectionStateClosing:
+		return ConnectionState_CLOSING
+	case icex.ConnectionStateConnecting:
+		return ConnectionState_CONNECTING
+	case icex.ConnectionStateIdle:
+		return ConnectionState_IDLE
+	case icex.ConnectionStateUnknown:
+		return ConnectionState_UNKNOWN
 	}
 
 	return -1

@@ -2,11 +2,11 @@ package epice
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
+	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
@@ -16,23 +16,16 @@ import (
 func (p *Peer) onConnectionStateChange(cs ice.ConnectionState) {
 	var err error
 
-	prevConnectionState := p.ConnectionState
-	p.ConnectionState = cs
+	csx := icex.ConnectionState(cs)
+	prevConnectionState := p.setConnectionState(csx)
 
-	p.logger.Info("Connection state changed",
-		zap.String("state", strings.ToLower(cs.String())))
-
-	for _, h := range p.Interface.Discovery.onConnectionStateChange {
-		h.OnConnectionStateChange(p, cs)
-	}
-
-	if cs == ice.ConnectionStateFailed {
+	if cs == ice.ConnectionStateFailed || cs == ice.ConnectionStateDisconnected {
 		// TODO: Add some random delay?
 
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
-	} else if cs == ice.ConnectionStateClosed && prevConnectionState != ConnectionStateClosing {
+	} else if cs == ice.ConnectionStateClosed && prevConnectionState != icex.ConnectionStateClosing {
 		if p.agent, err = p.newAgent(); err != nil {
 			p.logger.Error("Failed to create agent", zap.Error(err))
 			return
@@ -77,8 +70,8 @@ func (p *Peer) onRemoteCredentials(c *pb.Credentials) {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
 	} else {
-		if p.ConnectionState == ConnectionStateIdle {
-			p.ConnectionState = ice.ConnectionStateNew
+		if p.ConnectionState == icex.ConnectionStateIdle {
+			p.setConnectionState(ice.ConnectionStateNew)
 
 			if err := p.agent.SetRemoteCredentials(c.Ufrag, c.Pwd); err != nil {
 				p.logger.Error("Failed to set remote credentials", zap.Error(err))
@@ -112,7 +105,7 @@ func (p *Peer) onRemoteCandidate(c *pb.Candidate) {
 	}
 
 	if p.ConnectionState == ice.ConnectionStateNew {
-		p.ConnectionState = ConnectionStateConnecting
+		p.setConnectionState(icex.ConnectionStateConnecting)
 
 		ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
 		if err != nil {
