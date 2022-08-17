@@ -3,7 +3,6 @@ package test_test
 import (
 	"flag"
 	"math/rand"
-	"os"
 	"testing"
 	"time"
 
@@ -28,8 +27,7 @@ func init() {
 }
 
 func TestSuite(t *testing.T) {
-	// rand.Seed(GinkgoRandomSeed())
-	rand.Seed(time.Now().UnixMilli() + int64(os.Getpid()))
+	rand.Seed(GinkgoRandomSeed())
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Test Suite", types.ReporterConfig{
