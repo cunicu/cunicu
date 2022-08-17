@@ -156,12 +156,12 @@ func (c *CoturnNode) URLs() []*ice.URL {
 			Port:   stunPort,
 			Proto:  ice.ProtoTypeUDP,
 		},
-		// {
-		// 	Scheme: ice.SchemeTypeTURN,
-		// 	Host:   host,
-		// 	Port:   stunPort,
-		// 	Proto:  ice.ProtoTypeUDP,
-		// },
+		{
+			Scheme: ice.SchemeTypeTURN,
+			Host:   host,
+			Port:   stunPort,
+			Proto:  ice.ProtoTypeUDP,
+		},
 		{
 			Scheme: ice.SchemeTypeTURN,
 			Host:   host,
