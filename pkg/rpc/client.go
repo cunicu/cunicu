@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -72,7 +73,6 @@ func Connect(path string) (*Client, error) {
 
 		grpc:             conn,
 		logger:           logger,
-		Events:           make(chan *pb.Event, 100),
 		connectionStates: make(map[crypto.Key]ice.ConnectionState),
 	}
 	client.connectionStatesCond = sync.NewCond(&client.connectionStatesLock)
@@ -90,12 +90,20 @@ func Connect(path string) (*Client, error) {
 }
 
 func (c *Client) Close() error {
-	close(c.Events)
+	if err := c.grpc.Close(); err != nil {
+		return fmt.Errorf("failed to close gRPC client connection: %w", err)
+	}
 
-	return c.grpc.Close()
+	// Wait until event channel is closed
+	<-c.Events
+
+	return nil
 }
 
 func (c *Client) streamEvents() {
+	c.Events = make(chan *pb.Event, 100)
+	defer close(c.Events)
+
 	stream, err := c.StreamEvents(context.Background(), &pb.StreamEventsParams{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
@@ -136,29 +144,40 @@ func (c *Client) streamEvents() {
 	}
 }
 
-func (c *Client) WaitForEvent(t pb.Event_Type, intf string, peer crypto.Key) *pb.Event {
-	for e := range c.Events {
-		if e.Type != t {
-			continue
-		}
+func (c *Client) WaitForEvent(ctx context.Context, t pb.Event_Type, intf string, peer crypto.Key) (*pb.Event, error) {
+	for {
+		select {
+		case e, ok := <-c.Events:
+			if !ok {
+				return nil, errors.New("event channel closed")
+			}
 
-		if intf != "" && intf != e.Interface {
-			continue
-		}
+			if e.Type != t {
+				continue
+			}
 
-		if peer.IsSet() && !bytes.Equal(peer.Bytes(), e.Peer) {
-			continue
-		}
+			if intf != "" && intf != e.Interface {
+				continue
+			}
 
-		return e
+			if peer.IsSet() && !bytes.Equal(peer.Bytes(), e.Peer) {
+				continue
+			}
+
+			return e, nil
+
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
 	}
-
-	return nil
 }
 
-func (c *Client) WaitForPeerHandshake(peer crypto.Key) {
+func (c *Client) WaitForPeerHandshake(ctx context.Context, peer crypto.Key) error {
 	for {
-		e := c.WaitForEvent(pb.Event_PEER_MODIFIED, "", peer)
+		e, err := c.WaitForEvent(ctx, pb.Event_PEER_MODIFIED, "", peer)
+		if err != nil {
+			return err
+		}
 
 		ee, ok := e.Event.(*pb.Event_PeerModified)
 		if !ok {
@@ -167,21 +186,29 @@ func (c *Client) WaitForPeerHandshake(peer crypto.Key) {
 
 		mod := core.PeerModifier(ee.PeerModified.Modified)
 		if mod.Is(core.PeerModifiedHandshakeTime) {
-			return
+			return nil
 		}
 	}
 }
 
-func (c *Client) WaitForPeerConnectionState(peer crypto.Key, csd ice.ConnectionState) {
-	for {
-		c.connectionStatesLock.Lock()
-		for {
-			if cs, ok := c.connectionStates[peer]; ok && cs == csd {
-				c.connectionStatesLock.Unlock()
-				return
-			}
-
-			c.connectionStatesCond.Wait()
+func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key, csd ice.ConnectionState) error {
+	go func() {
+		if ch := ctx.Done(); ch != nil {
+			<-ch
+			c.connectionStatesCond.Broadcast()
 		}
+	}()
+
+	c.connectionStatesLock.Lock()
+	defer c.connectionStatesLock.Unlock()
+
+	for ctx.Err() == nil {
+		if cs, ok := c.connectionStates[peer]; ok && cs == csd {
+			return nil
+		}
+
+		c.connectionStatesCond.Wait()
 	}
+
+	return ctx.Err()
 }

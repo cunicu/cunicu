@@ -3,6 +3,7 @@
 package nodes
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -149,8 +150,8 @@ func (a *Agent) Close() error {
 	return nil
 }
 
-func (a *Agent) WaitBackendReady() error {
-	a.Client.WaitForEvent(pb.Event_BACKEND_READY, "", crypto.Key{})
+func (a *Agent) WaitBackendReady(ctx context.Context) error {
+	a.Client.WaitForEvent(ctx, pb.Event_BACKEND_READY, "", crypto.Key{})
 
 	return nil
 }
