@@ -5,6 +5,7 @@ package test_test
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -123,7 +124,7 @@ func (n *Network) ConnectivityTests() {
 func (n *Network) Init() {
 	*n = Network{}
 
-	n.Name = fmt.Sprintf("wice-%d", GinkgoRandomSeed())
+	n.Name = fmt.Sprintf("wice-%d", rand.Uint32())
 
 	name := GinkgoT().Name()
 	n.BasePath = filepath.Join(strings.Split(name, " ")...)
