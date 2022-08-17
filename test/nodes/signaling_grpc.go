@@ -37,7 +37,7 @@ func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (Signalin
 	t := &GrpcSignalingNode{
 		Host:   h,
 		port:   rand.Intn(portMax-portMin) + portMin,
-		logger: zap.L().Named("signal." + name),
+		logger: zap.L().Named("node.signal").With(zap.String("node", name)),
 	}
 
 	return t, nil

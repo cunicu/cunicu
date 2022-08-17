@@ -60,7 +60,7 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 		WireGuardConfigPath: wg.ConfigPath,
 		ExtraArgs:           []any{},
 
-		logger: zap.L().Named("agent." + name),
+		logger: zap.L().Named("node.agent").With(zap.String("node", name)),
 	}
 
 	// Apply agent options

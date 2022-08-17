@@ -54,7 +54,7 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (RelayNode, erro
 			"realm":                    "wice",
 			"cli-password":             "wice",
 		},
-		logger: zap.L().Named("relay." + name),
+		logger: zap.L().Named("node.relay").With(zap.String("node", name)),
 	}
 
 	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username(), t.Password())
