@@ -3,6 +3,7 @@
 package nodes
 
 import (
+	"context"
 	"fmt"
 
 	"golang.org/x/sync/errgroup"
@@ -83,15 +84,15 @@ func (al AgentList) ForEachInterfacePair(cb func(a, b *WireGuardInterface) error
 	return g.Wait()
 }
 
-func (al AgentList) WaitConnected() error {
+func (al AgentList) WaitConnectionsReady(ctx context.Context) error {
 	return al.ForEachInterfacePair(func(a, b *WireGuardInterface) error {
-		return a.WaitConnectionReady(b)
+		return a.WaitConnectionReady(ctx, b)
 	})
 }
 
-func (al AgentList) PingPeers() error {
+func (al AgentList) PingPeers(ctx context.Context) error {
 	return al.ForEachInterfacePair(func(a, b *WireGuardInterface) error {
-		return a.PingPeer(b)
+		return a.PingPeer(ctx, b)
 	})
 }
 

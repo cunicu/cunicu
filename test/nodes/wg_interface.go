@@ -3,6 +3,7 @@
 package nodes
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -154,24 +155,43 @@ func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) error {
 		},
 	}
 
-	return i.Configure(cfg)
-}
-
-func (i *WireGuardInterface) PingPeer(peer *WireGuardInterface) error {
-	os.Setenv("LC_ALL", "C") // fix issues with parsing of -W and -i options
+func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterface) error {
+	env := []string{"LC_ALL=C"} // fix issues with parsing of -W and -i options
 
 	if len(peer.Addresses) < 1 {
 		return fmt.Errorf("no WireGuard tunnel address configured")
 	}
 
-	if out, _, err := i.agent.Run("ping", "-c", 1, "-w", 15, "-i", 0.2, peer.Addresses[0].IP); err != nil {
-		os.Stdout.Write(out)
-		os.Stdout.Sync()
-
-		return err
+	stdout, stderr, cmd, err := i.agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), i.Addresses[0].IP)
+	if err != nil {
+		return fmt.Errorf("failed to start ping process: %w", err)
 	}
 
-	return nil
+	out := []byte{}
+	errs := make(chan error)
+	go func() {
+		combined := io.MultiReader(stdout, stderr)
+		out, _ = io.ReadAll(combined)
+
+		errs <- cmd.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		cmd.Process.Kill()
+		return ctx.Err()
+	case err := <-errs:
+		if err != nil {
+			return fmt.Errorf("ping failed with exit code %d: %w\n%s", cmd.ProcessState.ExitCode(), err, out)
+		} else {
+			i.agent.logger.Info("Pinged successfully",
+				zap.String("intf", i.Name),
+				zap.String("peer", peer.agent.Name()),
+				zap.String("peer_intf", peer.Name))
+
+			return nil
+		}
+	}
 }
 
 func (i *WireGuardInterface) GetConfig() *wg.Config {
@@ -181,11 +201,10 @@ func (i *WireGuardInterface) GetConfig() *wg.Config {
 	}
 }
 
-func (i *WireGuardInterface) WaitConnectionReady(p *WireGuardInterface) error {
+func (i *WireGuardInterface) WaitConnectionReady(ctx context.Context, p *WireGuardInterface) error {
 	sk := crypto.Key(*p.PrivateKey)
-	i.agent.Client.WaitForPeerConnectionState(sk.PublicKey(), ice.ConnectionStateConnected)
 
-	return nil
+	return i.agent.Client.WaitForPeerConnectionState(ctx, sk.PublicKey(), ice.ConnectionStateConnected)
 }
 
 func (i *WireGuardInterface) Configure(cfg wgtypes.Config) error {

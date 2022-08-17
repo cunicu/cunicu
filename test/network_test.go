@@ -3,6 +3,7 @@
 package test_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -95,14 +96,17 @@ func (n *Network) Close() {
 
 func (n *Network) ConnectivityTests() {
 	It("connectivity", func() {
-		By("establish all peer connections")
+		By("Waiting until all peers are connected")
 
-		err := n.AgentNodes.WaitConnected()
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		err := n.AgentNodes.WaitConnectionsReady(ctx)
 		Expect(err).To(Succeed(), "Failed to wait for peers to connect: %s", err)
 
-		By("can ping between peers")
+		By("Ping between all peers")
 
-		err = n.AgentNodes.PingPeers()
+		err = n.AgentNodes.PingPeers(ctx)
 		Expect(err).To(Succeed(), "Failed to ping peers: %s", err)
 	})
 }
@@ -154,6 +158,4 @@ func (n *Network) Init() {
 		zap.String("path", n.BasePath),
 		zap.String("executed", time.Now().String()),
 	)
-
-	logger.Info("Agents", zap.Any("agents", n.AgentNodes))
 }
