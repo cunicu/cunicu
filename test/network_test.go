@@ -39,9 +39,31 @@ type Network struct {
 }
 
 func (n *Network) Start() {
+	By("Adding WireGuard peers")
+
+	err := n.AgentNodes.ForEachInterfacePair(func(a, b *nodes.WireGuardInterface) error {
+		if a.PeerSelector != nil && a.PeerSelector(a, b) {
+			a.AddPeer(b)
+		}
+		return nil
+	})
+	Expect(err).To(Succeed(), "Failed to add WireGuard peers: %s", err)
+
+	By("Configuring WireGuard interfaces")
+
+	err = n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
+		return a.ConfigureWireGuardInterfaces()
+	})
+	Expect(err).To(Succeed(), "Failed to configure WireGuard interface: %s", err)
+
+	if setup {
+		By("Aborting test as only network setup has been requested")
+		os.Exit(0)
+	}
+
 	By("Starting relay nodes")
 
-	err := n.RelayNodes.Start(n.BasePath)
+	err = n.RelayNodes.Start(n.BasePath)
 	Expect(err).To(Succeed(), "Failed to start relay: %s", err)
 
 	By("Starting signaling nodes")
@@ -68,15 +90,6 @@ func (n *Network) Start() {
 	for _, s := range n.SignalingNodes {
 		extraArgs = append(extraArgs, "--backend", s.URL())
 	}
-
-	By("Adding peers")
-
-	n.AgentNodes.ForEachInterfacePair(func(a, b *nodes.WireGuardInterface) error {
-		if a.PeerSelector != nil && a.PeerSelector(a, b) {
-			a.AddPeer(b)
-		}
-		return nil
-	})
 
 	By("Starting agent nodes")
 

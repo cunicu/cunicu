@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	setup      bool
 	persist    bool
 	capture    bool
 	binaryPath string
@@ -21,6 +22,7 @@ var (
 
 // Register your flags in an init function.  This ensures they are registered _before_ `go test` calls flag.Parse().
 func init() {
+	flag.BoolVar(&setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
 	flag.BoolVar(&persist, "persist", false, "Do not tear-down virtual network")
 	flag.BoolVar(&capture, "capture", false, "Captures network-traffic to PCAPng file")
 	flag.StringVar(&binaryPath, "binary", "", "Filename of wice binary (Default: build during test execution)")
