@@ -2,11 +2,15 @@ package grpc
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
+	"os"
 
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
@@ -21,14 +25,28 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer(opt ...grpc.ServerOption) *Server {
+func NewServer(opts ...grpc.ServerOption) *Server {
 	logger := zap.L().Named("server")
+
+	if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
+		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+		if err != nil {
+			logger.Fatal("Failed to open SSL keylog file", zap.Error(err))
+		}
+
+		opts = slices.Clone(opts)
+		opts = append(opts, grpc.Creds(
+			credentials.NewTLS(&tls.Config{
+				KeyLogWriter: wr,
+			}),
+		))
+	}
 
 	s := &Server{
 		topicRegistry: topicRegistry{
 			topics: map[crypto.Key]*topic{},
 		},
-		Server: grpc.NewServer(),
+		Server: grpc.NewServer(opts...),
 		logger: logger,
 	}
 

@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
+	credsinsecure "google.golang.org/grpc/credentials/insecure"
 	"riasc.eu/wice/pkg/signaling"
 )
 
@@ -25,10 +26,10 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 
 	options := c.URI.Query()
 
-	isInsecure := false
+	insecure := false
 	if options.Has("insecure") {
 		var err error
-		if isInsecure, err = strconv.ParseBool(options.Get("insecure")); err != nil {
+		if insecure, err = strconv.ParseBool(options.Get("insecure")); err != nil {
 			return fmt.Errorf("failed to parse 'insecure' option: %w", err)
 		}
 	}
@@ -42,14 +43,22 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	}
 
 	var creds credentials.TransportCredentials
-	if isInsecure {
-		creds = insecure.NewCredentials()
+	if insecure {
+		creds = credsinsecure.NewCredentials()
 	} else {
 		// Use system certificate store
 		cfg := &tls.Config{
 			//#nosec G402 -- Users should have the freedom to disable verification for self-signed certificates
 			InsecureSkipVerify: skipVerify,
 		}
+
+		if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
+			var err error
+			if cfg.KeyLogWriter, err = os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600); err != nil {
+				return fmt.Errorf("failed to open SSL keylog file: %w", err)
+			}
+		}
+
 		creds = credentials.NewTLS(cfg)
 	}
 
