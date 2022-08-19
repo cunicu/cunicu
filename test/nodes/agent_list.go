@@ -42,6 +42,22 @@ func (al AgentList) ForEachAgent(cb func(a *Agent) error) error {
 	return g.Wait()
 }
 
+func (al AgentList) ForEachInterface(cb func(i *WireGuardInterface) error) error {
+	g := errgroup.Group{}
+
+	for _, n := range al {
+		for _, ni := range n.WireGuardInterfaces {
+
+			g.Go(func() error {
+				return cb(ni)
+			})
+
+		}
+	}
+
+	return g.Wait()
+}
+
 func (al AgentList) ForEachAgentPair(cb func(a, b *Agent) error) error {
 	g := errgroup.Group{}
 
