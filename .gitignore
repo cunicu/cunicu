@@ -6,3 +6,4 @@ dist/
 *.out
 *.out.*
 lcov.info
+test/logs/
