@@ -3,6 +3,8 @@
 package test_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
@@ -21,26 +23,28 @@ import (
  *  - 2x LAN switches
  *  - 2x wice Agent nodes
  *
- *        ┌────┐   ┌────┐
- *  Relay │ r1 │   │ s1 │ Signaling
- *        └──┬─┘   └─┬──┘
- *           └─┐   ┌─┘
- *            ┌┴───┴┐
- *            │ sw1 │ WAN Switch
- *            └┬───┬┘
- *          ┌──┘   └──┐
- *      ┌───┴──┐   ┌──┴───┐
- *      │ nat1 │   │ nat2 │ NAT Routers
- *      └───┬──┘   └──┬───┘
- *      ┌───┴──┐   ┌──┴───┐
- *      │ lsw1 │   │ lsw2 │ LAN Switches
- *      └───┬──┘   └──┬───┘
- *      ┌───┴──┐   ┌──┴───┐
- *      │  n1  │   │  n2  │ wice Agents
- *      └──────┘   └──────┘
+ *                    ┌────┐   ┌────┐
+ *              Relay │ r1 │   │ s1 │ Signaling
+ *                    └──┬─┘   └─┬──┘
+ *                       └─┐   ┌─┘
+ *                        ┌┴───┴┐
+ *                        │ sw1 │ WAN Switch
+ *                        └┬───┬┘
+ *                   ┌─────┘   └─────┐
+ *               ┌───┴──┐        ┌───┴──┐
+ *               │ nat1 │        │ nat2 │ NAT Routers
+ *               └───┬──┘        └───┬──┘
+ *               ┌───┴──┐        ┌───┴──┐
+ *  LAN Switches │ lsw1 │        │ lsw2 │
+ *               └───┬──┘        └─┬──┬─┘
+ *                   │           ┌─┘  └─┐
+ *               ┌───┴──┐   ┌────┴─┐  ┌─┴────┐
+ *               │  n1  │   │  n2  │  │ (n3) │  wice Agents
+ *               └──────┘   └──────┘  └──────┘
  */
 var _ = Context("nat simple", Serial, func() {
 	var n Network
+	var lsw2 *g.Switch
 
 	BeforeEach(func() {
 		n.Init()
@@ -81,83 +85,90 @@ var _ = Context("nat simple", Serial, func() {
 
 		By("Initializing agent nodes")
 
-		/// n1
+		CreateAgent := func(i int) *nodes.Agent {
+			// LAN switch
+			lsw, err := nw.AddSwitch(fmt.Sprintf("lsw%d", i))
+			Expect(err).To(Succeed(), "Failed to add LAN switch: %s", err)
 
-		lsw1, err := nw.AddSwitch("lsw1")
-		Expect(err).To(Succeed(), "Failed to add LAN switch: %s", err)
+			if i == 2 {
+				lsw2 = lsw
+			}
 
-		opts := gopt.Customize(n.AgentOptions,
-			gopt.Interface("eth0", lsw1,
-				gopt.AddressIP("10.1.0.2/24"),
-				gopt.AddressIP("fc:1::2/64"),
-			),
-			gopt.DefaultGatewayIP("10.1.0.1"),
-			gopt.DefaultGatewayIP("fc:1::1"),
-			wopt.Interface("wg0",
-				wopt.AddressIP("172.16.0.1/16"),
-				wopt.FullMeshPeers,
-			),
-		)
+			// NAT router
+			_, err = nw.AddNAT(fmt.Sprintf("nat%d", i),
+				gopt.Interface("eth-nb", sw1,
+					gopt.NorthBound,
+					gopt.AddressIP("10.0.1.%d/16", i),
+					gopt.AddressIP("fc::1:%d/64", i),
+				),
+				gopt.Interface("eth-sb", lsw,
+					gopt.SouthBound,
+					gopt.AddressIP("10.1.0.1/24"),
+					gopt.AddressIP("fc:1::1/64"),
+				),
+			)
+			Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
 
-		n1, err := nodes.NewAgent(nw, "n1", opts...)
-		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
+			// Agent node
+			n, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
+				gopt.Customize(n.AgentOptions,
+					gopt.Interface("eth0", lsw,
+						gopt.AddressIP("10.1.0.2/24"),
+						gopt.AddressIP("fc:1::2/64"),
+					),
+					gopt.DefaultGatewayIP("10.1.0.1"),
+					gopt.DefaultGatewayIP("fc:1::1"),
+					wopt.Interface("wg0",
+						wopt.AddressIP("172.16.0.%d/16", i),
+						wopt.FullMeshPeers,
+					),
+				)...,
+			)
+			Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
 
-		_, err = nw.AddNAT("nat1",
-			gopt.Interface("eth-nb", sw1,
-				gopt.NorthBound,
-				gopt.AddressIP("10.0.1.1/16"),
-				gopt.AddressIP("fc::1:1/64"),
-			),
-			gopt.Interface("eth-sb", lsw1,
-				gopt.SouthBound,
-				gopt.AddressIP("10.1.0.1/24"),
-				gopt.AddressIP("fc:1::1/64"),
-			),
-		)
-		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
-
-		/// n2
-
-		lsw2, err := nw.AddSwitch("lsw2")
-		Expect(err).To(Succeed(), "Failed to add LAN switch: %s", err)
-
-		opts = gopt.Customize(n.AgentOptions,
-			gopt.Interface("eth0", lsw2,
-				gopt.AddressIP("10.1.0.2/24"),
-				gopt.AddressIP("fc:1::2/64"),
-			),
-			gopt.DefaultGatewayIP("10.1.0.1"),
-			gopt.DefaultGatewayIP("fc:1::1"),
-			wopt.Interface("wg0",
-				wopt.AddressIP("172.16.0.2/16"),
-				wopt.FullMeshPeers,
-			),
-		)
-
-		n2, err := nodes.NewAgent(nw, "n2", opts...)
-		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
-
-		_, err = nw.AddNAT("nat2",
-			gopt.Interface("eth-nb", sw1,
-				gopt.NorthBound,
-				gopt.AddressIP("10.0.1.2/16"),
-				gopt.AddressIP("fc::1:2/64"),
-			),
-			gopt.Interface("eth-sb", lsw2,
-				gopt.SouthBound,
-				gopt.AddressIP("10.1.0.1/24"),
-				gopt.AddressIP("fc:1::1/64"),
-			),
-		)
-		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
+			return n
+		}
 
 		n.Network = nw
-		n.AgentNodes = nodes.AgentList{n1, n2}
+		n.AgentNodes = nodes.AgentList{
+			CreateAgent(1),
+			CreateAgent(2),
+		}
 		n.RelayNodes = nodes.RelayList{r1}
 		n.SignalingNodes = nodes.SignalingList{s1}
-
-		n.Start()
 	})
 
-	n.ConnectivityTests()
+	Context("without-n3", func() {
+		JustBeforeEach(func() {
+			n.Start()
+		})
+
+		n.ConnectivityTests()
+	})
+
+	FContext("with-n3", func() {
+		JustBeforeEach(func() {
+			n3, err := nodes.NewAgent(n.Network, "n3",
+				gopt.Customize(n.AgentOptions,
+					gopt.Interface("eth0", lsw2,
+						gopt.AddressIP("10.1.0.3/24"),
+						gopt.AddressIP("fc:1::3/64"),
+					),
+					gopt.DefaultGatewayIP("10.1.0.1"),
+					gopt.DefaultGatewayIP("fc:1::1"),
+					wopt.Interface("wg0",
+						wopt.AddressIP("172.16.0.3/16"),
+						wopt.FullMeshPeers,
+					),
+				)...,
+			)
+			Expect(err).To(Succeed(), "Failed to created node: %s", err)
+
+			n.AgentNodes = append(n.AgentNodes, n3)
+
+			n.Start()
+		})
+
+		n.ConnectivityTests()
+	})
 })
