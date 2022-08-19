@@ -36,6 +36,8 @@ type Network struct {
 	SignalingNodes nodes.SignalingList
 	RelayNodes     nodes.RelayList
 	AgentNodes     nodes.AgentList
+
+	tracer *HandshakeTracer
 }
 
 func (n *Network) Start() {
@@ -57,8 +59,11 @@ func (n *Network) Start() {
 	Expect(err).To(Succeed(), "Failed to configure WireGuard interface: %s", err)
 
 	if setup {
-		By("Aborting test as only network setup has been requested")
-		os.Exit(0)
+		Skip("Aborting test as only network setup has been requested")
+	}
+
+	if capture {
+		n.StartHandshakeTracer()
 	}
 
 	By("Starting relay nodes")
@@ -101,20 +106,24 @@ func (n *Network) Close() {
 	By("Stopping agent nodes")
 
 	err := n.AgentNodes.Close()
-	Expect(err).To(Succeed(), "Failed to close agent nodes; %w", err)
+	Expect(err).To(Succeed(), "Failed to close agent nodes; %s", err)
 
 	By("Stopping signaling nodes")
 
 	err = n.SignalingNodes.Close()
-	Expect(err).To(Succeed(), "Failed to close signaling nodes; %w", err)
+	Expect(err).To(Succeed(), "Failed to close signaling nodes; %s", err)
 
 	By("Stopping relay nodes")
 
 	err = n.RelayNodes.Close()
-	Expect(err).To(Succeed(), "Failed to close relay nodes; %w", err)
+	Expect(err).To(Succeed(), "Failed to close relay nodes; %s", err)
+
+	By("Stopping network")
 
 	err = n.Network.Close()
-	Expect(err).To(Succeed(), "Failed to close network; %w", err)
+	Expect(err).To(Succeed(), "Failed to close network; %s", err)
+
+	n.StopHandshakeTracer()
 }
 
 func (n *Network) ConnectivityTests() {

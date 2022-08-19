@@ -4,9 +4,11 @@ go 1.19
 
 require (
 	github.com/aead/siphash v1.0.1
+	github.com/cilium/ebpf v0.9.1
 	github.com/foxcpp/go-mockdns v1.0.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/zapr v1.2.3
+	github.com/google/gopacket v1.1.19
 	github.com/google/nftables v0.0.0-20220808154552-2eca00135732
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/ginkgo/v2 v2.1.4
@@ -17,7 +19,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/stv0g/gont v1.5.6
+	github.com/stv0g/gont v1.5.7
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	go.uber.org/atomic v1.10.0
@@ -55,7 +57,6 @@ require (
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
@@ -109,3 +110,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// Temporary, until https://github.com/google/gopacket/pull/1042 is merged
+replace github.com/google/gopacket => github.com/stv0g/gopacket v0.0.0-20220819110231-82599fdade4a

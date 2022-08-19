@@ -1,0 +1,8 @@
+kernel/*.cmd
+kernel/config.o
+kernel/config
+kernel/config.h
+kernel/config.h
+kernel/version.go
+bpf_*.go
+bpf_*.o
