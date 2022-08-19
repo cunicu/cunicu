@@ -160,7 +160,7 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 		return fmt.Errorf("no WireGuard tunnel address configured")
 	}
 
-	stdout, stderr, cmd, err := i.agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), i.Addresses[0].IP)
+	stdout, stderr, cmd, err := i.agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), peer.Addresses[0].IP)
 	if err != nil {
 		return fmt.Errorf("failed to start ping process: %w", err)
 	}
