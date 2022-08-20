@@ -105,6 +105,4 @@ func daemon(cmd *cobra.Command, args []string) {
 	if err := daemon.Close(); err != nil {
 		logger.Fatal("Failed to stop daemon", zap.Error(err))
 	}
-
-	logger.Info("Gracefully shut down agent")
 }

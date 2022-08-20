@@ -23,7 +23,7 @@ type RouteSync struct {
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, table string) (*RouteSync, error) {
+func New(w *watcher.Watcher, table string) *RouteSync {
 	s := &RouteSync{
 		watcher: w,
 		gwMap:   map[netip.Addr]*core.Peer{},
@@ -35,32 +35,24 @@ func New(w *watcher.Watcher, table string) (*RouteSync, error) {
 
 	go s.watchKernel()
 
-	return s, nil
+	return s
 }
 
-func (s *RouteSync) Close() error {
-	// TODO: Remove Kernel routes added by us
-
-	close(s.stop)
+func (rs *RouteSync) Start() error {
+	rs.logger.Info("Started route synchronization")
 
 	return nil
 }
 
-func (s *RouteSync) OnPeerAdded(p *core.Peer) {
-	pk := p.PublicKey()
-	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
-	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
-	if !ok1 || !ok2 {
-		panic("failed to get address from slice")
-	}
+func (rs *RouteSync) Close() error {
+	// TODO: Remove Kernel routes added by us
 
-	s.gwMap[gwV4] = p
-	s.gwMap[gwV6] = p
+	close(rs.stop)
 
-	s.syncKernel() // Initial sync
+	return nil
 }
 
-func (s *RouteSync) OnPeerRemoved(p *core.Peer) {
+func (rs *RouteSync) OnPeerAdded(p *core.Peer) {
 	pk := p.PublicKey()
 	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
 	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
@@ -68,11 +60,25 @@ func (s *RouteSync) OnPeerRemoved(p *core.Peer) {
 		panic("failed to get address from slice")
 	}
 
-	delete(s.gwMap, gwV4)
-	delete(s.gwMap, gwV6)
+	rs.gwMap[gwV4] = p
+	rs.gwMap[gwV6] = p
 
-	if err := s.removeKernel(p); err != nil {
-		s.logger.Error("Failed to remove kernel routes for peer",
+	rs.syncKernel() // Initial sync
+}
+
+func (rs *RouteSync) OnPeerRemoved(p *core.Peer) {
+	pk := p.PublicKey()
+	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
+	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
+	if !ok1 || !ok2 {
+		panic("failed to get address from slice")
+	}
+
+	delete(rs.gwMap, gwV4)
+	delete(rs.gwMap, gwV6)
+
+	if err := rs.removeKernel(p); err != nil {
+		rs.logger.Error("Failed to remove kernel routes for peer",
 			zap.Error(err),
 			zap.String("intf", p.Interface.Name()),
 			zap.String("peer", p.String()),
@@ -80,14 +86,14 @@ func (s *RouteSync) OnPeerRemoved(p *core.Peer) {
 	}
 }
 
-func (s *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (rs *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	for _, dst := range ipsAdded {
 		if err := p.Interface.KernelDevice.AddRoute(&dst); err != nil {
-			s.logger.Error("Failed to add route", zap.Error(err))
+			rs.logger.Error("Failed to add route", zap.Error(err))
 			continue
 		}
 
-		s.logger.Info("Added new AllowedIP to kernel routing table",
+		rs.logger.Info("Added new AllowedIP to kernel routing table",
 			zap.String("dst", dst.String()),
 			zap.String("intf", p.Interface.Name()),
 			zap.Any("peer", p.PublicKey()))
@@ -95,11 +101,11 @@ func (s *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerM
 
 	for _, dst := range ipsRemoved {
 		if err := p.Interface.KernelDevice.DeleteRoute(&dst); err != nil && !errors.Is(err, syscall.ESRCH) {
-			s.logger.Error("Failed to delete route", zap.Error(err))
+			rs.logger.Error("Failed to delete route", zap.Error(err))
 			continue
 		}
 
-		s.logger.Info("Remove vanished AllowedIP from kernel routing table",
+		rs.logger.Info("Remove vanished AllowedIP from kernel routing table",
 			zap.String("dst", dst.String()),
 			zap.String("intf", p.Interface.Name()),
 			zap.Any("peer", p.PublicKey()))
