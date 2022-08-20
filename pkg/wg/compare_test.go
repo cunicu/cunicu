@@ -29,7 +29,9 @@ var _ = Describe("peer compare", func() {
 			a = wgtypes.Peer{}
 			b = wgtypes.Peer{}
 
-			k, _ := wgtypes.GenerateKey()
+			k, err := wgtypes.GenerateKey()
+			Expect(err).To(Succeed())
+
 			b.PublicKey = k
 		})
 

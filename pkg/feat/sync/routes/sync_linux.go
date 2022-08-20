@@ -15,8 +15,11 @@ import (
 
 func (s *RouteSync) removeKernel(p *core.Peer) error {
 	pk := p.PublicKey()
-	gwV4, _ := netip.AddrFromSlice(pk.IPv4Address().IP)
-	gwV6, _ := netip.AddrFromSlice(pk.IPv6Address().IP)
+	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
+	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
+	if !ok1 || !ok2 {
+		return errors.New("failed to get address from slice")
+	}
 
 	routes, err := netlink.RouteList(nil, unix.AF_INET6)
 	if err != nil {
@@ -24,7 +27,11 @@ func (s *RouteSync) removeKernel(p *core.Peer) error {
 	}
 
 	for _, route := range routes {
-		gw, _ := netip.AddrFromSlice(route.Gw)
+		gw, ok := netip.AddrFromSlice(route.Gw)
+		if !ok {
+			return errors.New("failed to get address from slice")
+		}
+
 		if gwV4.Compare(gw) == 0 || gwV6.Compare(gw) == 0 {
 			if err := p.Interface.KernelDevice.DeleteRoute(route.Dst); err != nil && !errors.Is(err, syscall.ESRCH) {
 				s.logger.Error("Failed to delete route", zap.Error(err))
@@ -101,7 +108,10 @@ func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return nil
 	}
 
-	gw, _ := netip.AddrFromSlice(ru.Gw)
+	gw, ok := netip.AddrFromSlice(ru.Gw)
+	if !ok {
+		return fmt.Errorf("failed to get address from slice")
+	}
 
 	p, ok := s.gwMap[gw]
 	if !ok {

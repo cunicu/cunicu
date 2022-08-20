@@ -4,6 +4,7 @@ import (
 	"bytes"
 	crand "crypto/rand"
 	"encoding/base64"
+	"fmt"
 	mrand "math/rand"
 	"net"
 	"os"
@@ -57,7 +58,10 @@ func GenerateRandomString(s int) (string, error) {
 }
 
 func IsATTY() bool {
-	fi, _ := os.Stdout.Stat()
+	fi, err := os.Stdout.Stat()
+	if err != nil {
+		panic(fmt.Errorf("failed to stat stdout: %w", err))
+	}
 
 	return (fi.Mode() & os.ModeCharDevice) != 0
 }

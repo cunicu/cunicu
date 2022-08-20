@@ -1,6 +1,7 @@
 package wg
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -115,7 +116,11 @@ func (b *UserBind) UpdateEndpoint(ep *net.UDPAddr, c net.Conn) (*UserEndpoint, e
 		epip = epipv4
 	}
 
-	a, _ := netip.AddrFromSlice(epip)
+	a, ok := netip.AddrFromSlice(epip)
+	if !ok {
+		return nil, errors.New("failed to parse addr from slice")
+	}
+
 	ap := netip.AddrPortFrom(a, uint16(ep.Port))
 
 	uep := &UserEndpoint{

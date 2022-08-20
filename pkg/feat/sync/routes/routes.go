@@ -48,8 +48,11 @@ func (s *RouteSync) Close() error {
 
 func (s *RouteSync) OnPeerAdded(p *core.Peer) {
 	pk := p.PublicKey()
-	gwV4, _ := netip.AddrFromSlice(pk.IPv4Address().IP)
-	gwV6, _ := netip.AddrFromSlice(pk.IPv6Address().IP)
+	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
+	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
+	if !ok1 || !ok2 {
+		panic("failed to get address from slice")
+	}
 
 	s.gwMap[gwV4] = p
 	s.gwMap[gwV6] = p
@@ -59,8 +62,11 @@ func (s *RouteSync) OnPeerAdded(p *core.Peer) {
 
 func (s *RouteSync) OnPeerRemoved(p *core.Peer) {
 	pk := p.PublicKey()
-	gwV4, _ := netip.AddrFromSlice(pk.IPv4Address().IP)
-	gwV6, _ := netip.AddrFromSlice(pk.IPv6Address().IP)
+	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
+	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
+	if !ok1 || !ok2 {
+		panic("failed to get address from slice")
+	}
 
 	delete(s.gwMap, gwV4)
 	delete(s.gwMap, gwV6)

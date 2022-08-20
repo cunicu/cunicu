@@ -27,7 +27,10 @@ func addresses(cmd *cobra.Command, args []string) {
 	logger := zap.L()
 
 	reader := bufio.NewReader(os.Stdin)
-	keyB64, _ := reader.ReadString('\n')
+	keyB64, err := reader.ReadString('\n')
+	if err != nil {
+		logger.Fatal("Failed to read from stdin", zap.Error(err))
+	}
 
 	key, err := crypto.ParseKey(keyB64)
 	if err != nil {

@@ -71,7 +71,10 @@ func wgGenKey(cmd *cobra.Command, args []string) error {
 
 func wgPubKey(cmd *cobra.Command, args []string) error {
 	reader := bufio.NewReader(os.Stdin)
-	privKeyStr, _ := reader.ReadString('\n')
+	privKeyStr, err := reader.ReadString('\n')
+	if err != nil {
+		return fmt.Errorf("failed to read from stdin: %w", err)
+	}
 
 	privKey, err := wgtypes.ParseKey(privKeyStr)
 	if err != nil {
