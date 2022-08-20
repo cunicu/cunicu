@@ -24,7 +24,7 @@ type HostsSync struct {
 	logger  *zap.Logger
 }
 
-func New(w *watcher.Watcher) (*HostsSync, error) {
+func New(w *watcher.Watcher) *HostsSync {
 	s := &HostsSync{
 		watcher: w,
 		logger:  zap.L().Named("sync.hosts"),
@@ -32,13 +32,23 @@ func New(w *watcher.Watcher) (*HostsSync, error) {
 
 	w.OnPeer(s)
 
-	return s, nil
+	return s
 }
 
-func (s *HostsSync) hosts() []Host {
+func (hs *HostsSync) Start() error {
+	hs.logger.Info("Started /etc/hosts synchronization")
+
+	return nil
+}
+
+func (hs *HostsSync) Close() error {
+	return nil
+}
+
+func (hs *HostsSync) hosts() []Host {
 	hosts := []Host{}
 
-	for _, i := range s.watcher.Interfaces {
+	for _, i := range hs.watcher.Interfaces {
 		for _, p := range i.Peers {
 			if p.Name == "" {
 				continue
@@ -67,7 +77,7 @@ func (s *HostsSync) hosts() []Host {
 	return hosts
 }
 
-func (s *HostsSync) updateHostsFile() error {
+func (hs *HostsSync) updateHostsFile() error {
 	lines, err := readLines(hostsPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -83,7 +93,7 @@ func (s *HostsSync) updateHostsFile() error {
 	lines = append(lines, "")
 
 	// Add new hosts
-	hosts := s.hosts()
+	hosts := hs.hosts()
 	for _, h := range hosts {
 		line, err := h.Line()
 		if err != nil {
@@ -100,14 +110,14 @@ func (s *HostsSync) updateHostsFile() error {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
-	s.logger.Info("Updated hosts file", zap.Int("num_hosts", len(hosts)))
+	hs.logger.Info("Updated hosts file", zap.Int("num_hosts", len(hosts)))
 
 	return nil
 }
 
-func (s *HostsSync) OnPeerAdded(p *core.Peer) {
-	if err := s.updateHostsFile(); err != nil {
-		s.logger.Error("Failed to update hosts file", zap.Error(err))
+func (hs *HostsSync) OnPeerAdded(p *core.Peer) {
+	if err := hs.updateHostsFile(); err != nil {
+		hs.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
@@ -117,11 +127,11 @@ func (s *HostsSync) OnPeerRemoved(p *core.Peer) {
 	}
 }
 
-func (s *HostsSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (hs *HostsSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	// Only update if the name has changed
 	if m.Is(core.PeerModifiedName) {
-		if err := s.updateHostsFile(); err != nil {
-			s.logger.Error("Failed to update hosts file", zap.Error(err))
+		if err := hs.updateHostsFile(); err != nil {
+			hs.logger.Error("Failed to update hosts file", zap.Error(err))
 		}
 	}
 }

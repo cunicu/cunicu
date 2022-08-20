@@ -53,7 +53,7 @@ func deleteLinkLocalAddresses(dev device.Device, pk crypto.Key) error {
 	return nil
 }
 
-func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoConfig, error) {
+func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) *AutoConfig {
 	s := &AutoConfig{
 		client: client,
 		config: cfg,
@@ -62,7 +62,15 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) (*AutoCo
 
 	w.OnAll(s)
 
-	return s, nil
+	return s
+}
+
+func (a *AutoConfig) Start() error {
+	return nil
+}
+
+func (a *AutoConfig) Close() error {
+	return nil
 }
 
 func (s *AutoConfig) OnInterfaceAdded(i *core.Interface) {

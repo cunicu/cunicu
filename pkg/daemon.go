@@ -10,6 +10,7 @@ import (
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/device"
 	errs "riasc.eu/wice/pkg/errors"
+	"riasc.eu/wice/pkg/feat"
 	ac "riasc.eu/wice/pkg/feat/auto"
 	ep "riasc.eu/wice/pkg/feat/disc/epice"
 	cs "riasc.eu/wice/pkg/feat/sync/config"
@@ -25,16 +26,11 @@ import (
 type Daemon struct {
 	*watcher.Watcher
 
-	// Features
+	Features []feat.Feature
 
-	AutoConfig *ac.AutoConfig
-	ConfigSync *cs.ConfigSync
-	HostsSync  *hs.HostsSync
-	RouteSync  *rs.RouteSync
-	EPDisc     *ep.EndpointDiscovery
+	EPDisc *ep.EndpointDiscovery
 
 	// Shared
-
 	Backend *signaling.MultiBackend
 	client  *wgctrl.Client
 	config  *config.Config
@@ -96,62 +92,35 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		return nil, err
 	}
 
+	for _, feat := range d.Features {
+		if err := feat.Start(); err != nil {
+			return nil, err
+		}
+	}
+
 	return d, nil
 }
 
 func (d *Daemon) setupFeatures() error {
-	var err error
-
 	if d.config.AutoConfig.Enabled {
-		if d.AutoConfig, err = ac.New(d.Watcher, d.config, d.client); err != nil {
-			return fmt.Errorf("failed to start interface auto configuration: %w", err)
-		}
+		d.Features = append(d.Features, ac.New(d.Watcher, d.config, d.client))
 	}
 
 	if d.config.ConfigSync.Enabled {
-		if d.ConfigSync, err = cs.New(d.Watcher, d.client,
-			d.config.ConfigSync.Path,
-			d.config.ConfigSync.Watch,
-			d.config.WireGuard.Userspace); err != nil {
-
-			return fmt.Errorf("failed to start configuration file synchronization: %w", err)
-		}
-
-		d.logger.Info("Started configuration file synchronization")
+		d.Features = append(d.Features, cs.New(d.Watcher, d.client, d.config.ConfigSync.Path, d.config.ConfigSync.Watch, d.config.WireGuard.Userspace))
 	}
 
 	if d.config.RouteSync.Enabled {
-		if d.RouteSync, err = rs.New(d.Watcher, d.config.RouteSync.Table); err != nil {
-			return fmt.Errorf("failed to start allowed-ips <-> kernel route synchronization: %w", err)
-		}
-
-		d.logger.Info("Started route synchronization")
+		d.Features = append(d.Features, rs.New(d.Watcher, d.config.RouteSync.Table))
 	}
 
 	if d.config.HostSync.Enabled {
-		if d.HostsSync, err = hs.New(d.Watcher); err != nil {
-			return fmt.Errorf("failed to start host name synchronization: %w", err)
-		}
-
-		d.logger.Info("Started /etc/hosts synchronization")
+		d.Features = append(d.Features, hs.New(d.Watcher))
 	}
 
 	if d.config.EndpointDisc.Enabled {
-		if d.EPDisc, err = ep.New(d.Watcher, d.config, d.client, d.Backend); err != nil {
-			return fmt.Errorf("failed to start endpoint discovery: %w", err)
-		}
-
-		d.logger.Info("Started ICE endpoint discovery")
-	}
-
-	return nil
-}
-
-func (d *Daemon) closeFeatures() error {
-	if d.EPDisc != nil {
-		if err := d.EPDisc.Close(); err != nil {
-			return fmt.Errorf("failed to stop endpoint discovery: %w", err)
-		}
+		d.EPDisc = ep.New(d.Watcher, d.config, d.client, d.Backend)
+		d.Features = append(d.Features, d.EPDisc)
 	}
 
 	return nil
@@ -208,16 +177,22 @@ func (d *Daemon) Stop() error {
 
 	close(d.stop)
 
+	d.logger.Debug("Stopped daemon")
+
 	return nil
 }
 
 func (d *Daemon) Close() error {
+	d.logger.Debug("Closing daemon")
+
 	if err := d.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
 		return err
 	}
 
-	if err := d.closeFeatures(); err != nil {
-		return err
+	for _, feat := range d.Features {
+		if err := feat.Close(); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Watcher.Close(); err != nil {
@@ -233,6 +208,8 @@ func (d *Daemon) Close() error {
 			return fmt.Errorf("failed to delete device: %w", err)
 		}
 	}
+
+	d.logger.Debug("Stopped daemon")
 
 	return nil
 }
