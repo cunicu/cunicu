@@ -32,7 +32,11 @@ func NewEndpointDiscoveryServer(s *Server, ep *epice.EndpointDiscovery) *Endpoin
 }
 
 func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
-	pk, _ := crypto.ParseKeyBytes(params.Peer)
+	pk, err := crypto.ParseKeyBytes(params.Peer)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse key: %w", err)
+	}
+
 	p := s.watcher.Peer(params.Intf, &pk)
 	if p == nil {
 		err := fmt.Errorf("unknown peer %s/%s", params.Intf, pk.String())

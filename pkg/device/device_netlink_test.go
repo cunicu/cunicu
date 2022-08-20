@@ -29,8 +29,11 @@ var _ = Describe("device", func() {
 	var user bool
 
 	getAddrs := func() []*net.IPNet {
-		intf, _ := net.InterfaceByName(devName)
-		addrs, _ := intf.Addrs()
+		intf, err := net.InterfaceByName(devName)
+		Expect(err).To(Succeed())
+
+		addrs, err := intf.Addrs()
+		Expect(err).To(Succeed())
 
 		ips := []*net.IPNet{}
 		for _, addr := range addrs {

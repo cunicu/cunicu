@@ -139,7 +139,10 @@ func (s *AutoConfig) fixupInterface(i *core.Interface) error {
 			logger.Warn("Device has no private key. Generating one..")
 		}
 
-		key, _ := wgtypes.GeneratePrivateKey()
+		key, err := wgtypes.GeneratePrivateKey()
+		if err != nil {
+			return fmt.Errorf("failed to generate private key: %w", err)
+		}
 
 		cfg.PrivateKey = &key
 	}

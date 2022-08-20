@@ -3,6 +3,7 @@
 package wg
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -63,8 +64,13 @@ func AllowedIPv4(a, b, c, d byte, m int) AllowedIP {
 	}
 }
 
-func AllowedIPStr(str string) AllowedIP {
-	ip, n, _ := net.ParseCIDR(str)
+func AllowedIPStr(fmts string, args ...any) AllowedIP {
+	str := fmt.Sprintf(fmts, args...)
+
+	ip, n, err := net.ParseCIDR(str)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse CIDR: %w", err))
+	}
 
 	return AllowedIP{
 		IP:   ip,

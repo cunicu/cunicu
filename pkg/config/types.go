@@ -85,7 +85,11 @@ func (f OutputFormat) MarshalText() ([]byte, error) {
 }
 
 func (f OutputFormat) String() string {
-	b, _ := f.MarshalText()
+	b, err := f.MarshalText()
+	if err != nil {
+		panic(fmt.Errorf("failed marshal: %w", err))
+	}
+
 	return string(b)
 }
 

@@ -313,8 +313,10 @@ func (c *Config) Check() error {
 
 func (c *Config) MergeRemoteConfig(url *url.URL) error {
 	if url.Scheme != "https" {
-		host, _, _ := net.SplitHostPort(url.Host)
-		if host != "localhost" && host != "127.0.0.1" && host != "::1" && host != "[::1]" {
+		host, _, err := net.SplitHostPort(url.Host)
+		if err != nil {
+			return fmt.Errorf("failed to split host:port: %w", err)
+		} else if host != "localhost" && host != "127.0.0.1" && host != "::1" && host != "[::1]" {
 			return errors.New("remote configuration must be provided via HTTPS")
 		}
 	}

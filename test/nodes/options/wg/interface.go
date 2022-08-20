@@ -42,7 +42,10 @@ func AddressIPv4(a, b, c, d byte, m int) Address {
 func AddressIP(fmts string, args ...any) Address {
 	str := fmt.Sprintf(fmts, args...)
 
-	ip, n, _ := net.ParseCIDR(str)
+	ip, n, err := net.ParseCIDR(str)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse CIDR: %w", err))
+	}
 
 	return Address{
 		IP:   ip,
@@ -71,7 +74,10 @@ func (ps PeerSelector) Apply(i *nodes.WireGuardInterface) {
 }
 
 func Interface(name string, opts ...g.Option) *nodes.WireGuardInterface {
-	i := nodes.NewWireGuardInterface(name)
+	i, err := nodes.NewWireGuardInterface(name)
+	if err != nil {
+		panic(fmt.Errorf("failed to create WireGuard interface: %w", err))
+	}
 
 	for _, o := range opts {
 		switch opt := o.(type) {

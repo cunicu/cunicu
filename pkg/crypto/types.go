@@ -106,7 +106,11 @@ func (k Key) Bytes() []byte {
 func (k Key) IPv6Address() *net.IPNet {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
-	hash, _ := siphash.New64(addrHashKey[:])
+	hash, err := siphash.New64(addrHashKey[:])
+	if err != nil {
+		panic(err)
+	}
+
 	if n, err := hash.Write(k[:]); err != nil {
 		panic(err)
 	} else if n != KeyLength {
@@ -128,7 +132,11 @@ func (k Key) IPv6Address() *net.IPNet {
 
 // IPv4Address derives an IPv4 link local address from they key
 func (k Key) IPv4Address() *net.IPNet {
-	hash, _ := siphash.New64(addrHashKey[:])
+	hash, err := siphash.New64(addrHashKey[:])
+	if err != nil {
+		panic(err)
+	}
+
 	if _, err := hash.Write(k[:]); err != nil {
 		panic(err)
 	}
@@ -171,7 +179,11 @@ type KeyPair struct {
 type PublicKeyPair KeyPair
 
 func (kp KeyPair) Shared() Key {
-	shared, _ := curve25519.X25519(kp.Ours[:], kp.Theirs[:])
+	shared, err := curve25519.X25519(kp.Ours[:], kp.Theirs[:])
+	if err != nil {
+		panic(err)
+	}
+
 	return *(*Key)(shared)
 }
 
