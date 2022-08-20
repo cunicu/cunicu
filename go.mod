@@ -8,6 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
+	github.com/go-piv/piv-go v1.10.0
 	github.com/google/nftables v0.0.0-20221002140148-535f5eb8da79
 	github.com/imdario/mergo v0.3.13
 	github.com/jpillora/backoff v1.0.0
@@ -21,6 +22,7 @@ require (
 	github.com/pion/stun v0.3.5
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
+	github.com/symbolicsoft/kyber-k2so v0.2.0
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	go.uber.org/zap v1.23.0
 	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
