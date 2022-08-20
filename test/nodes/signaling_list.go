@@ -25,9 +25,9 @@ func AddSignalingNodes(n *g.Network, numNodes int, opts ...g.Option) (SignalingL
 	return ns, nil
 }
 
-func (l SignalingList) Start(binary, dir string, extraArgs ...any) error {
+func (l SignalingList) Start(dir string, extraArgs ...any) error {
 	for _, n := range l {
-		if err := n.Start(binary, dir, extraArgs...); err != nil {
+		if err := n.Start("", dir, extraArgs...); err != nil {
 			return err
 		}
 	}

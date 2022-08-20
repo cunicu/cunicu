@@ -10,14 +10,16 @@ import (
 	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/util"
 )
 
 var (
-	setup      bool
-	persist    bool
-	capture    bool
-	binaryPath string
+	logger *zap.Logger
+
+	setup   bool
+	persist bool
+	capture bool
 )
 
 // Register your flags in an init function.  This ensures they are registered _before_ `go test` calls flag.Parse().
@@ -25,7 +27,6 @@ func init() {
 	flag.BoolVar(&setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
 	flag.BoolVar(&persist, "persist", false, "Do not tear-down virtual network")
 	flag.BoolVar(&capture, "capture", false, "Captures network-traffic to PCAPng file")
-	flag.StringVar(&binaryPath, "binary", "", "Filename of wice binary (Default: build during test execution)")
 }
 
 func TestSuite(t *testing.T) {
@@ -38,15 +39,8 @@ func TestSuite(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	var err error
-
 	if !util.HasAdminPrivileges() {
 		Skip("Insufficient privileges")
-	}
-
-	if binaryPath == "" {
-		binaryPath, err = gexec.Build("../cmd")
-		Expect(err).NotTo(HaveOccurred())
 	}
 
 	DeferCleanup(gexec.CleanupBuildArtifacts)

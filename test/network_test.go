@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 
 	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/test/nodes"
 )
 
@@ -99,7 +100,7 @@ func (n *Network) Start() {
 
 	By("Starting signaling nodes")
 
-	err = n.SignalingNodes.Start(binaryPath, n.BasePath)
+	err = n.SignalingNodes.Start(n.BasePath)
 	Expect(err).To(Succeed(), "Failed to start signaling node: %s", err)
 
 	extraArgs := []any{}
@@ -124,7 +125,7 @@ func (n *Network) Start() {
 
 	By("Starting agent nodes")
 
-	err = n.AgentNodes.Start(binaryPath, n.BasePath, extraArgs...)
+	err = n.AgentNodes.Start(n.BasePath, extraArgs...)
 	Expect(err).To(Succeed(), "Failed to start ɯice: %s", err)
 }
 
@@ -195,7 +196,7 @@ func (n *Network) Init() {
 
 	By("Removing old test case results")
 
-	err := os.RemoveAll(n.BasePath)
+	err = os.RemoveAll(n.BasePath)
 	Expect(err).To(Succeed(), "Failed to remove old test case result directory: %s", err)
 
 	By("Creating directory for new test case results")

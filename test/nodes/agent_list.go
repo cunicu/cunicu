@@ -11,10 +11,9 @@ import (
 
 type AgentList []*Agent
 
-func (al AgentList) Start(binary, dir string, extraArgs ...any) error {
-	// Start all agents
+func (al AgentList) Start(dir string, extraArgs ...any) error {
 	if err := al.ForEachAgent(func(a *Agent) error {
-		return a.Start(binary, dir, extraArgs...)
+		return a.Start("", dir, extraArgs...)
 	}); err != nil {
 		return fmt.Errorf("failed to start agent: %w", err)
 	}
@@ -47,6 +46,7 @@ func (al AgentList) ForEachInterface(cb func(i *WireGuardInterface) error) error
 
 	for _, n := range al {
 		for _, ni := range n.WireGuardInterfaces {
+			ni := ni // avoid aliasing
 
 			g.Go(func() error {
 				return cb(ni)
