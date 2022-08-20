@@ -542,8 +542,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
-github.com/stv0g/gont v1.5.7 h1:17fJTeus81bXAMBm/sf0tj3iGHBEne1zgMLH8K/cEB8=
-github.com/stv0g/gont v1.5.7/go.mod h1:VO/kjC5/vxgmVy33zqaGIEil3nu8EZkmFToSO+wPckw=
+github.com/stv0g/gont v1.5.8 h1:hxnolYshxDkuQ0oZCf5fQAmAwoF411sLlUP5Hd/XAbM=
+github.com/stv0g/gont v1.5.8/go.mod h1:VO/kjC5/vxgmVy33zqaGIEil3nu8EZkmFToSO+wPckw=
 github.com/stv0g/gopacket v0.0.0-20220819110231-82599fdade4a h1:oA2GX2QLOgJcyvdsQ8XCwvdbj3lBjk7RrWychSiIb8U=
 github.com/stv0g/gopacket v0.0.0-20220819110231-82599fdade4a/go.mod h1:riddUzxTSBpJXk3qBHtYr4qOhFhT6k/1c0E3qkQjQpA=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
