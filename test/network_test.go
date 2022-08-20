@@ -155,6 +155,18 @@ func (n *Network) Init() {
 	logFilename := filepath.Join(n.BasePath, "test.log")
 	pcapFilename := filepath.Join(n.BasePath, "capture.pcapng")
 
+	By("Tweaking sysctls for large Gont networks")
+
+	err := util.SetSysctlMap(map[string]any{
+		"net.ipv4.neigh.default.gc_thresh1": 10000,
+		"net.ipv4.neigh.default.gc_thresh2": 15000,
+		"net.ipv4.neigh.default.gc_thresh3": 20000,
+		"net.ipv6.neigh.default.gc_thresh1": 10000,
+		"net.ipv6.neigh.default.gc_thresh2": 15000,
+		"net.ipv6.neigh.default.gc_thresh3": 20000,
+	})
+	Expect(err).To(Succeed(), "Failed to set sysctls: %s", err)
+
 	By("Removing old test case results")
 
 	err := os.RemoveAll(n.BasePath)
