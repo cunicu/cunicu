@@ -66,6 +66,32 @@ func (n *Network) Start() {
 		n.StartHandshakeTracer()
 	}
 
+	By("Writing network hosts file")
+
+	hfn := filepath.Join(n.BasePath, "hosts")
+	hf, err := os.OpenFile(hfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	Expect(err).To(Succeed(), "Failed to open hosts file: %s", err)
+
+	err = n.Network.WriteHostsFile(hf)
+	Expect(err).To(Succeed(), "Failed to write hosts file: %s", err)
+
+	err = hf.Close()
+	Expect(err).To(Succeed(), "Failed to close hosts file: %s", err)
+
+	By("Saving network nodes file")
+
+	nfn := filepath.Join(n.BasePath, "nodes")
+	nf, err := os.OpenFile(nfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	Expect(err).To(Succeed(), "Failed to open nodes file: %s", err)
+
+	n.AgentNodes.ForEachInterface(func(i *nodes.WireGuardInterface) error {
+		_, err := fmt.Fprintf(nf, "%s %s %s\n", i.Agent.Name(), i.Name, i.PrivateKey.PublicKey())
+		return err
+	})
+
+	err = nf.Close()
+	Expect(err).To(Succeed(), "Failed to close nodes file: %s", err)
+
 	By("Starting relay nodes")
 
 	err = n.RelayNodes.Start(n.BasePath)
