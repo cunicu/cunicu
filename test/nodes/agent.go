@@ -5,7 +5,7 @@ package nodes
 import (
 	"context"
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,7 +13,6 @@ import (
 
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
@@ -43,6 +42,8 @@ type Agent struct {
 	// Path of a wg-quick(8) configuration file describing the interface rather than a kernel device
 	// Will only be created if non-empty
 	WireGuardConfigPath string
+
+	logFile io.WriteCloser
 
 	logger *zap.Logger
 }
@@ -81,30 +82,48 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	return a, nil
 }
 
-func (a *Agent) Start(binary, dir string, extraArgs ...any) error {
+func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var err error
-
+	var stdout, stderr io.Reader
 	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
-	var logPath = fmt.Sprintf("%s.log", a.Name())
+	var logPath = fmt.Sprintf("%s/%s.log", dir, a.Name())
 
-	args := []any{
+	if err := os.RemoveAll(sockPath); err != nil {
+		return fmt.Errorf("failed to remove old socket: %w", err)
+	}
+
+	binary, profileArgs, err := BuildTestBinary(a.Name())
+	if err != nil {
+		return fmt.Errorf("failed to build: %w", err)
+	}
+
+	args := profileArgs
+	args = append(args,
 		"daemon",
 		"--socket", sockPath,
 		"--socket-wait",
-		"--log-file", logPath,
 		"--log-level", "debug",
 		"--config-path", a.WireGuardConfigPath,
-	}
+	)
 	args = append(args, a.ExtraArgs...)
 	args = append(args, extraArgs...)
 
-	if err := os.RemoveAll(sockPath); err != nil {
-		log.Fatal(err)
+	env := []string{
+		// "PION_LOG=debug",
+		fmt.Sprintf("GORACE=log_path=%s-race.log", a.Name()),
 	}
 
-	if _, _, a.Command, err = a.StartWith(binary, nil, dir, args...); err != nil {
-		a.logger.Error("Failed to start", zap.Error(err))
+	if stdout, stderr, a.Command, err = a.StartWith(binary, env, dir, args...); err != nil {
+		return fmt.Errorf("failed to start: %w", err)
 	}
+
+	multi := io.MultiReader(stdout, stderr)
+	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
+	}
+
+	go io.Copy(a.logFile, multi)
 
 	if a.Client, err = rpc.Connect(sockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
@@ -120,12 +139,12 @@ func (a *Agent) Stop() error {
 
 	a.logger.Info("Stopping agent node")
 
-	if err := a.Command.Process.Signal(unix.SIGTERM); err != nil {
-		return err
+	if err := GracefullyTerminate(a.Command); err != nil {
+		return fmt.Errorf("failed to terminate: %w", err)
 	}
 
-	if _, err := a.Command.Process.Wait(); err != nil {
-		return err
+	if err := a.logFile.Close(); err != nil {
+		return fmt.Errorf("failed to close log file: %w", err)
 	}
 
 	return nil

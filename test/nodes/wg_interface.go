@@ -38,22 +38,25 @@ type WireGuardInterface struct {
 	SetupKernelInterface bool
 	PeerSelector         WireGuardPeerSelectorFunc
 
-	agent *Agent
+	Agent *Agent
 }
 
 func (i *WireGuardInterface) Apply(a *Agent) {
-	if i.agent != nil {
+	if i.Agent != nil {
 		panic(fmt.Errorf("can not assign interface to more than a single agent"))
 	}
 
-	i.agent = a
+	i.Agent = a
 
 	a.WireGuardInterfaces = append(a.WireGuardInterfaces, i)
 }
 
-func NewWireGuardInterface(name string) *WireGuardInterface {
+func NewWireGuardInterface(name string) (*WireGuardInterface, error) {
 	lp := wg.DefaultPort
-	sk, _ := crypto.GeneratePrivateKey()
+	sk, err := crypto.GeneratePrivateKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate private key: %w", err)
+	}
 
 	return &WireGuardInterface{
 		Name:                 name,
@@ -63,7 +66,7 @@ func NewWireGuardInterface(name string) *WireGuardInterface {
 			ListenPort: &lp,
 			PrivateKey: (*wgtypes.Key)(&sk),
 		},
-	}
+	}, nil
 }
 
 func (i *WireGuardInterface) Create() error {
@@ -83,7 +86,7 @@ func (i *WireGuardInterface) Create() error {
 }
 
 func (i *WireGuardInterface) WriteConfig() error {
-	wgcpath := i.agent.Shadowed(i.agent.WireGuardConfigPath)
+	wgcpath := i.Agent.Shadowed(i.Agent.WireGuardConfigPath)
 
 	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0600)
@@ -91,7 +94,7 @@ func (i *WireGuardInterface) WriteConfig() error {
 		return fmt.Errorf("failed to open config file: %w", err)
 	}
 
-	i.agent.logger.Debug("Writing config file",
+	i.Agent.logger.Debug("Writing config file",
 		zap.String("intf", i.Name),
 		zap.String("path", fn))
 
@@ -108,7 +111,7 @@ func (i *WireGuardInterface) SetupKernel() error {
 	}
 	l.LinkAttrs.Name = i.Name
 
-	nlh := i.agent.NetlinkHandle()
+	nlh := i.Agent.NetlinkHandle()
 
 	if err := nlh.LinkAdd(l); err != nil {
 		return fmt.Errorf("failed to create link: %w", err)
@@ -160,7 +163,7 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 		return fmt.Errorf("no WireGuard tunnel address configured")
 	}
 
-	stdout, stderr, cmd, err := i.agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), peer.Addresses[0].IP)
+	stdout, stderr, cmd, err := i.Agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), peer.Addresses[0].IP)
 	if err != nil {
 		return fmt.Errorf("failed to start ping process: %w", err)
 	}
@@ -182,9 +185,9 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 		if err != nil {
 			return fmt.Errorf("ping failed with exit code %d: %w\n%s", cmd.ProcessState.ExitCode(), err, out)
 		} else {
-			i.agent.logger.Info("Pinged successfully",
+			i.Agent.logger.Info("Pinged successfully",
 				zap.String("intf", i.Name),
-				zap.String("peer", peer.agent.Name()),
+				zap.String("peer", peer.Agent.Name()),
 				zap.String("peer_intf", peer.Name))
 
 			return nil
@@ -202,12 +205,12 @@ func (i *WireGuardInterface) GetConfig() *wg.Config {
 func (i *WireGuardInterface) WaitConnectionReady(ctx context.Context, p *WireGuardInterface) error {
 	sk := crypto.Key(*p.PrivateKey)
 
-	return i.agent.Client.WaitForPeerConnectionState(ctx, sk.PublicKey(), ice.ConnectionStateConnected)
+	return i.Agent.Client.WaitForPeerConnectionState(ctx, sk.PublicKey(), ice.ConnectionStateConnected)
 }
 
 func (i *WireGuardInterface) Configure(cfg wgtypes.Config) error {
-	if err := i.agent.RunFunc(func() error {
-		return i.agent.WireGuardClient.ConfigureDevice(i.Name, cfg)
+	if err := i.Agent.RunFunc(func() error {
+		return i.Agent.WireGuardClient.ConfigureDevice(i.Name, cfg)
 	}); err != nil {
 		return fmt.Errorf("failed to configure WireGuard link: %w", err)
 	}

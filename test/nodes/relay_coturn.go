@@ -13,7 +13,6 @@ import (
 	"github.com/pion/ice/v2"
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 )
 
 const (
@@ -106,15 +105,7 @@ func (c *CoturnNode) Stop() error {
 
 	c.logger.Info("Stopping relay node")
 
-	if err := c.Command.Process.Signal(unix.SIGTERM); err != nil {
-		return err
-	}
-
-	if _, err := c.Command.Process.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return GracefullyTerminate(c.Command)
 }
 
 func (c *CoturnNode) Close() error {

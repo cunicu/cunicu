@@ -11,7 +11,6 @@ import (
 
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 )
 
 type GrpcSignalingNode struct {
@@ -39,17 +38,23 @@ func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (Signalin
 	return t, nil
 }
 
-func (s *GrpcSignalingNode) Start(binary, dir string, extraArgs ...any) error {
+func (s *GrpcSignalingNode) Start(_, dir string, extraArgs ...any) error {
 	var err error
 
 	logPath := fmt.Sprintf("%s.log", s.Name())
 
-	args := []any{
+	binary, profileArgs, err := BuildTestBinary(s.Name())
+	if err != nil {
+		return fmt.Errorf("failed to build: %w", err)
+	}
+
+	args := profileArgs
+	args = append(args,
 		"signal",
 		"--log-level", "debug",
 		"--log-file", logPath,
 		"--listen", fmt.Sprintf(":%d", s.port),
-	}
+	)
 	args = append(args, extraArgs...)
 
 	if _, _, s.Command, err = s.StartWith(binary, nil, dir, args...); err != nil {
@@ -70,15 +75,7 @@ func (s *GrpcSignalingNode) Stop() error {
 
 	s.logger.Info("Stopping signaling node")
 
-	if err := s.Command.Process.Signal(unix.SIGTERM); err != nil {
-		return err
-	}
-
-	if _, err := s.Command.Process.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return GracefullyTerminate(s.Command)
 }
 
 func (s *GrpcSignalingNode) Close() error {
