@@ -14,20 +14,20 @@ import (
 )
 
 var (
-	traceHandshakeCmd = &cobra.Command{
-		Use:    "trace_handshakes",
-		Short:  "Trace WireGuard handhshakes via Linux Kprobes",
-		Long:   "This command traces handshakes of local WireGuard interfaces via Linux Kprobes in order to extract static, pre-shared and ephemeral keys and logs them to the standard output in the keylog format used by Wireshark",
-		RunE:   traceHandshakes,
-		Hidden: true,
+	wgExtractHandshakesCmd = &cobra.Command{
+		Use:   "extract-handshakes",
+		Short: "Extract WireGuard handhshakes from Linux kernel",
+		Long:  "This command extracts ephemeral session secrets from handshakes of local WireGuard interfaces via Linux eBPF and kProbes and logs them to the standard output in the keylog format used by Wireshark",
+		RunE:  wgExtractHandshakes,
+		// Hidden: true,
 	}
 )
 
 func init() {
-	RootCmd.AddCommand(traceHandshakeCmd)
+	wgCmd.AddCommand(wgExtractHandshakesCmd)
 }
 
-func traceHandshakes(cmd *cobra.Command, args []string) error {
+func wgExtractHandshakes(cmd *cobra.Command, args []string) error {
 	logger := zap.L().Named("tracer")
 
 	ht, err := tracer.NewHandshakeTracer()
