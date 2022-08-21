@@ -59,9 +59,9 @@ func BuildTestBinary(name string) (string, []any, error) {
 
 			// We compile a dummy go test binary here which just
 			// invokes main(), but is instrumented for profiling.
-			testBinaryPath, err = gexec.CompileTest("../cmd", buildArgs...)
+			testBinaryPath, err = gexec.CompileTest("..", buildArgs...)
 		} else {
-			testBinaryPath, err = gexec.Build("../cmd", buildArgs...)
+			testBinaryPath, err = gexec.Build("..", buildArgs...)
 		}
 	}
 

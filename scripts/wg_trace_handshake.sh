@@ -59,10 +59,10 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-WICE="go run -tags tracer riasc.eu/wice/cmd"
+WICE="go run -tags tracer riasc.eu/wice"
 
 echo -e "\n=== Start probing for WireGuard handshakes"
-${WICE} trace_handshakes 2> /dev/null > ${KEYS_FILE} &
+${WICE} wg extract-handshakes 2> /dev/null > ${KEYS_FILE} &
 TRACER_PID=$!
 
 echo -e "\n=== Start tshark capture"

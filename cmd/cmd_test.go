@@ -1,11 +1,11 @@
 //go:build test
 
-package main
+package cmd
 
 import (
 	"testing"
 )
 
 func TestRunMain(t *testing.T) {
-	main()
+	cmd.WGCmd.Execute()
 }

@@ -21,7 +21,7 @@ checksum:
 
 builds:
 - id: wice
-  main: ./cmd
+  main: '.'
   binary: wice
   env:
   - CGO_ENABLED=0

@@ -1,4 +1,4 @@
-package main
+package cmd
 
 // derived from http://github.com/restic/restic
 
