@@ -3,7 +3,6 @@ package epice
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"strings"
 	"time"
 
@@ -201,16 +200,6 @@ func (p *Peer) newAgent() (*ice.Agent, error) {
 	return agent, nil
 }
 
-// isControlling determines if the peer is controlling the ICE session
-// by selecting the peer which has the smaller public key
-func (p *Peer) isControlling() bool {
-	var pkOur, pkTheir big.Int
-	pkOur.SetBytes(p.Interface.Device.PublicKey[:])
-	pkTheir.SetBytes(p.Peer.Peer.PublicKey[:])
-
-	return pkOur.Cmp(&pkTheir) == -1
-}
-
 // isSessionRestart checks if a received offer should restart the
 // ICE session by comparing ufrag & pwd with previously used values.
 func (p *Peer) isSessionRestart(c *pb.Credentials) bool {
@@ -243,7 +232,7 @@ func (p *Peer) connect(ufrag, pwd string) error {
 	var err error
 
 	// TODO: use proper context
-	if p.isControlling() {
+	if p.IsControlling() {
 		p.logger.Debug("Dialing...")
 		p.conn, err = p.agent.Dial(context.Background(), ufrag, pwd)
 	} else {

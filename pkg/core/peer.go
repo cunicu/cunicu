@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"math/big"
 	"net"
 	"time"
 
@@ -83,6 +84,16 @@ func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
 		Ours:   p.Interface.PrivateKey(),
 		Theirs: p.PublicKey(),
 	}
+}
+
+// IsControlling determines if the peer is controlling the ICE session
+// by selecting the peer which has the smaller public key
+func (p *Peer) IsControlling() bool {
+	var pkOur, pkTheir big.Int
+	pkOur.SetBytes(p.Interface.Device.PublicKey[:])
+	pkTheir.SetBytes(p.Peer.PublicKey[:])
+
+	return pkOur.Cmp(&pkTheir) == -1
 }
 
 // WireGuardConfig return the WireGuard peer configuration
