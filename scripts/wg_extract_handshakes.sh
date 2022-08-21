@@ -14,7 +14,13 @@
 # kernel memory layout.
 #
 # Please point the KERNELDIR environment variable to a directory containing the
-# **full** kernel sources (headers are not sufficient).
+# **full** kernel sources (headers are not sufficient) while running "go generate":
+#
+#  $ export KERNELDIR=/usr/src/linux-5.15
+#  $ git clone github.com/stv0g/wice
+#  $ cd wice
+#  $ go generate -tags tracer 
+#  $ go build -tags tracer .
 #
 
 set -e
