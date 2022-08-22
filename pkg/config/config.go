@@ -80,6 +80,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefaults()
 
 	// Feature flags
+	flags.BoolP("hooks", "K", true, "Enable execution of hooks")
 	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
 	flags.BoolP("config-sync", "S", true, "Enable synchronization of WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
@@ -135,6 +136,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
 
 	flagMap := map[string]string{
+		// Hooks
+		"hooks": "hooks.enabled",
+
 		// Config sync
 		"config-sync":  "config_sync.enabled",
 		"config-path":  "config_sync.path",
@@ -362,8 +366,8 @@ func decodeOption(cfg *mapstructure.DecoderConfig) {
 		mapstructure.StringToTimeDurationHookFunc(),
 		mapstructure.StringToSliceHookFunc(","),
 		mapstructure.TextUnmarshallerHookFunc(),
+		hookDecodeHook,
 	)
-
 	cfg.ZeroFields = false
 	cfg.TagName = "yaml"
 }
@@ -374,4 +378,21 @@ func (c *Config) Load() error {
 	}
 
 	return nil
+}
+
+// decode takes an input structure and uses reflection to translate it to
+// the output structure. output must be a pointer to a map or struct.
+func decode(input interface{}, output interface{}) error {
+	cfg := &mapstructure.DecoderConfig{
+		Metadata: nil,
+		Result:   output,
+	}
+	decodeOption(cfg)
+
+	decoder, err := mapstructure.NewDecoder(cfg)
+	if err != nil {
+		return err
+	}
+
+	return decoder.Decode(input)
 }

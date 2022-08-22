@@ -7,6 +7,7 @@ import (
 	"riasc.eu/wice/pkg/feat/autocfg"
 	"riasc.eu/wice/pkg/feat/cfgsync"
 	"riasc.eu/wice/pkg/feat/epdisc"
+	"riasc.eu/wice/pkg/feat/hooks"
 	"riasc.eu/wice/pkg/feat/hsync"
 	"riasc.eu/wice/pkg/feat/pdisc"
 	"riasc.eu/wice/pkg/feat/rtsync"
@@ -46,6 +47,10 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 
 	if cfg.Community != "" {
 		feats = append(feats, pdisc.New(w, c, b, cfg.Community))
+	}
+
+	if len(cfg.Hooks) > 0 {
+		feats = append(feats, hooks.New(w, cfg, ep))
 	}
 
 	return feats, ep

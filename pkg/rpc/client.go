@@ -127,7 +127,7 @@ func (c *Client) streamEvents() {
 			break
 		}
 
-		if e.Type == rpcproto.Event_PEER_CONNECTION_STATE_CHANGED {
+		if e.Type == rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED {
 			if pcs, ok := e.Event.(*rpcproto.Event_PeerConnectionStateChange); ok {
 				pk, err := crypto.ParseKeyBytes(e.Peer)
 				if err != nil {
@@ -148,7 +148,7 @@ func (c *Client) streamEvents() {
 	}
 }
 
-func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.Event_Type, intf string, peer crypto.Key) (*rpcproto.Event, error) {
+func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.EventType, intf string, peer crypto.Key) (*rpcproto.Event, error) {
 	for {
 		select {
 		case e, ok := <-c.Events:
@@ -178,7 +178,7 @@ func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.Event_Type, intf s
 
 func (c *Client) WaitForPeerHandshake(ctx context.Context, peer crypto.Key) error {
 	for {
-		e, err := c.WaitForEvent(ctx, rpcproto.Event_PEER_MODIFIED, "", peer)
+		e, err := c.WaitForEvent(ctx, rpcproto.EventType_PEER_MODIFIED, "", peer)
 		if err != nil {
 			return err
 		}

@@ -28,6 +28,8 @@ func (i *Interface) Device() *wg.Device {
 	}
 }
 
+// Dump writes a human readable version of the interface status to the supplied writer.
+// The format resembles the one used by wg(8).
 func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	wri := t.NewIndenter(wr, "  ")
 
@@ -92,4 +94,11 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	}
 
 	return nil
+}
+
+// Redact redacts any sensitive information from the interface status such as private keys
+func (i *Interface) Redact() *Interface {
+	i.PrivateKey = nil
+
+	return i
 }

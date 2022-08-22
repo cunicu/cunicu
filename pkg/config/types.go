@@ -57,6 +57,25 @@ func (u BackendURL) MarshalText() ([]byte, error) {
 	return []byte(s), nil
 }
 
+type URL struct {
+	url.URL
+}
+
+func (u *URL) UnmarshalText(text []byte) error {
+	up, err := url.Parse(string(text))
+	if err != nil {
+		return err
+	}
+
+	u.URL = *up
+
+	return nil
+}
+
+func (u URL) MarshalText() ([]byte, error) {
+	return []byte(u.String()), nil
+}
+
 type OutputFormat string
 
 const (

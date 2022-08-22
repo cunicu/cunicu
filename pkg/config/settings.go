@@ -81,6 +81,21 @@ type EndpointDiscoverySettings struct {
 	ICE ICESettings `yaml:"ice,omitempty"`
 }
 
+type HookSetting any
+
+type WebHookSetting struct {
+	URL     URL               `yaml:"url"`
+	Method  string            `yaml:"method"`
+	Headers map[string]string `yaml:"headers"`
+}
+
+type ExecHookSetting struct {
+	Command string            `yaml:"command"`
+	Args    []string          `yaml:"args"`
+	Env     map[string]string `yaml:"env"`
+	Stdin   bool              `yaml:"stdin"`
+}
+
 type Settings struct {
 	Community     string        `yaml:"community,omitempty"`
 	WatchInterval time.Duration `yaml:"watch_interval,omitempty"`
@@ -93,6 +108,7 @@ type Settings struct {
 	ConfigSync   ConfigSyncSettings        `yaml:"config_sync,omitempty"`
 	RouteSync    RouteSyncSettings         `yaml:"route_sync,omitempty"`
 	HostSync     HostSyncSettings          `yaml:"host_sync,omitempty"`
+	Hooks        []HookSetting             `yaml:"hooks,omitempty"`
 	EndpointDisc EndpointDiscoverySettings `yaml:"endpoint_disc,omitempty"`
 }
 
