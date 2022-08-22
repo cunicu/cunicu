@@ -1,6 +1,6 @@
 //go:build tracer
 
-package cmd
+package main
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ var (
 )
 
 func init() {
-	WGCmd.AddCommand(wgExtractHandshakesCmd)
+	wgCmd.AddCommand(wgExtractHandshakesCmd)
 }
 
 func wgExtractHandshakes(cmd *cobra.Command, args []string) error {

@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"bufio"
@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	RootCmd.AddCommand(addressesCmd)
+	rootCmd.AddCommand(addressesCmd)
 }
 
 func addresses(cmd *cobra.Command, args []string) {

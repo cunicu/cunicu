@@ -20,8 +20,8 @@
 #  $ git clone github.com/stv0g/wice
 #  $ cd wice
 #  $ go generate -tags tracer 
-#  $ go build -tags tracer .
-#
+#  $ go build -tags tracer ./cmd/wice
+#  $ sudo ./wice wg 
 
 set -e
 
@@ -65,10 +65,8 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-WICE="go run -tags tracer riasc.eu/wice"
-
 echo -e "\n=== Start probing for WireGuard handshakes"
-${WICE} wg extract-handshakes 2> /dev/null > ${KEYS_FILE} &
+wice wg extract-handshakes 2> /dev/null > ${KEYS_FILE} &
 TRACER_PID=$!
 
 echo -e "\n=== Start tshark capture"

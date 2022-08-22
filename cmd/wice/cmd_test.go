@@ -1,6 +1,6 @@
 //go:build test
 
-package cmd
+package main
 
 import (
 	"testing"

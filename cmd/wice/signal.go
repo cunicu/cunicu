@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"net"
@@ -28,7 +28,7 @@ func init() {
 	pf.StringVarP(&listenAddress, "listen", "L", ":8080", "listen address")
 	pf.BoolVarP(&secure, "secure", "S", false, "listen with TLS")
 
-	RootCmd.AddCommand(signalCmd)
+	rootCmd.AddCommand(signalCmd)
 }
 
 func signal(cmd *cobra.Command, args []string) {

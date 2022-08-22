@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"context"
@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	addClientCommand(RootCmd, syncCmd)
+	addClientCommand(rootCmd, syncCmd)
 }
 
 func sync(cmd *cobra.Command, args []string) error {

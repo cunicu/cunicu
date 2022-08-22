@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"context"
@@ -18,7 +18,7 @@ var statusCmd = &cobra.Command{
 }
 
 func init() {
-	addClientCommand(RootCmd, statusCmd)
+	addClientCommand(rootCmd, statusCmd)
 }
 
 func status(cmd *cobra.Command, args []string) {

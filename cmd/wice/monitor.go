@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ var monitorCmd = &cobra.Command{
 var format config.OutputFormat
 
 func init() {
-	addClientCommand(RootCmd, monitorCmd)
+	addClientCommand(rootCmd, monitorCmd)
 
 	f := monitorCmd.PersistentFlags()
 	f.VarP(&format, "format", "f", fmt.Sprintf("Output `format` (one of: %s)", strings.Join(config.OutputFormatNames, ", ")))
