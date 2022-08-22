@@ -7,28 +7,28 @@ import "common.proto";
 import "signaling/signaling.proto";
 import "feat/epdisc.proto";
 
+enum EventType {
+    UNKNOWN = 0;
+    
+    // Signaling Events
+    BACKEND_READY = 10;
+    SIGNALING_MESSAGE = 11;
+
+    // Core Events
+    PEER_ADDED = 20;
+    PEER_REMOVED = 21;
+    PEER_MODIFIED = 22;
+
+    INTERFACE_ADDED = 30;
+    INTERFACE_REMOVED = 31;
+    INTERFACE_MODIFIED = 32;
+
+    // ICE Events
+    PEER_CONNECTION_STATE_CHANGED = 40;
+}
+
 message Event {
-    enum Type {
-        UNKNOWN = 0;
-        
-        // Signaling Events
-        BACKEND_READY = 10;
-        SIGNALING_MESSAGE = 11;
-
-        // Core Events
-        PEER_ADDED = 20;
-        PEER_REMOVED = 21;
-        PEER_MODIFIED = 22;
-
-        INTERFACE_ADDED = 30;
-        INTERFACE_REMOVED = 31;
-        INTERFACE_MODIFIED = 32;
-
-        // ICE Events
-        PEER_CONNECTION_STATE_CHANGED = 40;
-    }
-
-    Type type = 1;
+    EventType type = 1;
     Timestamp time = 2;
 
     // Public key of peer which triggerd the event

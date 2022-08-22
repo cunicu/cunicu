@@ -168,7 +168,7 @@ func (a *Agent) Close() error {
 }
 
 func (a *Agent) WaitBackendReady(ctx context.Context) error {
-	_, err := a.Client.WaitForEvent(ctx, rpcproto.Event_BACKEND_READY, "", crypto.Key{})
+	_, err := a.Client.WaitForEvent(ctx, rpcproto.EventType_BACKEND_READY, "", crypto.Key{})
 
 	return err
 }

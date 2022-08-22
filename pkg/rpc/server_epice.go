@@ -63,7 +63,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_StreamEventsServer) {
 	for _, p := range s.Peers {
 		e := &rpcproto.Event{
-			Type:      rpcproto.Event_PEER_CONNECTION_STATE_CHANGED,
+			Type:      rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
 			Interface: p.Interface.Name(),
 			Peer:      p.Peer.PublicKey().Bytes(),
 			Event: &rpcproto.Event_PeerConnectionStateChange{
@@ -83,7 +83,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_St
 
 func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
 	s.events.Send(&rpcproto.Event{
-		Type: rpcproto.Event_PEER_CONNECTION_STATE_CHANGED,
+		Type: rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
 
 		Interface: p.Interface.Name(),
 		Peer:      p.PublicKey().Bytes(),

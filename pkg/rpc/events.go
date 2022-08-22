@@ -15,21 +15,21 @@ import (
 
 func (s *Server) OnInterfaceAdded(i *core.Interface) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_INTERFACE_ADDED,
+		Type:      rpcproto.EventType_INTERFACE_ADDED,
 		Interface: i.Name(),
 	})
 }
 
 func (s *Server) OnInterfaceRemoved(i *core.Interface) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_INTERFACE_REMOVED,
+		Type:      rpcproto.EventType_INTERFACE_REMOVED,
 		Interface: i.Name(),
 	})
 }
 
 func (s *Server) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_INTERFACE_MODIFIED,
+		Type:      rpcproto.EventType_INTERFACE_MODIFIED,
 		Interface: i.Name(),
 		Event: &rpcproto.Event_InterfaceModified{
 			InterfaceModified: &rpcproto.InterfaceModifiedEvent{
@@ -41,7 +41,7 @@ func (s *Server) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core
 
 func (s *Server) OnPeerAdded(p *core.Peer) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_PEER_ADDED,
+		Type:      rpcproto.EventType_PEER_ADDED,
 		Interface: p.Interface.Name(),
 		Peer:      p.PublicKey().Bytes(),
 	})
@@ -49,7 +49,7 @@ func (s *Server) OnPeerAdded(p *core.Peer) {
 
 func (s *Server) OnPeerRemoved(p *core.Peer) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_PEER_REMOVED,
+		Type:      rpcproto.EventType_PEER_REMOVED,
 		Interface: p.Interface.Name(),
 		Peer:      p.PublicKey().Bytes(),
 	})
@@ -57,7 +57,7 @@ func (s *Server) OnPeerRemoved(p *core.Peer) {
 
 func (s *Server) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	s.events.Send(&rpcproto.Event{
-		Type:      rpcproto.Event_PEER_MODIFIED,
+		Type:      rpcproto.EventType_PEER_MODIFIED,
 		Interface: p.Interface.Name(),
 		Peer:      p.PublicKey().Bytes(),
 
@@ -71,7 +71,7 @@ func (s *Server) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerMo
 
 func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 	s.events.Send(&rpcproto.Event{
-		Type: rpcproto.Event_BACKEND_READY,
+		Type: rpcproto.EventType_BACKEND_READY,
 
 		Event: &rpcproto.Event_BackendReady{
 			BackendReady: &rpcproto.SignalingBackendReadyEvent{

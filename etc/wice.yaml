@@ -50,6 +50,34 @@ route_sync:
 
   table: main
 
+# Pass events to external processes or web hook handlers
+hooks:
+- type: exec
+  command: ../../scripts/hook.sh
+
+  # Prepend additional arguments
+  args: []
+
+  # Pass JSON object via Stdin to command
+  stdin: true
+
+  # Set environment variables for invocation
+  env:
+    COLOR: "1"
+
+- type: web
+
+  # URL of the webhook endpoint
+  url: https://my-webhook-endpoint.com/api/v1/webhook
+  
+  # HTTP method of request
+  method: POST
+
+  # Pass additional headers
+  headers:
+    User-Agent: ahoi
+    Authorization: Bearer XXXXXX
+
 # Discover the WireGuard endpoint of peers
 endpoint_disc:
   enabled: true

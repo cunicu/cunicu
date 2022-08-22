@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package wice.hooks;
+option go_package = "riasc.eu/wice/pkg/proto/feat/hooks";
+
+import "core/interface.proto";
+import "core/peer.proto";
+import "rpc/event.proto";
+
+message WebHookBody {
+    rpc.EventType type = 1;
+
+    core.Interface interface = 2;
+    core.Peer peer = 3;
+
+    repeated string modified = 4;
+}

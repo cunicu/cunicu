@@ -127,3 +127,10 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 
 	return nil
 }
+
+// Redact redacts any sensitive information from the peer status such as the preshared key
+func (p *Peer) Redact() *Peer {
+	p.PresharedKey = nil
+
+	return p
+}
