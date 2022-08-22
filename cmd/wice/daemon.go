@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"github.com/spf13/cobra"
@@ -29,7 +29,7 @@ func init() {
 
 	cfg = config.NewConfig(pf)
 
-	RootCmd.AddCommand(daemonCmd)
+	rootCmd.AddCommand(daemonCmd)
 }
 
 func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

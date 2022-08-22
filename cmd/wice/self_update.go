@@ -1,4 +1,4 @@
-package cmd
+package main
 
 // derived from http://github.com/restic/restic
 
@@ -33,7 +33,7 @@ type SelfUpdateOptions struct {
 var selfUpdateOptions SelfUpdateOptions
 
 func init() {
-	RootCmd.AddCommand(selfUpdateCmd)
+	rootCmd.AddCommand(selfUpdateCmd)
 
 	file, err := os.Executable()
 	if err != nil {

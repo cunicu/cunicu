@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	WGCmd = &cobra.Command{
+	wgCmd = &cobra.Command{
 		Use:   "wg",
 		Short: "WireGuard commands",
 		Args:  cobra.NoArgs,
@@ -49,13 +49,13 @@ var (
 )
 
 func init() {
-	RootCmd.AddCommand(WGCmd)
+	rootCmd.AddCommand(wgCmd)
 
-	WGCmd.AddCommand(wgGenKeyCmd)
-	WGCmd.AddCommand(wgGenPSKCmd)
-	WGCmd.AddCommand(wgPubKeyCmd)
+	wgCmd.AddCommand(wgGenKeyCmd)
+	wgCmd.AddCommand(wgGenPSKCmd)
+	wgCmd.AddCommand(wgPubKeyCmd)
 
-	addClientCommand(WGCmd, wgShowCmd)
+	addClientCommand(wgCmd, wgShowCmd)
 }
 
 func wgGenKey(cmd *cobra.Command, args []string) error {

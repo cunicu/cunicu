@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ Website:
 )
 
 var (
-	RootCmd = &cobra.Command{
+	rootCmd = &cobra.Command{
 		Use:   "wice",
 		Short: "ɯice",
 		Long:  "WireGuard Interactive Connectivity Establishment",
@@ -63,17 +63,17 @@ var (
 )
 
 func init() {
-	RootCmd.SetUsageTemplate(usageTemplate)
+	rootCmd.SetUsageTemplate(usageTemplate)
 
 	cobra.OnInitialize(
 		util.SetupRand,
 		setupLogging,
 	)
 
-	f := RootCmd.Flags()
+	f := rootCmd.Flags()
 	f.SortFlags = false
 
-	pf := RootCmd.PersistentFlags()
+	pf := rootCmd.PersistentFlags()
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
 }

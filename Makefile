@@ -12,7 +12,7 @@ all: wice
 
 wice:
 	go generate ./...
-	go build -o $@ -ldflags="$(LDFLAGS)" .
+	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/wice
 
 tests:
 	ginkgo run $(GINKGO_OPTS)
