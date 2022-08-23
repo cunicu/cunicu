@@ -115,7 +115,7 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 	}
 
 	// Wait until subscription has been created
-	// This avoids a race between Subscribe()/Publish() when two subscribers are subscribing
+	// This avoids a race between Subscribe() / Publish() when two subscribers are subscribing
 	// to each other.
 	if _, err := stream.Recv(); err != nil {
 		return fmt.Errorf("failed receive sync envelope: %s", err)

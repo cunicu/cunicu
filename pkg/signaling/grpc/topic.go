@@ -22,7 +22,7 @@ func (r *topicRegistry) getTopic(pk *crypto.Key) *topic {
 		return top
 	}
 
-	top = newTopic()
+	top = NewTopic()
 
 	r.topics[*pk] = top
 
@@ -34,9 +34,7 @@ func (r *topicRegistry) Close() error {
 	defer r.topicsLock.Unlock()
 
 	for _, t := range r.topics {
-		if err := t.Close(); err != nil {
-			return err
-		}
+		t.Close()
 	}
 
 	return nil
@@ -46,7 +44,7 @@ type topic struct {
 	subs *util.FanOut[*signaling.Envelope]
 }
 
-func newTopic() *topic {
+func NewTopic() *topic {
 	t := &topic{
 		subs: util.NewFanOut[*signaling.Envelope](128),
 	}
@@ -55,7 +53,7 @@ func newTopic() *topic {
 }
 
 func (t *topic) Publish(env *signaling.Envelope) {
-	t.subs.C <- env
+	t.subs.Send(env)
 }
 
 func (t *topic) Subscribe() chan *signaling.Envelope {
@@ -66,6 +64,6 @@ func (t *topic) Unsubscribe(ch chan *signaling.Envelope) {
 	t.subs.Remove(ch)
 }
 
-func (t *topic) Close() error {
-	return t.subs.Close()
+func (t *topic) Close() {
+	t.subs.Close()
 }

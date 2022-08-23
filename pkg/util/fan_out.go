@@ -3,42 +3,36 @@ package util
 import "sync"
 
 type FanOut[T any] struct {
-	C chan T
-
-	buf  int
-	subs map[chan T]struct{}
 	lock sync.RWMutex
+	buf  int
+	subs map[chan T]any
 }
 
 func NewFanOut[T any](buf int) *FanOut[T] {
 	f := &FanOut[T]{
-		C:    make(chan T),
-		subs: map[chan T]struct{}{},
+		subs: map[chan T]any{},
 		buf:  buf,
 	}
-
-	go f.run()
 
 	return f
 }
 
-func (f *FanOut[T]) run() {
-	for t := range f.C {
-		f.lock.RLock()
-		for ch := range f.subs {
-			ch <- t
-		}
-		f.lock.RUnlock()
+func (f *FanOut[T]) Send(v T) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+
+	for ch := range f.subs {
+		ch <- v
 	}
 }
 
 func (f *FanOut[T]) Add() chan T {
-	ch := make(chan T, f.buf)
-
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
-	f.subs[ch] = struct{}{}
+	ch := make(chan T, f.buf)
+
+	f.subs[ch] = nil
 
 	return ch
 }
@@ -50,15 +44,8 @@ func (f *FanOut[T]) Remove(ch chan T) {
 	delete(f.subs, ch)
 }
 
-func (f *FanOut[T]) Close() error {
-	f.lock.Lock()
-	defer f.lock.Unlock()
-
+func (f *FanOut[T]) Close() {
 	for ch := range f.subs {
 		close(ch)
 	}
-
-	close(f.C)
-
-	return nil
 }
