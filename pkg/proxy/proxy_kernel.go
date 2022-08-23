@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
@@ -39,6 +40,7 @@ func NewKernelProxy(nat *NAT, listenPort int) (Proxy, error) {
 
 func (p *KernelProxy) Close() error {
 	if p.connUser != nil {
+		p.connUser.SetWriteDeadline(time.Now().Add(1 * time.Second)) // TODO: really required?
 		if err := p.connUser.Close(); err != nil {
 			return err
 		}
