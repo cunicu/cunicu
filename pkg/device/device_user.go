@@ -86,37 +86,35 @@ func NewUserDevice(name string) (*UserDevice, error) {
 	return dev, nil
 }
 
-func (i *UserDevice) Close() error {
-	i.device.Close()
+func (d *UserDevice) Close() error {
+	d.device.Close()
 
-	if err := i.api.Close(); err != nil {
+	if err := d.api.Close(); err != nil {
 		return err
 	}
 
-	if err := i.Device.Close(); err != nil {
-		return fmt.Errorf("failed to close kernel device: %w", err)
-	}
+	// TODO: Check for stale TUN device and cleanup?
 
 	return nil
 }
 
-func (i *UserDevice) handleUserAPI() {
+func (d *UserDevice) handleUserAPI() {
 	for {
-		conn, err := i.api.Accept()
+		conn, err := d.api.Accept()
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				return
 			} else {
-				i.logger.Error("Failed to accept new user api connection", zap.Error(err))
+				d.logger.Error("Failed to accept new user api connection", zap.Error(err))
 				continue
 			}
-		} else if i.device == nil {
-			i.logger.Warn("Dropping user api connection as device is not ready yet")
+		} else if d.device == nil {
+			d.logger.Warn("Dropping user api connection as device is not ready yet")
 			continue
 		}
 
-		i.logger.Debug("Handle new IPC connection", zap.String("socket", conn.LocalAddr().String()))
-		go i.device.IpcHandle(conn)
+		d.logger.Debug("Handle new IPC connection", zap.String("socket", conn.LocalAddr().String()))
+		go d.device.IpcHandle(conn)
 	}
 }
 
