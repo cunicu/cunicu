@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/log"
+	"riasc.eu/wice/pkg/util"
 )
 
 type writerWrapper struct {
@@ -29,7 +31,9 @@ func SetupLogging() *zap.Logger {
 
 func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	if err := zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
-		return &writerWrapper{ginkgo.GinkgoWriter}, nil
+		return &writerWrapper{
+			GinkgoWriterInterface: ginkgo.GinkgoWriter,
+		}, nil
 	}); err != nil && !strings.Contains(err.Error(), "already registered") {
 		panic(err)
 	}
@@ -37,20 +41,26 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	outputPaths := []string{"ginkgo:"}
 
 	if fn != "" {
-		// Truncate log file if requested
-		if truncate {
-			//#nosec G104 -- May fail if file does not exist yet
-			os.Truncate(fn, 0)
-		}
-
 		// Create parent directories for log file
 		if path := path.Dir(fn); path != "" {
 			if err := os.MkdirAll(path, 0750); err != nil {
-				panic(err)
+				panic(fmt.Errorf("failed to directory of log file: %w", err))
 			}
 		}
 
-		outputPaths = append(outputPaths, fn)
+		fl := os.O_CREATE | os.O_APPEND | os.O_WRONLY
+		if truncate {
+			fl |= os.O_TRUNC
+		}
+
+		f, err := os.OpenFile(fn, fl, 0644)
+		if err != nil {
+			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
+		}
+
+		ginkgo.GinkgoWriter.TeeTo(&util.ANSIStripper{
+			Writer: f,
+		})
 	}
 
 	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)
