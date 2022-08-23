@@ -86,7 +86,7 @@ func (u URL) MarshalText() ([]byte, error) {
 }
 
 const (
-	ConnectionStateUnknown    ConnectionState = 100
+	ConnectionStateCreating   ConnectionState = 100
 	ConnectionStateIdle       ConnectionState = 101
 	ConnectionStateConnecting ConnectionState = 102
 	ConnectionStateClosing    ConnectionState = 103
@@ -96,8 +96,8 @@ type ConnectionState ice.ConnectionState
 
 func (cs ConnectionState) String() string {
 	switch cs {
-	case ConnectionStateUnknown:
-		return "Unknown"
+	case ConnectionStateCreating:
+		return "Creating"
 	case ConnectionStateIdle:
 		return "Idle"
 	case ConnectionStateConnecting:

@@ -75,20 +75,20 @@ func NewConnectionState(s icex.ConnectionState) ConnectionState {
 	case ice.ConnectionStateClosed:
 		return ConnectionState_CLOSED
 
+	case icex.ConnectionStateCreating:
+		return ConnectionState_CREATING
 	case icex.ConnectionStateClosing:
 		return ConnectionState_CLOSING
 	case icex.ConnectionStateConnecting:
 		return ConnectionState_CONNECTING
 	case icex.ConnectionStateIdle:
 		return ConnectionState_IDLE
-	case icex.ConnectionStateUnknown:
-		return ConnectionState_UNKNOWN
 	}
 
 	return -1
 }
 
-func (s *ConnectionState) ConnectionState() ice.ConnectionState {
+func (s *ConnectionState) ConnectionState() icex.ConnectionState {
 	switch *s {
 	case ConnectionState_NEW:
 		return ice.ConnectionStateNew
@@ -104,6 +104,15 @@ func (s *ConnectionState) ConnectionState() ice.ConnectionState {
 		return ice.ConnectionStateDisconnected
 	case ConnectionState_CLOSED:
 		return ice.ConnectionStateClosed
+
+	case ConnectionState_CREATING:
+		return icex.ConnectionStateCreating
+	case ConnectionState_CLOSING:
+		return icex.ConnectionStateClosing
+	case ConnectionState_CONNECTING:
+		return icex.ConnectionStateConnecting
+	case ConnectionState_IDLE:
+		return icex.ConnectionStateIdle
 	}
 
 	return -1

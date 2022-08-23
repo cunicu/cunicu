@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,6 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
+	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/pb"
 )
 
@@ -32,7 +32,7 @@ type Client struct {
 	grpc   *grpc.ClientConn
 	logger *zap.Logger
 
-	connectionStates     map[crypto.Key]ice.ConnectionState
+	connectionStates     map[crypto.Key]icex.ConnectionState
 	connectionStatesLock sync.Mutex
 	connectionStatesCond *sync.Cond
 
@@ -73,7 +73,7 @@ func Connect(path string) (*Client, error) {
 
 		grpc:             conn,
 		logger:           logger,
-		connectionStates: make(map[crypto.Key]ice.ConnectionState),
+		connectionStates: make(map[crypto.Key]icex.ConnectionState),
 	}
 	client.connectionStatesCond = sync.NewCond(&client.connectionStatesLock)
 
@@ -189,7 +189,7 @@ func (c *Client) WaitForPeerHandshake(ctx context.Context, peer crypto.Key) erro
 	}
 }
 
-func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key, csd ice.ConnectionState) error {
+func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key, csd icex.ConnectionState) error {
 	go func() {
 		if ch := ctx.Done(); ch != nil {
 			<-ch
