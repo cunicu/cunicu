@@ -23,7 +23,7 @@ type GrpcSignalingNode struct {
 	logger *zap.Logger
 }
 
-func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (SignalingNode, error) {
+func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (*GrpcSignalingNode, error) {
 	h, err := n.AddHost(name, opts...)
 	if err != nil {
 		return nil, err

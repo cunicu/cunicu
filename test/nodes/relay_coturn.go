@@ -29,7 +29,7 @@ type CoturnNode struct {
 	logger *zap.Logger
 }
 
-func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (RelayNode, error) {
+func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, error) {
 	h, err := n.AddHost(name, opts...)
 	if err != nil {
 		return nil, err
