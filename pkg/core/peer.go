@@ -17,7 +17,7 @@ import (
 type SignalingState int
 
 type Peer struct {
-	wgtypes.Peer
+	*wgtypes.Peer
 
 	Name string
 
@@ -37,7 +37,7 @@ type Peer struct {
 func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 	p := &Peer{
 		Interface: i,
-		Peer:      *wgp,
+		Peer:      wgp,
 
 		onModified: []PeerHandler{},
 
@@ -240,13 +240,13 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 		mod |= PeerModifiedAllowedIPs
 	}
 
-	p.Peer = *new
+	p.Peer = new
 
 	if mod != PeerModifiedNone {
 		p.logger.Info("Peer has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range p.onModified {
-			h.OnPeerModified(p, &old, mod, ipsAdded, ipsRemoved)
+			h.OnPeerModified(p, old, mod, ipsAdded, ipsRemoved)
 		}
 	}
 
