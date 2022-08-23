@@ -118,7 +118,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	}
 
 	multi := io.MultiReader(stdout, stderr)
-	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
