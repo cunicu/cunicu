@@ -27,7 +27,7 @@ func SetSysctl(name string, value any) error {
 func SetSysctlMap(m map[string]any) error {
 	for k, v := range m {
 		if err := SetSysctl(k, v); err != nil {
-			return fmt.Errorf("failed to set sysctl '%s' to '%s': %w", k, v, err)
+			return fmt.Errorf("failed to set sysctl '%s' to '%v': %w", k, v, err)
 		}
 	}
 
