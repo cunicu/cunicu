@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/onsi/gomega/gexec"
+	"go.uber.org/zap"
 	"riasc.eu/wice/test"
 )
 
@@ -17,27 +18,29 @@ var (
 
 func BuildTestBinary(name string) (string, []any, error) {
 	var err error
+	var runArgs = []any{}
 
-	flags, profile := getProfileFlags()
+	profileFlags := getProfileFlags()
 
 	// Set some agent specific paths for the profile
-	if _, ok := flags["outputdir"]; !ok {
-		flags["outputdir"] = "."
-	}
-
-	for _, prof := range []string{"blockprofile", "coverprofile", "cpuprofile", "memprofile", "mutexprofile", "trace"} {
-		if path, ok := flags[prof]; ok {
-			fn := filepath.Base(path)
-
-			flags[prof] = fmt.Sprintf("%s.%s", name, fn)
+	if len(profileFlags) > 0 {
+		if _, ok := profileFlags["outputdir"]; !ok {
+			profileFlags["outputdir"] = "."
 		}
-	}
 
-	runArgs := []any{}
-	for k, v := range flags {
-		runArg := fmt.Sprintf("-test.%s=%v", k, v)
+		for _, prof := range []string{"blockprofile", "coverprofile", "cpuprofile", "memprofile", "mutexprofile", "trace"} {
+			if path, ok := profileFlags[prof]; ok {
+				fn := filepath.Base(path)
 
-		runArgs = append(runArgs, runArg)
+				profileFlags[prof] = fmt.Sprintf("%s.%s", name, fn)
+			}
+		}
+
+		for k, v := range profileFlags {
+			runArg := fmt.Sprintf("-test.%s=%v", k, v)
+
+			runArgs = append(runArgs, runArg)
+		}
 	}
 
 	if testBinaryPath == "" {
@@ -48,14 +51,16 @@ func BuildTestBinary(name string) (string, []any, error) {
 			buildArgs = append(buildArgs, "-race")
 		}
 
-		// Pass-through profiling flags to wice binary
-		if profile {
+		// Build a test binary if profiling is requested
+		if len(profileFlags) > 0 {
 			buildArgs = append(buildArgs, "-tags", "test")
 
-			for k, v := range flags {
+			for k, v := range profileFlags {
 				buildArg := fmt.Sprintf("-%s=%v", k, v)
 				buildArgs = append(buildArgs, buildArg)
 			}
+
+			zap.L().Info("building test binary")
 
 			// We compile a dummy go test binary here which just
 			// invokes main(), but is instrumented for profiling.
@@ -68,7 +73,7 @@ func BuildTestBinary(name string) (string, []any, error) {
 	return testBinaryPath, runArgs, err
 }
 
-func getProfileFlags() (map[string]string, bool) {
+func getProfileFlags() map[string]string {
 	flags := map[string]string{}
 
 	for _, fn := range []string{"benchmem", "blockprofile", "blockprofilerate", "coverprofile", "cpuprofile", "memprofile", "memprofilerate", "mutexprofile", "mutexprofilefraction", "outputdir", "trace"} {
@@ -77,5 +82,5 @@ func getProfileFlags() (map[string]string, bool) {
 		}
 	}
 
-	return flags, len(flags) > 0
+	return flags
 }
