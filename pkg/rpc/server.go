@@ -33,7 +33,7 @@ type Server struct {
 
 func NewServer(d *wice.Daemon) (*Server, error) {
 	s := &Server{
-		events: util.NewFanOut[*pb.Event](0),
+		events: util.NewFanOut[*pb.Event](1),
 		logger: zap.L().Named("rpc.server"),
 	}
 
@@ -79,6 +79,7 @@ func (s *Server) Wait() {
 
 func (s *Server) Close() error {
 	s.grpc.GracefulStop()
+	s.events.Close()
 
 	return nil
 }

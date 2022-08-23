@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"fmt"
+	"io"
 
 	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
@@ -33,9 +34,21 @@ func (s *DaemonServer) StreamEvents(params *pb.StreamEventsParams, stream pb.Soc
 		s.ep.SendConnectionStates(stream)
 	}
 
-	for e := range s.events.Add() {
-		if err := stream.Send(e); err != nil {
-			return fmt.Errorf("failed to send event: %w", err)
+	events := s.events.Add()
+	defer s.events.Remove(events)
+
+out:
+	for {
+		select {
+		case event := <-events:
+			if err := stream.Send(event); err == io.EOF {
+				break out
+			} else if err != nil {
+				return fmt.Errorf("failed to send event: %w", err)
+			}
+
+		case <-stream.Context().Done():
+			break out
 		}
 	}
 

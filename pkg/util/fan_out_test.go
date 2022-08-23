@@ -6,60 +6,51 @@ import (
 	"riasc.eu/wice/pkg/util"
 )
 
-var _ = Describe("Fan-out", func() {
-	It("should require buffered channels if we synchronously receive from the output channels", func() {
+var _ = Describe("fanout", func() {
+	It("works with no channel", func() {
+		fo := util.NewFanOut[int](1)
+
+		fo.Send(1234)
+
+		fo.Close()
+	})
+
+	It("works with a single channel", func() {
+		fo := util.NewFanOut[int](1)
+		ch := fo.Add()
+
+		fo.Send(1234)
+
+		Eventually(ch).Should(Receive(Equal(1234)))
+
+		fo.Close()
+	})
+
+	It("works with two channels", func() {
 		fo := util.NewFanOut[int](1)
 
 		ch1 := fo.Add()
 		ch2 := fo.Add()
 
-		fo.C <- 1234
+		fo.Send(1234)
 
 		Eventually(ch1).Should(Receive(Equal(1234)))
 		Eventually(ch2).Should(Receive(Equal(1234)))
 
-		err := fo.Close()
-		Expect(err).To(Succeed())
+		fo.Close()
 	})
 
-	It("also works with unbuffered channels if there is only a single channel", func() {
-		fo := util.NewFanOut[int](0)
-		ch := fo.Add()
-
-		fo.C <- 1234
-
-		Eventually(ch).Should(Receive(Equal(1234)))
-
-		err := fo.Close()
-		Expect(err).To(Succeed())
-	})
-
-	It("also works with unbuffered channels if there is only a single channel or others have been removed", func() {
-		fo := util.NewFanOut[int](0)
+	It("works with two channels after one has been removed", func() {
+		fo := util.NewFanOut[int](1)
 		ch1 := fo.Add()
 		ch2 := fo.Add()
 
 		fo.Remove(ch2)
 
-		fo.C <- 1234
+		fo.Send(1234)
 
 		Eventually(ch1).Should(Receive(Equal(1234)))
 
-		err := fo.Close()
-		Expect(err).To(Succeed())
-	})
-
-	It("might deadlock if there are more receiving channels", func() {
-		fo := util.NewFanOut[int](0)
-		ch1 := fo.Add()
-		ch2 := fo.Add()
-
-		fo.C <- 1234
-
-		Eventually(ch1).ShouldNot(Receive(Equal(1234)))
-		Eventually(ch2).ShouldNot(Receive(Equal(1234)))
-
-		err := fo.Close()
-		Expect(err).To(Succeed())
+		fo.Close()
 	})
 })

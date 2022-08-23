@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
@@ -58,19 +59,21 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEv
 			Peer:      p.Peer.PublicKey().Bytes(),
 			Event: &pb.Event_PeerConnectionStateChange{
 				PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-					NewState: pb.NewConnectionState(p.ConnectionState),
+					NewState: pb.NewConnectionState(p.ConnectionState()),
 				},
 			},
 		}
 
-		if err := stream.Send(e); err != nil {
+		if err := stream.Send(e); err == io.EOF {
+			continue
+		} else if err != nil {
 			s.logger.Error("Failed to send", zap.Error(err))
 		}
 	}
 }
 
 func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, new, prev icex.ConnectionState) {
-	s.events.C <- &pb.Event{
+	s.events.Send(&pb.Event{
 		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
 
 		Interface: p.Interface.Name(),
@@ -82,5 +85,5 @@ func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, new, pr
 				PrevState: pb.NewConnectionState(prev),
 			},
 		},
-	}
+	})
 }

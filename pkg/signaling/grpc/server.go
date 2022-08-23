@@ -73,9 +73,18 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 		s.logger.Error("Failed to send sync envelope", zap.Error(err))
 	}
 
-	for env := range ch {
-		if err := stream.Send(env); err != nil && err != io.EOF {
-			s.logger.Error("Failed to send envelope", zap.Error(err))
+out:
+	for {
+		select {
+		case env := <-ch:
+			if err := stream.Send(env); err == io.EOF {
+				break out
+			} else if err != nil {
+				s.logger.Error("Failed to send envelope", zap.Error(err))
+			}
+
+		case <-stream.Context().Done():
+			break out
 		}
 	}
 
