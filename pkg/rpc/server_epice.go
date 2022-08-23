@@ -45,8 +45,15 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.Re
 	}
 
 	ip := s.Peers[p]
+	if ip == nil {
+		err := fmt.Errorf("unknown peer %s/%s", params.Intf, pk.String())
+		return pb.NewError(err), nil
+	}
 
-	ip.Restart()
+	err = ip.Restart()
+	if err != nil {
+		return pb.NewError(err), nil
+	}
 
 	return pb.Success, nil
 }

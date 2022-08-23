@@ -211,6 +211,9 @@ func (w *Watcher) Sync() error {
 
 func (w *Watcher) Peer(intf string, pk *crypto.Key) *core.Peer {
 	i := w.Interfaces.ByName(intf)
+	if i == nil {
+		return nil
+	}
 
 	if p, ok := i.Peers[*pk]; ok {
 		return p
