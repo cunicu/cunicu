@@ -16,7 +16,7 @@ enum ConnectionState {
 	CLOSED = 6;           // ConnectionStateClosed ICE agent has finished and is no longer handling requests
 
 	// Extended ICE Connection state from wice/pkg/ice/types.go
-	UNKNOWN = 100;        // ConnectionStateUnknown ICE agent has not been created yet
+	CREATING = 100;       // ConnectionStateCreating New ICE agent is currently being created
 	IDLE = 101;           // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
 	CONNECTING = 102;     // ConnectionStateConnecting ICE agent is now connecting to the remote
 	CLOSING = 103;        // ConnectionStateClosing ICE agent is now closing
