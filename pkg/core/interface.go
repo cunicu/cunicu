@@ -43,16 +43,6 @@ func (i *Interface) OnPeer(h PeerHandler) {
 	i.onPeer = append(i.onPeer, h)
 }
 
-func (i *Interface) Close() error {
-	i.logger.Info("Closing interface")
-
-	if err := i.KernelDevice.Close(); err != nil {
-		return fmt.Errorf("failed to close kernel interface: %w", err)
-	}
-
-	return nil
-}
-
 // Name returns the WireGuard interface name
 func (i *Interface) Name() string {
 	return i.Device.Name

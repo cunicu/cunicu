@@ -42,7 +42,3 @@ func (d *WindowsKernelDevice) SetDown() error {
 func (d *WindowsKernelDevice) Close() error {
 	return nil
 }
-
-func (d *WindowsKernelDevice) Delete() error {
-	return errors.ErrNotSupported
-}

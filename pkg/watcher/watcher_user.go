@@ -62,7 +62,7 @@ func (w *Watcher) watchUser() error {
 			}
 		}
 
-		w.logger.Debug("Stop watching for changes of WireGuard userspace devices")
+		w.logger.Debug("Stopped watching for changes of WireGuard userspace devices")
 	}()
 
 	return nil

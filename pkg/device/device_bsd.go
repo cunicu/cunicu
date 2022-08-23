@@ -51,10 +51,6 @@ func (d *BSDKernelDevice) Name() string {
 }
 
 func (d *BSDKernelDevice) Close() error {
-	return nil
-}
-
-func (d *BSDKernelDevice) Delete() error {
 	return exec.Command("ifconfig", d.Name(), "destroy").Run()
 }
 

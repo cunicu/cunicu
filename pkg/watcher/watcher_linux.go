@@ -53,7 +53,7 @@ func (w *Watcher) watchKernel() error {
 			}
 		}
 
-		w.logger.Debug("Stop watching for changes of WireGuard kernel devices")
+		w.logger.Debug("Stopped watching for changes of WireGuard kernel devices")
 	}()
 
 	return nil

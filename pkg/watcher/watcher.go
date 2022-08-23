@@ -1,7 +1,6 @@
 package watcher
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	errs "riasc.eu/wice/pkg/errors"
 	"riasc.eu/wice/pkg/util"
 )
 
@@ -87,31 +85,6 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 }
 
 func (w *Watcher) Close() error {
-	if err := w.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
-		return err
-	}
-
-	if err := w.Interfaces.Close(); err != nil {
-		return fmt.Errorf("failed to close interfaces: %w", err)
-	}
-
-	return nil
-}
-
-func (w *Watcher) IsRunning() bool {
-	select {
-	case _, running := <-w.stop:
-		return running
-	default:
-		return true
-	}
-}
-
-func (w *Watcher) Stop() error {
-	if !w.IsRunning() {
-		return errs.ErrAlreadyStopped
-	}
-
 	close(w.stop)
 
 	return nil
@@ -195,9 +168,7 @@ func (w *Watcher) Sync() error {
 			h.OnInterfaceRemoved(i)
 		}
 
-		if err := i.Close(); err != nil {
-			w.logger.Fatal("Failed to close interface", zap.Error(err))
-		}
+		delete(w.Interfaces, wgd.Name)
 	}
 
 	for _, wgd := range added {

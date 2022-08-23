@@ -7,16 +7,6 @@ import (
 // InterfaceList stores all WireGuard interfaces indexed by their unique ifindex
 type InterfaceList map[string]*Interface
 
-func (l *InterfaceList) Close() error {
-	for _, intf := range *l {
-		if err := intf.Close(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (l *InterfaceList) ByIndex(index int) *Interface {
 	for _, i := range *l {
 		if i.KernelDevice.Index() == index {

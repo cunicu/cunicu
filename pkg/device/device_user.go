@@ -100,10 +100,6 @@ func (i *UserDevice) Close() error {
 	return nil
 }
 
-func (i *UserDevice) Delete() error {
-	return nil
-}
-
 func (i *UserDevice) handleUserAPI() {
 	for {
 		conn, err := i.api.Accept()

@@ -19,6 +19,7 @@ var _ = Describe("interface", func() {
 	var c *wgctrl.Client
 	var intfName string
 	var user bool
+	var dev device.Device
 
 	test := func() {
 		It("have a matching name", func() {
@@ -99,7 +100,7 @@ var _ = Describe("interface", func() {
 		// Generate unique name per test
 		intfName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
 
-		_, err := device.NewDevice(intfName, user)
+		dev, err = device.NewDevice(intfName, user)
 		Expect(err).To(Succeed())
 
 		wgd, err := c.Device(intfName)
@@ -110,7 +111,7 @@ var _ = Describe("interface", func() {
 	})
 
 	AfterEach(OncePerOrdered, func() {
-		err = i.Close()
+		err = dev.Close()
 		Expect(err).To(Succeed())
 	})
 

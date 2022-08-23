@@ -11,7 +11,6 @@ const (
 
 type Device interface {
 	Close() error
-	Delete() error
 
 	// Getter
 
