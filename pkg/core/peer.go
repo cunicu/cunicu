@@ -142,6 +142,28 @@ func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 	return nil
 }
 
+// SetPresharedKey sets a new preshared key for the WireGuard peer
+func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
+	cfg := wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				PublicKey:    p.Peer.PublicKey,
+				UpdateOnly:   true,
+				PresharedKey: (*wgtypes.Key)(psk),
+			},
+		},
+	}
+
+	if err := p.client.ConfigureDevice(p.Interface.Device.Name, cfg); err != nil {
+		return fmt.Errorf("failed to update peer preshared key: %w", err)
+	}
+
+	// TODO: Remove PSK from log
+	p.logger.Debug("Peer preshared key updated", zap.Any("psk", psk))
+
+	return nil
+}
+
 // AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
 func (p *Peer) AddAllowedIP(a *net.IPNet) error {
 	cfg := wgtypes.Config{
