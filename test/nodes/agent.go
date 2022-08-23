@@ -85,10 +85,10 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var err error
 	var stdout, stderr io.Reader
-	var sockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
+	var rpcSockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
 	var logPath = fmt.Sprintf("%s/%s.log", dir, a.Name())
 
-	if err := os.RemoveAll(sockPath); err != nil {
+	if err := os.RemoveAll(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to remove old socket: %w", err)
 	}
 
@@ -100,8 +100,8 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	args := profileArgs
 	args = append(args,
 		"daemon",
-		"--socket", sockPath,
-		"--socket-wait",
+		"--rpc-socket", rpcSockPath,
+		"--rpc-wait",
 		"--log-level", "debug",
 		"--config-path", a.WireGuardConfigPath,
 	)
@@ -125,7 +125,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 
 	go io.Copy(a.logFile, multi)
 
-	if a.Client, err = rpc.Connect(sockPath); err != nil {
+	if a.Client, err = rpc.Connect(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
 

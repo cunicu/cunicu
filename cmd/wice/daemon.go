@@ -88,12 +88,12 @@ func daemon(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}
 
-	if err := svr.Listen("unix", cfg.Socket.Path); err != nil {
+	if err := svr.Listen("unix", cfg.RPC.Socket); err != nil {
 		logger.Fatal("Failed to listen", zap.Error(err))
 	}
 
 	// Delay startup until control socket client has un-waited the daemon
-	if cfg.Socket.Wait {
+	if cfg.RPC.Wait {
 		svr.Wait()
 	}
 

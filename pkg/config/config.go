@@ -93,9 +93,9 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
 	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on WireGuard interfaces")
 
-	// Socket
-	flags.StringP("socket", "s", "", "The `path` of the unix socket used by other ɯice commands")
-	flags.Bool("socket-wait", false, "Wait until first client connected to control socket before continuing start")
+	// RPC socket flags
+	flags.StringP("rpc-socket", "s", "", "The `path` of the unix socket used by other ɯice commands")
+	flags.Bool("rpc-wait", false, "Wait until first client connected to control socket before continuing start")
 
 	// WireGuard
 	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering WireGuard interfaces (e.g. \"wg-.*\")")
@@ -152,8 +152,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"watch-interval": "watch_interval",
 
 		// Socket
-		"socket":      "socket.path",
-		"socket-wait": "socket.wait",
+		"rpc-socket": "rpc.socket",
+		"rpc-wait":   "rpc.wait",
 
 		// WireGuard
 		"wg-userspace":        "wireguard.userspace",
@@ -212,7 +212,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"ice-keepalive-interval":   true,
 		"ice-check-interval":       true,
 		"ice-restart-timeout":      true,
-		"socket-wait":              true,
+		"rpc-wait":                 true,
 	}
 
 	flags.VisitAll(func(flag *pflag.Flag) {
