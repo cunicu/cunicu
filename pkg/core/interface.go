@@ -18,7 +18,7 @@ import (
 
 type Interface struct {
 	// WireGuard handle of device
-	wg.Device
+	*wg.Device
 
 	// OS abstractions for kernel device
 	KernelDevice device.Device
@@ -80,7 +80,7 @@ func (i *Interface) DumpConfig(wr io.Writer) error {
 }
 
 func (i *Interface) Marshal() *pb.Interface {
-	return pb.NewInterface((*wgtypes.Device)(&i.Device))
+	return pb.NewInterface((*wgtypes.Device)(i.Device))
 }
 
 func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer, []wgtypes.Peer) {
@@ -141,21 +141,22 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 
 	// Call handlers
 
-	i.Device = wg.Device(*new)
+	i.Device = (*wg.Device)(new)
 	i.LastSync = time.Now()
 
 	if mod != InterfaceModifiedNone {
 		i.logger.Info("Interface has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range i.onModified {
-			h.OnInterfaceModified(i, &old, mod)
+			h.OnInterfaceModified(i, old, mod)
 		}
 	}
 
 	for j := range peersRemoved {
 		wgp := peersRemoved[j]
+		pk := crypto.Key(wgp.PublicKey)
 
-		p, ok := i.Peers[crypto.Key(wgp.PublicKey)]
+		p, ok := i.Peers[pk]
 		if !ok {
 			i.logger.Warn("Failed to find matching peer", zap.Any("peer", wgp.PublicKey))
 			continue
@@ -163,7 +164,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 
 		i.logger.Info("Peer removed", zap.Any("peer", p.PublicKey()))
 
-		delete(i.Peers, p.PublicKey())
+		delete(i.Peers, pk)
 
 		for _, h := range i.onPeer {
 			h.OnPeerRemoved(p)
@@ -282,7 +283,7 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	var err error
 
 	i := &Interface{
-		Device: wg.Device(*wgDev),
+		Device: (*wg.Device)(wgDev),
 		client: client,
 		Peers:  map[crypto.Key]*Peer{},
 
