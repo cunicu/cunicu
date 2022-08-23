@@ -9,7 +9,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/device"
-	errs "riasc.eu/wice/pkg/errors"
 	"riasc.eu/wice/pkg/feat"
 	ac "riasc.eu/wice/pkg/feat/auto"
 	ep "riasc.eu/wice/pkg/feat/disc/epice"
@@ -161,32 +160,13 @@ out:
 	return nil
 }
 
-func (d *Daemon) IsRunning() bool {
-	select {
-	case _, running := <-d.stop:
-		return running
-	default:
-		return true
-	}
-}
-
-func (d *Daemon) Stop() error {
-	if !d.IsRunning() {
-		return errs.ErrAlreadyStopped
-	}
-
-	close(d.stop)
-
-	d.logger.Debug("Stopped daemon")
-
-	return nil
-}
-
 func (d *Daemon) Close() error {
 	d.logger.Debug("Closing daemon")
 
-	if err := d.Stop(); err != nil && !errors.Is(err, errs.ErrAlreadyStopped) {
-		return err
+	close(d.stop)
+
+	if err := d.Watcher.Close(); err != nil {
+		return fmt.Errorf("failed to close interface: %w", err)
 	}
 
 	for _, feat := range d.Features {
@@ -195,16 +175,12 @@ func (d *Daemon) Close() error {
 		}
 	}
 
-	if err := d.Watcher.Close(); err != nil {
-		return fmt.Errorf("failed to close interface: %w", err)
-	}
-
 	if err := d.client.Close(); err != nil {
 		return fmt.Errorf("failed to close WireGuard client: %w", err)
 	}
 
 	for _, dev := range d.devices {
-		if err := dev.Delete(); err != nil {
+		if err := dev.Close(); err != nil {
 			return fmt.Errorf("failed to delete device: %w", err)
 		}
 	}

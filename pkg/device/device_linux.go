@@ -48,6 +48,12 @@ func FindKernelDevice(name string) (Device, error) {
 }
 
 func (i *LinuxKernelDevice) Close() error {
+	i.logger.Debug("Deleting kernel device")
+
+	if err := netlink.LinkDel(i.link); err != nil {
+		return fmt.Errorf("failed to delete WireGuard device: %w", err)
+	}
+
 	return nil
 }
 
@@ -68,16 +74,6 @@ func (i *LinuxKernelDevice) MTU() int {
 	}
 
 	return i.link.Attrs().MTU
-}
-
-func (i *LinuxKernelDevice) Delete() error {
-	i.logger.Debug("Deleting kernel device")
-
-	if err := netlink.LinkDel(i.link); err != nil {
-		return fmt.Errorf("failed to delete WireGuard device: %w", err)
-	}
-
-	return nil
 }
 
 func (i *LinuxKernelDevice) SetMTU(mtu int) error {

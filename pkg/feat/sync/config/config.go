@@ -141,7 +141,9 @@ func (cs *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 			return
 		}
 
-		if err := i.Close(); err != nil {
+		// TODO: Do we really want to delete devices if their config file vanish?
+		// Maybe make this configurable?
+		if err := i.KernelDevice.Close(); err != nil {
 			cs.logger.Error("Failed to close interface", zap.Error(err))
 		}
 	} else if event.Op&(fsnotify.Rename) != 0 {
