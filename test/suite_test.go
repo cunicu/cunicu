@@ -34,7 +34,8 @@ func TestSuite(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Test Suite", types.ReporterConfig{
-		SlowSpecThreshold: 5 * time.Minute,
+		JSONReport:        "logs/report.json",
+		SlowSpecThreshold: 1 * time.Minute,
 	})
 }
 
