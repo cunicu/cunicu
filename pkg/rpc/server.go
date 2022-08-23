@@ -34,7 +34,7 @@ type Server struct {
 func NewServer(d *wice.Daemon) (*Server, error) {
 	s := &Server{
 		events: util.NewFanOut[*pb.Event](0),
-		logger: zap.L().Named("socket.server"),
+		logger: zap.L().Named("rpc.server"),
 	}
 
 	s.waitGroup.Add(1)

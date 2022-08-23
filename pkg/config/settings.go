@@ -43,9 +43,9 @@ type ICESettings struct {
 	Password string `yaml:"password,omitempty"`
 }
 
-type SocketSettings struct {
-	Path string `yaml:"path,omitempty"`
-	Wait bool   `yaml:"wait,omitempty"`
+type RPCSettings struct {
+	Socket string `yaml:"socket,omitempty"`
+	Wait   bool   `yaml:"wait,omitempty"`
 }
 
 type ConfigSyncSettings struct {
@@ -87,7 +87,7 @@ type Settings struct {
 
 	Backends []BackendURL `yaml:"backends,omitempty"`
 
-	Socket       SocketSettings            `yaml:"socket,omitempty"`
+	RPC          RPCSettings               `yaml:"rpc,omitempty"`
 	WireGuard    WireGuardSettings         `yaml:"wireguard,omitempty"`
 	AutoConfig   AutoConfigSettings        `yaml:"auto_config,omitempty"`
 	ConfigSync   ConfigSyncSettings        `yaml:"config_sync,omitempty"`

@@ -18,7 +18,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 	cmd.PersistentPostRunE = disconnect
 
 	pf := cmd.PersistentFlags()
-	pf.StringVarP(&sockPath, "socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
+	pf.StringVarP(&sockPath, "rpc-socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
 
 	rcmd.AddCommand(cmd)
 }

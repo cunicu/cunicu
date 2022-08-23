@@ -63,7 +63,7 @@ func Connect(path string) (*Client, error) {
 		return nil, err
 	}
 
-	logger := zap.L().Named("socket.client").With(zap.String("path", path))
+	logger := zap.L().Named("rpc.client").With(zap.String("path", path))
 
 	client := &Client{
 		EndpointDiscoverySocketClient: pb.NewEndpointDiscoverySocketClient(conn),
@@ -110,12 +110,10 @@ func (c *Client) streamEvents() {
 		return
 	}
 
-	ok := true
-	for ok {
+	for {
 		e, err := stream.Recv()
 		if err != nil {
-			sts, ok := status.FromError(err)
-			if !ok || (sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable) {
+			if sts, ok := status.FromError(err); !ok || (sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable) {
 				c.logger.Error("Failed to receive event", zap.Error(err))
 			}
 
