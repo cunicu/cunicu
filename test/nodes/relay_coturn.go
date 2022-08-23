@@ -105,7 +105,14 @@ func (c *CoturnNode) Stop() error {
 
 	c.logger.Info("Stopping relay node")
 
-	return GracefullyTerminate(c.Command)
+	if err := GracefullyTerminate(c.Command); err != nil {
+		// Coturn exits with exit code 143 (SIGTERM received)
+		if err, ok := err.(*exec.ExitError); ok && err.ExitCode() == 143 {
+			return nil
+		}
+	}
+
+	return nil
 }
 
 func (c *CoturnNode) Close() error {
