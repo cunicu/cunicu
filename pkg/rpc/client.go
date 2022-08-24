@@ -79,11 +79,9 @@ func Connect(path string) (*Client, error) {
 
 	go client.streamEvents()
 
-	rerr, err := client.UnWait(context.Background(), &pb.UnWaitParams{})
-	if err != nil {
+	_, err = client.UnWait(context.Background(), &pb.UnWaitParams{})
+	if sts := status.Convert(err); sts != nil && sts.Code() != codes.AlreadyExists {
 		return nil, fmt.Errorf("failed RPC request: %w", err)
-	} else if !rerr.Ok() && rerr.Code != pb.Error_EALREADY {
-		return nil, fmt.Errorf("received RPC error: %w", rerr)
 	}
 
 	return client, nil

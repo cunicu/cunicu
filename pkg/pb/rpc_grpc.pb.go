@@ -23,8 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SocketClient interface {
 	StreamEvents(ctx context.Context, in *StreamEventsParams, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
-	UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Error, error)
-	Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Error, error)
+	UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Empty, error)
+	Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type socketClient struct {
@@ -67,8 +67,8 @@ func (x *socketStreamEventsClient) Recv() (*Event, error) {
 	return m, nil
 }
 
-func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Socket/UnWait", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,8 +76,8 @@ func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grp
 	return out, nil
 }
 
-func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Socket/Stop", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,8 +90,8 @@ func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.Ca
 // for forward compatibility
 type SocketServer interface {
 	StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error
-	UnWait(context.Context, *UnWaitParams) (*Error, error)
-	Stop(context.Context, *StopParams) (*Error, error)
+	UnWait(context.Context, *UnWaitParams) (*Empty, error)
+	Stop(context.Context, *StopParams) (*Empty, error)
 	mustEmbedUnimplementedSocketServer()
 }
 
@@ -102,10 +102,10 @@ type UnimplementedSocketServer struct {
 func (UnimplementedSocketServer) StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvents not implemented")
 }
-func (UnimplementedSocketServer) UnWait(context.Context, *UnWaitParams) (*Error, error) {
+func (UnimplementedSocketServer) UnWait(context.Context, *UnWaitParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnWait not implemented")
 }
-func (UnimplementedSocketServer) Stop(context.Context, *StopParams) (*Error, error) {
+func (UnimplementedSocketServer) Stop(context.Context, *StopParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
 func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
@@ -208,15 +208,15 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WatcherClient interface {
-	Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Error, error)
-	GetStatus(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Status, error)
-	RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Error, error)
-	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
-	AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
-	SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error)
+	Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Empty, error)
+	GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Status, error)
+	RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Empty, error)
+	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
+	AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
+	SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
 	// For manual signaling backend
 	GetSignalingMessage(ctx context.Context, in *GetSignalingMessageParams, opts ...grpc.CallOption) (*GetSignalingMessageResp, error)
-	PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error)
+	PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type watcherClient struct {
@@ -227,8 +227,8 @@ func NewWatcherClient(cc grpc.ClientConnInterface) WatcherClient {
 	return &watcherClient{cc}
 }
 
-func (c *watcherClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/Sync", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func (c *watcherClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.C
 	return out, nil
 }
 
-func (c *watcherClient) GetStatus(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Status, error) {
+func (c *watcherClient) GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Status, error) {
 	out := new(Status)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/GetStatus", in, out, opts...)
 	if err != nil {
@@ -245,8 +245,8 @@ func (c *watcherClient) GetStatus(ctx context.Context, in *Void, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *watcherClient) RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/RemoveInterface", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -254,8 +254,8 @@ func (c *watcherClient) RemoveInterface(ctx context.Context, in *RemoveInterface
 	return out, nil
 }
 
-func (c *watcherClient) SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/SyncInterfaceConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -263,8 +263,8 @@ func (c *watcherClient) SyncInterfaceConfig(ctx context.Context, in *InterfaceCo
 	return out, nil
 }
 
-func (c *watcherClient) AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/AddInterfaceConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -272,8 +272,8 @@ func (c *watcherClient) AddInterfaceConfig(ctx context.Context, in *InterfaceCon
 	return out, nil
 }
 
-func (c *watcherClient) SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) SetInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/SetInterfaceConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -290,8 +290,8 @@ func (c *watcherClient) GetSignalingMessage(ctx context.Context, in *GetSignalin
 	return out, nil
 }
 
-func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/PutSignalingMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -303,15 +303,15 @@ func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalin
 // All implementations must embed UnimplementedWatcherServer
 // for forward compatibility
 type WatcherServer interface {
-	Sync(context.Context, *SyncParams) (*Error, error)
-	GetStatus(context.Context, *Void) (*Status, error)
-	RemoveInterface(context.Context, *RemoveInterfaceParams) (*Error, error)
-	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
-	AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
-	SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error)
+	Sync(context.Context, *SyncParams) (*Empty, error)
+	GetStatus(context.Context, *Empty) (*Status, error)
+	RemoveInterface(context.Context, *RemoveInterfaceParams) (*Empty, error)
+	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
+	AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
+	SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
 	// For manual signaling backend
 	GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error)
-	PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error)
+	PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Empty, error)
 	mustEmbedUnimplementedWatcherServer()
 }
 
@@ -319,28 +319,28 @@ type WatcherServer interface {
 type UnimplementedWatcherServer struct {
 }
 
-func (UnimplementedWatcherServer) Sync(context.Context, *SyncParams) (*Error, error) {
+func (UnimplementedWatcherServer) Sync(context.Context, *SyncParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
-func (UnimplementedWatcherServer) GetStatus(context.Context, *Void) (*Status, error) {
+func (UnimplementedWatcherServer) GetStatus(context.Context, *Empty) (*Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
 }
-func (UnimplementedWatcherServer) RemoveInterface(context.Context, *RemoveInterfaceParams) (*Error, error) {
+func (UnimplementedWatcherServer) RemoveInterface(context.Context, *RemoveInterfaceParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveInterface not implemented")
 }
-func (UnimplementedWatcherServer) SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+func (UnimplementedWatcherServer) SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SyncInterfaceConfig not implemented")
 }
-func (UnimplementedWatcherServer) AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+func (UnimplementedWatcherServer) AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddInterfaceConfig not implemented")
 }
-func (UnimplementedWatcherServer) SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Error, error) {
+func (UnimplementedWatcherServer) SetInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetInterfaceConfig not implemented")
 }
 func (UnimplementedWatcherServer) GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSignalingMessage not implemented")
 }
-func (UnimplementedWatcherServer) PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error) {
+func (UnimplementedWatcherServer) PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutSignalingMessage not implemented")
 }
 func (UnimplementedWatcherServer) mustEmbedUnimplementedWatcherServer() {}
@@ -375,7 +375,7 @@ func _Watcher_Sync_Handler(srv interface{}, ctx context.Context, dec func(interf
 }
 
 func _Watcher_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Void)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func _Watcher_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/wice.Watcher/GetStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WatcherServer).GetStatus(ctx, req.(*Void))
+		return srv.(WatcherServer).GetStatus(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -548,7 +548,7 @@ var Watcher_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EndpointDiscoverySocketClient interface {
-	RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Error, error)
+	RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type endpointDiscoverySocketClient struct {
@@ -559,8 +559,8 @@ func NewEndpointDiscoverySocketClient(cc grpc.ClientConnInterface) EndpointDisco
 	return &endpointDiscoverySocketClient{cc}
 }
 
-func (c *endpointDiscoverySocketClient) RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *endpointDiscoverySocketClient) RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.EndpointDiscoverySocket/RestartPeer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -572,7 +572,7 @@ func (c *endpointDiscoverySocketClient) RestartPeer(ctx context.Context, in *Res
 // All implementations must embed UnimplementedEndpointDiscoverySocketServer
 // for forward compatibility
 type EndpointDiscoverySocketServer interface {
-	RestartPeer(context.Context, *RestartPeerParams) (*Error, error)
+	RestartPeer(context.Context, *RestartPeerParams) (*Empty, error)
 	mustEmbedUnimplementedEndpointDiscoverySocketServer()
 }
 
@@ -580,7 +580,7 @@ type EndpointDiscoverySocketServer interface {
 type UnimplementedEndpointDiscoverySocketServer struct {
 }
 
-func (UnimplementedEndpointDiscoverySocketServer) RestartPeer(context.Context, *RestartPeerParams) (*Error, error) {
+func (UnimplementedEndpointDiscoverySocketServer) RestartPeer(context.Context, *RestartPeerParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RestartPeer not implemented")
 }
 func (UnimplementedEndpointDiscoverySocketServer) mustEmbedUnimplementedEndpointDiscoverySocketServer() {
@@ -636,7 +636,7 @@ var EndpointDiscoverySocket_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SignalingSocketClient interface {
 	GetSignalingMessage(ctx context.Context, in *GetSignalingMessageParams, opts ...grpc.CallOption) (*GetSignalingMessageResp, error)
-	PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error)
+	PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type signalingSocketClient struct {
@@ -656,8 +656,8 @@ func (c *signalingSocketClient) GetSignalingMessage(ctx context.Context, in *Get
 	return out, nil
 }
 
-func (c *signalingSocketClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *signalingSocketClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.SignalingSocket/PutSignalingMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -670,7 +670,7 @@ func (c *signalingSocketClient) PutSignalingMessage(ctx context.Context, in *Put
 // for forward compatibility
 type SignalingSocketServer interface {
 	GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error)
-	PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error)
+	PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Empty, error)
 	mustEmbedUnimplementedSignalingSocketServer()
 }
 
@@ -681,7 +681,7 @@ type UnimplementedSignalingSocketServer struct {
 func (UnimplementedSignalingSocketServer) GetSignalingMessage(context.Context, *GetSignalingMessageParams) (*GetSignalingMessageResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSignalingMessage not implemented")
 }
-func (UnimplementedSignalingSocketServer) PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Error, error) {
+func (UnimplementedSignalingSocketServer) PutSignalingMessage(context.Context, *PutSignalingMessageParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutSignalingMessage not implemented")
 }
 func (UnimplementedSignalingSocketServer) mustEmbedUnimplementedSignalingSocketServer() {}

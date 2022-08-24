@@ -21,10 +21,8 @@ func init() {
 
 func stop(cmd *cobra.Command, args []string) error {
 	// TODO: Ignore errors caused by closed connection or gracefully shutdown the server
-	if rerr, err := client.Stop(context.Background(), &pb.StopParams{}); err != nil {
+	if _, err := client.Stop(context.Background(), &pb.StopParams{}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
-	} else if !rerr.Ok() {
-		return fmt.Errorf("received RPC error: %w", rerr)
 	}
 
 	return nil

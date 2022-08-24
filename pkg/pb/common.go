@@ -8,37 +8,6 @@ import (
 	icex "riasc.eu/wice/pkg/ice"
 )
 
-var (
-	Success = &Error{
-		Code: Error_SUCCESS,
-	}
-
-	ErrNotSupported = &Error{
-		Code:    Error_ENOTSUP,
-		Message: "not supported yet",
-	}
-
-	ErrNotAuthorized = &Error{
-		Code:    Error_EPERM,
-		Message: "not authorized",
-	}
-)
-
-func NewError(e error) *Error {
-	return &Error{
-		Code:    Error_EUNKNOWN,
-		Message: e.Error(),
-	}
-}
-
-func (e *Error) Error() string {
-	return e.Message
-}
-
-func (e *Error) Ok() bool {
-	return e.Code == Error_SUCCESS
-}
-
 func TimeNow() *Timestamp {
 	return Time(time.Now())
 }

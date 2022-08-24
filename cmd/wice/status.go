@@ -22,7 +22,7 @@ func init() {
 }
 
 func status(cmd *cobra.Command, args []string) {
-	sts, err := client.GetStatus(context.Background(), &pb.Void{})
+	sts, err := client.GetStatus(context.Background(), &pb.Empty{})
 	if err != nil {
 		logger.Fatal("Failed to retrieve status from daemon", zap.Error(err))
 	}

@@ -91,16 +91,16 @@ out:
 	return nil
 }
 
-func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Error, error) {
+func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Empty, error) {
 	var err error
 	var pkRecipient, pkSender crypto.Key
 
 	if pkRecipient, err = crypto.ParseKeyBytes(env.Recipient); err != nil {
-		return nil, fmt.Errorf("invalid recipient key: %w", err)
+		return &pb.Empty{}, fmt.Errorf("invalid recipient key: %w", err)
 	}
 
 	if pkSender, err = crypto.ParseKeyBytes(env.Sender); err != nil {
-		return nil, fmt.Errorf("invalid sender key: %w", err)
+		return &pb.Empty{}, fmt.Errorf("invalid sender key: %w", err)
 	}
 
 	t := s.getTopic(&pkRecipient)
@@ -111,7 +111,7 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Erro
 		zap.Any("recipient", pkRecipient),
 		zap.Any("sender", pkSender))
 
-	return pb.Success, nil
+	return &pb.Empty{}, nil
 }
 
 func (s *Server) GracefulStop() {
