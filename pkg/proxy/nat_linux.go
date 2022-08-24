@@ -7,7 +7,6 @@ import (
 	"github.com/google/nftables"
 	"github.com/google/nftables/binaryutil"
 	"github.com/google/nftables/expr"
-	"github.com/vishvananda/netns"
 	"golang.org/x/sys/unix"
 )
 
@@ -20,15 +19,12 @@ type NAT struct {
 }
 
 func NewNAT(ident string) (*NAT, error) {
-	ns, err := netns.Get()
-	if err != nil {
-		return nil, err
-	}
+	var err error
 
-	n := &NAT{
-		NFConn: &nftables.Conn{
-			NetNS: int(ns),
-		},
+	n := &NAT{}
+
+	if n.NFConn, err = nftables.New(); err != nil {
+		return nil, fmt.Errorf("failed to create netlink conn: %w", err)
 	}
 
 	if err := n.setupTable(ident); err != nil {
