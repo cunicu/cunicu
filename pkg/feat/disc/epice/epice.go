@@ -1,3 +1,4 @@
+// This package implements endpoint (EP) discovery using Interactive Connection Establishment (ICE).
 package epice
 
 import (
@@ -9,6 +10,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
+	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
@@ -28,7 +30,7 @@ type EndpointDiscovery struct {
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend signaling.Backend) (*EndpointDiscovery, error) {
+func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend signaling.Backend) *EndpointDiscovery {
 	e := &EndpointDiscovery{
 		Peers:      map[*core.Peer]*Peer{},
 		Interfaces: map[*core.Interface]*Interface{},
@@ -40,15 +42,26 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 		client:  client,
 		backend: backend,
 
-		logger: zap.L().Named("ep-disc"),
+		logger: zap.L().Named("epice"),
 	}
 
 	w.OnAll(e)
 
-	return e, nil
+	return e
+}
+
+func (e *EndpointDiscovery) Start() error {
+	e.logger.Info("Started ICE endpoint discovery")
+
+	return nil
 }
 
 func (e *EndpointDiscovery) Close() error {
+	// First switch all sessions to closing so they dont get restarted
+	for _, p := range e.Peers {
+		p.setConnectionState(icex.ConnectionStateClosing)
+	}
+
 	for _, p := range e.Peers {
 		if err := p.Close(); err != nil {
 			return fmt.Errorf("failed to close peer: %w", err)
@@ -62,10 +75,6 @@ func (e *EndpointDiscovery) Close() error {
 	}
 
 	return nil
-}
-
-func (e *EndpointDiscovery) OnConnectionStateChange(h OnConnectionStateHandler) {
-	e.onConnectionStateChange = append(e.onConnectionStateChange, h)
 }
 
 func (e *EndpointDiscovery) OnInterfaceAdded(ci *core.Interface) {

@@ -24,9 +24,9 @@ wireguard:
     min: 52820
     max: 65535
 
-# Control socket settings
-socket:
-  path: /var/run/wice.sock
+# RPC control socket settings
+rpc:
+  socket: /var/run/wice.sock
 
   # Start of wice daemon will block until its unblocked via the control socket
   # Mostly useful for testing automation

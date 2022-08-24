@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -103,13 +102,11 @@ func (b *Backend) Close() error {
 }
 
 func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error {
-	b.logger.Debug("Creating new subscription", zap.Any("pk", pk))
-
 	params := &pb.SubscribeParams{
 		Key: pk.Bytes(),
 	}
 
-	stream, err := b.client.Subscribe(ctx, params)
+	stream, err := b.client.Subscribe(ctx, params, grpc.WaitForReady(true))
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to offers: %s", err)
 	}
@@ -118,22 +115,25 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 	// This avoids a race between Subscribe() / Publish() when two subscribers are subscribing
 	// to each other.
 	if _, err := stream.Recv(); err != nil {
-		return fmt.Errorf("failed receive sync envelope: %s", err)
+		return fmt.Errorf("failed receive synchronization envelope: %s", err)
 	}
+
+	b.logger.Debug("Created new subscription", zap.Any("pk", pk))
 
 	go func() {
 		for {
-			if env, err := stream.Recv(); err == nil {
-				if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {
-					b.logger.Error("Failed to decrypt message", zap.Error(err))
-				}
-			} else {
-				if err != io.EOF {
-					// TODO: Attempt reconnect?
-					b.logger.Error("Received error", zap.Error(err))
+			if env, err := stream.Recv(); err != nil {
+				b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
+
+				if err := b.subscribeFromServer(ctx, pk); err != nil {
+					b.logger.Error("Failed to resubscribe", zap.Error(err))
 				}
 
 				return
+			} else {
+				if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {
+					b.logger.Error("Failed to decrypt message", zap.Error(err))
+				}
 			}
 		}
 	}()

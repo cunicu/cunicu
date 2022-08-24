@@ -46,11 +46,10 @@ func signal(cmd *cobra.Command, args []string) {
 	svr := grpcx.NewServer(opts...)
 
 	go func() {
-		signals := util.SetupSignals()
-		for sig := range signals {
+		for sig := range util.SetupSignals() {
 			logger.Debug("Received signal", zap.Any("signal", sig))
 
-			svr.GracefulStop()
+			svr.Close()
 		}
 	}()
 

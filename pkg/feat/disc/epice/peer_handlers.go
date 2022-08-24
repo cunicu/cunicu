@@ -13,26 +13,23 @@ import (
 
 // onConnectionStateChange is a callback which gets called by the ICE agent
 // whenever the state of the ICE connection has changed
-func (p *Peer) onConnectionStateChange(cs ice.ConnectionState) {
+func (p *Peer) onConnectionStateChange(new icex.ConnectionState) {
 	var err error
 
-	csx := icex.ConnectionState(cs)
-	prevConnectionState := p.setConnectionState(csx)
+	if p.ConnectionState() == icex.ConnectionStateClosing {
+		p.logger.Debug("Ignoring state transition as we are closing the session")
+		return
+	}
 
-	if cs == ice.ConnectionStateFailed || cs == ice.ConnectionStateDisconnected {
-		// TODO: Add some random delay?
+	p.setConnectionState(new)
 
+	if new == ice.ConnectionStateFailed || new == ice.ConnectionStateDisconnected {
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
-	} else if cs == ice.ConnectionStateClosed && prevConnectionState != icex.ConnectionStateClosing {
-		if p.agent, err = p.newAgent(); err != nil {
+	} else if new == ice.ConnectionStateClosed {
+		if err = p.createAgent(); err != nil {
 			p.logger.Error("Failed to create agent", zap.Error(err))
-			return
-		}
-
-		if err := p.sendCredentials(true); err != nil {
-			p.logger.Error("Failed to send peer credentials", zap.Error(err))
 			return
 		}
 	}
@@ -70,9 +67,14 @@ func (p *Peer) onRemoteCredentials(c *pb.Credentials) {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
 	} else {
-		if p.ConnectionState == icex.ConnectionStateIdle {
-			p.setConnectionState(ice.ConnectionStateNew)
+		if c.NeedCreds {
+			if err := p.sendCredentials(false); err != nil {
+				p.logger.Error("Failed to send credentials", zap.Error(err))
+				return
+			}
+		}
 
+		if p.setConnectionStateIf(icex.ConnectionStateIdle, ice.ConnectionStateNew) {
 			if err := p.agent.SetRemoteCredentials(c.Ufrag, c.Pwd); err != nil {
 				p.logger.Error("Failed to set remote credentials", zap.Error(err))
 				return
@@ -83,13 +85,6 @@ func (p *Peer) onRemoteCredentials(c *pb.Credentials) {
 				return
 			}
 			p.logger.Info("Started gathering local ICE candidates")
-		}
-
-		if c.NeedCreds {
-			if err := p.sendCredentials(false); err != nil {
-				p.logger.Error("Failed to send credentials", zap.Error(err))
-				return
-			}
 		}
 	}
 }
@@ -104,23 +99,23 @@ func (p *Peer) onRemoteCandidate(c *pb.Candidate) {
 		return
 	}
 
-	if p.ConnectionState == ice.ConnectionStateNew {
-		p.setConnectionState(icex.ConnectionStateConnecting)
-
+	if p.setConnectionStateIf(ice.ConnectionStateNew, icex.ConnectionStateConnecting) {
 		ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
 		if err != nil {
 			p.logger.Error("Failed to get remote credentials", zap.Error(err))
 			return
 		}
 
-		if err := p.connect(ufrag, pwd); err != nil && !errors.Is(err, ice.ErrClosed) {
-			p.logger.Error("Failed to connect", zap.Error(err))
-			return
-		}
+		go func() {
+			if err := p.connect(ufrag, pwd); err != nil && !errors.Is(err, ice.ErrClosed) {
+				p.logger.Error("Failed to connect", zap.Error(err))
+				return
+			}
+		}()
 	}
 }
 
-func (p *Peer) onSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
+func (p *Peer) onSignalingMessage(msg *signaling.Message) {
 	if msg.Credentials != nil {
 		p.onRemoteCredentials(msg.Credentials)
 	}
@@ -132,9 +127,5 @@ func (p *Peer) onSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Messa
 
 // OnSignalingMessage is invoked for every message received via the signaling backend
 func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
-	if p.agent == nil {
-		p.logger.Warn("Ignoring message as agent has not been created yet")
-	} else {
-		go p.onSignalingMessage(kp, msg)
-	}
+	p.signalingMessages <- msg
 }

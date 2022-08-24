@@ -13,3 +13,8 @@ message Credentials {
     // Flag to indicate that the sending peer requests the credentials of the receiving peer
     bool need_creds = 3;
 }
+
+message PresharedKeyEstablishment {
+    bytes public_key = 1;
+    bytes cipher_text = 2;
+}

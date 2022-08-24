@@ -23,6 +23,10 @@ import (
 	"riasc.eu/wice/test/nodes"
 )
 
+var (
+	logger *zap.Logger
+)
+
 type Network struct {
 	*g.Network
 
@@ -38,7 +42,7 @@ type Network struct {
 	RelayNodes     nodes.RelayList
 	AgentNodes     nodes.AgentList
 
-	tracer *HandshakeTracer
+	Tracer *HandshakeTracer
 }
 
 func (n *Network) Start() {
@@ -63,7 +67,7 @@ func (n *Network) Start() {
 		Skip("Aborting test as only network setup has been requested")
 	}
 
-	if capture {
+	if len(n.Captures) > 0 && n.Captures[0].LogKeys {
 		n.StartHandshakeTracer()
 	}
 
@@ -103,6 +107,13 @@ func (n *Network) Start() {
 	err = n.SignalingNodes.Start(n.BasePath)
 	Expect(err).To(Succeed(), "Failed to start signaling node: %s", err)
 
+	By("Starting agent nodes")
+
+	err = n.AgentNodes.Start(n.BasePath, n.AgentArgs()...)
+	Expect(err).To(Succeed(), "Failed to start ɯice: %s", err)
+}
+
+func (n *Network) AgentArgs() []any {
 	extraArgs := []any{}
 
 	if len(n.RelayNodes) > 0 {
@@ -123,10 +134,7 @@ func (n *Network) Start() {
 		extraArgs = append(extraArgs, "--backend", s.URL())
 	}
 
-	By("Starting agent nodes")
-
-	err = n.AgentNodes.Start(n.BasePath, extraArgs...)
-	Expect(err).To(Succeed(), "Failed to start ɯice: %s", err)
+	return extraArgs
 }
 
 func (n *Network) Close() {
@@ -151,13 +159,15 @@ func (n *Network) Close() {
 	Expect(err).To(Succeed(), "Failed to close network; %s", err)
 
 	n.StopHandshakeTracer()
+
+	GinkgoWriter.ClearTeeWriters()
 }
 
 func (n *Network) ConnectivityTests() {
-	It("connectivity", func() {
+	It("", func() {
 		By("Waiting until all peers are connected")
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 
 		err := n.AgentNodes.WaitConnectionsReady(ctx)
@@ -207,7 +217,6 @@ func (n *Network) Init() {
 	// Ginkgo log
 	logger = test.SetupLoggingWithFile(logFilename, true)
 
-	// Agent logs
 	n.AgentOptions = append(n.AgentOptions,
 		gopt.LogToDebug(false),
 	)
@@ -220,13 +229,8 @@ func (n *Network) Init() {
 		n.NetworkOptions = append(n.NetworkOptions,
 			gopt.CaptureAll(
 				copt.Filename(pcapFilename),
+				copt.LogKeys(true),
 			),
 		)
 	}
-
-	logger.Info("Current test",
-		zap.String("name", name),
-		zap.String("path", n.BasePath),
-		zap.String("executed", time.Now().String()),
-	)
 }

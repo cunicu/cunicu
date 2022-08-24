@@ -6,7 +6,7 @@ GIT_VERSION = $(shell git describe --tags --dirty || echo unknown)
 LDFLAGS = -X main.version=$(GIT_VERSION) -X main.commit=$(GIT_COMMIT) -X main.date=$(shell date -Iseconds)
 
 GINKGO_PKG ?= ./...
-GINKGO_OPTS += --covermode=count --randomize-all $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG) -- $(GINKGO_TEST_OPTS)
+GINKGO_OPTS += --covermode=count --coverpkg=./... --coverprofile=coverprofile.out --randomize-all $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG) -- $(GINKGO_TEST_OPTS)
 
 all: wice
 
@@ -17,10 +17,11 @@ wice:
 tests:
 	ginkgo run $(GINKGO_OPTS)
 
-lcov.info: $(wildcard *.out) 
-	@echo "Merging and converting coverage data..."
-	gocovmerge $(wildcard *.out) | gcov2lcov > $@
-	@echo "Done. $@ updated"
+coverprofile_merged.out: $(shell find . -name "*.out" -type f)
+	gocov-merger -o $@ $^
+
+lcov_merged.info: coverprofile_merged.out
+	gcov2lcov > $@ < $^ 
 
 coverage: lcov.info
 

@@ -67,7 +67,7 @@ Building ɯice is fairly easy and allows you to install the latest unreleased ve
 You must have a working Go environment.
 
 ```bash
-go install riasc.eu/wice@latest
+go install riasc.eu/wice/cmd/wice@latest
 ```
 
 If required, it will fetch the dependencies and cache them, and validate configuration.

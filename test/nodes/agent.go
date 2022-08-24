@@ -88,6 +88,9 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var rpcSockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
 	var logPath = fmt.Sprintf("%s/%s.log", dir, a.Name())
 
+	// Old RPC sockets are also removed by wice.
+	// However we also need to do it here to avoid racing
+	// against rpc.Connect() further down here
 	if err := os.RemoveAll(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to remove old socket: %w", err)
 	}

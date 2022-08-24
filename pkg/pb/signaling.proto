@@ -28,6 +28,7 @@ message SignalingMessage {
     Credentials credentials = 1;
     Candidate candidate = 2;
     PeerDescription peer = 3;
+    PresharedKeyEstablishment pskem = 4;
 }
 
 message SubscribeParams {
