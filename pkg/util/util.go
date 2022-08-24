@@ -2,8 +2,6 @@ package util
 
 import (
 	"bytes"
-	crand "crypto/rand"
-	"encoding/base64"
 	"fmt"
 	mrand "math/rand"
 	"net"
@@ -35,28 +33,6 @@ func CmpNet(a, b *net.IPNet) int {
 	return bytes.Compare(a.IP, b.IP)
 }
 
-// GenerateRandomBytes returns securely generated random bytes.
-// It will return an error if the system's secure random
-// number generator fails to function correctly, in which
-// case the caller should not continue.
-func GenerateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := crand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-// GenerateRandomString returns a URL-safe, base64 encoded
-// securely generated random string.
-func GenerateRandomString(s int) (string, error) {
-	b, err := GenerateRandomBytes(s)
-	return base64.URLEncoding.EncodeToString(b), err
-}
-
 func IsATTY() bool {
 	fi, err := os.Stdout.Stat()
 	if err != nil {
@@ -64,18 +40,6 @@ func IsATTY() bool {
 	}
 
 	return (fi.Mode() & os.ModeCharDevice) != 0
-}
-
-func LastTime(ts ...time.Time) time.Time {
-	var lt time.Time
-
-	for _, t := range ts {
-		if t.After(lt) {
-			lt = t
-		}
-	}
-
-	return lt
 }
 
 func SetupRand() {

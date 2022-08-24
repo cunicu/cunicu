@@ -111,10 +111,3 @@ func (al AgentList) PingPeers(ctx context.Context) error {
 		return a.PingPeer(ctx, b)
 	})
 }
-
-func (al AgentList) Dump() {
-	al.ForEachAgent(func(a *Agent) error {
-		a.Dump()
-		return nil
-	})
-}
