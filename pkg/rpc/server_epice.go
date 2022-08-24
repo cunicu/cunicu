@@ -2,10 +2,11 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/feat/disc/epice"
 	icex "riasc.eu/wice/pkg/ice"
@@ -32,30 +33,28 @@ func NewEndpointDiscoveryServer(s *Server, ep *epice.EndpointDiscovery) *Endpoin
 	return eps
 }
 
-func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Error, error) {
+func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Empty, error) {
 	pk, err := crypto.ParseKeyBytes(params.Peer)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse key: %w", err)
+		return &pb.Empty{}, status.Errorf(codes.InvalidArgument, "failed to parse key: %s", err)
 	}
 
 	p := s.watcher.Peer(params.Intf, &pk)
 	if p == nil {
-		err := fmt.Errorf("unknown peer %s/%s", params.Intf, pk.String())
-		return pb.NewError(err), nil
+		return &pb.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
 	}
 
 	ip := s.Peers[p]
 	if ip == nil {
-		err := fmt.Errorf("unknown peer %s/%s", params.Intf, pk.String())
-		return pb.NewError(err), nil
+		return &pb.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
 	}
 
 	err = ip.Restart()
 	if err != nil {
-		return pb.NewError(err), nil
+		return &pb.Empty{}, status.Errorf(codes.Unknown, "failed to restart peer session: %s", err)
 	}
 
-	return pb.Success, nil
+	return &pb.Empty{}, nil
 }
 
 func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEventsServer) {

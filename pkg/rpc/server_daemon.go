@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
 )
@@ -55,25 +57,22 @@ out:
 	return nil
 }
 
-func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb.Error, error) {
-	var e = &pb.Error{
-		Code:    pb.Error_EALREADY,
-		Message: "already unwaited",
-	}
+func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb.Empty, error) {
+	err := status.Error(codes.AlreadyExists, "RPC socket has already been unwaited")
 
 	s.waitOnce.Do(func() {
 		s.logger.Info("Control socket un-waited")
 		s.waitGroup.Done()
-		e = pb.Success
+		err = nil
 	})
 
-	return e, nil
+	return &pb.Empty{}, err
 }
 
-func (s *DaemonServer) Stop(ctx context.Context, params *pb.StopParams) (*pb.Error, error) {
+func (s *DaemonServer) Stop(ctx context.Context, params *pb.StopParams) (*pb.Empty, error) {
 	if err := s.Daemon.Close(); err != nil {
-		return pb.NewError(err), nil
+		return nil, status.Errorf(codes.Unknown, "failed to stop daemon: %s", err)
 	}
 
-	return pb.Success, nil
+	return &pb.Empty{}, nil
 }

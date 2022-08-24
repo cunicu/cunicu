@@ -36,5 +36,5 @@ message SubscribeParams {
 
 service Signaling {
     rpc Subscribe(SubscribeParams) returns (stream SignalingEnvelope) {}
-    rpc Publish(SignalingEnvelope) returns (Error) {}
+    rpc Publish(SignalingEnvelope) returns (Empty) {}
 }

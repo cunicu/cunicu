@@ -3,6 +3,8 @@ package rpc
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/signaling/grpc"
@@ -31,23 +33,17 @@ func NewSignalingServer(s *Server, b *signaling.MultiBackend) *SignalingServer {
 }
 
 func (s *SignalingServer) GetSignalingMessage(ctx context.Context, params *pb.GetSignalingMessageParams) (*pb.GetSignalingMessageResp, error) {
-	// peer, pbErr, err := s.findPeer(params.Intf, params.Peer)
-	// if pbErr != nil || err != nil {
-	// 	return nil, err
-	// }
-
-	return &pb.GetSignalingMessageResp{}, nil
+	return nil, status.Error(codes.Unimplemented, "not implemented yet")
 }
 
-func (s *SignalingServer) PutSignalingMessage(ctx context.Context, params *pb.PutSignalingMessageParams) (*pb.Error, error) {
-
-	return pb.Success, nil
+func (s *SignalingServer) PutSignalingMessage(ctx context.Context, params *pb.PutSignalingMessageParams) (*pb.Empty, error) {
+	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
 }
 
 func (s *SignalingServer) Subscribe(*pb.SubscribeParams, pb.Signaling_SubscribeServer) error {
-	return nil
+	return status.Error(codes.Unimplemented, "not implemented yet")
 }
 
-func (s *SignalingServer) Publish(context.Context, *signaling.Envelope) (*pb.Error, error) {
-	return pb.Success, nil
+func (s *SignalingServer) Publish(context.Context, *signaling.Envelope) (*pb.Empty, error) {
+	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
 }

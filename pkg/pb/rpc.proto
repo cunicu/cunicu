@@ -52,31 +52,31 @@ message PutSignalingMessageParams {
 
 service Socket {
     rpc StreamEvents(StreamEventsParams) returns (stream Event) {}
-    rpc UnWait(UnWaitParams) returns (Error) {}
-    rpc Stop(StopParams) returns (Error) {}
+    rpc UnWait(UnWaitParams) returns (Empty) {}
+    rpc Stop(StopParams) returns (Empty) {}
 }
 
 service Watcher {
-    rpc Sync(SyncParams) returns (Error) {}
+    rpc Sync(SyncParams) returns (Empty) {}
 
-    rpc GetStatus(Void) returns (Status) {}
+    rpc GetStatus(Empty) returns (Status) {}
 
-    rpc RemoveInterface(RemoveInterfaceParams) returns (Error) {}
+    rpc RemoveInterface(RemoveInterfaceParams) returns (Empty) {}
 
-    rpc SyncInterfaceConfig(InterfaceConfigParams) returns (Error) {}
-    rpc AddInterfaceConfig(InterfaceConfigParams) returns (Error) {}
-    rpc SetInterfaceConfig(InterfaceConfigParams) returns (Error) {}
+    rpc SyncInterfaceConfig(InterfaceConfigParams) returns (Empty) {}
+    rpc AddInterfaceConfig(InterfaceConfigParams) returns (Empty) {}
+    rpc SetInterfaceConfig(InterfaceConfigParams) returns (Empty) {}
 
     // For manual signaling backend
     rpc GetSignalingMessage(GetSignalingMessageParams) returns (GetSignalingMessageResp) {}
-    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Error) {}
+    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Empty) {}
 }
 
 service EndpointDiscoverySocket {
-    rpc RestartPeer(RestartPeerParams) returns (Error) {}
+    rpc RestartPeer(RestartPeerParams) returns (Empty) {}
 }
 
 service SignalingSocket {
     rpc GetSignalingMessage(GetSignalingMessageParams) returns (GetSignalingMessageResp) {}
-    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Error) {}
+    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Empty) {}
 }

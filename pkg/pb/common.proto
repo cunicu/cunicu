@@ -3,7 +3,7 @@ syntax = "proto3";
 package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
-message Void {}
+message Empty {}
 
 enum ConnectionState {
 	// ICE Connection state from pion/ice/ice.go
@@ -27,26 +27,3 @@ message Timestamp {
     int64 seconds = 1;
     int32 nanos = 2;
 }
-
-// A common error type used as return value for gRPC calls
-message Error {
-	// The Error code inspired by POSIX's errno
-	// See: https://pubs.opengroup.org/onlinepubs/009696899/functions/xsh_chap02_03.html
-	enum Code {
-		SUCCESS = 0;
-		EPERM = 1;
-		ENOENT = 2;
-		EEXIST = 17;
-		EALREADY = 18;
-		ENOTSUP = 10;
-
-		EUNKNOWN = 255;
-	}
-
-	// The error code
-	Code code = 1;
-
-	// A human readable error message
-    string message = 2;
-}
-

@@ -87,7 +87,7 @@ func wgPubKey(cmd *cobra.Command, args []string) error {
 }
 
 func wgShow(cmd *cobra.Command, args []string) error {
-	sts, err := client.GetStatus(context.Background(), &pb.Void{})
+	sts, err := client.GetStatus(context.Background(), &pb.Empty{})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}
