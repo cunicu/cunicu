@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/aead/siphash"
+	"github.com/dchest/siphash"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -106,11 +106,7 @@ func (k Key) Bytes() []byte {
 func (k Key) IPv6Address() *net.IPNet {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
-	hash, err := siphash.New64(addrHashKey[:])
-	if err != nil {
-		panic(err)
-	}
-
+	hash := siphash.New(addrHashKey[:])
 	if n, err := hash.Write(k[:]); err != nil {
 		panic(err)
 	} else if n != KeyLength {
@@ -132,11 +128,7 @@ func (k Key) IPv6Address() *net.IPNet {
 
 // IPv4Address derives an IPv4 link local address from they key
 func (k Key) IPv4Address() *net.IPNet {
-	hash, err := siphash.New64(addrHashKey[:])
-	if err != nil {
-		panic(err)
-	}
-
+	hash := siphash.New(addrHashKey[:])
 	if _, err := hash.Write(k[:]); err != nil {
 		panic(err)
 	}
