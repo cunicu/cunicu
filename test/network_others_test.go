@@ -1,4 +1,4 @@
-//go:build linux && !tracer
+//go:build !tracer
 
 package test_test
 
