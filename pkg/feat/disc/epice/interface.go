@@ -31,7 +31,7 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 		Interface: ci,
 		Discovery: d,
 
-		logger: zap.L().Named("ep.interface"),
+		logger: zap.L().Named("epice.interface"),
 	}
 
 	// Create per-interface UDPMux

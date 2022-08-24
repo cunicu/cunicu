@@ -5,7 +5,6 @@ package test_test
 import (
 	"fmt"
 
-	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/wg"
 	"riasc.eu/wice/test/nodes"
@@ -19,35 +18,40 @@ import (
 	gfopt "github.com/stv0g/gont/pkg/options/filters"
 )
 
-var (
-	logger *zap.Logger
-)
-
-/* Simple local-area switched topology
+/* Simple local-area switched topology with variable number of agents
  *
- * Hosts:
- *  - 1x Relay node (Coturn STUN/TURN server)
- *  - 1x Signaling node (GRPC server)
- *  - 1x Switch
- *  - 2x wice Agent nodes
+ *  - 1x Relay node        [r1] (Coturn STUN/TURN server)
+ *  - 1x Signaling node    [s1] (GRPC server)
+ *  - 1x Switch            [sw1]
+ *  - Yx  wice Agent nodes [n?]
  *
- *        ┌────┐   ┌────┐
- *  Relay │ r1 │   │ s1 │ Signaling
- *        └──┬─┘   └─┬──┘
- *           └─┐   ┌─┘
- *            ┌┴───┴┐
- *            │ sw1 │ Switch
- *            └┬───┬┘
- *           ┌─┘   └─┐
- *        ┌──┴─┐   ┌─┴──┐
- *        │ n1 │   │ n2 │ wice Agents
- *        └────┘   └────┘
+ *        Relay            Signaling
+ *        ┌────┐            ┌────┐
+ *        │ r1 │            │ s1 │
+ *        └──┬─┘            └─┬──┘
+ *           └─────┐   ┌──────┘
+ *                ┌┴───┴┐
+ *                │ sw1 │ Switch
+ *                └┬─┬─┬┘
+ *           ┌─────┘ │ └───────┐
+ *        ┌──┴─┐  ┌──┴─┐     ┌─┴──┐
+ *        │ n1 │  │ n2 │ ... │ nY │
+ *        └────┘  └────┘     └────┘
+ *               wice Agents
  */
 var _ = Context("simple", Serial, func() {
-	var n Network
+	var (
+		err error
+		n   Network
+		nw  *g.Network
+
+		NumAgents int
+	)
 
 	BeforeEach(func() {
 		n.Init()
+
+		NumAgents = 3
 
 		n.AgentOptions = append(n.AgentOptions,
 			gopt.EmptyDir(wg.ConfigPath),
@@ -66,7 +70,7 @@ var _ = Context("simple", Serial, func() {
 	JustBeforeEach(func() {
 		By("Initializing core network")
 
-		nw, err := g.NewNetwork(n.Name, n.NetworkOptions...)
+		nw, err = g.NewNetwork(n.Name, n.NetworkOptions...)
 		Expect(err).To(Succeed(), "Failed to create network: %s", err)
 
 		sw1, err := nw.AddSwitch("sw1")
@@ -94,9 +98,8 @@ var _ = Context("simple", Serial, func() {
 
 		By("Initializing agent nodes")
 
-		CreateAgent := func(i int) *nodes.Agent {
-			name := fmt.Sprintf("n%d", i)
-			n, err := nodes.NewAgent(n.Network, name,
+		AddAgent := func(i int) *nodes.Agent {
+			a, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
 				gopt.Customize(n.AgentOptions,
 					gopt.Interface("eth0", sw1,
 						gopt.AddressIP("10.0.1.%d/16", i),
@@ -105,11 +108,19 @@ var _ = Context("simple", Serial, func() {
 					wopt.Interface("wg0",
 						gopt.Customize(n.WireGuardInterfaceOptions,
 							wopt.AddressIP("172.16.0.%d/16", i),
-						)...),
-				)...)
+						)...,
+					),
+				)...,
+			)
 			Expect(err).To(Succeed(), "Failed to create agent node: %s", err)
 
-			return n
+			n.AgentNodes = append(n.AgentNodes, a)
+
+			return a
+		}
+
+		for i := 1; i <= NumAgents; i++ {
+			AddAgent(i)
 		}
 
 		By("Starting network")
@@ -117,10 +128,6 @@ var _ = Context("simple", Serial, func() {
 		n.Network = nw
 		n.RelayNodes = nodes.RelayList{r1}
 		n.SignalingNodes = nodes.SignalingList{s1}
-		n.AgentNodes = nodes.AgentList{
-			CreateAgent(1),
-			CreateAgent(2),
-		}
 
 		n.Start()
 	})
@@ -185,20 +192,18 @@ var _ = Context("simple", Serial, func() {
 	})
 
 	Context("userspace", func() {
-		Context("ipv4", func() {
-			BeforeEach(func() {
-				n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
-					wopt.WriteConfigFile(true),
-					wopt.SetupKernelInterface(false),
-				)
+		BeforeEach(func() {
+			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
+				wopt.WriteConfigFile(true),
+				wopt.SetupKernelInterface(false),
+			)
 
-				n.AgentOptions = append(n.AgentOptions,
-					opt.ExtraArgs{"--wg-userspace", "wg0"},
-				)
-			})
-
-			ConnectivityTestsForAllCandidateTypes()
+			n.AgentOptions = append(n.AgentOptions,
+				opt.ExtraArgs{"--wg-userspace", "wg0"},
+			)
 		})
+
+		ConnectivityTestsForAllCandidateTypes()
 	})
 
 	Context("filtered", func() {

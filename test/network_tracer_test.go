@@ -1,4 +1,4 @@
-//go:build tracer
+//go:build linux && tracer
 
 package test_test
 
@@ -20,12 +20,12 @@ func (n *Network) StartHandshakeTracer() {
 	tracer, err := tracer.NewHandshakeTracer()
 	Expect(err).To(Succeed(), "Failed to setup WireGuard handshake tracer: %s", err)
 
-	n.tracer = (*HandshakeTracer)(tracer)
+	n.Tracer = (*HandshakeTracer)(tracer)
 
 	go func() {
 		for {
 			select {
-			case hs := <-n.tracer.Handshakes:
+			case hs := <-n.Tracer.Handshakes:
 				b := &bytes.Buffer{}
 				err = hs.DumpKeyLog(b)
 				Expect(err).To(Succeed(), "Failed to dump WireGuard handshake: %s", err)
@@ -35,7 +35,7 @@ func (n *Network) StartHandshakeTracer() {
 					Expect(err).To(Succeed(), "Failed to write decryption secrets to PCAPng file: %s", err)
 				}
 
-			case err := <-n.tracer.Errors:
+			case err := <-n.Tracer.Errors:
 				logger.Error("Failed to trace WireGuard handshake", zap.Error(err))
 			}
 		}
@@ -43,10 +43,10 @@ func (n *Network) StartHandshakeTracer() {
 }
 
 func (n *Network) StopHandshakeTracer() {
-	if n.tracer != nil {
+	if n.Tracer != nil {
 		By("Stopping WireGuard handshake tracer")
 
-		err := (*tracer.HandshakeTracer)(n.tracer).Close()
+		err := (*tracer.HandshakeTracer)(n.Tracer).Close()
 		Expect(err).To(Succeed(), "Failed to close WireGuard handshake tracer; %s", err)
 	}
 }

@@ -19,7 +19,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/stv0g/gont v1.6.1
+	github.com/stv0g/gont v1.6.2
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	go.uber.org/atomic v1.10.0
@@ -112,4 +112,4 @@ require (
 )
 
 // Temporary, until https://github.com/google/gopacket/pull/1042 is merged
-// replace github.com/google/gopacket => github.com/stv0g/gopacket v0.0.0-20220819110231-82599fdade4a
+replace github.com/google/gopacket => github.com/stv0g/gopacket v0.0.0-20220819110231-82599fdade4a

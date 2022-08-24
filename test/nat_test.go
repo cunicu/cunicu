@@ -16,35 +16,40 @@ import (
 /* Typical wide-area NAT setup
  *
  * Hosts:
- *  - 1x Relay node (Coturn STUN/TURN server)
- *  - 1x Signaling node (GRPC server)
- *  - 2x NAT routers
- *  - 1x WAN switch
- *  - 2x LAN switches
- *  - 2x wice Agent nodes
+ *  - 1x Relay node       [r1] (Coturn STUN/TURN server)
+ *  - 1x Signaling node   [s1] (GRPC server)
+ *  - 2x NAT routers      [nat?]
+ *  - 1x WAN switch       [wan?]
+ *  - 2x LAN switches     [lan?]
+ *  - 2x wice Agent nodes [n?]
  *
- *                    ┌────┐   ┌────┐
- *              Relay │ r1 │   │ s1 │ Signaling
- *                    └──┬─┘   └─┬──┘
- *                       └─┐   ┌─┘
- *                        ┌┴───┴┐
- *                        │ sw1 │ WAN Switch
- *                        └┬───┬┘
- *                   ┌─────┘   └─────┐
- *               ┌───┴──┐        ┌───┴──┐
- *               │ nat1 │        │ nat2 │ NAT Routers
- *               └───┬──┘        └───┬──┘
- *               ┌───┴──┐        ┌───┴──┐
- *  LAN Switches │ lsw1 │        │ lsw2 │
- *               └───┬──┘        └─┬──┬─┘
- *                   │           ┌─┘  └─┐
- *               ┌───┴──┐   ┌────┴─┐  ┌─┴────┐
- *               │  n1  │   │  n2  │  │ (n3) │  wice Agents
- *               └──────┘   └──────┘  └──────┘
+ *     ┌──────┐   ┌──────┐
+ *     │  r1  │   │  s1  │
+ *     └───┬──┘   └──┬───┘
+ *         └───┐  ┌──┘
+ *           ┌─┴──┴─┐
+ *           │ wan1 │ WAN Switch
+ *           └┬────┬┘
+ *      ┌─────┘    └────┐
+ *  ┌───┴──┐        ┌───┴──┐
+ *  │ nat1 │        │ nat2 │
+ *  └───┬──┘        └───┬──┘
+ *  ┌───┴──┐        ┌───┴──┐
+ *  │ lan1 │        │ lan2 │
+ *  └───┬──┘        └─┬──┬─┘
+ *      │           ┌─┘  └─┐
+ *  ┌───┴──┐   ┌────┴─┐  ┌─┴────┐
+ *  │  n1  │   │  n2  │  │ (n3) │
+ *  └──────┘   └──────┘  └──────┘
  */
-var _ = Context("nat simple", Serial, func() {
-	var n Network
-	var lsw2 *g.Switch
+var _ = Context("nat simple", func() {
+	var (
+		err error
+
+		n    Network
+		nw   *g.Network
+		lan2 *g.Switch
+	)
 
 	BeforeEach(func() {
 		n.Init()
@@ -54,19 +59,39 @@ var _ = Context("nat simple", Serial, func() {
 		n.Close()
 	})
 
+	AddAgent := func(i int, lan *g.Switch) *nodes.Agent {
+		a, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
+			gopt.DefaultGatewayIP("10.1.0.254"),
+			gopt.DefaultGatewayIP("fc:1::254"),
+			gopt.Interface("eth0", lan,
+				gopt.AddressIP("10.1.0.%d/24", i),
+				gopt.AddressIP("fc:1::%d/64", i),
+			),
+			wopt.Interface("wg0",
+				wopt.FullMeshPeers,
+				wopt.AddressIP("172.16.0.%d/16", i),
+			),
+		)
+		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
+
+		n.AgentNodes = append(n.AgentNodes, a)
+
+		return a
+	}
+
 	JustBeforeEach(func() {
 		By("Initializing core network")
+		nw, err = g.NewNetwork(n.Name, n.NetworkOptions...)
 
-		nw, err := g.NewNetwork(n.Name, n.NetworkOptions...)
 		Expect(err).To(Succeed(), "Failed to create network: %s", err)
 
-		sw1, err := nw.AddSwitch("sw1")
+		wan1, err := nw.AddSwitch("wan1")
 		Expect(err).To(Succeed(), "Failed to create switch: %s", err)
 
 		By("Initializing relay node")
 
 		r1, err := nodes.NewCoturnNode(nw, "r1",
-			gopt.Interface("eth0", sw1,
+			gopt.Interface("eth0", wan1,
 				gopt.AddressIP("10.0.0.1/16"),
 				gopt.AddressIP("fc::1/64"),
 			),
@@ -76,7 +101,7 @@ var _ = Context("nat simple", Serial, func() {
 		By("Initializing signaling node")
 
 		s1, err := nodes.NewGrpcSignalingNode(nw, "s1",
-			gopt.Interface("eth0", sw1,
+			gopt.Interface("eth0", wan1,
 				gopt.AddressIP("10.0.0.2/16"),
 				gopt.AddressIP("fc::2/64"),
 			),
@@ -85,60 +110,40 @@ var _ = Context("nat simple", Serial, func() {
 
 		By("Initializing agent nodes")
 
-		CreateAgent := func(i int) *nodes.Agent {
+		AddLAN := func(i int) *g.Switch {
 			// LAN switch
-			lsw, err := nw.AddSwitch(fmt.Sprintf("lsw%d", i))
+			lan, err := nw.AddSwitch(fmt.Sprintf("lan%d", i))
 			Expect(err).To(Succeed(), "Failed to add LAN switch: %s", err)
-
-			if i == 2 {
-				lsw2 = lsw
-			}
 
 			// NAT router
 			_, err = nw.AddNAT(fmt.Sprintf("nat%d", i),
-				gopt.Interface("eth-nb", sw1,
+				gopt.Interface("eth-nb", wan1,
 					gopt.NorthBound,
 					gopt.AddressIP("10.0.1.%d/16", i),
 					gopt.AddressIP("fc::1:%d/64", i),
 				),
-				gopt.Interface("eth-sb", lsw,
+				gopt.Interface("eth-sb", lan,
 					gopt.SouthBound,
-					gopt.AddressIP("10.1.0.1/24"),
-					gopt.AddressIP("fc:1::1/64"),
+					gopt.AddressIP("10.1.0.254/24"),
+					gopt.AddressIP("fc:1::254/64"),
 				),
 			)
 			Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
 
-			// Agent node
-			n, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
-				gopt.Customize(n.AgentOptions,
-					gopt.Interface("eth0", lsw,
-						gopt.AddressIP("10.1.0.2/24"),
-						gopt.AddressIP("fc:1::2/64"),
-					),
-					gopt.DefaultGatewayIP("10.1.0.1"),
-					gopt.DefaultGatewayIP("fc:1::1"),
-					wopt.Interface("wg0",
-						wopt.AddressIP("172.16.0.%d/16", i),
-						wopt.FullMeshPeers,
-					),
-				)...,
-			)
-			Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
+			AddAgent(i, lan)
 
-			return n
+			return lan
 		}
+
+		AddLAN(1)
+		lan2 = AddLAN(2)
 
 		n.Network = nw
-		n.AgentNodes = nodes.AgentList{
-			CreateAgent(1),
-			CreateAgent(2),
-		}
 		n.RelayNodes = nodes.RelayList{r1}
 		n.SignalingNodes = nodes.SignalingList{s1}
 	})
 
-	Context("without-n3", func() {
+	Context("2-nodes", func() {
 		JustBeforeEach(func() {
 			n.Start()
 		})
@@ -146,25 +151,9 @@ var _ = Context("nat simple", Serial, func() {
 		n.ConnectivityTests()
 	})
 
-	FContext("with-n3", func() {
+	Context("3-nodes", func() {
 		JustBeforeEach(func() {
-			n3, err := nodes.NewAgent(n.Network, "n3",
-				gopt.Customize(n.AgentOptions,
-					gopt.Interface("eth0", lsw2,
-						gopt.AddressIP("10.1.0.3/24"),
-						gopt.AddressIP("fc:1::3/64"),
-					),
-					gopt.DefaultGatewayIP("10.1.0.1"),
-					gopt.DefaultGatewayIP("fc:1::1"),
-					wopt.Interface("wg0",
-						wopt.AddressIP("172.16.0.3/16"),
-						wopt.FullMeshPeers,
-					),
-				)...,
-			)
-			Expect(err).To(Succeed(), "Failed to created node: %s", err)
-
-			n.AgentNodes = append(n.AgentNodes, n3)
+			AddAgent(3, lan2)
 
 			n.Start()
 		})

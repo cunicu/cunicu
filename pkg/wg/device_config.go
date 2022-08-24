@@ -156,6 +156,7 @@ func (cfg *Config) Dump(wr io.Writer) error {
 
 	iniFile := ini.Empty(ini.LoadOptions{
 		AllowNonUniqueSections: true,
+		AllowShadows:           true,
 	})
 
 	if err := iniFile.ReflectFrom(iniCfg); err != nil {

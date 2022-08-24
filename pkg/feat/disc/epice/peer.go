@@ -16,6 +16,7 @@ import (
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/util"
 )
 
 type Peer struct {
@@ -23,18 +24,16 @@ type Peer struct {
 
 	Interface *Interface
 
-	config *config.Config
+	config          *config.Config
+	agentConfig     *ice.AgentConfig
+	agent           *ice.Agent
+	backend         signaling.Backend
+	proxy           proxy.Proxy
+	connectionState util.AtomicEnum[icex.ConnectionState]
+	credentials     pb.Credentials
 
-	backend signaling.Backend
-	proxy   proxy.Proxy
-
-	// TODO: Avoid races around connection state
-	ConnectionState icex.ConnectionState
-
-	agentConfig *ice.AgentConfig
-	agent       *ice.Agent
-	conn        *ice.Conn
-	credentials pb.Credentials
+	signalingMessages      chan *signaling.Message
+	connectionStateChanges chan icex.ConnectionState
 
 	logger *zap.Logger
 }
@@ -43,18 +42,29 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	var err error
 
 	p := &Peer{
-		Peer:            cp,
-		Interface:       i,
-		ConnectionState: icex.ConnectionStateUnknown,
+		Peer:      cp,
+		Interface: i,
 
 		backend: i.Discovery.backend,
 		config:  i.Discovery.config,
+
+		signalingMessages:      make(chan *pb.SignalingMessage, 32),
+		connectionStateChanges: make(chan icex.ConnectionState, 32),
 
 		logger: zap.L().Named("ice.peer").With(
 			zap.String("intf", i.Name()),
 			zap.Any("peer", cp.PublicKey()),
 		),
 	}
+
+	p.connectionState.Store(ice.ConnectionStateClosed)
+
+	// Initialize signaling channel
+	kp := p.PublicPrivateKeyPair()
+	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
+		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
+	}
+	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
 	// Prepare ICE agent configuration
 	p.agentConfig, err = p.config.AgentConfig()
@@ -85,24 +95,33 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		return nil, fmt.Errorf("failed tp setup peer. Neither NAT or Bind is configured")
 	}
 
-	// Initialize signaling channel
-	kp := p.PublicPrivateKeyPair()
-	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
-		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
+	if err = p.createAgent(); err != nil {
+		return nil, fmt.Errorf("failed to create initial agent: %w", err)
 	}
 
-	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
-
-	// Initialize new agent by simulating a closed event
-	p.onConnectionStateChange(ice.ConnectionStateClosed)
+	go p.run()
 
 	return p, nil
 }
 
+func (p *Peer) ConnectionState() icex.ConnectionState {
+	return p.connectionState.Load()
+}
+
+func (p *Peer) run() {
+	for {
+		select {
+		case msg := <-p.signalingMessages:
+			p.onSignalingMessage(msg)
+
+		case sc := <-p.connectionStateChanges:
+			p.onConnectionStateChange(sc)
+		}
+	}
+}
+
 // Close destroys the peer as well as the ICE agent and proxies
 func (p *Peer) Close() error {
-	p.setConnectionState(icex.ConnectionStateClosing)
-
 	if err := p.agent.Close(); err != nil {
 		return fmt.Errorf("failed to close ICE agent: %w", err)
 	}
@@ -135,7 +154,7 @@ func (p *Peer) sendCredentials(need bool) error {
 		Credentials: &p.credentials,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 35*time.Second)
 	defer cancel()
 
 	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
@@ -164,9 +183,12 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 	return nil
 }
 
-func (p *Peer) newAgent() (*ice.Agent, error) {
-	var agent *ice.Agent
+func (p *Peer) createAgent() error {
 	var err error
+
+	if !p.setConnectionStateIf(ice.ConnectionStateClosed, icex.ConnectionStateCreating) {
+		return fmt.Errorf("failed to create new agent if previous one is not closed")
+	}
 
 	p.logger.Info("Creating new agent")
 
@@ -176,28 +198,36 @@ func (p *Peer) newAgent() (*ice.Agent, error) {
 	p.agentConfig.LocalPwd = p.credentials.Pwd
 
 	// Setup new ICE Agent
-	if agent, err = ice.NewAgent(p.agentConfig); err != nil {
-		return nil, fmt.Errorf("failed to create ICE agent: %w", err)
+	if p.agent, err = ice.NewAgent(p.agentConfig); err != nil {
+		return fmt.Errorf("failed to create ICE agent: %w", err)
 	}
 
 	// When we have gathered a new ICE Candidate send it to the remote peer
-	if err := agent.OnCandidate(p.onCandidate); err != nil {
-		return nil, fmt.Errorf("failed to setup on candidate handler: %w", err)
+	if err := p.agent.OnCandidate(p.onCandidate); err != nil {
+		return fmt.Errorf("failed to setup on candidate handler: %w", err)
 	}
 
 	// When selected candidate pair changes
-	if err := agent.OnSelectedCandidatePairChange(p.onSelectedCandidatePairChange); err != nil {
-		return nil, fmt.Errorf("failed to setup on selected candidate pair handler: %w", err)
+	if err := p.agent.OnSelectedCandidatePairChange(p.onSelectedCandidatePairChange); err != nil {
+		return fmt.Errorf("failed to setup on selected candidate pair handler: %w", err)
 	}
 
 	// When ICE Connection state has change print to stdout
-	if err := agent.OnConnectionStateChange(p.onConnectionStateChange); err != nil {
-		return nil, fmt.Errorf("failed to setup on connection state handler: %w", err)
+	if err := p.agent.OnConnectionStateChange(func(cs ice.ConnectionState) {
+		p.onConnectionStateChange(icex.ConnectionState(cs))
+	}); err != nil {
+		return fmt.Errorf("failed to setup on connection state handler: %w", err)
 	}
 
-	p.setConnectionState(icex.ConnectionStateIdle)
+	if !p.setConnectionStateIf(icex.ConnectionStateCreating, icex.ConnectionStateIdle) {
+		return fmt.Errorf("failed to switch to idle state")
+	}
 
-	return agent, nil
+	if err := p.sendCredentials(true); err != nil {
+		return fmt.Errorf("failed to send peer credentials: %w", err)
+	}
+
+	return nil
 }
 
 // isSessionRestart checks if a received offer should restart the
@@ -210,7 +240,7 @@ func (p *Peer) isSessionRestart(c *pb.Credentials) bool {
 
 	credsChanged := (ufrag != "" && pwd != "") && (c.Ufrag != "" && c.Pwd != "") && (ufrag != c.Ufrag || pwd != c.Pwd)
 
-	return p.conn != nil && credsChanged
+	return p.ConnectionState() != ice.ConnectionStateClosed && credsChanged
 }
 
 func (p *Peer) addRemoteCandidate(c *pb.Candidate) error {
@@ -230,14 +260,15 @@ func (p *Peer) addRemoteCandidate(c *pb.Candidate) error {
 
 func (p *Peer) connect(ufrag, pwd string) error {
 	var err error
+	var conn *ice.Conn
 
 	// TODO: use proper context
 	if p.IsControlling() {
 		p.logger.Debug("Dialing...")
-		p.conn, err = p.agent.Dial(context.Background(), ufrag, pwd)
+		conn, err = p.agent.Dial(context.Background(), ufrag, pwd)
 	} else {
 		p.logger.Debug("Accepting...")
-		p.conn, err = p.agent.Accept(context.Background(), ufrag, pwd)
+		conn, err = p.agent.Accept(context.Background(), ufrag, pwd)
 	}
 	if err != nil {
 		return err
@@ -248,7 +279,7 @@ func (p *Peer) connect(ufrag, pwd string) error {
 		return fmt.Errorf("failed to get selected candidate pair: %w", err)
 	}
 
-	ep, err := p.proxy.Update(cp, p.conn)
+	ep, err := p.proxy.Update(cp, conn)
 	if err != nil {
 		return fmt.Errorf("failed to update proxy: %w", err)
 	}
@@ -261,11 +292,22 @@ func (p *Peer) connect(ufrag, pwd string) error {
 }
 
 func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState {
-	prev := p.ConnectionState
-	p.ConnectionState = new
+	prev := p.connectionState.Swap(new)
 
-	// Suppress initial invocation of handler from NewPeer()
-	if prev != icex.ConnectionStateUnknown {
+	p.logger.Info("Connection state changed",
+		zap.String("new", strings.ToLower(new.String())),
+		zap.String("previous", strings.ToLower(prev.String())))
+
+	for _, h := range p.Interface.Discovery.onConnectionStateChange {
+		h.OnConnectionStateChange(p, new, prev)
+	}
+
+	return prev
+}
+
+func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
+	swapped := p.connectionState.CompareAndSwap(prev, new)
+	if swapped {
 		p.logger.Info("Connection state changed",
 			zap.String("new", strings.ToLower(new.String())),
 			zap.String("previous", strings.ToLower(prev.String())))
@@ -273,7 +315,8 @@ func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState
 		for _, h := range p.Interface.Discovery.onConnectionStateChange {
 			h.OnConnectionStateChange(p, new, prev)
 		}
+
 	}
 
-	return prev
+	return swapped
 }

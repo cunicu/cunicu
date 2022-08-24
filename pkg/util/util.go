@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	mrand "math/rand"
 	"net"
@@ -9,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 func CmpEndpoint(a, b *net.UDPAddr) int {
@@ -54,4 +57,18 @@ func SetupSignals(extraSignals ...os.Signal) chan os.Signal {
 	signal.Notify(ch, signals...)
 
 	return ch
+}
+
+func OffsetIP(ip net.IP, off int) net.IP {
+	oip := slices.Clone(ip)
+
+	if isV6 := ip.To4() == nil; isV6 {
+		num := binary.BigEndian.Uint64(ip[8:])
+		binary.BigEndian.PutUint64(oip[8:], num+uint64(off))
+	} else {
+		num := binary.BigEndian.Uint32(ip[12:])
+		binary.BigEndian.PutUint32(oip[12:], num+uint32(off))
+	}
+
+	return oip
 }

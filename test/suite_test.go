@@ -7,16 +7,15 @@ import (
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
-	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
+
 	"github.com/onsi/gomega/gexec"
-	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/util"
+
+	"github.com/onsi/ginkgo/v2/types"
 )
 
 var (
-	logger *zap.Logger
-
 	setup   bool
 	persist bool
 	capture bool

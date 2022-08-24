@@ -208,3 +208,12 @@ func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key
 
 	return ctx.Err()
 }
+
+func (c *Client) RestartPeer(ctx context.Context, intf string, pk *crypto.Key) error {
+	_, err := c.EndpointDiscoverySocketClient.RestartPeer(ctx, &pb.RestartPeerParams{
+		Intf: intf,
+		Peer: pk.Bytes(),
+	})
+
+	return err
+}

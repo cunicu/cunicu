@@ -7,5 +7,5 @@ import (
 )
 
 func TestRunMain(t *testing.T) {
-	cmd.WGCmd.Execute()
+	wgCmd.Execute()
 }

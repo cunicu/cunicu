@@ -127,9 +127,11 @@ jobs:
         go install github.com/onsi/ginkgo/v2/ginkgo@latest
         go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
         go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install github.com/amobe/gocov-merger@latest
+        go install github.com/jandelgado/gcov2lcov@latest
 
     - name: Run wice build
-      run: go build -o wice ./cmd
+      run: go build -o wice ./cmd/wice
       
     - name: Run vet
       run: go vet --copylocks=false ./...
@@ -144,7 +146,7 @@ jobs:
       run: make tests
 
     - name: Run tests requiring root privileges
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os != 'windows' }}
+      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linuxcoverprofile_merged.out' }}
       env:
         GINKGO_PKG: ./test
       run: |
@@ -159,6 +161,11 @@ jobs:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
         path: test/logs/
 
+    - name: Create merged coverage profile
+      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
+      run: |
+        make coverprofile_merged.out
+
     - name: Report test coverage to Codacy
       if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
       uses: codacy/codacy-coverage-reporter-action@v1
@@ -166,7 +173,7 @@ jobs:
         CODACY_REPORTER_TMP_FOLDER: .codacy
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverprofile.out
+        coverage-reports: coverprofile_merged.out
         force-coverage-parser: go
 
     - name: Report test coverage to Codecov
@@ -174,4 +181,4 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: coverprofile.out
+        files: coverprofile_merged.out

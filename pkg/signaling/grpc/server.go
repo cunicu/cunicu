@@ -76,7 +76,11 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 out:
 	for {
 		select {
-		case env := <-ch:
+		case env, ok := <-ch:
+			if !ok {
+				break out
+			}
+
 			if err := stream.Send(env); err == io.EOF {
 				break out
 			} else if err != nil {
@@ -114,9 +118,7 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Empt
 	return &pb.Empty{}, nil
 }
 
-func (s *Server) GracefulStop() {
-	// Close all subscription streams
+func (s *Server) Close() {
 	s.topicRegistry.Close()
-
 	s.Server.GracefulStop()
 }
