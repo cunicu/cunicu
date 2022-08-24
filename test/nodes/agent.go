@@ -180,31 +180,6 @@ func (a *Agent) ConfigureWireGuardInterfaces() error {
 	return nil
 }
 
-func (a *Agent) DumpWireGuardInterfaces() error {
-	return a.RunFunc(func() error {
-		devs, err := a.WireGuardClient.Devices()
-		if err != nil {
-			return err
-		}
-
-		for _, dev := range devs {
-			d := wg.Device(*dev)
-			if err := d.DumpEnv(os.Stdout); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-}
-
-func (a *Agent) Dump() {
-	a.logger.Info("Details for agent")
-
-	a.DumpWireGuardInterfaces()
-	a.Run("ip", "addr", "show")
-}
-
 func (a *Agent) Shadowed(path string) string {
 	for _, ed := range a.EmptyDirs {
 		if strings.HasPrefix(path, ed) {

@@ -1,7 +1,6 @@
 package util_test
 
 import (
-	"encoding/base64"
 	"net"
 	"testing"
 
@@ -76,22 +75,5 @@ var _ = Describe("utils", func() {
 
 			Expect(util.CmpNet(a, b)).NotTo(BeZero())
 		})
-	})
-
-	It("can generate random bytes", func() {
-		r, err := util.GenerateRandomBytes(16)
-
-		Expect(err).To(Succeed())
-		Expect(r).To(HaveLen(16))
-	})
-
-	It("can generate a random string", func() {
-		s, err := util.GenerateRandomString(16)
-
-		Expect(err).To(Succeed())
-
-		b, err := base64.URLEncoding.DecodeString(s)
-		Expect(err).To(Succeed())
-		Expect(b).To(HaveLen(16))
 	})
 })
