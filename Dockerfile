@@ -22,4 +22,5 @@ FROM alpine:3.16
 
 COPY --from=builder /app/wice /
 
-CMD [ "/wice" ]
+ENTRYPOINT ["/wice"]
+
