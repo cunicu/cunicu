@@ -3,8 +3,8 @@ module riasc.eu/wice
 go 1.19
 
 require (
-	github.com/aead/siphash v1.0.1
 	github.com/cilium/ebpf v0.9.1
+	github.com/dchest/siphash v1.2.3
 	github.com/foxcpp/go-mockdns v1.0.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-logr/zapr v1.2.3
