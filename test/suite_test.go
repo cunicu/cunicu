@@ -29,7 +29,7 @@ func init() {
 }
 
 func TestSuite(t *testing.T) {
-	rand.Seed(GinkgoRandomSeed())
+	rand.Seed(GinkgoRandomSeed() + int64(GinkgoParallelProcess()))
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Test Suite", types.ReporterConfig{
