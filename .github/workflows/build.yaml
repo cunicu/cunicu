@@ -10,6 +10,9 @@ on:
     branches:
     - master
 
+env:
+  PKGS: ./cmd/... ./pkg/... ${{ matrix.target_os == 'linux' && './test/...' }}
+
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}
@@ -135,10 +138,10 @@ jobs:
       run: go build -o wice ./cmd/wice
       
     - name: Run vet
-      run: go vet --copylocks=false ./...
+      run: go vet --copylocks=false ${PKGS}
 
     - name: Run staticcheck
-      run: staticcheck ./...
+      run: staticcheck ${PKGS}
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
