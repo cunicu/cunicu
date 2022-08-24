@@ -5,37 +5,36 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"sync/atomic"
 
 	gi "github.com/onsi/ginkgo/v2"
 	g "github.com/onsi/gomega"
-	"go.uber.org/atomic"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
 )
 
 type readyHandler struct {
-	Count *atomic.Uint32
+	Count atomic.Uint32
 }
 
 func (r *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
-	r.Count.Inc()
+	r.Count.Add(1)
 }
 
 type msgHandler struct {
-	Count    *atomic.Uint32
+	Count    atomic.Uint32
 	Messages map[crypto.Key]map[crypto.Key][]*signaling.Message
 }
 
 func newMessageHandler() *msgHandler {
 	return &msgHandler{
-		Count:    atomic.NewUint32(0),
 		Messages: map[crypto.Key]map[crypto.Key][]*signaling.Message{},
 	}
 }
 
 func (h *msgHandler) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
-	h.Count.Inc()
+	h.Count.Add(1)
 
 	if _, ok := h.Messages[kp.Ours]; !ok {
 		h.Messages[kp.Ours] = map[crypto.Key][]*signaling.Message{}
@@ -110,9 +109,7 @@ func BackendTest(u *url.URL, n int) {
 	var ps []*peer
 
 	gi.BeforeEach(func() {
-		backendReady := &readyHandler{
-			Count: atomic.NewUint32(0),
-		}
+		backendReady := &readyHandler{}
 
 		ps = []*peer{}
 		for i := 0; i < n; i++ {
