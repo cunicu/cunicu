@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"golang.org/x/net/context/ctxhttp"
 )
 
 // Release collects data about a single release on GitHub.
@@ -54,7 +52,7 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	defer cancel()
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", githubUser, githubRepo)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +60,7 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	// pin API version 3
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
-	res, err := ctxhttp.Do(ctx, http.DefaultClient, req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +108,7 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 }
 
 func getGithubData(ctx context.Context, url string) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +116,7 @@ func getGithubData(ctx context.Context, url string) ([]byte, error) {
 	// Request binary data
 	req.Header.Set("Accept", "application/octet-stream")
 
-	res, err := ctxhttp.Do(ctx, http.DefaultClient, req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
