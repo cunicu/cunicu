@@ -45,5 +45,5 @@ func (h *Host) Line() (string, error) {
 		parts = append(parts, "#", h.Comment)
 	}
 
-	return strings.Join(parts, "\t"), nil
+	return strings.Join(parts, " "), nil
 }

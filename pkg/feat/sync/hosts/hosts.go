@@ -45,15 +45,11 @@ func (hs *HostsSync) Close() error {
 	return nil
 }
 
-func (hs *HostsSync) hosts() []Host {
+func (hs *HostsSync) Hosts() []Host {
 	hosts := []Host{}
 
 	for _, i := range hs.watcher.Interfaces {
 		for _, p := range i.Peers {
-			if p.Name == "" {
-				continue
-			}
-
 			// We use a shorted version of the public key as a DNS name here
 			pkName := p.PublicKey().String()[:8]
 
@@ -93,7 +89,7 @@ func (hs *HostsSync) updateHostsFile() error {
 	lines = append(lines, "")
 
 	// Add new hosts
-	hosts := hs.hosts()
+	hosts := hs.Hosts()
 	for _, h := range hosts {
 		line, err := h.Line()
 		if err != nil {
