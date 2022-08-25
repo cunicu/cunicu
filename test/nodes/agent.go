@@ -104,6 +104,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		"--rpc-socket", rpcSockPath,
 		"--rpc-wait",
 		"--log-level", "debug",
+		"--host-sync=false",
 		"--config-path", a.WireGuardConfigPath,
 	)
 	args = append(args, a.ExtraArgs...)
