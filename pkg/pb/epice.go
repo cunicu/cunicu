@@ -49,11 +49,14 @@ func (i *ICEInterface) Dump(wr io.Writer, verbosity int) error {
 func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 	var v string
 
-	t.FprintKV(wr, "state", p.State)
+	t.FprintKV(wr, "state", t.Color(p.State.String(), t.Bold, p.State.Color()))
 	t.FprintKV(wr, "proxy type", p.ProxyType)
 	t.FprintKV(wr, "reachability", p.Reachability)
 	t.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time()))
-	t.FprintKV(wr, "restarts", p.Restarts)
+
+	if p.Restarts > 0 {
+		t.FprintKV(wr, "restarts", p.Restarts)
+	}
 
 	if verbosity > 5 && len(p.CandidatePairStats) > 0 {
 		var cmap = map[string]int{}
