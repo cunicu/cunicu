@@ -67,7 +67,7 @@ func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, 
 		return fmt.Errorf("failed to extract file: %w", err)
 	}
 
-	logger.Info("Extraction succeeded", zap.String("size", util.PrettyBytes(n, false)))
+	logger.Info("Extraction succeeded", zap.String("size", util.PrettyBytes(n)))
 
 	return nil
 }

@@ -40,6 +40,12 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 		color = util.IsATTY()
 	}
 
+	if !color {
+		wr = &util.ANSIStripper{
+			Writer: wr,
+		}
+	}
+
 	switch os.Getenv("WG_HIDE_KEYS") {
 	case "never":
 		hideKeys = false
@@ -49,29 +55,26 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 		hideKeys = true
 	}
 
-	return d.Dump(wr, color, hideKeys)
+	return d.Dump(wr, hideKeys)
 }
 
-func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
-	var kv = map[string]any{
-		"public key":     d.PublicKey,
-		"private key":    "(hidden)",
-		"listening port": d.ListenPort,
+func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
+	wri := util.NewIndenter(wr, "  ")
+
+	if _, err := fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name); err != nil {
+		return err
 	}
 
+	t.FprintKV(wri, "public key", d.PublicKey)
+	t.FprintKV(wri, "private key", "(hidden)")
+	t.FprintKV(wri, "listening port", d.ListenPort)
+
 	if !hideKeys {
-		kv["private key"] = d.PrivateKey
+		t.FprintKV(wri, "private key", d.PrivateKey)
 	}
 
 	if d.FirewallMark > 0 {
-		kv["fwmark"] = fmt.Sprintf("%#x", d.FirewallMark)
-	}
-
-	if _, err := t.FprintfColored(wr, color, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name); err != nil {
-		return err
-	}
-	if _, err := t.PrintKeyValues(wr, color, "  ", kv); err != nil {
-		return err
+		t.FprintKV(wri, "fwmark", fmt.Sprintf("%#x", d.FirewallMark))
 	}
 
 	// Sort peers by last handshake time
@@ -79,46 +82,38 @@ func (d *Device) Dump(wr io.Writer, color bool, hideKeys bool) error {
 	copy(sortedPeers, d.Peers)
 	slices.SortFunc(sortedPeers, func(a, b wgtypes.Peer) bool { return CmpPeerHandshakeTime(&a, &b) < 0 })
 
-	for _, peer := range sortedPeers {
-		var kv = map[string]any{
-			"allowed ips": "(none)",
+	for _, p := range sortedPeers {
+		if _, err := fmt.Fprintf(wr, " \n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey.String()); err != nil {
+			return err
 		}
 
-		if peer.Endpoint != nil {
-			kv["endpoint"] = peer.Endpoint
+		if p.Endpoint != nil {
+			t.FprintKV(wri, "endpoint", p.Endpoint)
 		}
 
-		if peer.LastHandshakeTime.Second() > 0 {
-			kv["latest handshake"] = util.Ago(peer.LastHandshakeTime, color)
+		if p.LastHandshakeTime.Second() > 0 {
+			t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTime))
 		}
 
-		if len(peer.AllowedIPs) > 0 {
+		if len(p.AllowedIPs) > 0 {
 			allowedIPs := []string{}
-			for _, allowedIP := range peer.AllowedIPs {
+			for _, allowedIP := range p.AllowedIPs {
 				allowedIPs = append(allowedIPs, allowedIP.String())
 			}
 
-			kv["allowed ips"] = strings.Join(allowedIPs, ", ")
+			t.FprintKV(wri, "allowed ips", strings.Join(allowedIPs, ", "))
 		} else {
-			kv["allowed ips"] = "(none)"
+			t.FprintKV(wri, "allowed ips", "(none)")
 		}
 
-		if peer.ReceiveBytes > 0 || peer.TransmitBytes > 0 {
-			kv["transfer"] = fmt.Sprintf("%s received, %s sent\n",
-				util.PrettyBytes(peer.ReceiveBytes, color),
-				util.PrettyBytes(peer.TransmitBytes, color))
+		if p.ReceiveBytes > 0 || p.TransmitBytes > 0 {
+			t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
+				util.PrettyBytes(p.ReceiveBytes),
+				util.PrettyBytes(p.TransmitBytes)))
 		}
 
-		if peer.PersistentKeepaliveInterval > 0 {
-			kv["persistent keepalive"] = util.Every(peer.PersistentKeepaliveInterval, color)
-		}
-
-		fmt.Fprintln(wr)
-		if _, err := t.FprintfColored(wr, color, t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", peer.PublicKey.String()); err != nil {
-			return err
-		}
-		if _, err := t.PrintKeyValues(wr, color, "  ", kv); err != nil {
-			return err
+		if p.PersistentKeepaliveInterval > 0 {
+			t.FprintKV(wri, "persistent keepalive", util.Every(p.PersistentKeepaliveInterval))
 		}
 	}
 
