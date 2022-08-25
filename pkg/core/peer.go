@@ -11,6 +11,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/util"
 )
 
@@ -70,6 +71,11 @@ func (p *Peer) PublicKey() crypto.Key {
 	return crypto.Key(p.Peer.PublicKey)
 }
 
+// PresharedKey returns the Curve25199 preshared key of the WireGuard peer
+func (p *Peer) PresharedKey() crypto.Key {
+	return crypto.Key(p.Peer.PresharedKey)
+}
+
 // PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
 func (p *Peer) PublicKeyPair() *crypto.PublicKeyPair {
 	return &crypto.PublicKeyPair{
@@ -104,8 +110,8 @@ func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 		AllowedIPs: p.Peer.AllowedIPs,
 	}
 
-	if crypto.Key(p.PresharedKey).IsSet() {
-		cfg.PresharedKey = &p.PresharedKey
+	if crypto.Key(p.Peer.PresharedKey).IsSet() {
+		cfg.PresharedKey = &p.Peer.PresharedKey
 	}
 
 	if p.PersistentKeepaliveInterval > 0 {
@@ -251,4 +257,40 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	}
 
 	return mod, ipsAdded, ipsRemoved
+}
+
+func (p *Peer) Marshal() *pb.Peer {
+	allowedIPs := []string{}
+	for _, allowedIP := range p.AllowedIPs {
+		allowedIPs = append(allowedIPs, allowedIP.String())
+	}
+
+	q := &pb.Peer{
+		Name:                        p.Name,
+		PublicKey:                   p.PublicKey().Bytes(),
+		Endpoint:                    p.Endpoint.String(),
+		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval / time.Second),
+		TransmitBytes:               p.TransmitBytes,
+		ReceiveBytes:                p.ReceiveBytes,
+		AllowedIps:                  allowedIPs,
+		ProtocolVersion:             uint32(p.ProtocolVersion),
+	}
+
+	if p.PresharedKey().IsSet() {
+		q.PresharedKey = p.PresharedKey().Bytes()
+	}
+
+	if !p.LastHandshakeTime.IsZero() {
+		q.LastHandshakeTimestamp = pb.Time(p.LastHandshakeTime)
+	}
+
+	if !p.LastReceiveTime.IsZero() {
+		q.LastReceiveTimestamp = pb.Time(p.LastReceiveTime)
+	}
+
+	if !p.LastTransmitTime.IsZero() {
+		q.LastTransmitTimestamp = pb.Time(p.LastTransmitTime)
+	}
+
+	return q
 }

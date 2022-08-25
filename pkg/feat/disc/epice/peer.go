@@ -64,7 +64,8 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	// Initialize signaling channel
 	kp := p.PublicPrivateKeyPair()
 	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
-		p.logger.Fatal("Failed to subscribe to offers", zap.Error(err))
+		// TODO: Attempt retry?
+		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
 	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
@@ -158,7 +159,7 @@ func (p *Peer) sendCredentials(need bool) error {
 		Credentials: &p.credentials,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 35*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
@@ -323,8 +324,82 @@ func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 		for _, h := range p.Interface.Discovery.onConnectionStateChange {
 			h.OnConnectionStateChange(p, new, prev)
 		}
-
 	}
 
 	return swapped
+}
+
+func (p *Peer) Marshal() *pb.ICEPeer {
+	cs := p.ConnectionState()
+
+	q := &pb.ICEPeer{
+		State:        pb.NewConnectionState(cs),
+		Restarts:     uint32(p.Restarts),
+		Reachability: p.Reachability(),
+	}
+
+	if !p.lastStateChange.IsZero() {
+		q.LastStateChangeTimestamp = pb.Time(p.lastStateChange)
+	}
+
+	if cs != ice.ConnectionStateClosed {
+		cp, err := p.agent.GetSelectedCandidatePair()
+		if err == nil && cp != nil {
+			q.SelectedCandidatePair = &pb.CandidatePair{
+				Local:  pb.NewCandidate(cp.Local),
+				Remote: pb.NewCandidate(cp.Remote),
+			}
+		}
+
+		for _, cps := range p.agent.GetCandidatePairsStats() {
+			q.CandidatePairStats = append(q.CandidatePairStats, pb.NewCandidatePairStats(&cps))
+		}
+
+		for _, cs := range p.agent.GetLocalCandidatesStats() {
+			q.LocalCandidateStats = append(q.LocalCandidateStats, pb.NewCandidateStats(&cs))
+		}
+
+		for _, cs := range p.agent.GetRemoteCandidatesStats() {
+			q.RemoteCandidateStats = append(q.RemoteCandidateStats, pb.NewCandidateStats(&cs))
+		}
+	}
+
+	switch p.proxy.(type) {
+	case *proxy.KernelProxy:
+		q.ProxyType = pb.ProxyType_KERNEL
+	case *proxy.UserProxy:
+		q.ProxyType = pb.ProxyType_USER
+	}
+
+	return q
+}
+
+func (p *Peer) Reachability() pb.Reachability {
+	switch p.ConnectionState() {
+	case ice.ConnectionStateConnected:
+		cp, err := p.agent.GetSelectedCandidatePair()
+		if err != nil {
+			return pb.Reachability_NONE
+		}
+
+		switch cp.Remote.Type() {
+		case ice.CandidateTypeHost:
+			fallthrough
+		case ice.CandidateTypeServerReflexive:
+			if cp.Remote.NetworkType().IsTCP() {
+				return pb.Reachability_DIRECT_TCP
+			} else {
+				return pb.Reachability_DIRECT_UDP
+			}
+
+		case ice.CandidateTypeRelay:
+			if cp.Remote.NetworkType().IsTCP() {
+				return pb.Reachability_RELAY_TCP
+			} else {
+				return pb.Reachability_RELAY_UDP
+			}
+		}
+	}
+
+	return pb.Reachability_NONE
 }

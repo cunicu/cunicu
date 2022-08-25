@@ -1,11 +1,16 @@
 package pb
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io"
 	"net"
+	"strings"
 	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"riasc.eu/wice/pkg/util"
+	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 func NewInterfaceType(t wgtypes.DeviceType) PeerDescription_InterfaceType {
@@ -21,30 +26,6 @@ func NewInterfaceType(t wgtypes.DeviceType) PeerDescription_InterfaceType {
 	}
 
 	return PeerDescription_UNKNOWN
-}
-
-func NewPeer(p wgtypes.Peer) *Peer {
-	allowedIPs := []string{}
-	for _, allowedIP := range p.AllowedIPs {
-		allowedIPs = append(allowedIPs, allowedIP.String())
-	}
-
-	q := &Peer{
-		PublicKey:                   p.PublicKey[:],
-		Endpoint:                    p.Endpoint.String(),
-		PresharedKey:                p.PresharedKey[:],
-		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval),
-		TransmitBytes:               p.TransmitBytes,
-		ReceiveBytes:                p.ReceiveBytes,
-		AllowedIps:                  allowedIPs,
-		ProtocolVersion:             uint32(p.ProtocolVersion),
-	}
-
-	if !p.LastHandshakeTime.IsZero() {
-		q.LastHandshake = Time(p.LastHandshakeTime)
-	}
-
-	return q
 }
 
 func (p *Peer) Peer() wgtypes.Peer {
@@ -74,9 +55,71 @@ func (p *Peer) Peer() wgtypes.Peer {
 		ProtocolVersion:             int(p.ProtocolVersion),
 	}
 
-	if p.LastHandshake != nil {
-		q.LastHandshakeTime = p.LastHandshake.Time()
+	if p.LastHandshakeTimestamp != nil {
+		q.LastHandshakeTime = p.LastHandshakeTimestamp.Time()
 	}
 
 	return q
+}
+
+func (p *Peer) Dump(wr io.Writer, verbosity int) error {
+	wri := util.NewIndenter(wr, "  ")
+
+	if _, err := fmt.Fprintf(wr, t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", base64.StdEncoding.EncodeToString(p.PublicKey)); err != nil {
+		return err
+	}
+
+	if p.Name != "" {
+		t.FprintKV(wri, "name", p.Name)
+	}
+
+	if p.Endpoint != "" {
+		t.FprintKV(wri, "endpoint", p.Endpoint)
+	}
+
+	if p.LastHandshakeTimestamp != nil {
+		t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTimestamp.Time()))
+	}
+
+	if p.LastReceiveTimestamp != nil {
+		t.FprintKV(wri, "latest receive", util.Ago(p.LastReceiveTimestamp.Time()))
+	}
+
+	if p.LastTransmitTimestamp != nil {
+		t.FprintKV(wri, "latest transmit", util.Ago(p.LastTransmitTimestamp.Time()))
+	}
+
+	if len(p.AllowedIps) > 0 {
+		t.FprintKV(wri, "allowed ips", strings.Join(p.AllowedIps, ", "))
+	} else {
+		t.FprintKV(wri, "allowed ips", "(none)")
+	}
+
+	if p.ReceiveBytes > 0 || p.TransmitBytes > 0 {
+		t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
+			util.PrettyBytes(p.ReceiveBytes),
+			util.PrettyBytes(p.TransmitBytes)))
+	}
+
+	if p.PersistentKeepaliveInterval > 0 {
+		t.FprintKV(wri, "persistent keepalive", util.Every(time.Duration(p.PersistentKeepaliveInterval)*time.Second))
+	}
+
+	if len(p.PresharedKey) > 0 {
+		t.FprintKV(wri, "preshared key", base64.StdEncoding.EncodeToString(p.PresharedKey))
+	}
+
+	t.FprintKV(wri, "protocol version", p.ProtocolVersion)
+
+	if p.Ice != nil && verbosity > 4 {
+		if _, err := fmt.Fprintln(wr); err != nil {
+			return err
+		}
+
+		if err := p.Ice.Dump(wri, verbosity); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -79,10 +79,6 @@ func (i *Interface) DumpConfig(wr io.Writer) error {
 	return cfg.Dump(wr)
 }
 
-func (i *Interface) Marshal() *pb.Interface {
-	return pb.NewInterface((*wgtypes.Device)(i.Device))
-}
-
 func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer, []wgtypes.Peer) {
 	old := i.Device
 	mod := InterfaceModifiedNone
@@ -299,11 +295,39 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 		return nil, err
 	}
 
-	i.logger.Info("Added new interface",
+	i.logger.Info("Added interface",
 		zap.String("pk", i.PrivateKey().PublicKey().String()),
 		zap.String("type", i.Type.String()),
 		zap.Int("num_peers", len(i.Peers)),
 	)
 
 	return i, nil
+}
+
+func (i *Interface) Marshal() *pb.Interface {
+	peers := []*pb.Peer{}
+	for _, peer := range i.Peers {
+		peers = append(peers, peer.Marshal())
+	}
+
+	q := &pb.Interface{
+		Name:         i.Name(),
+		Type:         pb.Interface_Type(i.Type),
+		ListenPort:   uint32(i.ListenPort),
+		FirewallMark: uint32(i.FirewallMark),
+		Peers:        peers,
+		Mtu:          uint32(i.KernelDevice.MTU()),
+		Ifindex:      uint32(i.KernelDevice.Index()),
+	}
+
+	if !i.LastSync.IsZero() {
+		q.LastSyncTimestamp = pb.Time(i.LastSync)
+	}
+
+	if i.PrivateKey().IsSet() {
+		q.PrivateKey = i.PrivateKey().Bytes()
+		q.PublicKey = i.PublicKey().Bytes()
+	}
+
+	return q
 }
