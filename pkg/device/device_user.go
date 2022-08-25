@@ -104,10 +104,10 @@ func (d *UserDevice) handleUserAPI() {
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				return
-			} else {
-				d.logger.Error("Failed to accept new user api connection", zap.Error(err))
-				continue
 			}
+
+			d.logger.Error("Failed to accept new user api connection", zap.Error(err))
+			continue
 		} else if d.device == nil {
 			d.logger.Warn("Dropping user api connection as device is not ready yet")
 			continue

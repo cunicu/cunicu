@@ -117,9 +117,9 @@ func (hs *HostsSync) OnPeerAdded(p *core.Peer) {
 	}
 }
 
-func (s *HostsSync) OnPeerRemoved(p *core.Peer) {
-	if err := s.updateHostsFile(); err != nil {
-		s.logger.Error("Failed to update hosts file", zap.Error(err))
+func (hs *HostsSync) OnPeerRemoved(p *core.Peer) {
+	if err := hs.updateHostsFile(); err != nil {
+		hs.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 

@@ -1,4 +1,4 @@
-// This package implements endpoint (EP) discovery using Interactive Connection Establishment (ICE).
+// Package epice implements endpoint (EP) discovery using Interactive Connection Establishment (ICE).
 package epice
 
 import (

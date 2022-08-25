@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	puts("");
 
 	for (const struct define *d = defines; d->name; ++d)
-		printf("#define %s %ld\n", d->name, d->off);
+		printf("#define %s %lu\n", d->name, d->off);
 
 	return 0;
 }

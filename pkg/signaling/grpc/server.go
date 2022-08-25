@@ -37,6 +37,7 @@ func NewServer(opts ...grpc.ServerOption) *Server {
 		opts = slices.Clone(opts)
 		opts = append(opts, grpc.Creds(
 			credentials.NewTLS(&tls.Config{
+				MinVersion:   tls.VersionTLS13,
 				KeyLogWriter: wr,
 			}),
 		))
@@ -118,7 +119,12 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Empt
 	return &pb.Empty{}, nil
 }
 
-func (s *Server) Close() {
-	s.topicRegistry.Close()
+func (s *Server) Close() error {
+	if err := s.topicRegistry.Close(); err != nil {
+		return err
+	}
+
 	s.Server.GracefulStop()
+
+	return nil
 }

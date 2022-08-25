@@ -64,10 +64,10 @@ func (p *UserBindProxy) read(conn *ice.Conn) {
 		if err != nil {
 			if errors.Is(err, ice.ErrClosed) || errors.Is(err, io.EOF) {
 				return
-			} else {
-				p.logger.Error("Failed to read from ICE connection", zap.Error(err))
-				continue
 			}
+
+			p.logger.Error("Failed to read from ICE connection", zap.Error(err))
+			continue
 		}
 
 		if err := p.bind.OnData(buf[:n], p.endpoint); err != nil {

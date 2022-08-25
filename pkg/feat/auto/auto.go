@@ -73,16 +73,16 @@ func (a *AutoConfig) Close() error {
 	return nil
 }
 
-func (s *AutoConfig) OnInterfaceAdded(i *core.Interface) {
-	logger := s.logger.With(zap.String("intf", i.Name()))
+func (a *AutoConfig) OnInterfaceAdded(i *core.Interface) {
+	logger := a.logger.With(zap.String("intf", i.Name()))
 
-	if err := s.fixupInterface(i); err != nil {
+	if err := a.fixupInterface(i); err != nil {
 		logger.Error("Failed to fix interface", zap.Error(err))
 	}
 
 	// Add link local addresses
 	if err := addLinkLocalAddresses(i.KernelDevice, i.PublicKey()); err != nil {
-		s.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+		a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
 	}
 
 	// Set link up
@@ -91,9 +91,9 @@ func (s *AutoConfig) OnInterfaceAdded(i *core.Interface) {
 	}
 }
 
-func (s *AutoConfig) OnInterfaceRemoved(i *core.Interface) {}
+func (a *AutoConfig) OnInterfaceRemoved(i *core.Interface) {}
 
-func (s *AutoConfig) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
+func (a *AutoConfig) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 
 	// Update link-local addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
@@ -101,17 +101,17 @@ func (s *AutoConfig) OnInterfaceModified(i *core.Interface, old *wg.Device, mod 
 		newPk := i.PublicKey()
 
 		if err := deleteLinkLocalAddresses(i.KernelDevice, oldPk); err != nil {
-			s.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+			a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
 		}
 
 		if err := addLinkLocalAddresses(i.KernelDevice, newPk); err != nil {
-			s.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+			a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
 		}
 	}
 }
 
-func (s *AutoConfig) OnPeerAdded(p *core.Peer) {
-	logger := s.logger.With(
+func (a *AutoConfig) OnPeerAdded(p *core.Peer) {
+	logger := a.logger.With(
 		zap.String("intf", p.Interface.Name()),
 		zap.Any("peer", p.PublicKey()))
 
@@ -131,16 +131,16 @@ func (s *AutoConfig) OnPeerAdded(p *core.Peer) {
 	}
 }
 
-func (s *AutoConfig) OnPeerRemoved(p *core.Peer) {}
+func (a *AutoConfig) OnPeerRemoved(p *core.Peer) {}
 
-func (s *AutoConfig) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (a *AutoConfig) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 
 }
 
 // fixupInterface fixes the WireGuard device configuration by applying missing settings
-func (s *AutoConfig) fixupInterface(i *core.Interface) error {
+func (a *AutoConfig) fixupInterface(i *core.Interface) error {
 	cfg := wgtypes.Config{}
-	logger := s.logger.With(zap.String("intf", i.Name()))
+	logger := a.logger.With(zap.String("intf", i.Name()))
 
 	if !i.PrivateKey().IsSet() {
 		if i.Type != wgtypes.Userspace {
@@ -158,7 +158,7 @@ func (s *AutoConfig) fixupInterface(i *core.Interface) error {
 	if i.ListenPort == 0 {
 		logger.Warn("Device has no listen port. Setting a random one..")
 
-		port, err := util.FindNextPortToListen("udp", s.config.WireGuard.Port.Min, s.config.WireGuard.Port.Max)
+		port, err := util.FindNextPortToListen("udp", a.config.WireGuard.Port.Min, a.config.WireGuard.Port.Max)
 		if err != nil {
 			return fmt.Errorf("failed set listen port: %w", err)
 		}
@@ -167,7 +167,7 @@ func (s *AutoConfig) fixupInterface(i *core.Interface) error {
 	}
 
 	if cfg.ListenPort != nil || cfg.PrivateKey != nil {
-		if err := s.client.ConfigureDevice(i.Name(), cfg); err != nil {
+		if err := a.client.ConfigureDevice(i.Name(), cfg); err != nil {
 			return fmt.Errorf("failed to configure device: %w", err)
 		}
 	}
