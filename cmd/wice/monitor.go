@@ -44,7 +44,7 @@ out:
 			logger.Debug("Received signal", zap.Any("signal", sig))
 			break out
 
-		case evt := <-client.Events:
+		case evt := <-rpcClient.Events:
 			switch format {
 			case config.OutputFormatCSV:
 			case config.OutputFormatJSON:
