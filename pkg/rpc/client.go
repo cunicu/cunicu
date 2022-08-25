@@ -79,7 +79,7 @@ func Connect(path string) (*Client, error) {
 
 	go client.streamEvents()
 
-	_, err = client.UnWait(context.Background(), &pb.UnWaitParams{})
+	_, err = client.UnWait(context.Background(), &pb.Empty{})
 	if sts := status.Convert(err); sts != nil && sts.Code() != codes.AlreadyExists {
 		return nil, fmt.Errorf("failed RPC request: %w", err)
 	}
@@ -102,7 +102,7 @@ func (c *Client) streamEvents() {
 	c.Events = make(chan *pb.Event, 100)
 	defer close(c.Events)
 
-	stream, err := c.StreamEvents(context.Background(), &pb.StreamEventsParams{})
+	stream, err := c.StreamEvents(context.Background(), &pb.Empty{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
 		return

@@ -22,9 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SocketClient interface {
-	StreamEvents(ctx context.Context, in *StreamEventsParams, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
-	UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Empty, error)
-	Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Empty, error)
+	StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
+	UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type socketClient struct {
@@ -35,7 +35,7 @@ func NewSocketClient(cc grpc.ClientConnInterface) SocketClient {
 	return &socketClient{cc}
 }
 
-func (c *socketClient) StreamEvents(ctx context.Context, in *StreamEventsParams, opts ...grpc.CallOption) (Socket_StreamEventsClient, error) {
+func (c *socketClient) StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Socket_StreamEventsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Socket_ServiceDesc.Streams[0], "/wice.Socket/StreamEvents", opts...)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (x *socketStreamEventsClient) Recv() (*Event, error) {
 	return m, nil
 }
 
-func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grpc.CallOption) (*Empty, error) {
+func (c *socketClient) UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Socket/UnWait", in, out, opts...)
 	if err != nil {
@@ -76,7 +76,7 @@ func (c *socketClient) UnWait(ctx context.Context, in *UnWaitParams, opts ...grp
 	return out, nil
 }
 
-func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.CallOption) (*Empty, error) {
+func (c *socketClient) Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Socket/Stop", in, out, opts...)
 	if err != nil {
@@ -89,9 +89,9 @@ func (c *socketClient) Stop(ctx context.Context, in *StopParams, opts ...grpc.Ca
 // All implementations must embed UnimplementedSocketServer
 // for forward compatibility
 type SocketServer interface {
-	StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error
-	UnWait(context.Context, *UnWaitParams) (*Empty, error)
-	Stop(context.Context, *StopParams) (*Empty, error)
+	StreamEvents(*Empty, Socket_StreamEventsServer) error
+	UnWait(context.Context, *Empty) (*Empty, error)
+	Stop(context.Context, *Empty) (*Empty, error)
 	mustEmbedUnimplementedSocketServer()
 }
 
@@ -99,13 +99,13 @@ type SocketServer interface {
 type UnimplementedSocketServer struct {
 }
 
-func (UnimplementedSocketServer) StreamEvents(*StreamEventsParams, Socket_StreamEventsServer) error {
+func (UnimplementedSocketServer) StreamEvents(*Empty, Socket_StreamEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvents not implemented")
 }
-func (UnimplementedSocketServer) UnWait(context.Context, *UnWaitParams) (*Empty, error) {
+func (UnimplementedSocketServer) UnWait(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnWait not implemented")
 }
-func (UnimplementedSocketServer) Stop(context.Context, *StopParams) (*Empty, error) {
+func (UnimplementedSocketServer) Stop(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
 func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
@@ -122,7 +122,7 @@ func RegisterSocketServer(s grpc.ServiceRegistrar, srv SocketServer) {
 }
 
 func _Socket_StreamEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(StreamEventsParams)
+	m := new(Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (x *socketStreamEventsServer) Send(m *Event) error {
 }
 
 func _Socket_UnWait_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnWaitParams)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -155,13 +155,13 @@ func _Socket_UnWait_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/wice.Socket/UnWait",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).UnWait(ctx, req.(*UnWaitParams))
+		return srv.(SocketServer).UnWait(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Socket_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StopParams)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func _Socket_Stop_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/wice.Socket/Stop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).Stop(ctx, req.(*StopParams))
+		return srv.(SocketServer).Stop(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -208,7 +208,7 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WatcherClient interface {
-	Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Empty, error)
+	Sync(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error)
 	RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Empty, error)
 	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
@@ -227,7 +227,7 @@ func NewWatcherClient(cc grpc.ClientConnInterface) WatcherClient {
 	return &watcherClient{cc}
 }
 
-func (c *watcherClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Empty, error) {
+func (c *watcherClient) Sync(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/Sync", in, out, opts...)
 	if err != nil {
@@ -303,7 +303,7 @@ func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalin
 // All implementations must embed UnimplementedWatcherServer
 // for forward compatibility
 type WatcherServer interface {
-	Sync(context.Context, *SyncParams) (*Empty, error)
+	Sync(context.Context, *Empty) (*Empty, error)
 	GetStatus(context.Context, *StatusParams) (*StatusResp, error)
 	RemoveInterface(context.Context, *RemoveInterfaceParams) (*Empty, error)
 	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
@@ -319,7 +319,7 @@ type WatcherServer interface {
 type UnimplementedWatcherServer struct {
 }
 
-func (UnimplementedWatcherServer) Sync(context.Context, *SyncParams) (*Empty, error) {
+func (UnimplementedWatcherServer) Sync(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
 func (UnimplementedWatcherServer) GetStatus(context.Context, *StatusParams) (*StatusResp, error) {
@@ -357,7 +357,7 @@ func RegisterWatcherServer(s grpc.ServiceRegistrar, srv WatcherServer) {
 }
 
 func _Watcher_Sync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SyncParams)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func _Watcher_Sync_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/wice.Watcher/Sync",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WatcherServer).Sync(ctx, req.(*SyncParams))
+		return srv.(WatcherServer).Sync(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
