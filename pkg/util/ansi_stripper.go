@@ -15,3 +15,7 @@ func (a *ANSIStripper) Write(p []byte) (int, error) {
 	line := stripANSI.ReplaceAll(p, []byte{})
 	return a.Writer.Write(line)
 }
+
+func StripANSI(s string) string {
+	return stripANSI.ReplaceAllString(s, "")
+}
