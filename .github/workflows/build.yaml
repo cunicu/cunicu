@@ -91,7 +91,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install dependencies
-      if: ${{ matrix.target_os == 'linux' }}
+      if: ${{ matrix.host_os == 'linux' }}
       run: sudo apt-get install -y
             coturn
             protobuf-compiler
@@ -99,14 +99,14 @@ jobs:
             libpcap-dev
 
     - name: Install dependencies
-      if: ${{ matrix.target_os == 'darwin' }}
+      if: ${{ matrix.host_os == 'darwin' }}
       run: brew install
             protobuf
             make
             libpcap
 
     - name: Install dependencies
-      if: ${{ matrix.target_os == 'windows' }}
+      if: ${{ matrix.host_os == 'windows' }}
       run: choco install
             protoc
             make

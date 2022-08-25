@@ -15,7 +15,7 @@ ifeq ($(GOOS),linux)
 endif
 
 GINKGO_PKG ?= ./...
-GINKGO_OPTS += --compilers=$(shell nproc) \
+GINKGO_OPTS += --compilers=2 \
 			   --keep-going \
 			   --timeout=15m \
 			   --trace \
@@ -26,8 +26,7 @@ GINKGO_OPTS += --compilers=$(shell nproc) \
 			   --output-dir=./test/logs \
 			   --randomize-all \
 			   --randomize-suites \
-			   $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG) \
-			   -- $(GINKGO_TEST_OPTS)
+			   $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG) -- $(GINKGO_TEST_OPTS)
 
 all: wice
 
