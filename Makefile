@@ -14,19 +14,16 @@ ifeq ($(GOOS),linux)
     PKGS += ./test/...
 endif
 
-GINKGO_PKG ?= ./...
-GINKGO_OPTS += --compilers=2 \
+GINKGO_OPTS =  --compilers=2 \
 			   --keep-going \
 			   --timeout=15m \
 			   --trace \
 			   --cover \
 			   --coverpkg=./... \
-			   --coverprofile=coverprofile.out \
 			   --keep-separate-coverprofiles \
-			   --output-dir=./test/logs \
 			   --randomize-all \
 			   --randomize-suites \
-			   $(GINKGO_EXTRA_OPTS) $(GINKGO_PKG) -- $(GINKGO_TEST_OPTS)
+			   $(GINKGO_EXTRA_OPTS)
 
 all: wice
 
@@ -35,12 +32,16 @@ wice:
 	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/wice
 
 tests:
-	ginkgo run $(GINKGO_OPTS)
+	ginkgo run $(GINKGO_OPTS) --procs=2 --coverprofile=coverprofile.out ./pkg/...
+
+tests-integration:
+	mkdir -p test/logs
+	ginkgo run $(GINKGO_OPTS) --output-dir=./test/logs --coverprofile=coverprofile_integration.out ./test
 
 coverprofile_merged.out: $(shell find . -name "*.out" -type f)
 	gocov-merger -o $@ $^
 
-lcov_merged.info: coverprofile_merged.out
+lcov.info: coverprofile_merged.out
 	gcov2lcov > $@ < $^ 
 
 coverage: lcov.info
@@ -65,6 +66,7 @@ install-deps:
 	go install github.com/jandelgado/gcov2lcov@latest
 
 clean:
-	rm -f *.out wice lcov.info
+	find . -name "*.out" -exec rm {} \;
+	rm -rf wice lcov.info test/logs/
 
 .PHONY: all wice tests tests-watch coverage clean vet staticcheck install-deps

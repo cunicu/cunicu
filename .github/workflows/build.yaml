@@ -135,11 +135,11 @@ jobs:
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
-      run: make tests GINKGO_EXTRA_OPTS=--procs=2 GINKGO_PKG=./pkg/...
+      run: make tests
 
-    - name: Run tests requiring root privileges
+    - name: Run integration tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
-      run: sudo --preserve-env env "PATH=$PATH" make tests GINKGO_PKG=./test/...
+      run: sudo --preserve-env env "PATH=$PATH" make tests-integration
 
     - name: Upload logs an packet captures as artifacts
       if: ${{ always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
