@@ -87,6 +87,8 @@ func (i *WireGuardInterface) WriteConfig() error {
 	wgcpath := i.Agent.Shadowed(i.Agent.WireGuardConfigPath)
 
 	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
+
+	//#nosec G304 -- Test code is not controllable by attackers
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %w", err)
@@ -186,14 +188,14 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 	case err := <-errs:
 		if err != nil {
 			return fmt.Errorf("ping failed with exit code %d: %w\n%s", cmd.ProcessState.ExitCode(), err, out)
-		} else {
-			i.Agent.logger.Info("Pinged successfully",
-				zap.String("intf", i.Name),
-				zap.String("peer", peer.Agent.Name()),
-				zap.String("peer_intf", peer.Name))
-
-			return nil
 		}
+
+		i.Agent.logger.Info("Pinged successfully",
+			zap.String("intf", i.Name),
+			zap.String("peer", peer.Agent.Name()),
+			zap.String("peer_intf", peer.Name))
+
+		return nil
 	}
 }
 

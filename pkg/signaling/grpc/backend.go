@@ -122,7 +122,8 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 
 	go func() {
 		for {
-			if env, err := stream.Recv(); err != nil {
+			env, err := stream.Recv()
+			if err != nil {
 				b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
 
 				if err := b.subscribeFromServer(ctx, pk); err != nil {
@@ -130,10 +131,10 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 				}
 
 				return
-			} else {
-				if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {
-					b.logger.Error("Failed to decrypt message", zap.Error(err))
-				}
+			}
+
+			if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {
+				b.logger.Error("Failed to decrypt message", zap.Error(err))
 			}
 		}
 	}()
