@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,32 +11,42 @@ import (
 )
 
 var (
+	v4, v6 bool
+
 	addressesCmd = &cobra.Command{
 		Use:    "addresses",
-		Short:  "Calculate the IPv6 link-local address from a public key",
+		Short:  "Calculate link-local IPv4 and IPv6 addresses from a WireGuard X25519 public key",
 		Run:    addresses,
 		Hidden: true,
 	}
 )
 
 func init() {
+	pf := addressesCmd.PersistentFlags()
+	pf.BoolVarP(&v4, "ipv4", "4", false, "Print IPv4 address")
+	pf.BoolVarP(&v6, "ipv6", "6", false, "Print IPv6 address")
+
 	rootCmd.AddCommand(addressesCmd)
 }
 
 func addresses(cmd *cobra.Command, args []string) {
 	logger := zap.L()
 
-	reader := bufio.NewReader(os.Stdin)
-	keyB64, err := reader.ReadString('\n')
+	keyB64, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		logger.Fatal("Failed to read from stdin", zap.Error(err))
 	}
 
-	key, err := crypto.ParseKey(keyB64)
+	key, err := crypto.ParseKey(string(keyB64))
 	if err != nil {
-		logger.Fatal("Failed to parse key", zap.Error(err), zap.String("key", keyB64))
+		logger.Fatal("Failed to parse key", zap.Error(err), zap.String("key", string(keyB64)))
 	}
 
-	fmt.Println(key.IPv6Address().String())
-	fmt.Println(key.IPv4Address().String())
+	if v6 || (!v4 && !v6) {
+		fmt.Println(key.IPv6Address().String())
+	}
+
+	if v4 || (!v4 && !v6) {
+		fmt.Println(key.IPv4Address().String())
+	}
 }
