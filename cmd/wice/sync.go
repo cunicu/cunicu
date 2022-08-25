@@ -23,7 +23,7 @@ func init() {
 }
 
 func sync(cmd *cobra.Command, args []string) error {
-	_, err := rpcClient.Sync(context.Background(), &pb.SyncParams{})
+	_, err := rpcClient.Sync(context.Background(), &pb.Empty{})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}

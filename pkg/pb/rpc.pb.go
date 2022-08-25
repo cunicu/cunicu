@@ -122,158 +122,6 @@ func (x *StatusParams) GetPeer() []byte {
 	return nil
 }
 
-type UnWaitParams struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *UnWaitParams) Reset() {
-	*x = UnWaitParams{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UnWaitParams) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnWaitParams) ProtoMessage() {}
-
-func (x *UnWaitParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnWaitParams.ProtoReflect.Descriptor instead.
-func (*UnWaitParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{2}
-}
-
-type StopParams struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *StopParams) Reset() {
-	*x = StopParams{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *StopParams) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StopParams) ProtoMessage() {}
-
-func (x *StopParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StopParams.ProtoReflect.Descriptor instead.
-func (*StopParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{3}
-}
-
-type StreamEventsParams struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *StreamEventsParams) Reset() {
-	*x = StreamEventsParams{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *StreamEventsParams) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StreamEventsParams) ProtoMessage() {}
-
-func (x *StreamEventsParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StreamEventsParams.ProtoReflect.Descriptor instead.
-func (*StreamEventsParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{4}
-}
-
-type SyncParams struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *SyncParams) Reset() {
-	*x = SyncParams{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SyncParams) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SyncParams) ProtoMessage() {}
-
-func (x *SyncParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SyncParams.ProtoReflect.Descriptor instead.
-func (*SyncParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{5}
-}
-
 type RemoveInterfaceParams struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -285,7 +133,7 @@ type RemoveInterfaceParams struct {
 func (x *RemoveInterfaceParams) Reset() {
 	*x = RemoveInterfaceParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[6]
+		mi := &file_rpc_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -298,7 +146,7 @@ func (x *RemoveInterfaceParams) String() string {
 func (*RemoveInterfaceParams) ProtoMessage() {}
 
 func (x *RemoveInterfaceParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[6]
+	mi := &file_rpc_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -311,7 +159,7 @@ func (x *RemoveInterfaceParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveInterfaceParams.ProtoReflect.Descriptor instead.
 func (*RemoveInterfaceParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{6}
+	return file_rpc_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RemoveInterfaceParams) GetIntf() string {
@@ -333,7 +181,7 @@ type RestartPeerParams struct {
 func (x *RestartPeerParams) Reset() {
 	*x = RestartPeerParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[7]
+		mi := &file_rpc_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -346,7 +194,7 @@ func (x *RestartPeerParams) String() string {
 func (*RestartPeerParams) ProtoMessage() {}
 
 func (x *RestartPeerParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[7]
+	mi := &file_rpc_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -359,7 +207,7 @@ func (x *RestartPeerParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RestartPeerParams.ProtoReflect.Descriptor instead.
 func (*RestartPeerParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{7}
+	return file_rpc_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RestartPeerParams) GetIntf() string {
@@ -388,7 +236,7 @@ type InterfaceConfigParams struct {
 func (x *InterfaceConfigParams) Reset() {
 	*x = InterfaceConfigParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[8]
+		mi := &file_rpc_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -401,7 +249,7 @@ func (x *InterfaceConfigParams) String() string {
 func (*InterfaceConfigParams) ProtoMessage() {}
 
 func (x *InterfaceConfigParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[8]
+	mi := &file_rpc_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -414,7 +262,7 @@ func (x *InterfaceConfigParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InterfaceConfigParams.ProtoReflect.Descriptor instead.
 func (*InterfaceConfigParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{8}
+	return file_rpc_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *InterfaceConfigParams) GetName() string {
@@ -445,7 +293,7 @@ type GetSignalingMessageParams struct {
 func (x *GetSignalingMessageParams) Reset() {
 	*x = GetSignalingMessageParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[9]
+		mi := &file_rpc_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -458,7 +306,7 @@ func (x *GetSignalingMessageParams) String() string {
 func (*GetSignalingMessageParams) ProtoMessage() {}
 
 func (x *GetSignalingMessageParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[9]
+	mi := &file_rpc_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -471,7 +319,7 @@ func (x *GetSignalingMessageParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSignalingMessageParams.ProtoReflect.Descriptor instead.
 func (*GetSignalingMessageParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{9}
+	return file_rpc_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetSignalingMessageParams) GetIntf() string {
@@ -499,7 +347,7 @@ type GetSignalingMessageResp struct {
 func (x *GetSignalingMessageResp) Reset() {
 	*x = GetSignalingMessageResp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[10]
+		mi := &file_rpc_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -512,7 +360,7 @@ func (x *GetSignalingMessageResp) String() string {
 func (*GetSignalingMessageResp) ProtoMessage() {}
 
 func (x *GetSignalingMessageResp) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[10]
+	mi := &file_rpc_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +373,7 @@ func (x *GetSignalingMessageResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSignalingMessageResp.ProtoReflect.Descriptor instead.
 func (*GetSignalingMessageResp) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{10}
+	return file_rpc_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetSignalingMessageResp) GetEnvelope() *SignalingEnvelope {
@@ -546,7 +394,7 @@ type PutSignalingMessageParams struct {
 func (x *PutSignalingMessageParams) Reset() {
 	*x = PutSignalingMessageParams{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[11]
+		mi := &file_rpc_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -559,7 +407,7 @@ func (x *PutSignalingMessageParams) String() string {
 func (*PutSignalingMessageParams) ProtoMessage() {}
 
 func (x *PutSignalingMessageParams) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[11]
+	mi := &file_rpc_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -572,7 +420,7 @@ func (x *PutSignalingMessageParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PutSignalingMessageParams.ProtoReflect.Descriptor instead.
 func (*PutSignalingMessageParams) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{11}
+	return file_rpc_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *PutSignalingMessageParams) GetEnvelope() *SignalingEnvelope {
@@ -598,50 +446,44 @@ var file_rpc_proto_rawDesc = []byte{
 	0x74, 0x61, 0x74, 0x75, 0x73, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x69,
 	0x6e, 0x74, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x12,
 	0x12, 0x0a, 0x04, 0x70, 0x65, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x70,
-	0x65, 0x65, 0x72, 0x22, 0x0e, 0x0a, 0x0c, 0x55, 0x6e, 0x57, 0x61, 0x69, 0x74, 0x50, 0x61, 0x72,
-	0x61, 0x6d, 0x73, 0x22, 0x0c, 0x0a, 0x0a, 0x53, 0x74, 0x6f, 0x70, 0x50, 0x61, 0x72, 0x61, 0x6d,
-	0x73, 0x22, 0x14, 0x0a, 0x12, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x73, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x0c, 0x0a, 0x0a, 0x53, 0x79, 0x6e, 0x63, 0x50,
-	0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x2b, 0x0a, 0x15, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x49,
-	0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12,
-	0x0a, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e,
-	0x74, 0x66, 0x22, 0x3b, 0x0a, 0x11, 0x52, 0x65, 0x73, 0x74, 0x61, 0x72, 0x74, 0x50, 0x65, 0x65,
-	0x72, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x70,
-	0x65, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x70, 0x65, 0x65, 0x72, 0x22,
-	0x60, 0x0a, 0x15, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x43, 0x6f, 0x6e, 0x66,
-	0x69, 0x67, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x33, 0x0a, 0x09,
-	0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x15, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65,
-	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63,
-	0x65, 0x22, 0x43, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e,
-	0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12,
-	0x0a, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e,
-	0x74, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x65, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x04, 0x70, 0x65, 0x65, 0x72, 0x22, 0x4e, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x53, 0x69, 0x67,
-	0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x12, 0x33, 0x0a, 0x08, 0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x18, 0x01, 0x20,
+	0x65, 0x65, 0x72, 0x22, 0x2b, 0x0a, 0x15, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x49, 0x6e, 0x74,
+	0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04,
+	0x69, 0x6e, 0x74, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e, 0x74, 0x66,
+	0x22, 0x3b, 0x0a, 0x11, 0x52, 0x65, 0x73, 0x74, 0x61, 0x72, 0x74, 0x50, 0x65, 0x65, 0x72, 0x50,
+	0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e, 0x74, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x65, 0x65,
+	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x70, 0x65, 0x65, 0x72, 0x22, 0x60, 0x0a,
+	0x15, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x33, 0x0a, 0x09, 0x69, 0x6e,
+	0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
+	0x77, 0x69, 0x63, 0x65, 0x2e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x43, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x52, 0x09, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x22,
+	0x43, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x12, 0x0a, 0x04,
+	0x69, 0x6e, 0x74, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x69, 0x6e, 0x74, 0x66,
+	0x12, 0x12, 0x0a, 0x04, 0x70, 0x65, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04,
+	0x70, 0x65, 0x65, 0x72, 0x22, 0x4e, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x53, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x12,
+	0x33, 0x0a, 0x08, 0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x17, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x69,
+	0x6e, 0x67, 0x45, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x52, 0x08, 0x65, 0x6e, 0x76, 0x65,
+	0x6c, 0x6f, 0x70, 0x65, 0x22, 0x50, 0x0a, 0x19, 0x50, 0x75, 0x74, 0x53, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d,
+	0x73, 0x12, 0x33, 0x0a, 0x08, 0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61,
 	0x6c, 0x69, 0x6e, 0x67, 0x45, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x52, 0x08, 0x65, 0x6e,
-	0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x22, 0x50, 0x0a, 0x19, 0x50, 0x75, 0x74, 0x53, 0x69, 0x67,
-	0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x50, 0x61, 0x72,
-	0x61, 0x6d, 0x73, 0x12, 0x33, 0x0a, 0x08, 0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x69, 0x67,
-	0x6e, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x45, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x52, 0x08,
-	0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x32, 0x99, 0x01, 0x0a, 0x06, 0x53, 0x6f, 0x63,
-	0x6b, 0x65, 0x74, 0x12, 0x39, 0x0a, 0x0c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x73, 0x12, 0x18, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74, 0x72, 0x65, 0x61,
-	0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x0b, 0x2e,
-	0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x00, 0x30, 0x01, 0x12, 0x2b,
-	0x0a, 0x06, 0x55, 0x6e, 0x57, 0x61, 0x69, 0x74, 0x12, 0x12, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e,
-	0x55, 0x6e, 0x57, 0x61, 0x69, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x0b, 0x2e, 0x77,
-	0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x04, 0x53,
-	0x74, 0x6f, 0x70, 0x12, 0x10, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74, 0x6f, 0x70, 0x50,
-	0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70,
-	0x74, 0x79, 0x22, 0x00, 0x32, 0x8d, 0x04, 0x0a, 0x07, 0x57, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72,
-	0x12, 0x27, 0x0a, 0x04, 0x53, 0x79, 0x6e, 0x63, 0x12, 0x10, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e,
-	0x53, 0x79, 0x6e, 0x63, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x0b, 0x2e, 0x77, 0x69, 0x63,
+	0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x32, 0x80, 0x01, 0x0a, 0x06, 0x53, 0x6f, 0x63, 0x6b, 0x65,
+	0x74, 0x12, 0x2c, 0x0a, 0x0c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x73, 0x12, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0b,
+	0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x00, 0x30, 0x01, 0x12,
+	0x24, 0x0a, 0x06, 0x55, 0x6e, 0x57, 0x61, 0x69, 0x74, 0x12, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65,
+	0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d,
+	0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x22, 0x0a, 0x04, 0x53, 0x74, 0x6f, 0x70, 0x12, 0x0b, 0x2e,
+	0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0b, 0x2e, 0x77, 0x69, 0x63,
+	0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x32, 0x88, 0x04, 0x0a, 0x07, 0x57, 0x61,
+	0x74, 0x63, 0x68, 0x65, 0x72, 0x12, 0x22, 0x0a, 0x04, 0x53, 0x79, 0x6e, 0x63, 0x12, 0x0b, 0x2e,
+	0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0b, 0x2e, 0x77, 0x69, 0x63,
 	0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x33, 0x0a, 0x09, 0x47, 0x65, 0x74,
 	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x12, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74,
 	0x61, 0x74, 0x75, 0x73, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x10, 0x2e, 0x77, 0x69, 0x63,
@@ -705,59 +547,55 @@ func file_rpc_proto_rawDescGZIP() []byte {
 	return file_rpc_proto_rawDescData
 }
 
-var file_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_rpc_proto_goTypes = []interface{}{
 	(*StatusResp)(nil),                // 0: wice.StatusResp
 	(*StatusParams)(nil),              // 1: wice.StatusParams
-	(*UnWaitParams)(nil),              // 2: wice.UnWaitParams
-	(*StopParams)(nil),                // 3: wice.StopParams
-	(*StreamEventsParams)(nil),        // 4: wice.StreamEventsParams
-	(*SyncParams)(nil),                // 5: wice.SyncParams
-	(*RemoveInterfaceParams)(nil),     // 6: wice.RemoveInterfaceParams
-	(*RestartPeerParams)(nil),         // 7: wice.RestartPeerParams
-	(*InterfaceConfigParams)(nil),     // 8: wice.InterfaceConfigParams
-	(*GetSignalingMessageParams)(nil), // 9: wice.GetSignalingMessageParams
-	(*GetSignalingMessageResp)(nil),   // 10: wice.GetSignalingMessageResp
-	(*PutSignalingMessageParams)(nil), // 11: wice.PutSignalingMessageParams
-	(*Interface)(nil),                 // 12: wice.Interface
-	(*InterfaceConfig)(nil),           // 13: wice.InterfaceConfig
-	(*SignalingEnvelope)(nil),         // 14: wice.SignalingEnvelope
-	(*Event)(nil),                     // 15: wice.Event
-	(*Empty)(nil),                     // 16: wice.Empty
+	(*RemoveInterfaceParams)(nil),     // 2: wice.RemoveInterfaceParams
+	(*RestartPeerParams)(nil),         // 3: wice.RestartPeerParams
+	(*InterfaceConfigParams)(nil),     // 4: wice.InterfaceConfigParams
+	(*GetSignalingMessageParams)(nil), // 5: wice.GetSignalingMessageParams
+	(*GetSignalingMessageResp)(nil),   // 6: wice.GetSignalingMessageResp
+	(*PutSignalingMessageParams)(nil), // 7: wice.PutSignalingMessageParams
+	(*Interface)(nil),                 // 8: wice.Interface
+	(*InterfaceConfig)(nil),           // 9: wice.InterfaceConfig
+	(*SignalingEnvelope)(nil),         // 10: wice.SignalingEnvelope
+	(*Empty)(nil),                     // 11: wice.Empty
+	(*Event)(nil),                     // 12: wice.Event
 }
 var file_rpc_proto_depIdxs = []int32{
-	12, // 0: wice.StatusResp.interfaces:type_name -> wice.Interface
-	13, // 1: wice.InterfaceConfigParams.interface:type_name -> wice.InterfaceConfig
-	14, // 2: wice.GetSignalingMessageResp.envelope:type_name -> wice.SignalingEnvelope
-	14, // 3: wice.PutSignalingMessageParams.envelope:type_name -> wice.SignalingEnvelope
-	4,  // 4: wice.Socket.StreamEvents:input_type -> wice.StreamEventsParams
-	2,  // 5: wice.Socket.UnWait:input_type -> wice.UnWaitParams
-	3,  // 6: wice.Socket.Stop:input_type -> wice.StopParams
-	5,  // 7: wice.Watcher.Sync:input_type -> wice.SyncParams
+	8,  // 0: wice.StatusResp.interfaces:type_name -> wice.Interface
+	9,  // 1: wice.InterfaceConfigParams.interface:type_name -> wice.InterfaceConfig
+	10, // 2: wice.GetSignalingMessageResp.envelope:type_name -> wice.SignalingEnvelope
+	10, // 3: wice.PutSignalingMessageParams.envelope:type_name -> wice.SignalingEnvelope
+	11, // 4: wice.Socket.StreamEvents:input_type -> wice.Empty
+	11, // 5: wice.Socket.UnWait:input_type -> wice.Empty
+	11, // 6: wice.Socket.Stop:input_type -> wice.Empty
+	11, // 7: wice.Watcher.Sync:input_type -> wice.Empty
 	1,  // 8: wice.Watcher.GetStatus:input_type -> wice.StatusParams
-	6,  // 9: wice.Watcher.RemoveInterface:input_type -> wice.RemoveInterfaceParams
-	8,  // 10: wice.Watcher.SyncInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	8,  // 11: wice.Watcher.AddInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	8,  // 12: wice.Watcher.SetInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	9,  // 13: wice.Watcher.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
-	11, // 14: wice.Watcher.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
-	7,  // 15: wice.EndpointDiscoverySocket.RestartPeer:input_type -> wice.RestartPeerParams
-	9,  // 16: wice.SignalingSocket.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
-	11, // 17: wice.SignalingSocket.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
-	15, // 18: wice.Socket.StreamEvents:output_type -> wice.Event
-	16, // 19: wice.Socket.UnWait:output_type -> wice.Empty
-	16, // 20: wice.Socket.Stop:output_type -> wice.Empty
-	16, // 21: wice.Watcher.Sync:output_type -> wice.Empty
+	2,  // 9: wice.Watcher.RemoveInterface:input_type -> wice.RemoveInterfaceParams
+	4,  // 10: wice.Watcher.SyncInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	4,  // 11: wice.Watcher.AddInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	4,  // 12: wice.Watcher.SetInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	5,  // 13: wice.Watcher.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
+	7,  // 14: wice.Watcher.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
+	3,  // 15: wice.EndpointDiscoverySocket.RestartPeer:input_type -> wice.RestartPeerParams
+	5,  // 16: wice.SignalingSocket.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
+	7,  // 17: wice.SignalingSocket.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
+	12, // 18: wice.Socket.StreamEvents:output_type -> wice.Event
+	11, // 19: wice.Socket.UnWait:output_type -> wice.Empty
+	11, // 20: wice.Socket.Stop:output_type -> wice.Empty
+	11, // 21: wice.Watcher.Sync:output_type -> wice.Empty
 	0,  // 22: wice.Watcher.GetStatus:output_type -> wice.StatusResp
-	16, // 23: wice.Watcher.RemoveInterface:output_type -> wice.Empty
-	16, // 24: wice.Watcher.SyncInterfaceConfig:output_type -> wice.Empty
-	16, // 25: wice.Watcher.AddInterfaceConfig:output_type -> wice.Empty
-	16, // 26: wice.Watcher.SetInterfaceConfig:output_type -> wice.Empty
-	10, // 27: wice.Watcher.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
-	16, // 28: wice.Watcher.PutSignalingMessage:output_type -> wice.Empty
-	16, // 29: wice.EndpointDiscoverySocket.RestartPeer:output_type -> wice.Empty
-	10, // 30: wice.SignalingSocket.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
-	16, // 31: wice.SignalingSocket.PutSignalingMessage:output_type -> wice.Empty
+	11, // 23: wice.Watcher.RemoveInterface:output_type -> wice.Empty
+	11, // 24: wice.Watcher.SyncInterfaceConfig:output_type -> wice.Empty
+	11, // 25: wice.Watcher.AddInterfaceConfig:output_type -> wice.Empty
+	11, // 26: wice.Watcher.SetInterfaceConfig:output_type -> wice.Empty
+	6,  // 27: wice.Watcher.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
+	11, // 28: wice.Watcher.PutSignalingMessage:output_type -> wice.Empty
+	11, // 29: wice.EndpointDiscoverySocket.RestartPeer:output_type -> wice.Empty
+	6,  // 30: wice.SignalingSocket.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
+	11, // 31: wice.SignalingSocket.PutSignalingMessage:output_type -> wice.Empty
 	18, // [18:32] is the sub-list for method output_type
 	4,  // [4:18] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
@@ -801,54 +639,6 @@ func file_rpc_proto_init() {
 			}
 		}
 		file_rpc_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnWaitParams); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StopParams); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamEventsParams); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SyncParams); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RemoveInterfaceParams); i {
 			case 0:
 				return &v.state
@@ -860,7 +650,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RestartPeerParams); i {
 			case 0:
 				return &v.state
@@ -872,7 +662,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InterfaceConfigParams); i {
 			case 0:
 				return &v.state
@@ -884,7 +674,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetSignalingMessageParams); i {
 			case 0:
 				return &v.state
@@ -896,7 +686,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetSignalingMessageResp); i {
 			case 0:
 				return &v.state
@@ -908,7 +698,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PutSignalingMessageParams); i {
 			case 0:
 				return &v.state
@@ -927,7 +717,7 @@ func file_rpc_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_rpc_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   4,
 		},

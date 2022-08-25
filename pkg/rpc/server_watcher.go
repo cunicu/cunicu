@@ -79,7 +79,7 @@ func (s *WatcherServer) GetStatus(ctx context.Context, p *pb.StatusParams) (*pb.
 	}, nil
 }
 
-func (s *WatcherServer) Sync(ctx context.Context, params *pb.SyncParams) (*pb.Empty, error) {
+func (s *WatcherServer) Sync(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
 	if err := s.Watcher.Sync(); err != nil {
 		return &pb.Empty{}, status.Errorf(codes.Unknown, "failed to sync: %s", err)
 	}

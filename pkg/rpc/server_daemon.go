@@ -29,7 +29,7 @@ func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
 	return ds
 }
 
-func (s *DaemonServer) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
+func (s *DaemonServer) StreamEvents(params *pb.Empty, stream pb.Socket_StreamEventsServer) error {
 
 	// Send initial connection state of all peers
 	if s.epice != nil {
@@ -57,7 +57,7 @@ out:
 	return nil
 }
 
-func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb.Empty, error) {
+func (s *DaemonServer) UnWait(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
 	err := status.Error(codes.AlreadyExists, "RPC socket has already been unwaited")
 
 	s.waitOnce.Do(func() {
@@ -68,7 +68,7 @@ func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb
 	return &pb.Empty{}, err
 }
 
-func (s *DaemonServer) Stop(ctx context.Context, params *pb.StopParams) (*pb.Empty, error) {
+func (s *DaemonServer) Stop(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
 	s.Daemon.Stop()
 
 	return &pb.Empty{}, nil
