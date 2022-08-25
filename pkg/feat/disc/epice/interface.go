@@ -23,6 +23,9 @@ type Interface struct {
 	udpMux      ice.UDPMux
 	udpMuxSrflx ice.UniversalUDPMux
 
+	udpMuxPort      int
+	udpMuxSrflxPort int
+
 	logger *zap.Logger
 }
 
@@ -36,19 +39,18 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 
 	// Create per-interface UDPMux
 	var err error
-	var lPortHost, lPortSrflx int
 
-	if i.udpMux, lPortHost, err = proxy.CreateUDPMux(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
+	if i.udpMux, i.udpMuxPort, err = proxy.CreateUDPMux(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
 		return nil, fmt.Errorf("failed to setup host UDP mux: %w", err)
 	}
 
-	if i.udpMuxSrflx, lPortSrflx, err = proxy.CreateUniversalUDPMux(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
+	if i.udpMuxSrflx, i.udpMuxSrflxPort, err = proxy.CreateUniversalUDPMux(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
 		return nil, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
 	}
 
 	i.logger.Info("Created UDP muxes",
-		zap.Int("port-host", lPortHost),
-		zap.Int("port-srflx", lPortSrflx))
+		zap.Int("port-host", i.udpMuxPort),
+		zap.Int("port-srflx", i.udpMuxSrflxPort))
 
 	// Setup Netfilter PAT for non-userspace devices
 	if _, ok := i.KernelDevice.(*device.UserDevice); !ok {
@@ -59,11 +61,11 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 		}
 
 		// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
-		if err := i.nat.RedirectNonSTUN(lPortHost, i.ListenPort); err != nil {
+		if err := i.nat.RedirectNonSTUN(i.udpMuxPort, i.ListenPort); err != nil {
 			return nil, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 		}
 
-		if err := i.nat.RedirectNonSTUN(lPortSrflx, i.ListenPort); err != nil {
+		if err := i.nat.RedirectNonSTUN(i.udpMuxSrflxPort, i.ListenPort); err != nil {
 			return nil, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 		}
 	}
