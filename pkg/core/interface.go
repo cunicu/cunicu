@@ -162,7 +162,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 			continue
 		}
 
-		i.logger.Info("Peer removed", zap.Any("peer", p.PublicKey()))
+		i.logger.Info("Removed peer", zap.Any("peer", p.PublicKey()))
 
 		delete(i.Peers, pk)
 
@@ -174,7 +174,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	for j := range peersAdded {
 		wgp := &peersAdded[j]
 
-		i.logger.Info("Peer added", zap.Any("peer", wgp.PublicKey))
+		i.logger.Info("Added peer", zap.Any("peer", wgp.PublicKey))
 
 		p, err := NewPeer(wgp, i)
 		if err != nil {
