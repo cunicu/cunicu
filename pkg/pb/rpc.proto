@@ -50,7 +50,7 @@ message PutSignalingMessageParams {
 
 // Control socket services
 
-service Socket {
+service Daemon {
     rpc StreamEvents(Empty) returns (stream Event) {}
     rpc UnWait(Empty) returns (Empty) {}
     rpc Stop(Empty) returns (Empty) {}

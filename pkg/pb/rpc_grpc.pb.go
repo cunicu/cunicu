@@ -18,29 +18,29 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// SocketClient is the client API for Socket service.
+// DaemonClient is the client API for Daemon service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SocketClient interface {
-	StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Socket_StreamEventsClient, error)
+type DaemonClient interface {
+	StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
-type socketClient struct {
+type daemonClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSocketClient(cc grpc.ClientConnInterface) SocketClient {
-	return &socketClient{cc}
+func NewDaemonClient(cc grpc.ClientConnInterface) DaemonClient {
+	return &daemonClient{cc}
 }
 
-func (c *socketClient) StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Socket_StreamEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Socket_ServiceDesc.Streams[0], "/wice.Socket/StreamEvents", opts...)
+func (c *daemonClient) StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Daemon_ServiceDesc.Streams[0], "/wice.Daemon/StreamEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &socketStreamEventsClient{stream}
+	x := &daemonStreamEventsClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -50,16 +50,16 @@ func (c *socketClient) StreamEvents(ctx context.Context, in *Empty, opts ...grpc
 	return x, nil
 }
 
-type Socket_StreamEventsClient interface {
+type Daemon_StreamEventsClient interface {
 	Recv() (*Event, error)
 	grpc.ClientStream
 }
 
-type socketStreamEventsClient struct {
+type daemonStreamEventsClient struct {
 	grpc.ClientStream
 }
 
-func (x *socketStreamEventsClient) Recv() (*Event, error) {
+func (x *daemonStreamEventsClient) Recv() (*Event, error) {
 	m := new(Event)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -67,137 +67,137 @@ func (x *socketStreamEventsClient) Recv() (*Event, error) {
 	return m, nil
 }
 
-func (c *socketClient) UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *daemonClient) UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/wice.Socket/UnWait", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Daemon/UnWait", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *socketClient) Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *daemonClient) Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/wice.Socket/Stop", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wice.Daemon/Stop", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// SocketServer is the server API for Socket service.
-// All implementations must embed UnimplementedSocketServer
+// DaemonServer is the server API for Daemon service.
+// All implementations must embed UnimplementedDaemonServer
 // for forward compatibility
-type SocketServer interface {
-	StreamEvents(*Empty, Socket_StreamEventsServer) error
+type DaemonServer interface {
+	StreamEvents(*Empty, Daemon_StreamEventsServer) error
 	UnWait(context.Context, *Empty) (*Empty, error)
 	Stop(context.Context, *Empty) (*Empty, error)
-	mustEmbedUnimplementedSocketServer()
+	mustEmbedUnimplementedDaemonServer()
 }
 
-// UnimplementedSocketServer must be embedded to have forward compatible implementations.
-type UnimplementedSocketServer struct {
+// UnimplementedDaemonServer must be embedded to have forward compatible implementations.
+type UnimplementedDaemonServer struct {
 }
 
-func (UnimplementedSocketServer) StreamEvents(*Empty, Socket_StreamEventsServer) error {
+func (UnimplementedDaemonServer) StreamEvents(*Empty, Daemon_StreamEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvents not implemented")
 }
-func (UnimplementedSocketServer) UnWait(context.Context, *Empty) (*Empty, error) {
+func (UnimplementedDaemonServer) UnWait(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnWait not implemented")
 }
-func (UnimplementedSocketServer) Stop(context.Context, *Empty) (*Empty, error) {
+func (UnimplementedDaemonServer) Stop(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
+func (UnimplementedDaemonServer) mustEmbedUnimplementedDaemonServer() {}
 
-// UnsafeSocketServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SocketServer will
+// UnsafeDaemonServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DaemonServer will
 // result in compilation errors.
-type UnsafeSocketServer interface {
-	mustEmbedUnimplementedSocketServer()
+type UnsafeDaemonServer interface {
+	mustEmbedUnimplementedDaemonServer()
 }
 
-func RegisterSocketServer(s grpc.ServiceRegistrar, srv SocketServer) {
-	s.RegisterService(&Socket_ServiceDesc, srv)
+func RegisterDaemonServer(s grpc.ServiceRegistrar, srv DaemonServer) {
+	s.RegisterService(&Daemon_ServiceDesc, srv)
 }
 
-func _Socket_StreamEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Daemon_StreamEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SocketServer).StreamEvents(m, &socketStreamEventsServer{stream})
+	return srv.(DaemonServer).StreamEvents(m, &daemonStreamEventsServer{stream})
 }
 
-type Socket_StreamEventsServer interface {
+type Daemon_StreamEventsServer interface {
 	Send(*Event) error
 	grpc.ServerStream
 }
 
-type socketStreamEventsServer struct {
+type daemonStreamEventsServer struct {
 	grpc.ServerStream
 }
 
-func (x *socketStreamEventsServer) Send(m *Event) error {
+func (x *daemonStreamEventsServer) Send(m *Event) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Socket_UnWait_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Daemon_UnWait_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocketServer).UnWait(ctx, in)
+		return srv.(DaemonServer).UnWait(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Socket/UnWait",
+		FullMethod: "/wice.Daemon/UnWait",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).UnWait(ctx, req.(*Empty))
+		return srv.(DaemonServer).UnWait(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Socket_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Daemon_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocketServer).Stop(ctx, in)
+		return srv.(DaemonServer).Stop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.Socket/Stop",
+		FullMethod: "/wice.Daemon/Stop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocketServer).Stop(ctx, req.(*Empty))
+		return srv.(DaemonServer).Stop(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Socket_ServiceDesc is the grpc.ServiceDesc for Socket service.
+// Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Socket_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wice.Socket",
-	HandlerType: (*SocketServer)(nil),
+var Daemon_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "wice.Daemon",
+	HandlerType: (*DaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "UnWait",
-			Handler:    _Socket_UnWait_Handler,
+			Handler:    _Daemon_UnWait_Handler,
 		},
 		{
 			MethodName: "Stop",
-			Handler:    _Socket_Stop_Handler,
+			Handler:    _Daemon_Stop_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "StreamEvents",
-			Handler:       _Socket_StreamEvents_Handler,
+			Handler:       _Daemon_StreamEvents_Handler,
 			ServerStreams: true,
 		},
 	},

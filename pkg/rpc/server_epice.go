@@ -58,7 +58,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.Re
 	return &pb.Empty{}, nil
 }
 
-func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Socket_StreamEventsServer) {
+func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Daemon_StreamEventsServer) {
 	for _, p := range s.Peers {
 		e := &pb.Event{
 			Type:      pb.Event_PEER_CONNECTION_STATE_CHANGED,

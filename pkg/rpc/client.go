@@ -26,7 +26,7 @@ type Client struct {
 
 	pb.EndpointDiscoverySocketClient
 	pb.SignalingClient
-	pb.SocketClient
+	pb.DaemonClient
 	pb.WatcherClient
 
 	grpc   *grpc.ClientConn
@@ -68,7 +68,7 @@ func Connect(path string) (*Client, error) {
 	client := &Client{
 		EndpointDiscoverySocketClient: pb.NewEndpointDiscoverySocketClient(conn),
 		SignalingClient:               pb.NewSignalingClient(conn),
-		SocketClient:                  pb.NewSocketClient(conn),
+		DaemonClient:                  pb.NewDaemonClient(conn),
 		WatcherClient:                 pb.NewWatcherClient(conn),
 
 		grpc:             conn,
