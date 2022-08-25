@@ -135,7 +135,6 @@ func (c *Client) streamEvents() {
 			}
 		}
 
-		e.Log(c.logger, "Received event")
 		c.Events <- e
 	}
 }

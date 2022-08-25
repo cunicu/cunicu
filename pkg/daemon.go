@@ -160,10 +160,13 @@ out:
 	return nil
 }
 
+func (d *Daemon) Stop() {
+	close(d.stop)
+	d.logger.Debug("Stopped daemon")
+}
+
 func (d *Daemon) Close() error {
 	d.logger.Debug("Closing daemon")
-
-	close(d.stop)
 
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close interface: %w", err)
@@ -185,7 +188,7 @@ func (d *Daemon) Close() error {
 		}
 	}
 
-	d.logger.Debug("Stopped daemon")
+	d.logger.Debug("Closed daemon")
 
 	return nil
 }
