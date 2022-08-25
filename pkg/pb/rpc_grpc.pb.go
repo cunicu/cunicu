@@ -209,7 +209,7 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WatcherClient interface {
 	Sync(ctx context.Context, in *SyncParams, opts ...grpc.CallOption) (*Empty, error)
-	GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Status, error)
+	GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error)
 	RemoveInterface(ctx context.Context, in *RemoveInterfaceParams, opts ...grpc.CallOption) (*Empty, error)
 	SyncInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
 	AddInterfaceConfig(ctx context.Context, in *InterfaceConfigParams, opts ...grpc.CallOption) (*Empty, error)
@@ -236,8 +236,8 @@ func (c *watcherClient) Sync(ctx context.Context, in *SyncParams, opts ...grpc.C
 	return out, nil
 }
 
-func (c *watcherClient) GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Status, error) {
-	out := new(Status)
+func (c *watcherClient) GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error) {
+	out := new(StatusResp)
 	err := c.cc.Invoke(ctx, "/wice.Watcher/GetStatus", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -304,7 +304,7 @@ func (c *watcherClient) PutSignalingMessage(ctx context.Context, in *PutSignalin
 // for forward compatibility
 type WatcherServer interface {
 	Sync(context.Context, *SyncParams) (*Empty, error)
-	GetStatus(context.Context, *Empty) (*Status, error)
+	GetStatus(context.Context, *StatusParams) (*StatusResp, error)
 	RemoveInterface(context.Context, *RemoveInterfaceParams) (*Empty, error)
 	SyncInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
 	AddInterfaceConfig(context.Context, *InterfaceConfigParams) (*Empty, error)
@@ -322,7 +322,7 @@ type UnimplementedWatcherServer struct {
 func (UnimplementedWatcherServer) Sync(context.Context, *SyncParams) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
-func (UnimplementedWatcherServer) GetStatus(context.Context, *Empty) (*Status, error) {
+func (UnimplementedWatcherServer) GetStatus(context.Context, *StatusParams) (*StatusResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
 }
 func (UnimplementedWatcherServer) RemoveInterface(context.Context, *RemoveInterfaceParams) (*Empty, error) {
@@ -375,7 +375,7 @@ func _Watcher_Sync_Handler(srv interface{}, ctx context.Context, dec func(interf
 }
 
 func _Watcher_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(StatusParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func _Watcher_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/wice.Watcher/GetStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WatcherServer).GetStatus(ctx, req.(*Empty))
+		return srv.(WatcherServer).GetStatus(ctx, req.(*StatusParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }

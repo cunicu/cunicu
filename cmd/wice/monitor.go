@@ -19,7 +19,7 @@ var monitorCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 }
 
-var format config.OutputFormat
+var format config.OutputFormat = config.OutputFormatHuman
 
 func init() {
 	addClientCommand(rootCmd, monitorCmd)
@@ -46,7 +46,6 @@ out:
 
 		case evt := <-rpcClient.Events:
 			switch format {
-			case config.OutputFormatCSV:
 			case config.OutputFormatJSON:
 				buf, err := mo.Marshal(evt)
 				if err != nil {
@@ -58,6 +57,8 @@ out:
 					logger.Fatal("Failed to write to stdout", zap.Error(err))
 				}
 
+			case config.OutputFormatHuman:
+				fallthrough
 			case config.OutputFormatLogger:
 				evt.Log(logger, "Event")
 			}
