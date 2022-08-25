@@ -12,6 +12,18 @@ on:
 
 env:
   PKGS: ./cmd/... ./pkg/... ${{ matrix.target_os == 'linux' && './test/...' }}
+  GINKGO_OPTS: -r 
+    --compilers=2
+    --keep-going
+    --timeout=15m
+    --trace
+    --cover
+    --coverpkg=./...
+    --coverprofile=coverprofile.out
+    --keep-separate-coverprofiles
+    --output-dir=./test/logs
+    --randomize-all
+    --randomize-suites
 
 jobs:
   build:
@@ -145,18 +157,14 @@ jobs:
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
-      env:
-        GINKGO_PKG: ./pkg/...
-      run: make tests
+      run: ginkgo run ${GINKGO_OPTS} --procs=2 ./pkg
 
     - name: Run tests requiring root privileges
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linuxcoverprofile_merged.out' }}
-      env:
-        GINKGO_PKG: ./test
+      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
       run: |
         sudo --preserve-env \
           env "PATH=$PATH" \
-          make tests
+          ginkgo run ${GINKGO_OPTS} ./test
 
     - name: Upload logs an packet captures as artifacts
       uses: actions/upload-artifact@v3
