@@ -74,7 +74,7 @@ func BuildTestBinary(name string) (string, []any, error) {
 func getProfileFlags() map[string]string {
 	flags := map[string]string{}
 
-	for _, fn := range []string{"benchmem", "blockprofile", "blockprofilerate", "coverprofile", "cpuprofile", "memprofile", "memprofilerate", "mutexprofile", "mutexprofilefraction", "outputdir", "trace"} {
+	for _, fn := range []string{"benchmem", "blockprofile", "blockprofilerate", "coverprofile", "cpuprofile", "memprofile", "memprofilerate", "mutexprofile", "mutexprofilefraction", "outputdir", "trace", "coverpkg"} {
 		if f := flag.Lookup("test." + fn); f != nil && f.Value.String() != f.DefValue {
 			flags[fn] = fmt.Sprintf("%v", f.Value)
 		}
