@@ -10,21 +10,6 @@ on:
     branches:
     - master
 
-env:
-  PKGS: ./cmd/... ./pkg/... ${{ matrix.target_os == 'linux' && './test/...' }}
-  GINKGO_OPTS: -r 
-    --compilers=2
-    --keep-going
-    --timeout=15m
-    --trace
-    --cover
-    --coverpkg=./...
-    --coverprofile=coverprofile.out
-    --keep-separate-coverprofiles
-    --output-dir=./test/logs
-    --randomize-all
-    --randomize-suites
-
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}
@@ -102,8 +87,6 @@ jobs:
       GOARCH: ${{ matrix.target_arch }}
       GOARM: ${{ matrix.arm || '' }}
 
-      CGO_ENABLED: "0"
-
     steps:
     - uses: actions/checkout@v2
 
@@ -137,34 +120,24 @@ jobs:
       env:
         GOOS: ${{ matrix.host_os }}
         GOARCH: ${{ matrix.host_arch }}
-      run: |
-        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-        go install github.com/onsi/ginkgo/v2/ginkgo@latest
-        go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
-        go install honnef.co/go/tools/cmd/staticcheck@latest
-        go install github.com/amobe/gocov-merger@latest
-        go install github.com/jandelgado/gcov2lcov@latest
+      run: make install-deps
 
     - name: Run wice build
-      run: go build -o wice ./cmd/wice
+      run: make wice
       
     - name: Run vet
-      run: go vet --copylocks=false ${PKGS}
+      run: make vet
 
     - name: Run staticcheck
-      run: staticcheck ${PKGS}
+      run: make staticcheck
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
-      run: ginkgo run ${GINKGO_OPTS} --procs=2 ./pkg
+      run: make tests GINKGO_EXTRA_OPTS=--procs=2 GINKGO_PKG=./pkg/...
 
     - name: Run tests requiring root privileges
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
-      run: |
-        sudo --preserve-env \
-          env "PATH=$PATH" \
-          ginkgo run ${GINKGO_OPTS} ./test
+      run: sudo --preserve-env env "PATH=$PATH" make tests GINKGO_PKG=./test/...
 
     - name: Upload logs an packet captures as artifacts
       uses: actions/upload-artifact@v3
