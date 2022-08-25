@@ -12,7 +12,7 @@ import (
 )
 
 type DaemonServer struct {
-	pb.UnimplementedSocketServer
+	pb.UnimplementedDaemonServer
 
 	*Server
 	*wice.Daemon
@@ -24,12 +24,12 @@ func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
 		Daemon: d,
 	}
 
-	pb.RegisterSocketServer(s.grpc, ds)
+	pb.RegisterDaemonServer(s.grpc, ds)
 
 	return ds
 }
 
-func (s *DaemonServer) StreamEvents(params *pb.Empty, stream pb.Socket_StreamEventsServer) error {
+func (s *DaemonServer) StreamEvents(params *pb.Empty, stream pb.Daemon_StreamEventsServer) error {
 
 	// Send initial connection state of all peers
 	if s.epice != nil {
