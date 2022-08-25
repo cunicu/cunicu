@@ -1,5 +1,5 @@
 .nh
-.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -18,11 +18,15 @@ Monitor the ɯice daemon for events
 
 .SH OPTIONS
 .PP
+\fB-f\fP, \fB--format\fP="json"
+	Output \fB\fCformat\fR (one of: json, csv, logger)
+
+.PP
 \fB-h\fP, \fB--help\fP[=false]
 	help for monitor
 
 .PP
-\fB-s\fP, \fB--socket\fP="/var/run/wice.sock"
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/wice.sock"
 	Unix control and monitoring socket
 
 
@@ -33,7 +37,7 @@ Monitor the ɯice daemon for events
 
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
-	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 
 .SH SEE ALSO

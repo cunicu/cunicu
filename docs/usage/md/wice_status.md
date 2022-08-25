@@ -1,16 +1,20 @@
-## wice stop
+## wice status
 
-Shutdown the ɯice daemon
+Show current status of ɯice daemon
 
 ```
-wice stop [flags]
+wice status [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help                help for stop
+  -c, --color               Enable colorization of output (default true)
+  -h, --help                help for status
+  -i, --indent              Format and indent JSON ouput (default true)
+  -j, --json                Format status in JSON
   -s, --rpc-socket string   Unix control and monitoring socket (default "/var/run/wice.sock")
+  -v, --verbose int         Verbosity level for output (1-6) (default 6)
 ```
 
 ### Options inherited from parent commands

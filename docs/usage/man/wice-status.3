@@ -3,27 +3,43 @@
 
 .SH NAME
 .PP
-wice-sync - Synchronize interfaces
+wice-status - Show current status of ɯice daemon
 
 
 .SH SYNOPSIS
 .PP
-\fBwice sync [flags]\fP
+\fBwice status [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Synchronizes the internal daemon state with the state of the WireGuard interfaces
+Show current status of ɯice daemon
 
 
 .SH OPTIONS
 .PP
+\fB-c\fP, \fB--color\fP[=true]
+	Enable colorization of output
+
+.PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for sync
+	help for status
+
+.PP
+\fB-i\fP, \fB--indent\fP[=true]
+	Format and indent JSON ouput
+
+.PP
+\fB-j\fP, \fB--json\fP[=false]
+	Format status in JSON
 
 .PP
 \fB-s\fP, \fB--rpc-socket\fP="/var/run/wice.sock"
 	Unix control and monitoring socket
+
+.PP
+\fB-v\fP, \fB--verbose\fP=6
+	Verbosity level for output (1-6)
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS

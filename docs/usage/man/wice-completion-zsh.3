@@ -1,5 +1,5 @@
 .nh
-.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -29,6 +29,18 @@ echo "autoload -U compinit; compinit" >> ~/.zshrc
 .RE
 
 .PP
+To load completions in your current shell session:
+
+.PP
+.RS
+
+.nf
+source <(wice completion zsh); compdef _wice wice
+
+.fi
+.RE
+
+.PP
 To load completions for every new session, execute once:
 
 .SS Linux:
@@ -46,7 +58,7 @@ wice completion zsh > "${fpath[1]}/_wice"
 .RS
 
 .nf
-wice completion zsh > /usr/local/share/zsh/site-functions/_wice
+wice completion zsh > $(brew --prefix)/share/zsh/site-functions/_wice
 
 .fi
 .RE
@@ -72,7 +84,7 @@ You will need to start a new shell for this setup to take effect.
 
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
-	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 
 .SH SEE ALSO

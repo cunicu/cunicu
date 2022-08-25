@@ -16,10 +16,10 @@ wice wg genkey [flags]
 
 ```
   -l, --log-file string    path of a file to write logs to
-  -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
+  -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```
 
 ### SEE ALSO
 
-* [wice wg](wice_wg.md)	 - Wireguard commands
+* [wice wg](wice_wg.md)	 - WireGuard commands
 

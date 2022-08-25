@@ -1,9 +1,9 @@
 .nh
-.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
-wice-self-update - Update the wice binary
+wice-self-update - Update the ɯice binary
 
 
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ wice-self-update - Update the wice binary
 
 .SH DESCRIPTION
 .PP
-The command "self-update" downloads the latest stable release of wice from
+The command "self-update" downloads the latest stable release of ɯice from
 GitHub and replaces the currently running binary. After download, the
 authenticity of the binary is verified using the GPG signature on the release
 files.
@@ -25,8 +25,8 @@ files.
 	help for self-update
 
 .PP
-\fB--output\fP=""
-	Save the downloaded file as \fB\fCfilename\fR (default: running binary itself)
+\fB-o\fP, \fB--output\fP="/tmp/go-build4231818187/b001/exe/wice"
+	Save the downloaded file as \fB\fCfilename\fR
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -36,7 +36,7 @@ files.
 
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
-	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 
 .SH SEE ALSO

@@ -29,7 +29,7 @@ wice completion powershell [flags]
 
 ```
   -l, --log-file string    path of a file to write logs to
-  -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
+  -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```
 
 ### SEE ALSO

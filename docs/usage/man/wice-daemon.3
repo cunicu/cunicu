@@ -1,5 +1,5 @@
 .nh
-.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -19,123 +19,59 @@ Start the daemon
 .SH OPTIONS
 .PP
 \fB-b\fP, \fB--backend\fP=[]
-	backend types / URLs
+	One or more \fB\fCURL\fRs to signaling backends
 
 .PP
 \fB-x\fP, \fB--community\fP=""
-	Community passphrase for discovering other peers
+	A community \fB\fCpassphrase\fR for discovering other peers
 
 .PP
 \fB-c\fP, \fB--config\fP=[]
-	Path of configuration files
+	One or more \fB\fCfilename\fRs of configuration files
 
 .PP
-\fB-A\fP, \fB--config-domain\fP=""
-	Perform auto-configuration via DNS
+\fB-w\fP, \fB--config-path\fP=""
+	The \fB\fCdirectory\fR of WireGuard wg/wg-quick configuration files
+
+.PP
+\fB-W\fP, \fB--config-watch\fP[=false]
+	Watch and synchronize changes to the WireGuard configuration files
+
+.PP
+\fB-A\fP, \fB--domain\fP=""
+	A DNS \fB\fCdomain\fR name used for DNS auto-configuration
+
+.PP
+\fB-P\fP, \fB--password\fP=""
+	The \fB\fCpassword\fR for STUN/TURN credentials
+
+.PP
+\fB-T\fP, \fB--route-table\fP="main"
+	Kernel routing table to use
+
+.PP
+\fB-s\fP, \fB--rpc-socket\fP=""
+	The \fB\fCpath\fR of the unix socket used by other ɯice commands
+
+.PP
+\fB-a\fP, \fB--url\fP=[]
+	One or more \fB\fCURL\fRs of STUN and/or TURN servers
+
+.PP
+\fB-U\fP, \fB--username\fP=""
+	The \fB\fCusername\fR for STUN/TURN credentials
+
+.PP
+\fB-f\fP, \fB--wg-interface-filter\fP=".\fI"
+	A \fB\fCregex\fR for filtering WireGuard interfaces (e.g. "wg-.\fP")
+
+.PP
+\fB-u\fP, \fB--wg-userspace\fP[=false]
+	Create new interfaces with userspace WireGuard implementation
 
 .PP
 \fB-h\fP, \fB--help\fP[=false]
 	help for daemon
-
-.PP
-\fB--ice-candidate-type\fP=[]
-	usable candidate types (select from "host", "srflx", "prflx", "relay")
-
-.PP
-\fB--ice-check-interval\fP=0s
-	interval at which the agent performs candidate checks in the connecting phase
-
-.PP
-\fB--ice-disconnected-timout\fP=0s
-	time till an Agent transitions disconnected
-
-.PP
-\fB--ice-failed-timeout\fP=0s
-	time until an Agent transitions to failed after disconnected
-
-.PP
-\fB-k\fP, \fB--ice-insecure-skip-verify\fP[=false]
-	skip verification of TLS certificates for secure STUN/TURN servers
-
-.PP
-\fB--ice-interface-filter\fP=".*"
-	regex for filtering local interfaces for ICE candidate gathering (e.g. "eth[0-9]+")
-
-.PP
-\fB--ice-keepalive-interval\fP=0s
-	interval netween STUN keepalives
-
-.PP
-\fB-L\fP, \fB--ice-lite\fP[=false]
-	lite agents do not perform connectivity check and only provide host candidates
-
-.PP
-\fB--ice-max-binding-requests\fP=0
-	maximum number of binding request before considering a pair failed
-
-.PP
-\fB-m\fP, \fB--ice-mdns\fP[=false]
-	enable local Multicast DNS discovery
-
-.PP
-\fB--ice-nat-1to1-ip\fP=[]
-	IP addresses which will be added as local server reflexive candidates
-
-.PP
-\fB--ice-network-type\fP=[]
-	usable network types (select from "udp4", "udp6", "tcp4", "tcp6")
-
-.PP
-\fB-P\fP, \fB--ice-pass\fP=""
-	password for STUN/TURN credentials
-
-.PP
-\fB--ice-port-max\fP=0
-	maximum port for allocation policy (range: 0-65535)
-
-.PP
-\fB--ice-port-min\fP=0
-	minimum port for allocation policy (range: 0-65535)
-
-.PP
-\fB--ice-restart-timeout\fP=0s
-	time to wait before ICE restart
-
-.PP
-\fB-U\fP, \fB--ice-user\fP=""
-	username for STUN/TURN credentials
-
-.PP
-\fB-f\fP, \fB--interface-filter\fP=".\fI"
-	regex for filtering Wireguard interfaces (e.g. "wg-.\fP")
-
-.PP
-\fB-s\fP, \fB--socket\fP=""
-	Unix control and monitoring socket
-
-.PP
-\fB--socket-wait\fP[=false]
-	wait until first client connected to control socket before continuing start
-
-.PP
-\fB-a\fP, \fB--url\fP=[]
-	STUN and/or TURN server addresses
-
-.PP
-\fB-i\fP, \fB--watch-interval\fP=0s
-	interval at which we are polling the kernel for updates on the Wireguard interfaces
-
-.PP
-\fB-w\fP, \fB--wg-config-path\fP=""
-	base path to search for Wireguard configuration files
-
-.PP
-\fB-S\fP, \fB--wg-config-sync\fP[=false]
-	sync Wireguard interface with configuration file (see "wg synconf")
-
-.PP
-\fB-u\fP, \fB--wg-userspace\fP[=false]
-	start userspace Wireguard daemon
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -145,7 +81,7 @@ Start the daemon
 
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
-	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 
 .SH SEE ALSO

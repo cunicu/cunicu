@@ -11,6 +11,10 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
+To load completions in your current shell session:
+
+	source <(wice completion zsh); compdef _wice wice
+
 To load completions for every new session, execute once:
 
 #### Linux:
@@ -19,7 +23,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	wice completion zsh > /usr/local/share/zsh/site-functions/_wice
+	wice completion zsh > $(brew --prefix)/share/zsh/site-functions/_wice
 
 You will need to start a new shell for this setup to take effect.
 
@@ -39,7 +43,7 @@ wice completion zsh [flags]
 
 ```
   -l, --log-file string    path of a file to write logs to
-  -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
+  -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```
 
 ### SEE ALSO

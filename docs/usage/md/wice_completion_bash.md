@@ -21,7 +21,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	wice completion bash > /usr/local/etc/bash_completion.d/wice
+	wice completion bash > $(brew --prefix)/etc/bash_completion.d/wice
 
 You will need to start a new shell for this setup to take effect.
 
@@ -41,7 +41,7 @@ wice completion bash
 
 ```
   -l, --log-file string    path of a file to write logs to
-  -d, --log-level string   log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal") (default "info")
+  -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```
 
 ### SEE ALSO
