@@ -61,12 +61,12 @@ type OutputFormat int
 
 const (
 	OutputFormatJSON   OutputFormat = iota
-	OutputFormatCSV    OutputFormat = iota
 	OutputFormatLogger OutputFormat = iota
+	OutputFormatHuman  OutputFormat = iota
 )
 
 var (
-	OutputFormatNames = []string{"json", "csv", "logger"}
+	OutputFormatNames = []string{"json", "logger", "human"}
 )
 
 func (f *OutputFormat) UnmarshalText(text []byte) error {

@@ -9,8 +9,13 @@ import "interface.proto";
 import "config.proto";
 import "signaling.proto";
 
-message Status {
+message StatusResp {
     repeated Interface interfaces = 1;
+}
+
+message StatusParams {
+    string intf = 1;
+    bytes peer = 2;
 }
 
 message UnWaitParams {}
@@ -59,7 +64,7 @@ service Socket {
 service Watcher {
     rpc Sync(SyncParams) returns (Empty) {}
 
-    rpc GetStatus(Empty) returns (Status) {}
+    rpc GetStatus(StatusParams) returns (StatusResp) {}
 
     rpc RemoveInterface(RemoveInterfaceParams) returns (Empty) {}
 

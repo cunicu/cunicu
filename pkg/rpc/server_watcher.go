@@ -5,6 +5,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/watcher"
@@ -30,30 +31,51 @@ func NewWatcherServer(s *Server, w *watcher.Watcher) *WatcherServer {
 	return ws
 }
 
-func (s *WatcherServer) GetStatus(ctx context.Context, _ *pb.Empty) (*pb.Status, error) {
+func (s *WatcherServer) GetStatus(ctx context.Context, p *pb.StatusParams) (*pb.StatusResp, error) {
+	var err error
+	var pk crypto.Key
+
 	s.InterfaceLock.Lock()
 	defer s.InterfaceLock.Unlock()
 
-	pbIntfs := []*pb.Interface{}
-	for _, ci := range s.Interfaces {
-		pbIntf := ci.Marshal()
-
-		if ep := s.Server.epice; ep != nil {
-			pbIntf.Ice = ep.InterfaceStatus(ci)
-
-			for _, p := range pbIntf.Peers {
-				pk, _ := crypto.ParseKeyBytes(p.PublicKey)
-				cp := ci.Peers[pk]
-
-				p.Ice = ep.PeerStatus(cp)
-			}
+	if p.Peer != nil {
+		if pk, err = crypto.ParseKeyBytes(p.Peer); err != nil {
+			return nil, status.Error(codes.InvalidArgument, "invalid peer key")
 		}
-
-		pbIntfs = append(pbIntfs, pbIntf)
 	}
 
-	return &pb.Status{
-		Interfaces: pbIntfs,
+	qis := []*pb.Interface{}
+	for _, ci := range s.Interfaces {
+		if p.Intf != "" && ci.Name() != p.Intf {
+			continue
+		}
+
+		qi := ci.MarshalWithPeers(func(cp *core.Peer) *pb.Peer {
+			if pk.IsSet() && pk != cp.PublicKey() {
+				return nil
+			}
+
+			qp := cp.Marshal()
+
+			if s.epice != nil {
+				qp.Ice = s.epice.PeerStatus(cp)
+			}
+
+			return qp
+		})
+
+		qis = append(qis, qi)
+	}
+
+	// Check if filters matched anything
+	if p.Intf != "" && len(qis) == 0 {
+		return nil, status.Errorf(codes.NotFound, "no such interface '%s'", p.Intf)
+	} else if pk.IsSet() && len(qis[0].Peers) == 0 {
+		return nil, status.Errorf(codes.NotFound, "no such peer '%s' for interface '%s'", pk, p.Intf)
+	}
+
+	return &pb.StatusResp{
+		Interfaces: qis,
 	}, nil
 }
 

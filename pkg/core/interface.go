@@ -305,19 +305,27 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 }
 
 func (i *Interface) Marshal() *pb.Interface {
-	peers := []*pb.Peer{}
-	for _, peer := range i.Peers {
-		peers = append(peers, peer.Marshal())
-	}
+	return i.MarshalWithPeers(func(p *Peer) *pb.Peer {
+		return p.Marshal()
+	})
+}
 
+func (i *Interface) MarshalWithPeers(cb func(p *Peer) *pb.Peer) *pb.Interface {
 	q := &pb.Interface{
 		Name:         i.Name(),
 		Type:         pb.Interface_Type(i.Type),
 		ListenPort:   uint32(i.ListenPort),
 		FirewallMark: uint32(i.FirewallMark),
-		Peers:        peers,
 		Mtu:          uint32(i.KernelDevice.MTU()),
 		Ifindex:      uint32(i.KernelDevice.Index()),
+	}
+
+	if cb != nil {
+		for _, p := range i.Peers {
+			if qp := cb(p); qp != nil {
+				q.Peers = append(q.Peers, qp)
+			}
+		}
 	}
 
 	if !i.LastSync.IsZero() {
