@@ -8,10 +8,11 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/wg"
 )
 
-type UserProxy struct {
+type UserBindProxy struct {
 	bind     *wg.UserBind
 	endpoint *wg.UserEndpoint
 
@@ -20,18 +21,18 @@ type UserProxy struct {
 	logger *zap.Logger
 }
 
-func NewUserProxy(bind *wg.UserBind) (Proxy, error) {
-	return &UserProxy{
+func NewUserBindProxy(bind *wg.UserBind) (*UserBindProxy, error) {
+	return &UserBindProxy{
 		bind:   bind,
-		logger: zap.L().Named("proxy"),
+		logger: zap.L().Named("proxy").With(zap.String("type", "user-bind")),
 	}, nil
 }
 
-func (p *UserProxy) Close() error {
+func (p *UserBindProxy) Close() error {
 	return nil
 }
 
-func (p *UserProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
+func (p *UserBindProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
 	var err error
 
 	p.logger.Debug("Forwarding via in-process bind")
@@ -53,7 +54,7 @@ func (p *UserProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr,
 	return ep, nil
 }
 
-func (p *UserProxy) read(conn *ice.Conn) {
+func (p *UserBindProxy) read(conn *ice.Conn) {
 	p.conn = conn
 
 	for {
@@ -73,4 +74,8 @@ func (p *UserProxy) read(conn *ice.Conn) {
 			p.logger.Error("Failed to pass data to bind", zap.Error(err))
 		}
 	}
+}
+
+func (p *UserBindProxy) Type() pb.ProxyType {
+	return pb.ProxyType_USER_BIND
 }

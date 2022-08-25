@@ -39,7 +39,9 @@ func NewCredentials() Credentials {
 
 func (i *ICEInterface) Dump(wr io.Writer, verbosity int) error {
 	t.FprintKV(wr, "nat type", i.NatType)
-	t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort))
+	if i.NatType == NATType_NAT_NFTABLES {
+		t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort))
+	}
 
 	return nil
 }
@@ -47,11 +49,11 @@ func (i *ICEInterface) Dump(wr io.Writer, verbosity int) error {
 func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 	var v string
 
-	t.FprintKV(wr, "proxy type", p.ProxyType)
 	t.FprintKV(wr, "state", p.State)
+	t.FprintKV(wr, "proxy type", p.ProxyType)
+	t.FprintKV(wr, "reachability", p.Reachability)
 	t.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time()))
 	t.FprintKV(wr, "restarts", p.Restarts)
-	t.FprintKV(wr, "reachability", p.Reachability)
 
 	if verbosity > 5 && len(p.CandidatePairStats) > 0 {
 		var cmap = map[string]int{}

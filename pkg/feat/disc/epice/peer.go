@@ -87,7 +87,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 
 	// Setup proxy
 	if dev, ok := i.KernelDevice.(*device.UserDevice); ok {
-		if p.proxy, err = proxy.NewUserProxy(dev.Bind); err != nil {
+		if p.proxy, err = proxy.NewUserBindProxy(dev.Bind); err != nil {
 			return nil, fmt.Errorf("failed to setup proxy: %w", err)
 		}
 	} else if i.nat != nil {
@@ -338,6 +338,10 @@ func (p *Peer) Marshal() *pb.ICEPeer {
 		Reachability: p.Reachability(),
 	}
 
+	if p.proxy != nil {
+		q.ProxyType = p.proxy.Type()
+	}
+
 	if !p.lastStateChange.IsZero() {
 		q.LastStateChangeTimestamp = pb.Time(p.lastStateChange)
 	}
@@ -364,13 +368,6 @@ func (p *Peer) Marshal() *pb.ICEPeer {
 		}
 	}
 
-	switch p.proxy.(type) {
-	case *proxy.KernelProxy:
-		q.ProxyType = pb.ProxyType_KERNEL
-	case *proxy.UserProxy:
-		q.ProxyType = pb.ProxyType_USER
-	}
-
 	return q
 }
 
@@ -379,7 +376,7 @@ func (p *Peer) Reachability() pb.Reachability {
 	case ice.ConnectionStateConnected:
 		cp, err := p.agent.GetSelectedCandidatePair()
 		if err != nil {
-			return pb.Reachability_NONE
+			return pb.Reachability_NO_REACHABILITY
 		}
 
 		switch cp.Remote.Type() {
@@ -401,5 +398,5 @@ func (p *Peer) Reachability() pb.Reachability {
 		}
 	}
 
-	return pb.Reachability_NONE
+	return pb.Reachability_NO_REACHABILITY
 }
