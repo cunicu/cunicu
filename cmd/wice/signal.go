@@ -49,7 +49,9 @@ func signal(cmd *cobra.Command, args []string) {
 		for sig := range util.SetupSignals() {
 			logger.Debug("Received signal", zap.Any("signal", sig))
 
-			svr.Close()
+			if err := svr.Close(); err != nil {
+				logger.Error("Failed to close server", zap.Error(err))
+			}
 		}
 	}()
 

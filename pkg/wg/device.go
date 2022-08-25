@@ -41,9 +41,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	}
 
 	if !color {
-		wr = &util.ANSIStripper{
-			Writer: wr,
-		}
+		wr = util.NewANSIStripper(wr)
 	}
 
 	switch os.Getenv("WG_HIDE_KEYS") {

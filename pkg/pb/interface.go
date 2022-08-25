@@ -34,23 +34,46 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	t.FprintKV(wri, "public key", base64.StdEncoding.EncodeToString(i.PublicKey))
-	if verbosity > 2 {
-		t.FprintKV(wri, "private key", base64.StdEncoding.EncodeToString(i.PrivateKey))
+	if _, err := t.FprintKV(wri, "public key", base64.StdEncoding.EncodeToString(i.PublicKey)); err != nil {
+		return err
 	}
-	t.FprintKV(wri, "listening port", i.ListenPort)
+
+	if verbosity > 2 {
+		if _, err := t.FprintKV(wri, "private key", base64.StdEncoding.EncodeToString(i.PrivateKey)); err != nil {
+			return err
+		}
+	}
+
+	if _, err := t.FprintKV(wri, "listening port", i.ListenPort); err != nil {
+		return err
+	}
 
 	if i.FirewallMark != 0 {
-		t.FprintKV(wri, "fwmark", i.FirewallMark)
+		if _, err := t.FprintKV(wri, "fwmark", i.FirewallMark); err != nil {
+			return err
+		}
 	}
 
-	t.FprintKV(wri, "type", i.Type)
-	t.FprintKV(wri, "ifindex", i.Ifindex)
-	t.FprintKV(wri, "mtu", i.Mtu)
-	t.FprintKV(wri, "latest sync", util.Ago(i.LastSyncTimestamp.Time()))
+	if _, err := t.FprintKV(wri, "type", i.Type); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wri, "ifindex", i.Ifindex); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wri, "mtu", i.Mtu); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wri, "latest sync", util.Ago(i.LastSyncTimestamp.Time())); err != nil {
+		return err
+	}
 
 	if i.Ice != nil && verbosity > 3 {
-		fmt.Fprintln(wr)
+		if _, err := fmt.Fprintln(wr); err != nil {
+			return err
+		}
 		i.Ice.Dump(wri, verbosity)
 	}
 

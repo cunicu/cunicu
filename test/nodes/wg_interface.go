@@ -120,6 +120,7 @@ func (i *WireGuardInterface) SetupKernel() error {
 	}
 
 	for _, addr := range i.Addresses {
+		addr := addr
 		nlAddr := netlink.Addr{
 			IPNet: &addr,
 		}
@@ -177,7 +178,10 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 
 	select {
 	case <-ctx.Done():
-		cmd.Process.Kill()
+		if err := cmd.Process.Kill(); err != nil {
+			return err
+		}
+
 		return ctx.Err()
 	case err := <-errs:
 		if err != nil {

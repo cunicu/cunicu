@@ -70,46 +70,68 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 	}
 
 	if p.Name != "" {
-		t.FprintKV(wri, "name", p.Name)
+		if _, err := t.FprintKV(wri, "name", p.Name); err != nil {
+			return err
+		}
 	}
 
 	if p.Endpoint != "" {
-		t.FprintKV(wri, "endpoint", p.Endpoint)
+		if _, err := t.FprintKV(wri, "endpoint", p.Endpoint); err != nil {
+			return err
+		}
 	}
 
 	if p.LastHandshakeTimestamp != nil {
-		t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTimestamp.Time()))
+		if _, err := t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTimestamp.Time())); err != nil {
+			return err
+		}
 	}
 
 	if p.LastReceiveTimestamp != nil {
-		t.FprintKV(wri, "latest receive", util.Ago(p.LastReceiveTimestamp.Time()))
+		if _, err := t.FprintKV(wri, "latest receive", util.Ago(p.LastReceiveTimestamp.Time())); err != nil {
+			return err
+		}
 	}
 
 	if p.LastTransmitTimestamp != nil {
-		t.FprintKV(wri, "latest transmit", util.Ago(p.LastTransmitTimestamp.Time()))
+		if _, err := t.FprintKV(wri, "latest transmit", util.Ago(p.LastTransmitTimestamp.Time())); err != nil {
+			return err
+		}
 	}
 
 	if len(p.AllowedIps) > 0 {
-		t.FprintKV(wri, "allowed ips", strings.Join(p.AllowedIps, ", "))
+		if _, err := t.FprintKV(wri, "allowed ips", strings.Join(p.AllowedIps, ", ")); err != nil {
+			return err
+		}
 	} else {
-		t.FprintKV(wri, "allowed ips", "(none)")
+		if _, err := t.FprintKV(wri, "allowed ips", "(none)"); err != nil {
+			return err
+		}
 	}
 
 	if p.ReceiveBytes > 0 || p.TransmitBytes > 0 {
-		t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
+		if _, err := t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
 			util.PrettyBytes(p.ReceiveBytes),
-			util.PrettyBytes(p.TransmitBytes)))
+			util.PrettyBytes(p.TransmitBytes))); err != nil {
+			return err
+		}
 	}
 
 	if p.PersistentKeepaliveInterval > 0 {
-		t.FprintKV(wri, "persistent keepalive", util.Every(time.Duration(p.PersistentKeepaliveInterval)*time.Second))
+		if _, err := t.FprintKV(wri, "persistent keepalive", util.Every(time.Duration(p.PersistentKeepaliveInterval)*time.Second)); err != nil {
+			return err
+		}
 	}
 
 	if len(p.PresharedKey) > 0 {
-		t.FprintKV(wri, "preshared key", base64.StdEncoding.EncodeToString(p.PresharedKey))
+		if _, err := t.FprintKV(wri, "preshared key", base64.StdEncoding.EncodeToString(p.PresharedKey)); err != nil {
+			return err
+		}
 	}
 
-	t.FprintKV(wri, "protocol version", p.ProtocolVersion)
+	if _, err := t.FprintKV(wri, "protocol version", p.ProtocolVersion); err != nil {
+		return err
+	}
 
 	if p.Ice != nil && verbosity > 4 {
 		if _, err := fmt.Fprintln(wr); err != nil {

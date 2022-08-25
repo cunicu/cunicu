@@ -11,6 +11,12 @@ type ANSIStripper struct {
 	io.Writer
 }
 
+func NewANSIStripper(wr io.Writer) *ANSIStripper {
+	return &ANSIStripper{
+		Writer: wr,
+	}
+}
+
 func (a *ANSIStripper) Write(p []byte) (int, error) {
 	line := stripANSI.ReplaceAll(p, []byte{})
 	return a.Writer.Write(line)

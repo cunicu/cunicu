@@ -286,11 +286,7 @@ func (c *Config) Setup(args []string) error {
 	// We append the interfaces here because Config.Load() will overwrite them otherwise
 	c.WireGuard.Interfaces = append(c.WireGuard.Interfaces, args...)
 
-	if err := c.Check(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.Check()
 }
 
 func (c *Config) Check() error {

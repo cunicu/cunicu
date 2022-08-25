@@ -14,7 +14,6 @@ import (
 
 const (
 	runesAlpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	runesDigit = "0123456789"
 
 	lenUFrag = 16
 	lenPwd   = 32
@@ -38,9 +37,14 @@ func NewCredentials() Credentials {
 }
 
 func (i *ICEInterface) Dump(wr io.Writer, verbosity int) error {
-	t.FprintKV(wr, "nat type", i.NatType)
+	if _, err := t.FprintKV(wr, "nat type", i.NatType); err != nil {
+		return err
+	}
+
 	if i.NatType == NATType_NAT_NFTABLES {
-		t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort))
+		if _, err := t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -49,13 +53,26 @@ func (i *ICEInterface) Dump(wr io.Writer, verbosity int) error {
 func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 	var v string
 
-	t.FprintKV(wr, "state", t.Color(p.State.String(), t.Bold, p.State.Color()))
-	t.FprintKV(wr, "proxy type", p.ProxyType)
-	t.FprintKV(wr, "reachability", p.Reachability)
-	t.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time()))
+	if _, err := t.FprintKV(wr, "state", t.Color(p.State.String(), t.Bold, p.State.Color())); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wr, "reachability", p.Reachability); err != nil {
+		return err
+	}
+
+	if _, err := t.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
+		return err
+	}
 
 	if p.Restarts > 0 {
-		t.FprintKV(wr, "restarts", p.Restarts)
+		if _, err := t.FprintKV(wr, "restarts", p.Restarts); err != nil {
+			return err
+		}
 	}
 
 	if verbosity > 5 && len(p.CandidatePairStats) > 0 {
@@ -70,7 +87,9 @@ func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 			}
 		}
 
-		t.FprintKV(wr, "\ncandidates")
+		if _, err := t.FprintKV(wr, "\ncandidates"); err != nil {
+			return err
+		}
 
 		wr := util.NewIndenter(wr, "  ")
 		wri := util.NewIndenter(wr, "  ")
@@ -78,33 +97,46 @@ func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 		if len(p.LocalCandidateStats) > 0 {
 			slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
 
-			t.FprintKV(wr, "local")
+			if _, err := t.FprintKV(wr, "local"); err != nil {
+				return err
+			}
+
 			for i, cs := range p.LocalCandidateStats {
 				cmap[cs.Id] = i
 				v = fmt.Sprintf("l%d", i)
 				if isNominated := cs.Id == cpsNom.LocalCandidateId; isNominated {
 					v = t.Color(v, t.FgRed)
 				}
-				t.FprintKV(wri, v, cs.ToString())
+				if _, err := t.FprintKV(wri, v, cs.ToString()); err != nil {
+					return err
+				}
 			}
 		}
 
 		if len(p.RemoteCandidateStats) > 0 {
 			slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
 
-			t.FprintKV(wr, "\nremote")
+			if _, err := t.FprintKV(wr, "\nremote"); err != nil {
+				return err
+			}
+
 			for i, cs := range p.RemoteCandidateStats {
 				cmap[cs.Id] = i
 				v = fmt.Sprintf("r%d", i)
 				if isNominated := cs.Id == cpsNom.RemoteCandidateId; isNominated {
 					v = t.Color(v, t.FgRed)
 				}
-				t.FprintKV(wri, v, cs.ToString())
+				if _, err := t.FprintKV(wri, v, cs.ToString()); err != nil {
+					return err
+				}
 			}
 		}
 
 		if len(p.CandidatePairStats) > 0 && verbosity > 6 {
-			t.FprintKV(wr, "\npairs")
+			if _, err := t.FprintKV(wr, "\npairs"); err != nil {
+				return err
+			}
+
 			for i, cps := range p.CandidatePairStats {
 				lci := cmap[cps.LocalCandidateId]
 				rci := cmap[cps.RemoteCandidateId]
@@ -122,10 +154,12 @@ func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 					flags = append(flags, "nominated")
 				}
 
-				t.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
+				if _, err := t.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
 					lci, rci,
 					strings.Join(flags, ", "),
-				))
+				)); err != nil {
+					return err
+				}
 			}
 		}
 	}

@@ -159,17 +159,13 @@ func (a *Agent) Close() error {
 		}
 	}
 
-	if err := a.Stop(); err != nil {
-		return err
-	}
-
-	return nil
+	return a.Stop()
 }
 
 func (a *Agent) WaitBackendReady(ctx context.Context) error {
-	a.Client.WaitForEvent(ctx, pb.Event_BACKEND_READY, "", crypto.Key{})
+	_, err := a.Client.WaitForEvent(ctx, pb.Event_BACKEND_READY, "", crypto.Key{})
 
-	return nil
+	return err
 }
 
 func (a *Agent) ConfigureWireGuardInterfaces() error {

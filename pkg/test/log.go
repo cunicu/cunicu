@@ -58,9 +58,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
 		}
 
-		ginkgo.GinkgoWriter.TeeTo(&util.ANSIStripper{
-			Writer: f,
-		})
+		ginkgo.GinkgoWriter.TeeTo(util.NewANSIStripper(f))
 	}
 
 	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)

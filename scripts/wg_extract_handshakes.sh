@@ -48,8 +48,8 @@ echo "  PresharedKey: ${PSK}"
 echo
 
 TMP_FILE=$(mktemp /tmp/wice-XXXXXX)
-PCAP_FILE=${TMP_FILE}.pcapng
-KEYS_FILE=${TMP_FILE}.keys
+PCAP_FILE="${TMP_FILE}.pcapng"
+KEYS_FILE="${TMP_FILE}.keys"
 
 # Cleanup stuff from previous runs
 (
@@ -60,17 +60,17 @@ KEYS_FILE=${TMP_FILE}.keys
 ) 1> /dev/null 2>&1 || true
 
 function cleanup() {
-    rm ${KEYS_FILE} ${PCAP_FILE}
+    rm "${KEYS_FILE}" "${PCAP_FILE}"
     kill ${TRACER_PID} ${TSHARK_PID} 2> /dev/null
 }
 trap cleanup EXIT
 
 echo -e "\n=== Start probing for WireGuard handshakes"
-wice wg extract-handshakes 2> /dev/null > ${KEYS_FILE} &
+wice wg extract-handshakes 2> /dev/null > "${KEYS_FILE}" &
 TRACER_PID=$!
 
 echo -e "\n=== Start tshark capture"
-tshark -i lo -w ${PCAP_FILE} udp port 51820 or udp port 51821 &
+tshark -i lo -w "${PCAP_FILE}" udp port 51820 or udp port 51821 &
 TSHARK_PID=$!
 
 # Wait until tshark is actually ready to capture packets
@@ -106,7 +106,7 @@ echo -e "\n=== Stopping tshark and handshake tracer"
 kill ${TSHARK_PID} ${TRACER_PID}
 
 echo -e "\n=== WireGuard keys"
-cat ${KEYS_FILE}
+cat "${KEYS_FILE}"
 
 echo -e "\n=== Decrypted capture"
-tshark -r ${PCAP_FILE} -o wg.keylog_file:${KEYS_FILE} -o wg.dissect_packet:true
+tshark -r "${PCAP_FILE}" -o "wg.keylog_file:${KEYS_FILE}" -o wg.dissect_packet:true

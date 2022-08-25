@@ -1,4 +1,4 @@
-// The feat package contains several sub-folders each implementing a dedicated feature.
+// Package feat contains several sub-packages each implementing a dedicated feature.
 package feat
 
 type Feature interface {

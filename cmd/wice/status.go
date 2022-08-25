@@ -59,9 +59,7 @@ func status(cmd *cobra.Command, args []string) {
 
 	var wr io.Writer = os.Stdout
 	if supportsColor := util.IsATTY(); !supportsColor || !color {
-		wr = &util.ANSIStripper{
-			Writer: wr,
-		}
+		wr = util.NewANSIStripper(wr)
 	}
 
 	switch format {
