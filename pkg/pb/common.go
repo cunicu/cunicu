@@ -6,6 +6,7 @@ import (
 
 	"github.com/pion/ice/v2"
 	icex "riasc.eu/wice/pkg/ice"
+	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 func TimeNow() *Timestamp {
@@ -86,6 +87,35 @@ func (s *ConnectionState) ConnectionState() icex.ConnectionState {
 	}
 
 	return -1
+}
+
+func (s *ConnectionState) Color() string {
+	switch *s {
+	case ConnectionState_CHECKING:
+		return t.FgYellow
+	case ConnectionState_CONNECTED:
+		return t.FgGreen
+	case ConnectionState_FAILED:
+		fallthrough
+	case ConnectionState_DISCONNECTED:
+		return t.FgRed
+	case ConnectionState_NEW:
+		fallthrough
+	case ConnectionState_COMPLETED:
+		fallthrough
+	case ConnectionState_CLOSED:
+		fallthrough
+	case ConnectionState_CREATING:
+		fallthrough
+	case ConnectionState_CLOSING:
+		fallthrough
+	case ConnectionState_CONNECTING:
+		fallthrough
+	case ConnectionState_IDLE:
+		return t.FgWhite
+	}
+
+	return t.FgDefault
 }
 
 func (s *ConnectionState) MarshalText() ([]byte, error) {
