@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/feat/disc/epice"
 	icex "riasc.eu/wice/pkg/ice"
@@ -92,4 +93,23 @@ func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, new, pr
 			},
 		},
 	})
+}
+
+func (s *EndpointDiscoveryServer) InterfaceStatus(ci *core.Interface) *pb.ICEInterface {
+	i, ok := s.Interfaces[ci]
+	if !ok {
+		return nil
+	}
+
+	return i.Marshal()
+}
+
+func (s *EndpointDiscoveryServer) PeerStatus(cp *core.Peer) *pb.ICEPeer {
+	p, ok := s.Peers[cp]
+	if !ok {
+		s.logger.Error("Failed to find peer for", zap.Any("cp", cp.PublicKey()))
+		return nil
+	}
+
+	return p.Marshal()
 }

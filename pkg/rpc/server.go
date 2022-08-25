@@ -17,7 +17,7 @@ import (
 
 type Server struct {
 	daemon    *DaemonServer
-	ep        *EndpointDiscoveryServer
+	epice     *EndpointDiscoveryServer
 	watcher   *WatcherServer
 	signaling *SignalingServer
 
@@ -47,7 +47,7 @@ func NewServer(d *wice.Daemon) (*Server, error) {
 	s.signaling = NewSignalingServer(s, d.Backend)
 
 	if d.EPDisc != nil {
-		s.ep = NewEndpointDiscoveryServer(s, d.EPDisc)
+		s.epice = NewEndpointDiscoveryServer(s, d.EPDisc)
 	}
 
 	return s, nil
@@ -75,6 +75,8 @@ func (s *Server) Wait() {
 	s.logger.Info("Wait for control socket connection")
 
 	s.waitGroup.Wait()
+
+	s.logger.Info("Control socket un-waited")
 }
 
 func (s *Server) Close() error {

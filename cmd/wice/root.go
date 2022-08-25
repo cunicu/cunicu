@@ -48,7 +48,6 @@ var (
 		Long:  "WireGuard Interactive Connectivity Establishment",
 
 		// The main wice command is just an alias for "wice daemon"
-		Run:               daemon,
 		DisableAutoGenTag: true,
 		Version:           version,
 	}

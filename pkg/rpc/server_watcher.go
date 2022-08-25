@@ -5,6 +5,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/watcher"
 )
@@ -33,13 +34,26 @@ func (s *WatcherServer) GetStatus(ctx context.Context, _ *pb.Empty) (*pb.Status,
 	s.InterfaceLock.Lock()
 	defer s.InterfaceLock.Unlock()
 
-	interfaces := []*pb.Interface{}
-	for _, i := range s.Interfaces {
-		interfaces = append(interfaces, i.Marshal())
+	pbIntfs := []*pb.Interface{}
+	for _, ci := range s.Interfaces {
+		pbIntf := ci.Marshal()
+
+		if ep := s.Server.epice; ep != nil {
+			pbIntf.Ice = ep.InterfaceStatus(ci)
+
+			for _, p := range pbIntf.Peers {
+				pk, _ := crypto.ParseKeyBytes(p.PublicKey)
+				cp := ci.Peers[pk]
+
+				p.Ice = ep.PeerStatus(cp)
+			}
+		}
+
+		pbIntfs = append(pbIntfs, pbIntf)
 	}
 
 	return &pb.Status{
-		Interfaces: interfaces,
+		Interfaces: pbIntfs,
 	}, nil
 }
 
