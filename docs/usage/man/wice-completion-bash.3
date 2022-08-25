@@ -1,5 +1,5 @@
 .nh
-.TH "ɯice" "3" "May 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -49,7 +49,7 @@ wice completion bash > /etc/bash_completion.d/wice
 .RS
 
 .nf
-wice completion bash > /usr/local/etc/bash_completion.d/wice
+wice completion bash > $(brew --prefix)/etc/bash_completion.d/wice
 
 .fi
 .RE
@@ -75,7 +75,7 @@ You will need to start a new shell for this setup to take effect.
 
 .PP
 \fB-d\fP, \fB--log-level\fP="info"
-	log level (one of "debug", "info", "warn", "error", "dpanic", "panic", and "fatal")
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 
 .SH SEE ALSO
