@@ -142,8 +142,8 @@ jobs:
       run: sudo --preserve-env env "PATH=$PATH" make tests GINKGO_PKG=./test/...
 
     - name: Upload logs an packet captures as artifacts
+      if: ${{ always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
       uses: actions/upload-artifact@v3
-      if: always()
       with:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
         path: test/logs/
