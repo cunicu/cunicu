@@ -18,9 +18,12 @@ func (h *allHandler) OnInterfaceAdded(i *core.Interface) {
 	h.AllHandler.OnInterfaceAdded(i)
 }
 
-func (h *allHandler) OnInterfaceRemoved(i *core.Interface) {}
+func (h *allHandler) OnInterfaceRemoved(i *core.Interface) {
+	h.AllHandler.OnInterfaceRemoved(i)
+}
 
 func (h *allHandler) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+	h.AllHandler.OnInterfaceModified(i, old, m)
 }
 
 // Peer handler
@@ -33,7 +36,8 @@ func (h *peerHandler) OnInterfaceAdded(i *core.Interface) {
 	i.OnPeer(h)
 }
 
-func (h *peerHandler) OnInterfaceRemoved(i *core.Interface) {}
+func (h *peerHandler) OnInterfaceRemoved(i *core.Interface) {
+}
 
 func (h *peerHandler) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
 }
