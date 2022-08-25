@@ -32,8 +32,8 @@ func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
 func (s *DaemonServer) StreamEvents(params *pb.StreamEventsParams, stream pb.Socket_StreamEventsServer) error {
 
 	// Send initial connection state of all peers
-	if s.ep != nil {
-		s.ep.SendConnectionStates(stream)
+	if s.epice != nil {
+		s.epice.SendConnectionStates(stream)
 	}
 
 	events := s.events.Add()
@@ -61,7 +61,6 @@ func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb
 	err := status.Error(codes.AlreadyExists, "RPC socket has already been unwaited")
 
 	s.waitOnce.Do(func() {
-		s.logger.Info("Control socket un-waited")
 		s.waitGroup.Done()
 		err = nil
 	})
