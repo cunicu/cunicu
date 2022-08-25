@@ -9,6 +9,7 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+	"riasc.eu/wice/pkg/pb"
 )
 
 const (
@@ -22,17 +23,19 @@ type KernelProxy struct {
 
 	nat *NAT
 
+	typ      pb.ProxyType
 	conn     *ice.Conn
 	connUser *net.UDPConn
 
 	logger *zap.Logger
 }
 
-func NewKernelProxy(nat *NAT, listenPort int) (Proxy, error) {
+func NewKernelProxy(nat *NAT, listenPort int) (*KernelProxy, error) {
 	p := &KernelProxy{
 		nat:        nat,
 		listenPort: listenPort,
-		logger:     zap.L().Named("proxy"),
+		typ:        pb.ProxyType_NO_PROXY,
+		logger:     zap.L().Named("proxy").With(zap.String("type", "kernel")),
 	}
 
 	return p, nil
@@ -64,7 +67,7 @@ func (p *KernelProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAdd
 			return nil, err
 		}
 
-		p.logger.Debug("Forwarding via NFTables port-forwarding")
+		p.typ = pb.ProxyType_KERNEL_NAT
 	} else {
 		// We cant to anything for prfx and relay candidates.
 		// Let them pass through the userspace connection
@@ -87,7 +90,7 @@ func (p *KernelProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAdd
 
 		ep = p.connUser.LocalAddr().(*net.UDPAddr)
 
-		p.logger.Debug("Forwarding via user connection")
+		p.typ = pb.ProxyType_KERNEL_CONN
 	}
 
 	return ep, nil
@@ -139,4 +142,8 @@ func (p *KernelProxy) setupUserConn(iceConn *ice.Conn) error {
 		zap.Any("remoteAddress", p.connUser.RemoteAddr()))
 
 	return nil
+}
+
+func (p *KernelProxy) Type() pb.ProxyType {
+	return p.typ
 }
