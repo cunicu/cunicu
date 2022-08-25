@@ -30,6 +30,8 @@ type Peer struct {
 	backend         signaling.Backend
 	proxy           proxy.Proxy
 	connectionState util.AtomicEnum[icex.ConnectionState]
+	lastStateChange time.Time
+	restarts        uint
 	credentials     pb.Credentials
 
 	signalingMessages      chan *signaling.Message
@@ -143,6 +145,8 @@ func (p *Peer) Restart() error {
 
 	// The new agent will be recreated in the onConnectionStateChange() handler
 	// once the old agent has been properly closed
+
+	p.restarts++
 
 	return nil
 }
@@ -294,6 +298,8 @@ func (p *Peer) connect(ufrag, pwd string) error {
 func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState {
 	prev := p.connectionState.Swap(new)
 
+	p.lastStateChange = time.Now()
+
 	p.logger.Info("Connection state changed",
 		zap.String("new", strings.ToLower(new.String())),
 		zap.String("previous", strings.ToLower(prev.String())))
@@ -308,6 +314,8 @@ func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState
 func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 	swapped := p.connectionState.CompareAndSwap(prev, new)
 	if swapped {
+		p.lastStateChange = time.Now()
+
 		p.logger.Info("Connection state changed",
 			zap.String("new", strings.ToLower(new.String())),
 			zap.String("previous", strings.ToLower(prev.String())))
