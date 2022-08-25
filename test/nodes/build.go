@@ -3,10 +3,8 @@ package nodes
 import (
 	"flag"
 	"fmt"
-	"path/filepath"
 
 	"github.com/onsi/gomega/gexec"
-	"go.uber.org/zap"
 	"riasc.eu/wice/test"
 )
 
@@ -27,10 +25,8 @@ func BuildTestBinary(name string) (string, []any, error) {
 		}
 
 		for _, prof := range []string{"blockprofile", "coverprofile", "cpuprofile", "memprofile", "mutexprofile", "trace"} {
-			if path, ok := profileFlags[prof]; ok {
-				fn := filepath.Base(path)
-
-				profileFlags[prof] = fmt.Sprintf("%s.%s", name, fn)
+			if _, ok := profileFlags[prof]; ok {
+				profileFlags[prof] = fmt.Sprintf("%s.%s.out", name, prof)
 			}
 		}
 
@@ -49,6 +45,9 @@ func BuildTestBinary(name string) (string, []any, error) {
 			buildArgs = append(buildArgs, "-race")
 		}
 
+		// Generate coverage for all wice packages
+		profileFlags["coverpkg"] = "../..."
+
 		// Build a test binary if profiling is requested
 		if len(profileFlags) > 0 {
 			buildArgs = append(buildArgs, "-tags", "test")
@@ -57,8 +56,6 @@ func BuildTestBinary(name string) (string, []any, error) {
 				buildArg := fmt.Sprintf("-%s=%v", k, v)
 				buildArgs = append(buildArgs, buildArg)
 			}
-
-			zap.L().Info("building test binary")
 
 			// We compile a dummy go test binary here which just
 			// invokes main(), but is instrumented for profiling.
