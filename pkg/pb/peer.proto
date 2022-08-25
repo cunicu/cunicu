@@ -4,6 +4,7 @@ package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
+import "epice.proto";
 
 message PeerDescription {
     // Type of the WireGuard interface impelementation
@@ -35,17 +36,22 @@ message PeerDescription {
 
 message Peer {
     bytes public_key = 1;
+    bytes preshared_key = 2;
 
-    string Endpoint = 2;
- 
-    uint32 persistent_keepalive_interval = 3;
-    Timestamp last_handshake = 4;
-    int64 transmit_bytes = 5;
-    int64 receive_bytes = 6;
-    repeated string allowed_ips = 7;
-    uint32 protocol_version = 8;
+    string endpoint = 3;
+    uint32 persistent_keepalive_interval = 4;
 
-    bytes preshared_key = 9;
+    Timestamp last_handshake_timestamp = 5;
+    Timestamp last_receive_timestamp = 6;
+    Timestamp last_transmit_timestamp = 7;
 
-    ConnectionState state = 10;
+    int64 transmit_bytes = 8;
+    int64 receive_bytes = 9;
+
+    repeated string allowed_ips = 10;
+    uint32 protocol_version = 11;
+
+    ICEPeer ice = 12;
+    
+    string name = 13;
 }

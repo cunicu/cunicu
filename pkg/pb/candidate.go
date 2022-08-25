@@ -2,20 +2,22 @@ package pb
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/pion/ice/v2"
+	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 func NewCandidate(ic ice.Candidate) *Candidate {
 	c := &Candidate{
-		Type:        Candidate_Type(ic.Type()),
+		Type:        CandidateType(ic.Type()),
 		Foundation:  ic.Foundation(),
 		Component:   int32(ic.Component()),
-		NetworkType: Candidate_NetworkType(ic.NetworkType()),
+		NetworkType: NetworkType(ic.NetworkType()),
 		Priority:    int32(ic.Priority()),
 		Address:     ic.Address(),
 		Port:        int32(ic.Port()),
-		TcpType:     Candidate_TCPType(ic.TCPType()),
+		TcpType:     TCPType(ic.TCPType()),
 	}
 
 	if r := c.RelatedAddress; r != nil {
@@ -42,7 +44,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 
 	var ic ice.Candidate
 	switch c.Type {
-	case Candidate_TYPE_HOST:
+	case CandidateType_CANDIDATE_TYPE_HOST:
 		ic, err = ice.NewCandidateHost(&ice.CandidateHostConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -52,7 +54,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Foundation: c.Foundation,
 			TCPType:    ice.TCPType(c.TcpType),
 		})
-	case Candidate_TYPE_SERVER_REFLEXIVE:
+	case CandidateType_CANDIDATE_TYPE_SERVER_REFLEXIVE:
 		ic, err = ice.NewCandidateServerReflexive(&ice.CandidateServerReflexiveConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -63,7 +65,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			RelAddr:    relAddr,
 			RelPort:    relPort,
 		})
-	case Candidate_TYPE_PEER_REFLEXIVE:
+	case CandidateType_CANDIDATE_TYPE_PEER_REFLEXIVE:
 		ic, err = ice.NewCandidatePeerReflexive(&ice.CandidatePeerReflexiveConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -75,7 +77,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			RelPort:    relPort,
 		})
 
-	case Candidate_TYPE_RELAY:
+	case CandidateType_CANDIDATE_TYPE_RELAY:
 		ic, err = ice.NewCandidateRelay(&ice.CandidateRelayConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -92,4 +94,95 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 	}
 
 	return ic, err
+}
+
+func NewCandidatePairStats(cps *ice.CandidatePairStats) *CandidatePairStats {
+	p := &CandidatePairStats{
+		LocalCandidateId:           cps.LocalCandidateID,
+		RemoteCandidateId:          cps.RemoteCandidateID,
+		State:                      CandidatePairState(cps.State),
+		Nominated:                  cps.Nominated,
+		PacketsSent:                cps.PacketsSent,
+		PacketsReceived:            cps.PacketsReceived,
+		BytesSent:                  cps.BytesSent,
+		BytesReceived:              cps.BytesReceived,
+		TotalRoundtripTime:         cps.TotalRoundTripTime,
+		CurrenTroundtripTime:       cps.CurrentRoundTripTime,
+		AvailableOutgoingBitrate:   cps.AvailableOutgoingBitrate,
+		AvailableIncomingBitrate:   cps.AvailableIncomingBitrate,
+		CircuitBreakerTriggerCount: cps.CircuitBreakerTriggerCount,
+		RequestsReceived:           cps.RequestsReceived,
+		RequestsSent:               cps.RequestsReceived,
+		ResponsesReceived:          cps.ResponsesReceived,
+		RetransmissionsReceived:    cps.RetransmissionsReceived,
+		RetransmissionsSent:        cps.RetransmissionsSent,
+		ConsentRequestsSent:        cps.ConsentRequestsSent,
+	}
+
+	if !cps.Timestamp.IsZero() {
+		p.Timestamp = Time(cps.Timestamp)
+	}
+
+	if !cps.LastPacketSentTimestamp.IsZero() {
+		p.LastPacketSentTimestamp = Time(cps.LastPacketSentTimestamp)
+	}
+
+	if !cps.LastPacketReceivedTimestamp.IsZero() {
+		p.LastPacketReceivedTimestamp = Time(cps.LastPacketReceivedTimestamp)
+	}
+
+	if !cps.FirstRequestTimestamp.IsZero() {
+		p.FirstRequestTimestamp = Time(cps.FirstRequestTimestamp)
+	}
+
+	if !cps.LastRequestTimestamp.IsZero() {
+		p.LastRequestTimestamp = Time(cps.LastRequestTimestamp)
+	}
+
+	if !cps.LastResponseTimestamp.IsZero() {
+		p.LastResponseTimestamp = Time(cps.LastResponseTimestamp)
+	}
+
+	if !cps.ConsentExpiredTimestamp.IsZero() {
+		p.ConsentExpiredTimestamp = Time(cps.ConsentExpiredTimestamp)
+	}
+
+	return p
+}
+
+func NewCandidateStats(cs *ice.CandidateStats) *CandidateStats {
+	return &CandidateStats{
+		Timestamp:     Time(cs.Timestamp),
+		Id:            cs.ID,
+		NetworkType:   NetworkType(cs.NetworkType),
+		Ip:            cs.IP,
+		Port:          int32(cs.Port),
+		CandidateType: CandidateType(cs.CandidateType),
+		Priority:      cs.Priority,
+		Url:           cs.URL,
+		RelayProtocol: cs.RelayProtocol,
+		Deleted:       cs.Deleted,
+	}
+}
+
+func (cp *CandidatePair) ToString() string {
+	return fmt.Sprintf("%s <-> %s", cp.Local.ToString(), cp.Remote.ToString())
+}
+
+func (c *Candidate) ToString() string {
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(c.Type), ice.NetworkType(c.NetworkType), c.Address, c.Port)
+}
+
+func (cs *CandidateStats) ToString() string {
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(cs.CandidateType), ice.NetworkType(cs.NetworkType), cs.Ip, cs.Port)
+}
+
+func (cs *CandidateStats) Dump(wr io.Writer) error {
+	// wri := util.NewIndenter(wr, "  ")
+
+	if _, err := fmt.Fprintf(wr, t.Color("candidate", t.Bold, t.FgMagenta)+": "+t.Color("%s", t.FgMagenta)+"\n", cs.ToString()); err != nil {
+		return err
+	}
+
+	return nil
 }

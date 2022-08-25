@@ -13,18 +13,19 @@ func TimeNow() *Timestamp {
 }
 
 func Time(s time.Time) *Timestamp {
-	t := &Timestamp{}
-	t.Set(s)
-	return t
+	return &Timestamp{
+		Seconds: int32(s.Unix()),
+		Nanos:   int32(s.Nanosecond()),
+	}
 }
 
 func (t *Timestamp) Set(s time.Time) {
 	t.Nanos = int32(s.Nanosecond())
-	t.Seconds = s.Unix()
+	t.Seconds = int32(s.Unix())
 }
 
 func (t *Timestamp) Time() time.Time {
-	return time.Unix(t.Seconds, int64(t.Nanos))
+	return time.Unix(int64(t.Seconds), int64(t.Nanos))
 }
 
 func NewConnectionState(s icex.ConnectionState) ConnectionState {

@@ -10,6 +10,7 @@ import (
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
 	xerrors "riasc.eu/wice/pkg/errors"
+	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/proxy"
 )
 
@@ -89,4 +90,17 @@ func (i *Interface) Close() error {
 	}
 
 	return nil
+}
+
+func (i *Interface) Marshal() *pb.ICEInterface {
+	is := &pb.ICEInterface{
+		MuxPort:      uint32(i.udpMuxPort),
+		MuxSrflxPort: uint32(i.udpMuxSrflxPort),
+	}
+
+	if i.nat != nil {
+		is.NatType = pb.NATType_NAT_NFTABLES
+	}
+
+	return is
 }

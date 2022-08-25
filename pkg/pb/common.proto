@@ -24,6 +24,6 @@ enum ConnectionState {
 
 // An UNIX timestamp since 1970-01-01 (UTC)
 message Timestamp {
-    int64 seconds = 1;
+    int32 seconds = 1;
     int32 nanos = 2;
 }

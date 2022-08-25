@@ -4,7 +4,7 @@ package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "common.proto";
-import "session.proto";
+import "epice.proto";
 import "candidate.proto";
 import "peer.proto";
 import "message.proto";

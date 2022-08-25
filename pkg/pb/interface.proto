@@ -4,6 +4,8 @@ package wice;
 option go_package = "riasc.eu/wice/pkg/pb";
 
 import "peer.proto";
+import "epice.proto";
+import "common.proto";
 
 // A WireGuard interface
 // See: https://pkg.go.dev/golang.zx2c4.com/wireguard/wgctrl/wgtypes#Device
@@ -26,4 +28,11 @@ message Interface {
     uint32 firewall_mark = 6;
 
     repeated Peer peers = 7;
+
+    ICEInterface ice = 8;
+
+    uint32 ifindex = 9;
+    uint32 mtu = 10;
+
+    Timestamp last_sync_timestamp = 11;
 }
