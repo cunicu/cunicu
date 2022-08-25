@@ -74,7 +74,10 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 		if _, err := fmt.Fprintln(wr); err != nil {
 			return err
 		}
-		i.Ice.Dump(wri, verbosity)
+
+		if err := i.Ice.Dump(wri, verbosity); err != nil {
+			return err
+		}
 	}
 
 	for _, p := range i.Peers {

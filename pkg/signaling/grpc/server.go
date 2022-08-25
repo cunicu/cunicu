@@ -29,6 +29,7 @@ func NewServer(opts ...grpc.ServerOption) *Server {
 	logger := zap.L().Named("server")
 
 	if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
+		//#nosec G304 -- Filename is only controlled via env var
 		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
 		if err != nil {
 			logger.Fatal("Failed to open SSL keylog file", zap.Error(err))

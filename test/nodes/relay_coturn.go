@@ -69,7 +69,7 @@ func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
 	var err error
 
 	// Delete previous log file
-	os.Remove(c.Config["log-file"])
+	_ = os.Remove(c.Config["log-file"])
 
 	args := []any{
 		"-n",
