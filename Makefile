@@ -3,7 +3,7 @@ PKG = $(shell grep module go.mod | cut -f2 -d" ")
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_VERSION = $(shell git describe --tags --dirty || echo unknown)
 
-export CGO_ENABLED = "0"
+export CGO_ENABLED = 0
 
 LDFLAGS = -X main.version=$(GIT_VERSION) \
           -X main.commit=$(GIT_COMMIT) \

@@ -93,15 +93,17 @@ jobs:
     - name: Install dependencies
       if: ${{ matrix.target_os == 'linux' }}
       run: sudo apt-get install -y
-              coturn
-              protobuf-compiler
-              make
+            coturn
+            protobuf-compiler
+            make
+            libpcap-dev
 
     - name: Install dependencies
       if: ${{ matrix.target_os == 'darwin' }}
       run: brew install
             protobuf
             make
+            libpcap
 
     - name: Install dependencies
       if: ${{ matrix.target_os == 'windows' }}
