@@ -3,7 +3,6 @@ package terminal
 import (
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 )
 
@@ -33,32 +32,18 @@ const (
 	Reset       = "\x1b[0m"
 )
 
-var (
-	reANSIEscape = regexp.MustCompile(`(?mi)\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])`)
-)
-
-func FprintfColored(wr io.Writer, color bool, f string, args ...any) (int, error) {
-	if !color {
-		f = reANSIEscape.ReplaceAllString(f, "")
-	}
-
-	return fmt.Fprintf(wr, f, args...)
-}
-
 func Color(str string, mods ...string) string {
 	return strings.Join(mods, "") + str + Reset
 }
 
-func PrintKeyValues(wr io.Writer, color bool, prefix string, kv map[string]any) (int, error) {
-	n := 0
-	for k, v := range kv {
-		b, err := FprintfColored(wr, color, "%s"+Color("%s", Bold)+": %v\n", prefix, k, v)
-		if err != nil {
-			return b, err
-		}
-
-		n += b
+func FprintKV(wr io.Writer, k string, v ...any) (int, error) {
+	if len(v) == 0 {
+		return fmt.Fprintf(wr, Color("%s", Bold)+":\n", k)
+	} else if len(v) == 1 {
+		return fmt.Fprintf(wr, Color("%s", Bold)+": %v\n", k, v[0])
+	} else if len(v) > 1 {
+		return fmt.Fprintf(wr, Color("%s", Bold)+": %v\n", k, v)
+	} else {
+		return 0, nil
 	}
-
-	return n, nil
 }
