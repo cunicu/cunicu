@@ -69,9 +69,7 @@ func (s *DaemonServer) UnWait(ctx context.Context, params *pb.UnWaitParams) (*pb
 }
 
 func (s *DaemonServer) Stop(ctx context.Context, params *pb.StopParams) (*pb.Empty, error) {
-	if err := s.Daemon.Close(); err != nil {
-		return nil, status.Errorf(codes.Unknown, "failed to stop daemon: %s", err)
-	}
+	s.Daemon.Stop()
 
 	return &pb.Empty{}, nil
 }
