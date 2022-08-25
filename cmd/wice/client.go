@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	client   *rpc.Client
-	sockPath string
+	rpcClient   *rpc.Client
+	rpcSockPath string
 )
 
 func addClientCommand(rcmd, cmd *cobra.Command) {
@@ -18,7 +18,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 	cmd.PersistentPostRunE = disconnect
 
 	pf := cmd.PersistentFlags()
-	pf.StringVarP(&sockPath, "rpc-socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
+	pf.StringVarP(&rpcSockPath, "rpc-socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
 
 	rcmd.AddCommand(cmd)
 }
@@ -26,7 +26,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 func connect(cmd *cobra.Command, args []string) error {
 	var err error
 
-	if client, err = rpc.Connect(sockPath); err != nil {
+	if rpcClient, err = rpc.Connect(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to connect to control socket: %w", err)
 	}
 
@@ -34,5 +34,5 @@ func connect(cmd *cobra.Command, args []string) error {
 }
 
 func disconnect(cmd *cobra.Command, args []string) error {
-	return client.Close()
+	return rpcClient.Close()
 }
