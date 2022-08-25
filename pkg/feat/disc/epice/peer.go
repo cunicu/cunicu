@@ -334,7 +334,7 @@ func (p *Peer) Marshal() *pb.ICEPeer {
 
 	q := &pb.ICEPeer{
 		State:        pb.NewConnectionState(cs),
-		Restarts:     uint32(p.Restarts),
+		Restarts:     uint32(p.restarts),
 		Reachability: p.Reachability(),
 	}
 
