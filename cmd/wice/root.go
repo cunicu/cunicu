@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 	"riasc.eu/wice/pkg/config"
@@ -47,7 +49,6 @@ var (
 		Short: "ɯice",
 		Long:  "WireGuard Interactive Connectivity Establishment",
 
-		// The main wice command is just an alias for "wice daemon"
 		DisableAutoGenTag: true,
 		Version:           version,
 	}
@@ -87,4 +88,16 @@ func setupLogging() {
 	}
 
 	logger = log.SetupLogging(logLevel.Level, outputPaths, errOutputPaths)
+}
+
+func main() {
+	if os.Args[0] == "wg" {
+		if err := wgCmd.Execute(); err != nil {
+			os.Exit(1)
+		}
+	} else {
+		if err := rootCmd.Execute(); err != nil {
+			os.Exit(1)
+		}
+	}
 }
