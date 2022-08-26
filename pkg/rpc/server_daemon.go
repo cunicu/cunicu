@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/util"
 )
 
 type DaemonServer struct {
@@ -72,4 +73,14 @@ func (s *DaemonServer) Stop(ctx context.Context, params *pb.Empty) (*pb.Empty, e
 	s.Daemon.Stop()
 
 	return &pb.Empty{}, nil
+}
+
+func (s *DaemonServer) Restart(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
+	if util.ReexecSelfSupported {
+		s.Daemon.Restart()
+	} else {
+		return nil, status.Error(codes.Unimplemented, "not supported on this platform")
+	}
+
+	return nil, nil
 }

@@ -25,6 +25,7 @@ type DaemonClient interface {
 	StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	Restart(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type daemonClient struct {
@@ -85,6 +86,15 @@ func (c *daemonClient) Stop(ctx context.Context, in *Empty, opts ...grpc.CallOpt
 	return out, nil
 }
 
+func (c *daemonClient) Restart(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/wice.Daemon/Restart", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaemonServer is the server API for Daemon service.
 // All implementations must embed UnimplementedDaemonServer
 // for forward compatibility
@@ -92,6 +102,7 @@ type DaemonServer interface {
 	StreamEvents(*Empty, Daemon_StreamEventsServer) error
 	UnWait(context.Context, *Empty) (*Empty, error)
 	Stop(context.Context, *Empty) (*Empty, error)
+	Restart(context.Context, *Empty) (*Empty, error)
 	mustEmbedUnimplementedDaemonServer()
 }
 
@@ -107,6 +118,9 @@ func (UnimplementedDaemonServer) UnWait(context.Context, *Empty) (*Empty, error)
 }
 func (UnimplementedDaemonServer) Stop(context.Context, *Empty) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
+}
+func (UnimplementedDaemonServer) Restart(context.Context, *Empty) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Restart not implemented")
 }
 func (UnimplementedDaemonServer) mustEmbedUnimplementedDaemonServer() {}
 
@@ -178,6 +192,24 @@ func _Daemon_Stop_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_Restart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).Restart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Daemon/Restart",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).Restart(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +224,10 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Stop",
 			Handler:    _Daemon_Stop_Handler,
+		},
+		{
+			MethodName: "Restart",
+			Handler:    _Daemon_Restart_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -54,6 +54,7 @@ service Daemon {
     rpc StreamEvents(Empty) returns (stream Event) {}
     rpc UnWait(Empty) returns (Empty) {}
     rpc Stop(Empty) returns (Empty) {}
+    rpc Restart(Empty) returns (Empty) {}
 }
 
 service Watcher {

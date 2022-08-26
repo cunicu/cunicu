@@ -102,6 +102,10 @@ func daemon(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed start daemon", zap.Error(err))
 	}
 
+	if err := svr.Close(); err != nil {
+		logger.Fatal("Failed to close server", zap.Error(err))
+	}
+
 	if err := daemon.Close(); err != nil {
 		logger.Fatal("Failed to stop daemon", zap.Error(err))
 	}
