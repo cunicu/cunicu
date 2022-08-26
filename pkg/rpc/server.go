@@ -31,7 +31,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer(d *wice.Daemon) (*Server, error) {
+func NewServer(d *wice.Daemon, socket string) (*Server, error) {
 	s := &Server{
 		events: util.NewFanOut[*pb.Event](1),
 		logger: zap.L().Named("rpc.server"),
@@ -50,25 +50,19 @@ func NewServer(d *wice.Daemon) (*Server, error) {
 		s.epice = NewEndpointDiscoveryServer(s, d.EPDisc)
 	}
 
-	return s, nil
-}
-
-func (s *Server) Listen(network string, address string) error {
 	// Remove old unix sockets
-	if network == "unix" {
-		if err := os.RemoveAll(address); err != nil {
-			return fmt.Errorf("failed to remove old socket: %w", err)
-		}
+	if err := os.RemoveAll(socket); err != nil {
+		return nil, fmt.Errorf("failed to remove old socket: %w", err)
 	}
 
-	l, err := net.Listen(network, address)
+	l, err := net.Listen("unix", socket)
 	if err != nil {
-		return fmt.Errorf("failed to listen on %s/%s: %w", network, address, err)
+		return nil, fmt.Errorf("failed to listen at %s: %w", socket, err)
 	}
 
 	go s.grpc.Serve(l)
 
-	return nil
+	return s, nil
 }
 
 func (s *Server) Wait() {

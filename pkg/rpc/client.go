@@ -29,7 +29,7 @@ type Client struct {
 	pb.DaemonClient
 	pb.WatcherClient
 
-	grpc   *grpc.ClientConn
+	conn   *grpc.ClientConn
 	logger *zap.Logger
 
 	connectionStates     map[crypto.Key]icex.ConnectionState
@@ -71,7 +71,7 @@ func Connect(path string) (*Client, error) {
 		DaemonClient:                  pb.NewDaemonClient(conn),
 		WatcherClient:                 pb.NewWatcherClient(conn),
 
-		grpc:             conn,
+		conn:             conn,
 		logger:           logger,
 		connectionStates: make(map[crypto.Key]icex.ConnectionState),
 	}
@@ -88,7 +88,7 @@ func Connect(path string) (*Client, error) {
 }
 
 func (c *Client) Close() error {
-	if err := c.grpc.Close(); err != nil {
+	if err := c.conn.Close(); err != nil {
 		return fmt.Errorf("failed to close gRPC client connection: %w", err)
 	}
 
