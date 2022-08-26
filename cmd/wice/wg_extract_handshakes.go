@@ -19,7 +19,6 @@ var (
 		Short: "Extract WireGuard handhshakes from Linux kernel",
 		Long:  "This command extracts ephemeral session secrets from handshakes of local WireGuard interfaces via Linux eBPF and kProbes and logs them to the standard output in the keylog format used by Wireshark",
 		RunE:  wgExtractHandshakes,
-		// Hidden: true,
 	}
 )
 

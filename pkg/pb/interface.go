@@ -8,15 +8,16 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/util"
 	t "riasc.eu/wice/pkg/util/terminal"
+	"riasc.eu/wice/pkg/wg"
 )
 
-func (i *Interface) Device() *wgtypes.Device {
+func (i *Interface) Device() *wg.Device {
 	peers := []wgtypes.Peer{}
 	for _, peer := range i.Peers {
 		peers = append(peers, peer.Peer())
 	}
 
-	return &wgtypes.Device{
+	return &wg.Device{
 		Name:         i.Name,
 		Type:         wgtypes.DeviceType(i.Type),
 		PublicKey:    *(*wgtypes.Key)(i.PublicKey),
