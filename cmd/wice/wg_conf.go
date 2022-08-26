@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"riasc.eu/wice/pkg/pb"
@@ -40,5 +39,5 @@ func wgShowConf(cmd *cobra.Command, args []string) error {
 
 	intf := sts.Interfaces[0]
 
-	return intf.Device().Config().Dump(os.Stdout)
+	return intf.Device().Config().Dump(stdout)
 }

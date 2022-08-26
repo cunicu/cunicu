@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -62,7 +61,7 @@ func version(cmd *cobra.Command, args []string) error {
 			logger.Fatal("Failed to marshal", zap.Error(err))
 		}
 
-		if _, err = os.Stdout.Write(buf); err != nil {
+		if _, err = stdout.Write(buf); err != nil {
 			logger.Fatal("Failed to write to stdout", zap.Error(err))
 		}
 

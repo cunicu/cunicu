@@ -80,7 +80,7 @@ func ReadVCSInfos() (bool, string, bool, *time.Time) {
 		}
 
 		return true, rev, dirty, btime
-	} else {
-		return false, "", false, nil
 	}
+
+	return false, "", false, nil
 }

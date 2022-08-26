@@ -47,7 +47,7 @@ out:
 
 		case hs := <-ht.Handshakes:
 			fmt.Fprintf(os.Stderr, "=== New Handshake at %s\n", hs.Time())
-			hs.DumpKeyLog(os.Stdout)
+			hs.DumpKeyLog(stdout)
 		}
 	}
 

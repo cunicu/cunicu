@@ -80,13 +80,13 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	// Feature flags
 	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
-	flags.BoolP("config-sync", "C", true, "Enable synchronization of WireGuard configuration files")
+	flags.BoolP("config-sync", "S", true, "Enable synchronization of WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
 	flags.BoolP("route-sync", "R", true, "Enable synchronization of AllowedIPs and Kernel routing table")
-	flags.BoolP("auto-config", "S", true, "Enable setup of link-local addresses and missing interface options")
+	flags.BoolP("auto-config", "A", true, "Enable setup of link-local addresses and missing interface options")
 
 	// Config flags
-	flags.StringVarP(&c.Domain, "domain", "A", "", "A DNS `domain` name used for DNS auto-configuration")
+	flags.StringVarP(&c.Domain, "domain", "D", "", "A DNS `domain` name used for DNS auto-configuration")
 	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "One or more `filename`s of configuration files")
 
 	// Daemon flags

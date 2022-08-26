@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -53,7 +52,7 @@ out:
 				}
 				buf = append(buf, '\n')
 
-				if _, err = os.Stdout.Write(buf); err != nil {
+				if _, err = stdout.Write(buf); err != nil {
 					logger.Fatal("Failed to write to stdout", zap.Error(err))
 				}
 
