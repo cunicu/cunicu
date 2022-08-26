@@ -91,8 +91,8 @@ func (p *ICEPeer) Dump(wr io.Writer, verbosity int) error {
 			return err
 		}
 
-		wr := util.NewIndenter(wr, "  ")
-		wri := util.NewIndenter(wr, "  ")
+		wr := t.NewIndenter(wr, "  ")
+		wri := t.NewIndenter(wr, "  ")
 
 		if len(p.LocalCandidateStats) > 0 {
 			slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })

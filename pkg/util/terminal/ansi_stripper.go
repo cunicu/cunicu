@@ -1,4 +1,4 @@
-package util
+package terminal
 
 import (
 	"io"
@@ -7,17 +7,17 @@ import (
 
 var stripANSI = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))")
 
-type ANSIStripper struct {
+type ansiStripper struct {
 	io.Writer
 }
 
-func NewANSIStripper(wr io.Writer) *ANSIStripper {
-	return &ANSIStripper{
+func NewANSIStripper(wr io.Writer) io.Writer {
+	return &ansiStripper{
 		Writer: wr,
 	}
 }
 
-func (a *ANSIStripper) Write(p []byte) (int, error) {
+func (a *ansiStripper) Write(p []byte) (int, error) {
 	line := stripANSI.ReplaceAll(p, []byte{})
 	return a.Writer.Write(line)
 }
