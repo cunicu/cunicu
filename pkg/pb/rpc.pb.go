@@ -473,8 +473,11 @@ var file_rpc_proto_rawDesc = []byte{
 	0x73, 0x12, 0x33, 0x0a, 0x08, 0x65, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61,
 	0x6c, 0x69, 0x6e, 0x67, 0x45, 0x6e, 0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x52, 0x08, 0x65, 0x6e,
-	0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x32, 0xa7, 0x01, 0x0a, 0x06, 0x44, 0x61, 0x65, 0x6d, 0x6f,
-	0x6e, 0x12, 0x2c, 0x0a, 0x0c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x76, 0x65, 0x6c, 0x6f, 0x70, 0x65, 0x32, 0xd7, 0x01, 0x0a, 0x06, 0x44, 0x61, 0x65, 0x6d, 0x6f,
+	0x6e, 0x12, 0x2e, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x6e, 0x66,
+	0x6f, 0x12, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0f,
+	0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x6e, 0x66, 0x6f, 0x22,
+	0x00, 0x12, 0x2c, 0x0a, 0x0c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x45, 0x76, 0x65, 0x6e, 0x74,
 	0x73, 0x12, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0b,
 	0x2e, 0x77, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x00, 0x30, 0x01, 0x12,
 	0x24, 0x0a, 0x06, 0x55, 0x6e, 0x57, 0x61, 0x69, 0x74, 0x12, 0x0b, 0x2e, 0x77, 0x69, 0x63, 0x65,
@@ -564,45 +567,48 @@ var file_rpc_proto_goTypes = []interface{}{
 	(*InterfaceConfig)(nil),           // 9: wice.InterfaceConfig
 	(*SignalingEnvelope)(nil),         // 10: wice.SignalingEnvelope
 	(*Empty)(nil),                     // 11: wice.Empty
-	(*Event)(nil),                     // 12: wice.Event
+	(*BuildInfo)(nil),                 // 12: wice.BuildInfo
+	(*Event)(nil),                     // 13: wice.Event
 }
 var file_rpc_proto_depIdxs = []int32{
 	8,  // 0: wice.StatusResp.interfaces:type_name -> wice.Interface
 	9,  // 1: wice.InterfaceConfigParams.interface:type_name -> wice.InterfaceConfig
 	10, // 2: wice.GetSignalingMessageResp.envelope:type_name -> wice.SignalingEnvelope
 	10, // 3: wice.PutSignalingMessageParams.envelope:type_name -> wice.SignalingEnvelope
-	11, // 4: wice.Daemon.StreamEvents:input_type -> wice.Empty
-	11, // 5: wice.Daemon.UnWait:input_type -> wice.Empty
-	11, // 6: wice.Daemon.Stop:input_type -> wice.Empty
-	11, // 7: wice.Daemon.Restart:input_type -> wice.Empty
-	11, // 8: wice.Watcher.Sync:input_type -> wice.Empty
-	1,  // 9: wice.Watcher.GetStatus:input_type -> wice.StatusParams
-	2,  // 10: wice.Watcher.RemoveInterface:input_type -> wice.RemoveInterfaceParams
-	4,  // 11: wice.Watcher.SyncInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	4,  // 12: wice.Watcher.AddInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	4,  // 13: wice.Watcher.SetInterfaceConfig:input_type -> wice.InterfaceConfigParams
-	5,  // 14: wice.Watcher.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
-	7,  // 15: wice.Watcher.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
-	3,  // 16: wice.EndpointDiscoverySocket.RestartPeer:input_type -> wice.RestartPeerParams
-	5,  // 17: wice.SignalingSocket.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
-	7,  // 18: wice.SignalingSocket.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
-	12, // 19: wice.Daemon.StreamEvents:output_type -> wice.Event
-	11, // 20: wice.Daemon.UnWait:output_type -> wice.Empty
-	11, // 21: wice.Daemon.Stop:output_type -> wice.Empty
-	11, // 22: wice.Daemon.Restart:output_type -> wice.Empty
-	11, // 23: wice.Watcher.Sync:output_type -> wice.Empty
-	0,  // 24: wice.Watcher.GetStatus:output_type -> wice.StatusResp
-	11, // 25: wice.Watcher.RemoveInterface:output_type -> wice.Empty
-	11, // 26: wice.Watcher.SyncInterfaceConfig:output_type -> wice.Empty
-	11, // 27: wice.Watcher.AddInterfaceConfig:output_type -> wice.Empty
-	11, // 28: wice.Watcher.SetInterfaceConfig:output_type -> wice.Empty
-	6,  // 29: wice.Watcher.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
-	11, // 30: wice.Watcher.PutSignalingMessage:output_type -> wice.Empty
-	11, // 31: wice.EndpointDiscoverySocket.RestartPeer:output_type -> wice.Empty
-	6,  // 32: wice.SignalingSocket.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
-	11, // 33: wice.SignalingSocket.PutSignalingMessage:output_type -> wice.Empty
-	19, // [19:34] is the sub-list for method output_type
-	4,  // [4:19] is the sub-list for method input_type
+	11, // 4: wice.Daemon.GetBuildInfo:input_type -> wice.Empty
+	11, // 5: wice.Daemon.StreamEvents:input_type -> wice.Empty
+	11, // 6: wice.Daemon.UnWait:input_type -> wice.Empty
+	11, // 7: wice.Daemon.Stop:input_type -> wice.Empty
+	11, // 8: wice.Daemon.Restart:input_type -> wice.Empty
+	11, // 9: wice.Watcher.Sync:input_type -> wice.Empty
+	1,  // 10: wice.Watcher.GetStatus:input_type -> wice.StatusParams
+	2,  // 11: wice.Watcher.RemoveInterface:input_type -> wice.RemoveInterfaceParams
+	4,  // 12: wice.Watcher.SyncInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	4,  // 13: wice.Watcher.AddInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	4,  // 14: wice.Watcher.SetInterfaceConfig:input_type -> wice.InterfaceConfigParams
+	5,  // 15: wice.Watcher.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
+	7,  // 16: wice.Watcher.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
+	3,  // 17: wice.EndpointDiscoverySocket.RestartPeer:input_type -> wice.RestartPeerParams
+	5,  // 18: wice.SignalingSocket.GetSignalingMessage:input_type -> wice.GetSignalingMessageParams
+	7,  // 19: wice.SignalingSocket.PutSignalingMessage:input_type -> wice.PutSignalingMessageParams
+	12, // 20: wice.Daemon.GetBuildInfo:output_type -> wice.BuildInfo
+	13, // 21: wice.Daemon.StreamEvents:output_type -> wice.Event
+	11, // 22: wice.Daemon.UnWait:output_type -> wice.Empty
+	11, // 23: wice.Daemon.Stop:output_type -> wice.Empty
+	11, // 24: wice.Daemon.Restart:output_type -> wice.Empty
+	11, // 25: wice.Watcher.Sync:output_type -> wice.Empty
+	0,  // 26: wice.Watcher.GetStatus:output_type -> wice.StatusResp
+	11, // 27: wice.Watcher.RemoveInterface:output_type -> wice.Empty
+	11, // 28: wice.Watcher.SyncInterfaceConfig:output_type -> wice.Empty
+	11, // 29: wice.Watcher.AddInterfaceConfig:output_type -> wice.Empty
+	11, // 30: wice.Watcher.SetInterfaceConfig:output_type -> wice.Empty
+	6,  // 31: wice.Watcher.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
+	11, // 32: wice.Watcher.PutSignalingMessage:output_type -> wice.Empty
+	11, // 33: wice.EndpointDiscoverySocket.RestartPeer:output_type -> wice.Empty
+	6,  // 34: wice.SignalingSocket.GetSignalingMessage:output_type -> wice.GetSignalingMessageResp
+	11, // 35: wice.SignalingSocket.PutSignalingMessage:output_type -> wice.Empty
+	20, // [20:36] is the sub-list for method output_type
+	4,  // [4:20] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name

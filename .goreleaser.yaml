@@ -43,6 +43,15 @@ builds:
   - goos: windows
     goarch: arm
 
+  ldflags:
+  - -s -w
+  - -X riasc.eu/wice/pkg/util/buildinfo.Version={{.Version}}
+  - -X riasc.eu/wice/pkg/util/buildinfo.Commit={{.Commit}}
+  - -X riasc.eu/wice/pkg/util/buildinfo.Date={{.Date}}
+  - -X riasc.eu/wice/pkg/util/buildinfo.Tag={{.Tag}}
+  - -X riasc.eu/wice/pkg/util/buildinfo.Branch={{.Branch}}
+  - -X riasc.eu/wice/pkg/util/buildinfo.BuiltBy=GoReleaser
+
 archives:
 - builds:
   - wice

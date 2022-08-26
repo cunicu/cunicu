@@ -51,6 +51,7 @@ message PutSignalingMessageParams {
 // Control socket services
 
 service Daemon {
+    rpc GetBuildInfo(Empty) returns (BuildInfo) {}
     rpc StreamEvents(Empty) returns (stream Event) {}
     rpc UnWait(Empty) returns (Empty) {}
     rpc Stop(Empty) returns (Empty) {}

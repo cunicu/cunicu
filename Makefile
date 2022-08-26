@@ -1,13 +1,13 @@
 PKG = $(shell grep module go.mod | cut -f2 -d" ")
 
-GIT_COMMIT = $(shell git rev-parse HEAD)
-GIT_VERSION = $(shell git describe --tags --dirty || echo unknown)
-
 export CGO_ENABLED = 0
 
-LDFLAGS = -X main.version=$(GIT_VERSION) \
-          -X main.commit=$(GIT_COMMIT) \
-		  -X main.date=$(shell date -Iseconds)
+LDFLAGS = -X riasc.eu/wice/pkg/util/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
+		  -X riasc.eu/wice/pkg/util/buildinfo.Tag=$(shell shell git describe --tags) \
+          -X riasc.eu/wice/pkg/util/buildinfo.Commit=$(shell git rev-parse HEAD) \
+		  -X riasc.eu/wice/pkg/util/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
+		  -X riasc.eu/wice/pkg/util/buildinfo.Date=$(shell date -Iseconds) \
+		  -X riasc.eu/wice/pkg/util/buildinfo.BuiltBy=Makefile \
 
 PKGS ?= ./cmd/... ./pkg/...
 ifeq ($(GOOS),linux)

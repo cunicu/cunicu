@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/selfupdate"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 var selfUpdateCmd = &cobra.Command{
@@ -63,7 +64,7 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	curVersion := strings.TrimPrefix(version, "v")
+	curVersion := strings.TrimPrefix(buildinfo.Version, "v")
 
 	logger.Info("Current version", zap.String("version", curVersion))
 

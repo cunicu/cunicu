@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type BackendConfig struct {
@@ -64,7 +65,10 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 		creds = credentials.NewTLS(cfg)
 	}
 
-	c.Options = append(c.Options, grpc.WithTransportCredentials(creds))
+	c.Options = append(c.Options,
+		grpc.WithTransportCredentials(creds),
+		grpc.WithUserAgent(buildinfo.UserAgent()),
+	)
 
 	if c.URI.Host == "" {
 		return errors.New("missing gRPC server url")
