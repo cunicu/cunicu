@@ -115,3 +115,41 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 
 	return nil
 }
+
+func (d *Device) Config() *Config {
+	zero := wgtypes.Key{}
+
+	cfg := &Config{}
+
+	if d.PrivateKey != zero {
+		cfg.PrivateKey = &d.PrivateKey
+	}
+
+	if d.ListenPort != 0 {
+		cfg.ListenPort = &d.ListenPort
+	}
+
+	if d.FirewallMark != 0 {
+		cfg.FirewallMark = &d.FirewallMark
+	}
+
+	for _, p := range d.Peers {
+		pcfg := wgtypes.PeerConfig{
+			PublicKey:  p.PublicKey,
+			Endpoint:   p.Endpoint,
+			AllowedIPs: p.AllowedIPs,
+		}
+
+		if p.PresharedKey != zero {
+			pcfg.PresharedKey = &p.PresharedKey
+		}
+
+		if pki := p.PersistentKeepaliveInterval; pki > 0 {
+			pcfg.PersistentKeepaliveInterval = &pki
+		}
+
+		cfg.Peers = append(cfg.Peers, pcfg)
+	}
+
+	return cfg
+}

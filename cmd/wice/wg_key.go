@@ -12,23 +12,29 @@ import (
 var (
 	wgGenKeyCmd = &cobra.Command{
 		Use:   "genkey",
-		Short: "Generates a new private key and writes it to stdout",
+		Short: "Generates a random private key in base64 and prints it to standard output.",
 		RunE:  wgGenKey,
 		Args:  cobra.NoArgs,
 	}
 
 	wgGenPSKCmd = &cobra.Command{
 		Use:   "genpsk",
-		Short: "Generates a new preshared key and writes it to stdout",
+		Short: "Generates a random preshared key in base64 and prints it to standard output.",
 		RunE:  wgGenKey, // a preshared key is generated in the same way as a private key
 		Args:  cobra.NoArgs,
 	}
 
 	wgPubKeyCmd = &cobra.Command{
 		Use:   "pubkey",
-		Short: "Reads a private key from stdin and writes a public key to stdout",
-		RunE:  wgPubKey,
-		Args:  cobra.NoArgs,
+		Short: "Calculates a public key and prints it in base64 to standard output.",
+		Long: `Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.
+
+A private key and a corresponding public key may be generated at once by calling:
+$ umask 077
+$ wg genkey | tee private.key | wg pubkey > public.key
+		`,
+		RunE: wgPubKey,
+		Args: cobra.NoArgs,
 	}
 )
 
