@@ -36,7 +36,8 @@ type Daemon struct {
 
 	devices []device.Device
 
-	stop chan any
+	stop          chan any
+	reexecOnClose bool
 
 	logger *zap.Logger
 }
@@ -162,12 +163,16 @@ out:
 
 func (d *Daemon) Stop() {
 	close(d.stop)
-	d.logger.Debug("Stopped daemon")
+	d.logger.Debug("Stopping daemon")
+}
+
+func (d *Daemon) Restart() {
+	d.reexecOnClose = true
+	close(d.stop)
+	d.logger.Debug("Restarting daemon")
 }
 
 func (d *Daemon) Close() error {
-	d.logger.Debug("Closing daemon")
-
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close interface: %w", err)
 	}
@@ -189,6 +194,10 @@ func (d *Daemon) Close() error {
 	}
 
 	d.logger.Debug("Closed daemon")
+
+	if d.reexecOnClose {
+		return util.ReexecSelf()
+	}
 
 	return nil
 }
