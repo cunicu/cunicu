@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DaemonClient interface {
+	GetBuildInfo(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BuildInfo, error)
 	StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	Stop(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
@@ -34,6 +35,15 @@ type daemonClient struct {
 
 func NewDaemonClient(cc grpc.ClientConnInterface) DaemonClient {
 	return &daemonClient{cc}
+}
+
+func (c *daemonClient) GetBuildInfo(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BuildInfo, error) {
+	out := new(BuildInfo)
+	err := c.cc.Invoke(ctx, "/wice.Daemon/GetBuildInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *daemonClient) StreamEvents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error) {
@@ -99,6 +109,7 @@ func (c *daemonClient) Restart(ctx context.Context, in *Empty, opts ...grpc.Call
 // All implementations must embed UnimplementedDaemonServer
 // for forward compatibility
 type DaemonServer interface {
+	GetBuildInfo(context.Context, *Empty) (*BuildInfo, error)
 	StreamEvents(*Empty, Daemon_StreamEventsServer) error
 	UnWait(context.Context, *Empty) (*Empty, error)
 	Stop(context.Context, *Empty) (*Empty, error)
@@ -110,6 +121,9 @@ type DaemonServer interface {
 type UnimplementedDaemonServer struct {
 }
 
+func (UnimplementedDaemonServer) GetBuildInfo(context.Context, *Empty) (*BuildInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBuildInfo not implemented")
+}
 func (UnimplementedDaemonServer) StreamEvents(*Empty, Daemon_StreamEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvents not implemented")
 }
@@ -133,6 +147,24 @@ type UnsafeDaemonServer interface {
 
 func RegisterDaemonServer(s grpc.ServiceRegistrar, srv DaemonServer) {
 	s.RegisterService(&Daemon_ServiceDesc, srv)
+}
+
+func _Daemon_GetBuildInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).GetBuildInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Daemon/GetBuildInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).GetBuildInfo(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Daemon_StreamEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -217,6 +249,10 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "wice.Daemon",
 	HandlerType: (*DaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetBuildInfo",
+			Handler:    _Daemon_GetBuildInfo_Handler,
+		},
 		{
 			MethodName: "UnWait",
 			Handler:    _Daemon_UnWait_Handler,

@@ -10,6 +10,7 @@ import (
 	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/util"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type DaemonServer struct {
@@ -56,6 +57,10 @@ out:
 	}
 
 	return nil
+}
+
+func (s *DaemonServer) GetBuildInfo(context.Context, *pb.Empty) (*pb.BuildInfo, error) {
+	return buildinfo.BuildInfo(), nil
 }
 
 func (s *DaemonServer) UnWait(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {

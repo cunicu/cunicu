@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SignalingClient interface {
+	GetBuildInfo(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BuildInfo, error)
 	Subscribe(ctx context.Context, in *SubscribeParams, opts ...grpc.CallOption) (Signaling_SubscribeClient, error)
 	Publish(ctx context.Context, in *SignalingEnvelope, opts ...grpc.CallOption) (*Empty, error)
 }
@@ -32,6 +33,15 @@ type signalingClient struct {
 
 func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 	return &signalingClient{cc}
+}
+
+func (c *signalingClient) GetBuildInfo(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BuildInfo, error) {
+	out := new(BuildInfo)
+	err := c.cc.Invoke(ctx, "/wice.Signaling/GetBuildInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *signalingClient) Subscribe(ctx context.Context, in *SubscribeParams, opts ...grpc.CallOption) (Signaling_SubscribeClient, error) {
@@ -79,6 +89,7 @@ func (c *signalingClient) Publish(ctx context.Context, in *SignalingEnvelope, op
 // All implementations must embed UnimplementedSignalingServer
 // for forward compatibility
 type SignalingServer interface {
+	GetBuildInfo(context.Context, *Empty) (*BuildInfo, error)
 	Subscribe(*SubscribeParams, Signaling_SubscribeServer) error
 	Publish(context.Context, *SignalingEnvelope) (*Empty, error)
 	mustEmbedUnimplementedSignalingServer()
@@ -88,6 +99,9 @@ type SignalingServer interface {
 type UnimplementedSignalingServer struct {
 }
 
+func (UnimplementedSignalingServer) GetBuildInfo(context.Context, *Empty) (*BuildInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBuildInfo not implemented")
+}
 func (UnimplementedSignalingServer) Subscribe(*SubscribeParams, Signaling_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
@@ -105,6 +119,24 @@ type UnsafeSignalingServer interface {
 
 func RegisterSignalingServer(s grpc.ServiceRegistrar, srv SignalingServer) {
 	s.RegisterService(&Signaling_ServiceDesc, srv)
+}
+
+func _Signaling_GetBuildInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignalingServer).GetBuildInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.Signaling/GetBuildInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignalingServer).GetBuildInfo(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Signaling_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -153,6 +185,10 @@ var Signaling_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "wice.Signaling",
 	HandlerType: (*SignalingServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetBuildInfo",
+			Handler:    _Signaling_GetBuildInfo_Handler,
+		},
 		{
 			MethodName: "Publish",
 			Handler:    _Signaling_Publish_Handler,

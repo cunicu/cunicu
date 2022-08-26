@@ -19,6 +19,7 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	icex "riasc.eu/wice/pkg/ice"
 	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type Client struct {
@@ -39,11 +40,15 @@ type Client struct {
 	Events chan *pb.Event
 }
 
+func DaemonRunning(path string) bool {
+	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{Name: path})
+	return err == nil && conn.Close() == nil
+}
+
 func waitForSocket(path string) error {
 	for tries := 500; tries > 0; tries-- {
-		ua := &net.UnixAddr{Name: path}
-		if conn, err := net.DialUnix("unix", nil, ua); err == nil {
-			return conn.Close()
+		if DaemonRunning(path) {
+			return nil
 		}
 
 		time.Sleep(10 * time.Millisecond)
@@ -58,7 +63,10 @@ func Connect(path string) (*Client, error) {
 	}
 
 	tgt := fmt.Sprintf("unix://%s", path)
-	conn, err := grpc.Dial(tgt, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(tgt,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUserAgent(buildinfo.UserAgent()),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -50,13 +50,7 @@ var (
 		Long:  "WireGuard Interactive Connectivity Establishment",
 
 		DisableAutoGenTag: true,
-		Version:           version,
 	}
-
-	// set via ldflags -X / goreleaser
-	version string
-	date    string
-	// commit  string
 
 	logLevel = config.Level{Level: zapcore.InfoLevel}
 	logFile  string

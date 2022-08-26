@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 var (
@@ -71,16 +71,11 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	d, err := time.Parse(time.RFC3339, date)
-	if err != nil {
-		d = time.Now()
-	}
-
 	header := &doc.GenManHeader{
 		Title:   "ɯice",
 		Section: "3",
 		Source:  "https://github.com/stv0g/wice",
-		Date:    &d,
+		Date:    buildinfo.BuiltDate,
 	}
 
 	return doc.GenManTree(rootCmd, header, dir)

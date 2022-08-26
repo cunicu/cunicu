@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -120,4 +121,32 @@ func (s *ConnectionState) Color() string {
 
 func (s *ConnectionState) MarshalText() ([]byte, error) {
 	return []byte(strings.ToLower(s.String())), nil
+}
+
+func (bi *BuildInfo) ToString() string {
+	commit := bi.Commit
+	if len(commit) > 8 {
+		commit = commit[:8]
+	}
+
+	date := "unknown"
+	if bi.Date != nil {
+		date = bi.Date.Time().Format(time.RFC3339)
+	}
+
+	return fmt.Sprintf("%s (%s, %s/%s, %s)", bi.Version, commit, bi.Os, bi.Arch, date)
+}
+
+func (bi *BuildInfos) ToString() string {
+	lines := ""
+
+	if bi.Client != nil {
+		lines += fmt.Sprintf("client: %s\n", bi.Client.ToString())
+	}
+
+	if bi.Daemon != nil {
+		lines += fmt.Sprintf("daemon: %s\n", bi.Daemon.ToString())
+	}
+
+	return lines
 }

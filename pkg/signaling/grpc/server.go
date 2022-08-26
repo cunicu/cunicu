@@ -14,13 +14,15 @@ import (
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type Server struct {
+	pb.UnimplementedSignalingServer
+
 	topicRegistry
 
 	*grpc.Server
-	pb.SignalingServer
 
 	logger *zap.Logger
 }
@@ -128,4 +130,8 @@ func (s *Server) Close() error {
 	s.Server.GracefulStop()
 
 	return nil
+}
+
+func (s *Server) GetBuildInfo(context.Context, *pb.Empty) (*pb.BuildInfo, error) {
+	return buildinfo.BuildInfo(), nil
 }

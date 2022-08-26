@@ -27,3 +27,20 @@ message Timestamp {
     int32 seconds = 1;
     int32 nanos = 2;
 }
+
+message BuildInfo {
+	string version = 1;
+	Timestamp date = 2;
+	string commit = 3;
+	string tag = 4;
+	string branch = 5;
+	string built_by = 6;
+	string os = 7;
+	string arch = 8;
+	bool dirty = 9;
+}
+
+message BuildInfos {
+	BuildInfo client = 1;
+	BuildInfo daemon = 2;
+}
