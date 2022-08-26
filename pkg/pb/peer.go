@@ -46,13 +46,16 @@ func (p *Peer) Peer() wgtypes.Peer {
 
 	q := wgtypes.Peer{
 		PublicKey:                   *(*wgtypes.Key)(p.PublicKey),
-		PresharedKey:                *(*wgtypes.Key)(p.PresharedKey),
 		Endpoint:                    endpoint,
-		PersistentKeepaliveInterval: time.Duration(p.PersistentKeepaliveInterval * uint32(time.Second)),
+		PersistentKeepaliveInterval: time.Duration(p.PersistentKeepaliveInterval) * time.Second,
 		TransmitBytes:               p.TransmitBytes,
 		ReceiveBytes:                p.ReceiveBytes,
 		AllowedIPs:                  allowedIPs,
 		ProtocolVersion:             int(p.ProtocolVersion),
+	}
+
+	if p.PresharedKey != nil {
+		q.PresharedKey = *(*wgtypes.Key)(p.PresharedKey)
 	}
 
 	if p.LastHandshakeTimestamp != nil {
