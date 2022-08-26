@@ -62,7 +62,7 @@ var _ = Describe("parse command line arguments", func() {
 	})
 
 	It("should not load anything from domains without ɯice auto-configuration", func() {
-		_, err := config.ParseArgs("-A", "google.com")
+		_, err := config.ParseArgs("-D", "google.com")
 
 		Expect(err).To(
 			And(
@@ -78,7 +78,7 @@ var _ = Describe("parse command line arguments", func() {
 
 	It("should fail when passed an non-existent domain name", func() {
 		// RFC6761 defines that "invalid" is a special domain name to always be invalid
-		_, err := config.ParseArgs("-A", "invalid")
+		_, err := config.ParseArgs("-D", "invalid")
 
 		Expect(err).To(HaveOccurred())
 	})

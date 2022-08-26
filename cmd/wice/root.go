@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -8,6 +9,7 @@ import (
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/log"
 	"riasc.eu/wice/pkg/util"
+	"riasc.eu/wice/pkg/util/terminal"
 )
 
 const (
@@ -54,15 +56,14 @@ var (
 
 	logLevel = config.Level{Level: zapcore.InfoLevel}
 	logFile  string
+	color    bool
+	stdout   io.Writer
 )
 
 func init() {
 	rootCmd.SetUsageTemplate(usageTemplate)
 
-	cobra.OnInitialize(
-		util.SetupRand,
-		setupLogging,
-	)
+	cobra.OnInitialize(onInitialize)
 
 	f := rootCmd.Flags()
 	f.SortFlags = false
@@ -70,9 +71,20 @@ func init() {
 	pf := rootCmd.PersistentFlags()
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
+	pf.BoolVarP(&color, "color", "C", true, "Enable colorization of output")
 }
 
-func setupLogging() {
+func onInitialize() {
+	// Initialize PRNG
+	util.SetupRand()
+
+	// Handle color output
+	stdout = os.Stdout
+	if supportsColor := util.IsATTY(); !supportsColor || !color {
+		stdout = terminal.NewANSIStripper(stdout)
+	}
+
+	// Setup logging
 	outputPaths := []string{"stdout"}
 	errOutputPaths := []string{"stderr"}
 

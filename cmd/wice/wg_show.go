@@ -74,6 +74,9 @@ func wgShow(cmd *cobra.Command, args []string) error {
 		} else {
 			field = "all"
 		}
+	} else {
+		mode = "all"
+		field = "all"
 	}
 
 	sts, err := rpcClient.GetStatus(context.Background(), &pb.StatusParams{
@@ -108,106 +111,107 @@ func wgShow(cmd *cobra.Command, args []string) error {
 				if err := wdev.DumpEnv(os.Stdout); err != nil {
 					return err
 				}
-			}
-
-			var value any
-			switch field {
-			case "public-key":
-				value = wdev.PublicKey
-			case "private-key":
-				value = wdev.PrivateKey
-			case "listen-port":
-				value = wdev.ListenPort
-			case "fwmark":
-				value = "off"
-				if wdev.FirewallMark != 0 {
-					value = fmt.Sprint(wdev.FirewallMark)
-				}
-			}
-
-			if value != nil {
-				fmt.Printf("%s%v\n", prefix, value)
 			} else {
-				if field == "dump" {
-					fwmark := "off"
-					if wdev.FirewallMark != 0 {
-						fwmark = fmt.Sprint(wdev.FirewallMark)
-					}
 
-					fmt.Printf("%s%s\t%s\t%d\t%s\n",
-						prefix,
-						wdev.PrivateKey,
-						wdev.PublicKey,
-						wdev.ListenPort,
-						fwmark,
-					)
+				var value any
+				switch field {
+				case "public-key":
+					value = wdev.PublicKey
+				case "private-key":
+					value = wdev.PrivateKey
+				case "listen-port":
+					value = wdev.ListenPort
+				case "fwmark":
+					value = "off"
+					if wdev.FirewallMark != 0 {
+						value = fmt.Sprint(wdev.FirewallMark)
+					}
 				}
 
-				for _, peer := range wdev.Peers {
-					switch field {
-					case "peers":
-						fmt.Printf("%s%s\n", prefix, peer.PublicKey)
-						continue
-					case "preshared-keys":
-						value = peer.PresharedKey
-					case "endpoints":
-						value = peer.Endpoint
-					case "allowed-ips":
-						aips := []string{}
-						for _, aip := range peer.AllowedIPs {
-							aips = append(aips, aip.String())
-						}
-						value = strings.Join(aips, " ")
-					case "latest-handshakes":
-						value = peer.LastHandshakeTime.Unix()
-						if peer.LastHandshakeTime.IsZero() {
-							value = 0
-						}
-					case "transfer":
-						value = fmt.Sprintf("%d\t%d", peer.ReceiveBytes, peer.TransmitBytes)
-					case "persistent-keepalive":
-						value = peer.PersistentKeepaliveInterval.Seconds()
-						if peer.PersistentKeepaliveInterval == 0 {
-							value = "off"
-						}
-					case "dump":
-						as := []string{}
-						for _, aip := range peer.AllowedIPs {
-							as = append(as, aip.String())
-						}
-						aIPs := strings.Join(as, ",")
-
-						zero := wgtypes.Key{}
-						psk := "(none)"
-						if peer.PresharedKey != zero {
-							psk = peer.PresharedKey.String()
+				if value != nil {
+					fmt.Printf("%s%v\n", prefix, value)
+				} else {
+					if field == "dump" {
+						fwmark := "off"
+						if wdev.FirewallMark != 0 {
+							fwmark = fmt.Sprint(wdev.FirewallMark)
 						}
 
-						ep := ""
-						if peer.Endpoint != nil {
-							ep = peer.Endpoint.String()
-						}
-
-						pka := "off"
-						if peer.PersistentKeepaliveInterval.Seconds() > 0 {
-							pka = fmt.Sprintf("%d", int(peer.PersistentKeepaliveInterval.Seconds()))
-						}
-
-						lhs := int64(0)
-						if !peer.LastHandshakeTime.IsZero() {
-							lhs = peer.LastHandshakeTime.Unix()
-						}
-
-						value = fmt.Sprintf("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%s",
-							peer.PublicKey,
-							psk, ep, aIPs, lhs,
-							peer.ReceiveBytes,
-							peer.TransmitBytes,
-							pka,
+						fmt.Printf("%s%s\t%s\t%d\t%s\n",
+							prefix,
+							wdev.PrivateKey,
+							wdev.PublicKey,
+							wdev.ListenPort,
+							fwmark,
 						)
 					}
 
-					fmt.Printf("%s%s\t%v\n", prefix, peer.PublicKey, value)
+					for _, peer := range wdev.Peers {
+						switch field {
+						case "peers":
+							fmt.Printf("%s%s\n", prefix, peer.PublicKey)
+							continue
+						case "preshared-keys":
+							value = peer.PresharedKey
+						case "endpoints":
+							value = peer.Endpoint
+						case "allowed-ips":
+							aips := []string{}
+							for _, aip := range peer.AllowedIPs {
+								aips = append(aips, aip.String())
+							}
+							value = strings.Join(aips, " ")
+						case "latest-handshakes":
+							value = peer.LastHandshakeTime.Unix()
+							if peer.LastHandshakeTime.IsZero() {
+								value = 0
+							}
+						case "transfer":
+							value = fmt.Sprintf("%d\t%d", peer.ReceiveBytes, peer.TransmitBytes)
+						case "persistent-keepalive":
+							value = peer.PersistentKeepaliveInterval.Seconds()
+							if peer.PersistentKeepaliveInterval == 0 {
+								value = "off"
+							}
+						case "dump":
+							as := []string{}
+							for _, aip := range peer.AllowedIPs {
+								as = append(as, aip.String())
+							}
+							aIPs := strings.Join(as, ",")
+
+							zero := wgtypes.Key{}
+							psk := "(none)"
+							if peer.PresharedKey != zero {
+								psk = peer.PresharedKey.String()
+							}
+
+							ep := ""
+							if peer.Endpoint != nil {
+								ep = peer.Endpoint.String()
+							}
+
+							pka := "off"
+							if peer.PersistentKeepaliveInterval.Seconds() > 0 {
+								pka = fmt.Sprintf("%d", int(peer.PersistentKeepaliveInterval.Seconds()))
+							}
+
+							lhs := int64(0)
+							if !peer.LastHandshakeTime.IsZero() {
+								lhs = peer.LastHandshakeTime.Unix()
+							}
+
+							value = fmt.Sprintf("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%s",
+								peer.PublicKey,
+								psk, ep, aIPs, lhs,
+								peer.ReceiveBytes,
+								peer.TransmitBytes,
+								pka,
+							)
+						}
+
+						fmt.Printf("%s%s\t%v\n", prefix, peer.PublicKey, value)
+					}
 				}
 			}
 		}
