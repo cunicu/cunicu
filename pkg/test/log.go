@@ -10,7 +10,6 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/log"
-	"riasc.eu/wice/pkg/util"
 )
 
 type writerWrapper struct {
@@ -60,7 +59,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
 		}
 
-		ginkgo.GinkgoWriter.TeeTo(util.NewANSIStripper(f))
+		ginkgo.GinkgoWriter.TeeTo(t.NewANSIStripper(f))
 	}
 
 	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)

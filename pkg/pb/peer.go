@@ -66,7 +66,7 @@ func (p *Peer) Peer() wgtypes.Peer {
 }
 
 func (p *Peer) Dump(wr io.Writer, verbosity int) error {
-	wri := util.NewIndenter(wr, "  ")
+	wri := t.NewIndenter(wr, "  ")
 
 	if _, err := fmt.Fprintf(wr, t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", base64.StdEncoding.EncodeToString(p.PublicKey)); err != nil {
 		return err

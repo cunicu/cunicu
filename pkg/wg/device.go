@@ -9,6 +9,7 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/util"
+	"riasc.eu/wice/pkg/util/terminal"
 	t "riasc.eu/wice/pkg/util/terminal"
 )
 
@@ -41,7 +42,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	}
 
 	if !color {
-		wr = util.NewANSIStripper(wr)
+		wr = terminal.NewANSIStripper(wr)
 	}
 
 	switch os.Getenv("WG_HIDE_KEYS") {
@@ -57,7 +58,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 }
 
 func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
-	wri := util.NewIndenter(wr, "  ")
+	wri := terminal.NewIndenter(wr, "  ")
 
 	if _, err := fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name); err != nil {
 		return err
