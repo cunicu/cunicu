@@ -74,8 +74,8 @@ func (s *Server) Wait() {
 }
 
 func (s *Server) Close() error {
-	s.grpc.GracefulStop()
 	s.events.Close()
+	s.grpc.GracefulStop()
 
 	return nil
 }
