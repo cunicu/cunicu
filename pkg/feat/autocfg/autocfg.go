@@ -67,6 +67,8 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) *AutoCon
 }
 
 func (a *AutoConfig) Start() error {
+	a.logger.Info("Started interface auto-configuration")
+
 	return nil
 }
 
@@ -135,7 +137,6 @@ func (a *AutoConfig) OnPeerAdded(p *core.Peer) {
 func (a *AutoConfig) OnPeerRemoved(p *core.Peer) {}
 
 func (a *AutoConfig) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
-
 }
 
 // fixupInterface fixes the WireGuard device configuration by applying missing settings

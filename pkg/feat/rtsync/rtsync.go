@@ -14,8 +14,6 @@ import (
 )
 
 type RouteSync struct {
-	watcher *watcher.Watcher
-
 	gwMap map[netip.Addr]*core.Peer
 
 	stop chan struct{}
@@ -24,18 +22,17 @@ type RouteSync struct {
 }
 
 func New(w *watcher.Watcher, table string) *RouteSync {
-	s := &RouteSync{
-		watcher: w,
-		gwMap:   map[netip.Addr]*core.Peer{},
-		stop:    make(chan struct{}),
-		logger:  zap.L().Named("sync.routes"),
+	rs := &RouteSync{
+		gwMap:  map[netip.Addr]*core.Peer{},
+		stop:   make(chan struct{}),
+		logger: zap.L().Named("sync.routes"),
 	}
 
-	w.OnPeer(s)
+	w.OnPeer(rs)
 
-	go s.watchKernel()
+	go rs.watchKernel()
 
-	return s
+	return rs
 }
 
 func (rs *RouteSync) Start() error {

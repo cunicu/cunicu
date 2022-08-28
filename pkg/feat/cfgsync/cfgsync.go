@@ -32,7 +32,7 @@ type ConfigSync struct {
 
 // New creates a new Syncer
 func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, user bool) *ConfigSync {
-	s := &ConfigSync{
+	cs := &ConfigSync{
 		watcher: w,
 		client:  client,
 		cfgPath: cfgPath,
@@ -40,13 +40,13 @@ func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, 
 		logger:  zap.L().Named("sync.config"),
 	}
 
-	w.OnInterface(s)
+	w.OnInterface(cs)
 
 	if watch {
-		go s.watch()
+		go cs.watch()
 	}
 
-	return s
+	return cs
 }
 
 func (cs *ConfigSync) Start() error {

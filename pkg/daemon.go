@@ -10,11 +10,7 @@ import (
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/feat"
-	"riasc.eu/wice/pkg/feat/autocfg"
-	"riasc.eu/wice/pkg/feat/cfgsync"
 	"riasc.eu/wice/pkg/feat/epdisc"
-	"riasc.eu/wice/pkg/feat/hsync"
-	"riasc.eu/wice/pkg/feat/rtsync"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
@@ -27,12 +23,12 @@ type Daemon struct {
 
 	Features []feat.Feature
 
-	EPDisc *epdisc.EndpointDiscovery
+	EndpointDiscovery *epdisc.EndpointDiscovery
 
 	// Shared
 	Backend *signaling.MultiBackend
-	client  *wgctrl.Client
-	config  *config.Config
+	Client  *wgctrl.Client
+	Config  *config.Config
 
 	devices []device.Device
 
@@ -51,7 +47,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	d := &Daemon{
-		config:  cfg,
+		Config:  cfg,
 		devices: []device.Device{},
 		stop:    make(chan any),
 	}
@@ -59,13 +55,13 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	d.logger = zap.L().Named("daemon")
 
 	// Create WireGuard netlink socket
-	d.client, err = wgctrl.New()
+	d.Client, err = wgctrl.New()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
 	}
 
 	// Create watcher
-	if d.Watcher, err = watcher.New(d.client, cfg.WatchInterval, &cfg.WireGuard.InterfaceFilter.Regexp); err != nil {
+	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, &cfg.WireGuard.InterfaceFilter.Regexp); err != nil {
 		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
 	}
 
@@ -88,9 +84,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		cfg.WireGuard.Userspace = !wg.KernelModuleExists()
 	}
 
-	if err := d.setupFeatures(); err != nil {
-		return nil, err
-	}
+	d.Features, d.EndpointDiscovery = feat.NewFeatures(d.Watcher, d.Config, d.Client, d.Backend)
 
 	for _, feat := range d.Features {
 		if err := feat.Start(); err != nil {
@@ -99,31 +93,6 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	return d, nil
-}
-
-func (d *Daemon) setupFeatures() error {
-	if d.config.AutoConfig.Enabled {
-		d.Features = append(d.Features, autocfg.New(d.Watcher, d.config, d.client))
-	}
-
-	if d.config.ConfigSync.Enabled {
-		d.Features = append(d.Features, cfgsync.New(d.Watcher, d.client, d.config.ConfigSync.Path, d.config.ConfigSync.Watch, d.config.WireGuard.Userspace))
-	}
-
-	if d.config.RouteSync.Enabled {
-		d.Features = append(d.Features, rtsync.New(d.Watcher, d.config.RouteSync.Table))
-	}
-
-	if d.config.HostSync.Enabled {
-		d.Features = append(d.Features, hsync.New(d.Watcher))
-	}
-
-	if d.config.EndpointDisc.Enabled {
-		d.EPDisc = epdisc.New(d.Watcher, d.config, d.client, d.Backend)
-		d.Features = append(d.Features, d.EPDisc)
-	}
-
-	return nil
 }
 
 func (d *Daemon) Run() error {
@@ -183,7 +152,7 @@ func (d *Daemon) Close() error {
 		}
 	}
 
-	if err := d.client.Close(); err != nil {
+	if err := d.Client.Close(); err != nil {
 		return fmt.Errorf("failed to close WireGuard client: %w", err)
 	}
 
@@ -206,21 +175,21 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 	var devs wg.Devices
 	var err error
 
-	if devs, err = d.client.Devices(); err != nil {
+	if devs, err = d.Client.Devices(); err != nil {
 		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
-	for _, devName := range d.config.WireGuard.Interfaces {
-		if !d.config.WireGuard.InterfaceFilter.MatchString(devName) {
+	for _, devName := range d.Config.WireGuard.Interfaces {
+		if !d.Config.WireGuard.InterfaceFilter.MatchString(devName) {
 			return fmt.Errorf("device '%s' is not matched by WireGuard interface filter '%s'",
-				devName, d.config.WireGuard.InterfaceFilter.String())
+				devName, d.Config.WireGuard.InterfaceFilter.String())
 		}
 
 		if wgdev := devs.GetByName(devName); wgdev != nil {
 			return fmt.Errorf("device '%s' already exists", devName)
 		}
 
-		dev, err := device.NewDevice(devName, d.config.WireGuard.Userspace)
+		dev, err := device.NewDevice(devName, d.Config.WireGuard.Userspace)
 		if err != nil {
 			return fmt.Errorf("failed to create WireGuard device: %w", err)
 		}
