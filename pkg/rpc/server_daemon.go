@@ -7,14 +7,17 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	wice "riasc.eu/wice/pkg"
-	"riasc.eu/wice/pkg/pb"
+
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/util/buildinfo"
+
+	wice "riasc.eu/wice/pkg"
+	proto "riasc.eu/wice/pkg/proto"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type DaemonServer struct {
-	pb.UnimplementedDaemonServer
+	rpcproto.UnimplementedDaemonServer
 
 	*Server
 	*wice.Daemon
@@ -26,16 +29,16 @@ func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
 		Daemon: d,
 	}
 
-	pb.RegisterDaemonServer(s.grpc, ds)
+	rpcproto.RegisterDaemonServer(s.grpc, ds)
 
 	return ds
 }
 
-func (s *DaemonServer) StreamEvents(params *pb.Empty, stream pb.Daemon_StreamEventsServer) error {
+func (s *DaemonServer) StreamEvents(params *proto.Empty, stream rpcproto.Daemon_StreamEventsServer) error {
 
 	// Send initial connection state of all peers
-	if s.epice != nil {
-		s.epice.SendConnectionStates(stream)
+	if s.epdisc != nil {
+		s.epdisc.SendConnectionStates(stream)
 	}
 
 	events := s.events.Add()
@@ -59,11 +62,11 @@ out:
 	return nil
 }
 
-func (s *DaemonServer) GetBuildInfo(context.Context, *pb.Empty) (*pb.BuildInfo, error) {
+func (s *DaemonServer) GetBuildInfo(context.Context, *proto.Empty) (*proto.BuildInfo, error) {
 	return buildinfo.BuildInfo(), nil
 }
 
-func (s *DaemonServer) UnWait(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
+func (s *DaemonServer) UnWait(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
 	err := status.Error(codes.AlreadyExists, "RPC socket has already been unwaited")
 
 	s.waitOnce.Do(func() {
@@ -71,16 +74,16 @@ func (s *DaemonServer) UnWait(ctx context.Context, params *pb.Empty) (*pb.Empty,
 		err = nil
 	})
 
-	return &pb.Empty{}, err
+	return &proto.Empty{}, err
 }
 
-func (s *DaemonServer) Stop(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
+func (s *DaemonServer) Stop(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
 	s.Daemon.Stop()
 
-	return &pb.Empty{}, nil
+	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) Restart(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
+func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
 	if util.ReexecSelfSupported {
 		s.Daemon.Restart()
 	} else {

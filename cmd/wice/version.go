@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proto"
 	"riasc.eu/wice/pkg/rpc"
 	"riasc.eu/wice/pkg/util/buildinfo"
 )
@@ -32,7 +32,7 @@ func init() {
 func version(cmd *cobra.Command, args []string) error {
 	var err error
 
-	buildInfos := &pb.BuildInfos{
+	buildInfos := &proto.BuildInfos{
 		Client: buildinfo.BuildInfo(),
 	}
 
@@ -41,7 +41,7 @@ func version(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to connect to control socket: %w", err)
 		}
 
-		if buildInfos.Daemon, err = rpcClient.DaemonClient.GetBuildInfo(context.Background(), &pb.Empty{}); err != nil {
+		if buildInfos.Daemon, err = rpcClient.DaemonClient.GetBuildInfo(context.Background(), &proto.Empty{}); err != nil {
 			logger.Fatal("Failed to retrieve status from daemon", zap.Error(err))
 		}
 	}

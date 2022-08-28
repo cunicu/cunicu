@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package wice.rpc;
+option go_package = "riasc.eu/wice/pkg/proto/rpc";
+
+import "common.proto";
+
+message RestartPeerParams {
+    string intf = 1;
+    bytes peer = 2;
+}
+
+service EndpointDiscoverySocket {
+    rpc RestartPeer(RestartPeerParams) returns (Empty) {}
+}

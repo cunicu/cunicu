@@ -3,11 +3,12 @@ package signaling
 
 import (
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
-type Message = pb.SignalingMessage
-type Envelope = pb.SignalingEnvelope
+type Message = signalingproto.Message
+type Envelope = signalingproto.Envelope
 
 type MessageHandler interface {
 	OnSignalingMessage(*crypto.PublicKeyPair, *Message)

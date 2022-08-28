@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proto"
 )
 
 var restartCmd = &cobra.Command{
@@ -20,7 +20,7 @@ func init() {
 }
 
 func restart(cmd *cobra.Command, args []string) error {
-	if _, err := rpcClient.Restart(context.Background(), &pb.Empty{}); err != nil {
+	if _, err := rpcClient.Restart(context.Background(), &proto.Empty{}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}
 

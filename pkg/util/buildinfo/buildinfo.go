@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proto"
 )
 
 var (
@@ -34,8 +34,8 @@ func init() {
 	}
 }
 
-func BuildInfo() *pb.BuildInfo {
-	bi := &pb.BuildInfo{
+func BuildInfo() *proto.BuildInfo {
+	bi := &proto.BuildInfo{
 		Version: Version,
 		Commit:  Commit,
 		Tag:     Tag,
@@ -47,7 +47,7 @@ func BuildInfo() *pb.BuildInfo {
 	}
 
 	if BuiltDate != nil {
-		bi.Date = pb.Time(*BuiltDate)
+		bi.Date = proto.Time(*BuiltDate)
 	}
 
 	return bi

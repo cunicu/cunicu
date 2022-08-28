@@ -7,12 +7,14 @@ import (
 	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proto"
+	coreproto "riasc.eu/wice/pkg/proto/core"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 	"riasc.eu/wice/pkg/watcher"
 )
 
 type WatcherServer struct {
-	pb.UnimplementedWatcherServer
+	rpcproto.UnimplementedWatcherServer
 
 	*Server
 	*watcher.Watcher
@@ -24,14 +26,14 @@ func NewWatcherServer(s *Server, w *watcher.Watcher) *WatcherServer {
 		Watcher: w,
 	}
 
-	pb.RegisterWatcherServer(s.grpc, ws)
+	rpcproto.RegisterWatcherServer(s.grpc, ws)
 
 	w.OnAll(s)
 
 	return ws
 }
 
-func (s *WatcherServer) GetStatus(ctx context.Context, p *pb.StatusParams) (*pb.StatusResp, error) {
+func (s *WatcherServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams) (*rpcproto.StatusResp, error) {
 	var err error
 	var pk crypto.Key
 
@@ -44,21 +46,21 @@ func (s *WatcherServer) GetStatus(ctx context.Context, p *pb.StatusParams) (*pb.
 		}
 	}
 
-	qis := []*pb.Interface{}
+	qis := []*coreproto.Interface{}
 	for _, ci := range s.Interfaces {
 		if p.Intf != "" && ci.Name() != p.Intf {
 			continue
 		}
 
-		qi := ci.MarshalWithPeers(func(cp *core.Peer) *pb.Peer {
+		qi := ci.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
 			if pk.IsSet() && pk != cp.PublicKey() {
 				return nil
 			}
 
 			qp := cp.Marshal()
 
-			if s.epice != nil {
-				qp.Ice = s.epice.PeerStatus(cp)
+			if s.epdisc != nil {
+				qp.Ice = s.epdisc.PeerStatus(cp)
 			}
 
 			return qp
@@ -74,31 +76,15 @@ func (s *WatcherServer) GetStatus(ctx context.Context, p *pb.StatusParams) (*pb.
 		return nil, status.Errorf(codes.NotFound, "no such peer '%s' for interface '%s'", pk, p.Intf)
 	}
 
-	return &pb.StatusResp{
+	return &rpcproto.StatusResp{
 		Interfaces: qis,
 	}, nil
 }
 
-func (s *WatcherServer) Sync(ctx context.Context, params *pb.Empty) (*pb.Empty, error) {
+func (s *WatcherServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
 	if err := s.Watcher.Sync(); err != nil {
-		return &pb.Empty{}, status.Errorf(codes.Unknown, "failed to sync: %s", err)
+		return &proto.Empty{}, status.Errorf(codes.Unknown, "failed to sync: %s", err)
 	}
 
-	return &pb.Empty{}, nil
-}
-
-func (s *WatcherServer) RemoveInterface(ctx context.Context, params *pb.RemoveInterfaceParams) (*pb.Empty, error) {
-	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
-}
-
-func (s *WatcherServer) SyncInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Empty, error) {
-	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
-}
-
-func (s *WatcherServer) AddInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Empty, error) {
-	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
-}
-
-func (s *WatcherServer) SetInterfaceConfig(ctx context.Context, params *pb.InterfaceConfigParams) (*pb.Empty, error) {
-	return &pb.Empty{}, status.Error(codes.Unimplemented, "not implemented yet")
+	return &proto.Empty{}, nil
 }

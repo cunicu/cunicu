@@ -10,11 +10,11 @@ import (
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/feat"
-	ac "riasc.eu/wice/pkg/feat/auto"
-	ep "riasc.eu/wice/pkg/feat/disc/epice"
-	cs "riasc.eu/wice/pkg/feat/sync/config"
-	hs "riasc.eu/wice/pkg/feat/sync/hosts"
-	rs "riasc.eu/wice/pkg/feat/sync/routes"
+	"riasc.eu/wice/pkg/feat/autocfg"
+	"riasc.eu/wice/pkg/feat/cfgsync"
+	"riasc.eu/wice/pkg/feat/epdisc"
+	"riasc.eu/wice/pkg/feat/hsync"
+	"riasc.eu/wice/pkg/feat/rtsync"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
@@ -27,7 +27,7 @@ type Daemon struct {
 
 	Features []feat.Feature
 
-	EPDisc *ep.EndpointDiscovery
+	EPDisc *epdisc.EndpointDiscovery
 
 	// Shared
 	Backend *signaling.MultiBackend
@@ -103,23 +103,23 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 func (d *Daemon) setupFeatures() error {
 	if d.config.AutoConfig.Enabled {
-		d.Features = append(d.Features, ac.New(d.Watcher, d.config, d.client))
+		d.Features = append(d.Features, autocfg.New(d.Watcher, d.config, d.client))
 	}
 
 	if d.config.ConfigSync.Enabled {
-		d.Features = append(d.Features, cs.New(d.Watcher, d.client, d.config.ConfigSync.Path, d.config.ConfigSync.Watch, d.config.WireGuard.Userspace))
+		d.Features = append(d.Features, cfgsync.New(d.Watcher, d.client, d.config.ConfigSync.Path, d.config.ConfigSync.Watch, d.config.WireGuard.Userspace))
 	}
 
 	if d.config.RouteSync.Enabled {
-		d.Features = append(d.Features, rs.New(d.Watcher, d.config.RouteSync.Table))
+		d.Features = append(d.Features, rtsync.New(d.Watcher, d.config.RouteSync.Table))
 	}
 
 	if d.config.HostSync.Enabled {
-		d.Features = append(d.Features, hs.New(d.Watcher))
+		d.Features = append(d.Features, hsync.New(d.Watcher))
 	}
 
 	if d.config.EndpointDisc.Enabled {
-		d.EPDisc = ep.New(d.Watcher, d.config, d.client, d.Backend)
+		d.EPDisc = epdisc.New(d.Watcher, d.config, d.client, d.Backend)
 		d.Features = append(d.Features, d.EPDisc)
 	}
 

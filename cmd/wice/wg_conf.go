@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"riasc.eu/wice/pkg/pb"
+
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 var (
@@ -26,7 +27,7 @@ func init() {
 func wgShowConf(cmd *cobra.Command, args []string) error {
 	intfName := args[0]
 
-	sts, err := rpcClient.GetStatus(context.Background(), &pb.StatusParams{
+	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{
 		Intf: intfName,
 	})
 	if err != nil {

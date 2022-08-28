@@ -11,9 +11,12 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/wg"
+
+	proto "riasc.eu/wice/pkg/proto"
+	coreproto "riasc.eu/wice/pkg/proto/core"
+	pdiscproto "riasc.eu/wice/pkg/proto/feat/pdisc"
 )
 
 type Interface struct {
@@ -305,16 +308,16 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	return i, nil
 }
 
-func (i *Interface) Marshal() *pb.Interface {
-	return i.MarshalWithPeers(func(p *Peer) *pb.Peer {
+func (i *Interface) Marshal() *coreproto.Interface {
+	return i.MarshalWithPeers(func(p *Peer) *coreproto.Peer {
 		return p.Marshal()
 	})
 }
 
-func (i *Interface) MarshalWithPeers(cb func(p *Peer) *pb.Peer) *pb.Interface {
-	q := &pb.Interface{
+func (i *Interface) MarshalWithPeers(cb func(p *Peer) *coreproto.Peer) *coreproto.Interface {
+	q := &coreproto.Interface{
 		Name:         i.Name(),
-		Type:         pb.Interface_Type(i.Type),
+		Type:         coreproto.InterfaceType(i.Type),
 		ListenPort:   uint32(i.ListenPort),
 		FirewallMark: uint32(i.FirewallMark),
 		Mtu:          uint32(i.KernelDevice.MTU()),
@@ -330,7 +333,7 @@ func (i *Interface) MarshalWithPeers(cb func(p *Peer) *pb.Peer) *pb.Interface {
 	}
 
 	if !i.LastSync.IsZero() {
-		q.LastSyncTimestamp = pb.Time(i.LastSync)
+		q.LastSyncTimestamp = proto.Time(i.LastSync)
 	}
 
 	if i.PrivateKey().IsSet() {
@@ -339,4 +342,15 @@ func (i *Interface) MarshalWithPeers(cb func(p *Peer) *pb.Peer) *pb.Interface {
 	}
 
 	return q
+}
+
+func (i *Interface) MarshalDescription() (*pdiscproto.PeerDescription, error) {
+	hn, err := os.Hostname()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get hostname: %w", err)
+	}
+
+	return &pdiscproto.PeerDescription{
+		Hostname: hn,
+	}, nil
 }

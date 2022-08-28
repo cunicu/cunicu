@@ -17,18 +17,19 @@ import (
 	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	icex "riasc.eu/wice/pkg/ice"
-	"riasc.eu/wice/pkg/pb"
+	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
+	"riasc.eu/wice/pkg/proto"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type Client struct {
 	io.Closer
 
-	pb.EndpointDiscoverySocketClient
-	pb.SignalingClient
-	pb.DaemonClient
-	pb.WatcherClient
+	rpcproto.EndpointDiscoverySocketClient
+	rpcproto.SignalingClient
+	rpcproto.DaemonClient
+	rpcproto.WatcherClient
 
 	conn   *grpc.ClientConn
 	logger *zap.Logger
@@ -37,7 +38,7 @@ type Client struct {
 	connectionStatesLock sync.Mutex
 	connectionStatesCond *sync.Cond
 
-	Events chan *pb.Event
+	Events chan *rpcproto.Event
 }
 
 func DaemonRunning(path string) bool {
@@ -74,10 +75,10 @@ func Connect(path string) (*Client, error) {
 	logger := zap.L().Named("rpc.client").With(zap.String("path", path))
 
 	client := &Client{
-		EndpointDiscoverySocketClient: pb.NewEndpointDiscoverySocketClient(conn),
-		SignalingClient:               pb.NewSignalingClient(conn),
-		DaemonClient:                  pb.NewDaemonClient(conn),
-		WatcherClient:                 pb.NewWatcherClient(conn),
+		EndpointDiscoverySocketClient: rpcproto.NewEndpointDiscoverySocketClient(conn),
+		SignalingClient:               rpcproto.NewSignalingClient(conn),
+		DaemonClient:                  rpcproto.NewDaemonClient(conn),
+		WatcherClient:                 rpcproto.NewWatcherClient(conn),
 
 		conn:             conn,
 		logger:           logger,
@@ -87,7 +88,7 @@ func Connect(path string) (*Client, error) {
 
 	go client.streamEvents()
 
-	_, err = client.UnWait(context.Background(), &pb.Empty{})
+	_, err = client.UnWait(context.Background(), &proto.Empty{})
 	if sts := status.Convert(err); sts != nil && sts.Code() != codes.AlreadyExists {
 		return nil, fmt.Errorf("failed RPC request: %w", err)
 	}
@@ -107,10 +108,10 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) streamEvents() {
-	c.Events = make(chan *pb.Event, 100)
+	c.Events = make(chan *rpcproto.Event, 100)
 	defer close(c.Events)
 
-	stream, err := c.StreamEvents(context.Background(), &pb.Empty{})
+	stream, err := c.StreamEvents(context.Background(), &proto.Empty{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
 		return
@@ -126,8 +127,8 @@ func (c *Client) streamEvents() {
 			break
 		}
 
-		if e.Type == pb.Event_PEER_CONNECTION_STATE_CHANGED {
-			if pcs, ok := e.Event.(*pb.Event_PeerConnectionStateChange); ok {
+		if e.Type == rpcproto.Event_PEER_CONNECTION_STATE_CHANGED {
+			if pcs, ok := e.Event.(*rpcproto.Event_PeerConnectionStateChange); ok {
 				pk, err := crypto.ParseKeyBytes(e.Peer)
 				if err != nil {
 					c.logger.Error("Invalid key", zap.Error(err))
@@ -147,7 +148,7 @@ func (c *Client) streamEvents() {
 	}
 }
 
-func (c *Client) WaitForEvent(ctx context.Context, t pb.Event_Type, intf string, peer crypto.Key) (*pb.Event, error) {
+func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.Event_Type, intf string, peer crypto.Key) (*rpcproto.Event, error) {
 	for {
 		select {
 		case e, ok := <-c.Events:
@@ -177,12 +178,12 @@ func (c *Client) WaitForEvent(ctx context.Context, t pb.Event_Type, intf string,
 
 func (c *Client) WaitForPeerHandshake(ctx context.Context, peer crypto.Key) error {
 	for {
-		e, err := c.WaitForEvent(ctx, pb.Event_PEER_MODIFIED, "", peer)
+		e, err := c.WaitForEvent(ctx, rpcproto.Event_PEER_MODIFIED, "", peer)
 		if err != nil {
 			return err
 		}
 
-		ee, ok := e.Event.(*pb.Event_PeerModified)
+		ee, ok := e.Event.(*rpcproto.Event_PeerModified)
 		if !ok {
 			continue
 		}
@@ -217,7 +218,7 @@ func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key
 }
 
 func (c *Client) RestartPeer(ctx context.Context, intf string, pk *crypto.Key) error {
-	_, err := c.EndpointDiscoverySocketClient.RestartPeer(ctx, &pb.RestartPeerParams{
+	_, err := c.EndpointDiscoverySocketClient.RestartPeer(ctx, &rpcproto.RestartPeerParams{
 		Intf: intf,
 		Peer: pk.Bytes(),
 	})

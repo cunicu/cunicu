@@ -11,14 +11,17 @@ import (
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/proto"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/util/buildinfo"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
 type Server struct {
-	pb.UnimplementedSignalingServer
+	signalingproto.UnimplementedSignalingServer
 
 	topicRegistry
 
@@ -54,12 +57,12 @@ func NewServer(opts ...grpc.ServerOption) *Server {
 		logger: logger,
 	}
 
-	pb.RegisterSignalingServer(s, s)
+	signalingproto.RegisterSignalingServer(s, s)
 
 	return s
 }
 
-func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_SubscribeServer) error {
+func (s *Server) Subscribe(params *signalingproto.SubscribeParams, stream signalingproto.Signaling_SubscribeServer) error {
 	pk, err := crypto.ParseKeyBytes(params.Key)
 	if err != nil {
 		return fmt.Errorf("invalid key: %w", err)
@@ -73,7 +76,7 @@ func (s *Server) Subscribe(params *pb.SubscribeParams, stream pb.Signaling_Subsc
 	// We send an empty envelope to signal the subscriber that the subscription
 	// has been created. This avoids a race between Subscribe() & Publish() from the
 	// clients view-point.
-	if err := stream.Send(&pb.SignalingEnvelope{}); err != nil {
+	if err := stream.Send(&signalingproto.Envelope{}); err != nil {
 		s.logger.Error("Failed to send sync envelope", zap.Error(err))
 	}
 
@@ -99,16 +102,16 @@ out:
 	return nil
 }
 
-func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Empty, error) {
+func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*proto.Empty, error) {
 	var err error
 	var pkRecipient, pkSender crypto.Key
 
 	if pkRecipient, err = crypto.ParseKeyBytes(env.Recipient); err != nil {
-		return &pb.Empty{}, fmt.Errorf("invalid recipient key: %w", err)
+		return &proto.Empty{}, fmt.Errorf("invalid recipient key: %w", err)
 	}
 
 	if pkSender, err = crypto.ParseKeyBytes(env.Sender); err != nil {
-		return &pb.Empty{}, fmt.Errorf("invalid sender key: %w", err)
+		return &proto.Empty{}, fmt.Errorf("invalid sender key: %w", err)
 	}
 
 	t := s.getTopic(&pkRecipient)
@@ -119,7 +122,7 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*pb.Empt
 		zap.Any("recipient", pkRecipient),
 		zap.Any("sender", pkSender))
 
-	return &pb.Empty{}, nil
+	return &proto.Empty{}, nil
 }
 
 func (s *Server) Close() error {
@@ -132,6 +135,6 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) GetBuildInfo(context.Context, *pb.Empty) (*pb.BuildInfo, error) {
+func (s *Server) GetBuildInfo(context.Context, *proto.Empty) (*proto.BuildInfo, error) {
 	return buildinfo.BuildInfo(), nil
 }

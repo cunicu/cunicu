@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package wice.rpc;
+option go_package = "riasc.eu/wice/pkg/proto/rpc";
+
+import "common.proto";
+import "signaling/signaling.proto";
+
+message GetSignalingMessageParams {
+    // Interface name
+    string intf = 1;
+    
+    // Public key of peer
+    bytes peer = 2;
+}
+
+message GetSignalingMessageResp {
+    signaling.Envelope envelope = 1;
+}
+
+message PutSignalingMessageParams {
+    signaling.Envelope envelope = 1;
+}
+
+
+service Signaling {
+    rpc GetSignalingMessage(GetSignalingMessageParams) returns (GetSignalingMessageResp) {}
+    rpc PutSignalingMessage(PutSignalingMessageParams) returns (Empty) {}
+}

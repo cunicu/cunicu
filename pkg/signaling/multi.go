@@ -6,7 +6,8 @@ import (
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
 type MultiBackend struct {
@@ -31,11 +32,11 @@ func NewMultiBackend(uris []*url.URL, cfg *BackendConfig) (*MultiBackend, error)
 	return mb, nil
 }
 
-func (mb *MultiBackend) Type() pb.BackendType {
-	return pb.BackendType_MULTI
+func (mb *MultiBackend) Type() signalingproto.BackendType {
+	return signalingproto.BackendType_MULTI
 }
 
-func (mb *MultiBackend) ByType(t pb.BackendType) Backend {
+func (mb *MultiBackend) ByType(t signalingproto.BackendType) Backend {
 	for _, b := range mb.Backends {
 		if b.Type() == t {
 			return b
