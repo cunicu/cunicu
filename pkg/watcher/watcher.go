@@ -1,3 +1,4 @@
+// The watcher package keeps track and monitors for new, removed and modified WireGuard interfaces and peers.
 package watcher
 
 import (

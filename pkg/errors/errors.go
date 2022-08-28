@@ -1,3 +1,4 @@
+// The errors package defines project-wide errors
 package errors
 
 import "errors"

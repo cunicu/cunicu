@@ -1,3 +1,4 @@
+// Package config defines, loads and parses project wide configuration settings from various sources
 package config
 
 import (

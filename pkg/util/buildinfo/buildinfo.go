@@ -1,3 +1,4 @@
+// Package buildinfo provides access to build-time information such as the build date and version control details
 package buildinfo
 
 import (

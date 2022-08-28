@@ -1,3 +1,4 @@
+// Package test implements universal helpers for unit and integration tests
 package test
 
 import (

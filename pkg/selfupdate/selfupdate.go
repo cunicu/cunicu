@@ -1,3 +1,4 @@
+// Package selfupdate implements a cryptographically secured self-update mechanism which fetches binaries via GitHub's API.
 package selfupdate
 
 // derived from http://github.com/restic/restic
