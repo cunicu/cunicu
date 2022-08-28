@@ -15,7 +15,7 @@ const (
 	PeerModifiedAllowedIPs
 	PeerModifiedProtocolVersion
 	PeerModifiedName
-	PeerModifierCount = iota
+	PeerModifierCount = 8
 )
 
 var (
