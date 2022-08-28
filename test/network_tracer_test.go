@@ -5,7 +5,7 @@ package test_test
 import (
 	"bytes"
 
-	"github.com/google/gopacket/pcapgo"
+	"github.com/gopacket/gopacket/pcapgo"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
