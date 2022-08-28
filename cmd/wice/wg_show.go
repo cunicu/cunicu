@@ -8,8 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/pb"
+
 	"riasc.eu/wice/pkg/wg"
+
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 var (
@@ -79,7 +81,7 @@ func wgShow(cmd *cobra.Command, args []string) error {
 		field = "all"
 	}
 
-	sts, err := rpcClient.GetStatus(context.Background(), &pb.StatusParams{
+	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{
 		Intf: intf,
 	})
 	if err != nil {

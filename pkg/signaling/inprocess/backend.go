@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"go.uber.org/zap"
+
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
 var (
@@ -36,8 +38,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	return b, nil
 }
 
-func (b *Backend) Type() pb.BackendType {
-	return pb.BackendType_INPROCESS
+func (b *Backend) Type() signalingproto.BackendType {
+	return signalingproto.BackendType_INPROCESS
 }
 
 func (b *Backend) SubscribeAll(ctx context.Context, kp *crypto.Key, h signaling.MessageHandler) error {

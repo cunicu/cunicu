@@ -8,8 +8,9 @@ import (
 	"math/big"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
@@ -39,7 +40,7 @@ func GenerateSignalingMessage() *signaling.Message {
 	}
 
 	return &signaling.Message{
-		Candidate: &pb.Candidate{
+		Candidate: &protoepdisc.Candidate{
 			Port: int32(r.Int64()),
 		},
 	}

@@ -12,10 +12,12 @@ import (
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
+
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/rpc"
 	"riasc.eu/wice/pkg/wg"
+
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type AgentOption interface {
@@ -166,7 +168,7 @@ func (a *Agent) Close() error {
 }
 
 func (a *Agent) WaitBackendReady(ctx context.Context) error {
-	_, err := a.Client.WaitForEvent(ctx, pb.Event_BACKEND_READY, "", crypto.Key{})
+	_, err := a.Client.WaitForEvent(ctx, rpcproto.Event_BACKEND_READY, "", crypto.Key{})
 
 	return err
 }

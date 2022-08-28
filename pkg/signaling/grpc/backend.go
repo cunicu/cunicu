@@ -6,9 +6,11 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
 func init() {
@@ -21,7 +23,7 @@ func init() {
 type Backend struct {
 	signaling.SubscriptionsRegistry
 
-	client pb.SignalingClient
+	client signalingproto.SignalingClient
 	conn   *grpc.ClientConn
 
 	config BackendConfig
@@ -45,7 +47,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 		return nil, fmt.Errorf("failed to connect to gRPC server: %w", err)
 	}
 
-	b.client = pb.NewSignalingClient(b.conn)
+	b.client = signalingproto.NewSignalingClient(b.conn)
 
 	for _, h := range cfg.OnReady {
 		h.OnSignalingBackendReady(b)
@@ -54,8 +56,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	return b, nil
 }
 
-func (b *Backend) Type() pb.BackendType {
-	return pb.BackendType_GRPC
+func (b *Backend) Type() signalingproto.BackendType {
+	return signalingproto.BackendType_GRPC
 }
 
 func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
@@ -102,7 +104,7 @@ func (b *Backend) Close() error {
 }
 
 func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error {
-	params := &pb.SubscribeParams{
+	params := &signalingproto.SubscribeParams{
 		Key: pk.Bytes(),
 	}
 

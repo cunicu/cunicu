@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/foxcpp/go-mockdns"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
 	"riasc.eu/wice/pkg/config"
-	icex "riasc.eu/wice/pkg/ice"
 
-	mockdns "github.com/foxcpp/go-mockdns"
+	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
 )
 
 var _ = Describe("lookup", func() {

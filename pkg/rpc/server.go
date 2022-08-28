@@ -2,22 +2,22 @@ package rpc
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"sync"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	wice "riasc.eu/wice/pkg"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/util"
 
-	"net"
+	wice "riasc.eu/wice/pkg"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type Server struct {
 	daemon    *DaemonServer
-	epice     *EndpointDiscoveryServer
+	epdisc    *EndpointDiscoveryServer
 	watcher   *WatcherServer
 	signaling *SignalingServer
 
@@ -26,14 +26,14 @@ type Server struct {
 	waitGroup sync.WaitGroup
 	waitOnce  sync.Once
 
-	events *util.FanOut[*pb.Event]
+	events *util.FanOut[*rpcproto.Event]
 
 	logger *zap.Logger
 }
 
 func NewServer(d *wice.Daemon, socket string) (*Server, error) {
 	s := &Server{
-		events: util.NewFanOut[*pb.Event](1),
+		events: util.NewFanOut[*rpcproto.Event](1),
 		logger: zap.L().Named("rpc.server"),
 	}
 
@@ -47,7 +47,7 @@ func NewServer(d *wice.Daemon, socket string) (*Server, error) {
 	s.signaling = NewSignalingServer(s, d.Backend)
 
 	if d.EPDisc != nil {
-		s.epice = NewEndpointDiscoveryServer(s, d.EPDisc)
+		s.epdisc = NewEndpointDiscoveryServer(s, d.EPDisc)
 	}
 
 	// Remove old unix sockets

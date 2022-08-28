@@ -8,7 +8,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 var (
@@ -33,7 +34,7 @@ func init() {
 }
 
 func status(cmd *cobra.Command, args []string) {
-	p := &pb.StatusParams{}
+	p := &rpcproto.StatusParams{}
 
 	if len(args) > 0 {
 		p.Intf = args[0]

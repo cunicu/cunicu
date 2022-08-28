@@ -6,7 +6,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	icex "riasc.eu/wice/pkg/ice"
+	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
 )
 
 type PortSettings struct {

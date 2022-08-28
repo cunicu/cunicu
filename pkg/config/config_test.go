@@ -7,14 +7,15 @@ import (
 	"testing"
 	"time"
 
-	"riasc.eu/wice/pkg/config"
-	icex "riasc.eu/wice/pkg/ice"
-	"riasc.eu/wice/pkg/test"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
+
+	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/test"
+
+	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
 )
 
 func TestSuite(t *testing.T) {

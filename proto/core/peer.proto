@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package wice;
+option go_package = "riasc.eu/wice/pkg/proto/core";
+
+import "common.proto";
+import "feat/epdisc.proto";
+
+message Peer {
+    // Public WireGuard X25519 key
+    bytes public_key = 1;
+    bytes preshared_key = 2;
+
+    // List of allowed IPs
+    repeated string allowed_ips = 3;
+
+    uint32 persistent_keepalive_interval = 4;
+
+    // Timestamps
+    Timestamp last_handshake_timestamp = 5;
+    Timestamp last_receive_timestamp = 6;
+    Timestamp last_transmit_timestamp = 7;
+
+    // Trafic counters
+    int64 transmit_bytes = 8;
+    int64 receive_bytes = 9;
+
+    // WireGuard endpoint address
+    string endpoint = 10;
+
+    // WireGuard protocol version
+    uint32 protocol_version = 11;
+
+    epdisc.Peer ice = 12;
+}

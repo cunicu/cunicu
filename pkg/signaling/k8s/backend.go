@@ -11,8 +11,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
 	"riasc.eu/wice/pkg/signaling"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
@@ -113,8 +114,8 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	return b, nil
 }
 
-func (b *Backend) Type() pb.BackendType {
-	return pb.BackendType_K8S
+func (b *Backend) Type() signalingproto.BackendType {
+	return signalingproto.BackendType_K8S
 }
 
 func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {

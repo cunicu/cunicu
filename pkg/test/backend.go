@@ -10,7 +10,7 @@ import (
 	gi "github.com/onsi/ginkgo/v2"
 	g "github.com/onsi/gomega"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
 	"riasc.eu/wice/pkg/signaling"
 )
 
@@ -92,7 +92,7 @@ func (p *peer) publish(o *peer) error {
 	}
 
 	sentMsg := &signaling.Message{
-		Candidate: &pb.Candidate{
+		Candidate: &protoepdisc.Candidate{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
 			Port: int32(p.id),

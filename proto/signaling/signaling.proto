@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package wice.signaling;
+option go_package = "riasc.eu/wice/pkg/proto/signaling";
+
+import "common.proto";
+import "feat/pdisc.proto";
+import "feat/pske.proto";
+import "feat/epdisc.proto";
+import "feat/epdisc_candidate.proto";
+
+enum BackendType {
+    MULTI = 0;
+    P2P = 1;
+    K8S = 2;
+    GRPC = 3;
+    INPROCESS = 4;
+}
+
+message Envelope {
+    bytes sender = 1;
+    bytes recipient = 2;
+
+    EncryptedMessage contents = 3; // of type SignalingMessage
+}
+
+message Message {
+    epdisc.Credentials credentials = 1;
+    epdisc.Candidate candidate = 2;
+    pdisc.PeerDescription peer = 3;
+    pske.PresharedKeyEstablishment pske = 4;
+}
+
+// A container for an encrypted protobuf message
+message EncryptedMessage {
+    bytes body = 1;
+    bytes nonce = 2;
+}
+
+message SubscribeParams {
+    bytes key = 1;
+}
+
+service Signaling {
+    rpc GetBuildInfo(Empty) returns (BuildInfo) {}
+    rpc Subscribe(SubscribeParams) returns (stream Envelope) {}
+    rpc Publish(Envelope) returns (Empty) {}
+}

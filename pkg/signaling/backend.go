@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/pb"
+
+	signalingproto "riasc.eu/wice/pkg/proto/signaling"
 )
 
 var (
@@ -48,7 +50,7 @@ type Backend interface {
 	SubscribeAll(ctx context.Context, sk *crypto.Key, h MessageHandler) error
 
 	// Returns the backends type identifier
-	Type() pb.BackendType
+	Type() signalingproto.BackendType
 }
 
 func NewBackend(cfg *BackendConfig) (Backend, error) {

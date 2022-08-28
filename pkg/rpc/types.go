@@ -3,11 +3,11 @@ package rpc
 import (
 	"fmt"
 
-	"riasc.eu/wice/pkg/pb"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type Event struct {
-	pb.Event
+	rpcproto.Event
 }
 
 func (e *Event) String() string {

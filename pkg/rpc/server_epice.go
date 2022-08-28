@@ -9,64 +9,66 @@ import (
 	"google.golang.org/grpc/status"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/feat/disc/epice"
-	icex "riasc.eu/wice/pkg/ice"
-	"riasc.eu/wice/pkg/pb"
+	"riasc.eu/wice/pkg/feat/epdisc"
+	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
+	"riasc.eu/wice/pkg/proto"
+	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type EndpointDiscoveryServer struct {
-	pb.UnimplementedEndpointDiscoverySocketServer
+	rpcproto.UnimplementedEndpointDiscoverySocketServer
 
 	*Server
-	*epice.EndpointDiscovery
+	*epdisc.EndpointDiscovery
 }
 
-func NewEndpointDiscoveryServer(s *Server, ep *epice.EndpointDiscovery) *EndpointDiscoveryServer {
+func NewEndpointDiscoveryServer(s *Server, ep *epdisc.EndpointDiscovery) *EndpointDiscoveryServer {
 	eps := &EndpointDiscoveryServer{
 		Server:            s,
 		EndpointDiscovery: ep,
 	}
 
-	pb.RegisterEndpointDiscoverySocketServer(s.grpc, eps)
+	rpcproto.RegisterEndpointDiscoverySocketServer(s.grpc, eps)
 
 	ep.OnConnectionStateChange(eps)
 
 	return eps
 }
 
-func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *pb.RestartPeerParams) (*pb.Empty, error) {
+func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcproto.RestartPeerParams) (*proto.Empty, error) {
 	pk, err := crypto.ParseKeyBytes(params.Peer)
 	if err != nil {
-		return &pb.Empty{}, status.Errorf(codes.InvalidArgument, "failed to parse key: %s", err)
+		return &proto.Empty{}, status.Errorf(codes.InvalidArgument, "failed to parse key: %s", err)
 	}
 
 	p := s.watcher.Peer(params.Intf, &pk)
 	if p == nil {
-		return &pb.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
 	}
 
 	ip := s.Peers[p]
 	if ip == nil {
-		return &pb.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
 	}
 
 	err = ip.Restart()
 	if err != nil {
-		return &pb.Empty{}, status.Errorf(codes.Unknown, "failed to restart peer session: %s", err)
+		return &proto.Empty{}, status.Errorf(codes.Unknown, "failed to restart peer session: %s", err)
 	}
 
-	return &pb.Empty{}, nil
+	return &proto.Empty{}, nil
 }
 
-func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Daemon_StreamEventsServer) {
+func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_StreamEventsServer) {
 	for _, p := range s.Peers {
-		e := &pb.Event{
-			Type:      pb.Event_PEER_CONNECTION_STATE_CHANGED,
+		e := &rpcproto.Event{
+			Type:      rpcproto.Event_PEER_CONNECTION_STATE_CHANGED,
 			Interface: p.Interface.Name(),
 			Peer:      p.Peer.PublicKey().Bytes(),
-			Event: &pb.Event_PeerConnectionStateChange{
-				PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-					NewState: pb.NewConnectionState(p.ConnectionState()),
+			Event: &rpcproto.Event_PeerConnectionStateChange{
+				PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
+					NewState: protoepdisc.NewConnectionState(p.ConnectionState()),
 				},
 			},
 		}
@@ -79,23 +81,23 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream pb.Daemon_StreamEv
 	}
 }
 
-func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epice.Peer, new, prev icex.ConnectionState) {
-	s.events.Send(&pb.Event{
-		Type: pb.Event_PEER_CONNECTION_STATE_CHANGED,
+func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
+	s.events.Send(&rpcproto.Event{
+		Type: rpcproto.Event_PEER_CONNECTION_STATE_CHANGED,
 
 		Interface: p.Interface.Name(),
 		Peer:      p.PublicKey().Bytes(),
 
-		Event: &pb.Event_PeerConnectionStateChange{
-			PeerConnectionStateChange: &pb.PeerConnectionStateChangeEvent{
-				NewState:  pb.NewConnectionState(new),
-				PrevState: pb.NewConnectionState(prev),
+		Event: &rpcproto.Event_PeerConnectionStateChange{
+			PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
+				NewState:  protoepdisc.NewConnectionState(new),
+				PrevState: protoepdisc.NewConnectionState(prev),
 			},
 		},
 	})
 }
 
-func (s *EndpointDiscoveryServer) InterfaceStatus(ci *core.Interface) *pb.ICEInterface {
+func (s *EndpointDiscoveryServer) InterfaceStatus(ci *core.Interface) *protoepdisc.Interface {
 	i, ok := s.Interfaces[ci]
 	if !ok {
 		return nil
@@ -104,7 +106,7 @@ func (s *EndpointDiscoveryServer) InterfaceStatus(ci *core.Interface) *pb.ICEInt
 	return i.Marshal()
 }
 
-func (s *EndpointDiscoveryServer) PeerStatus(cp *core.Peer) *pb.ICEPeer {
+func (s *EndpointDiscoveryServer) PeerStatus(cp *core.Peer) *protoepdisc.Peer {
 	p, ok := s.Peers[cp]
 	if !ok {
 		s.logger.Error("Failed to find peer for", zap.Any("cp", cp.PublicKey()))

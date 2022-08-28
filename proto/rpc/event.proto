@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package wice.rpc;
+option go_package = "riasc.eu/wice/pkg/proto/rpc";
+
+import "common.proto";
+import "signaling/signaling.proto";
+import "feat/epdisc.proto";
+
+message Event {
+    enum Type {
+        UNKNOWN = 0;
+        
+        // Signaling Events
+        BACKEND_READY = 10;
+        SIGNALING_MESSAGE = 11;
+
+        // Core Events
+        PEER_ADDED = 20;
+        PEER_REMOVED = 21;
+        PEER_MODIFIED = 22;
+
+        INTERFACE_ADDED = 30;
+        INTERFACE_REMOVED = 31;
+        INTERFACE_MODIFIED = 32;
+
+        // ICE Events
+        PEER_CONNECTION_STATE_CHANGED = 40;
+    }
+
+    Type type = 1;
+    Timestamp time = 2;
+
+    // Public key of peer which triggerd the event
+    bytes peer = 3;
+
+    // Interface name which triggered the event
+    string interface = 4;
+
+    oneof event {
+        SignalingBackendReadyEvent backend_ready = 100;
+
+        PeerConnectionStateChangeEvent peer_connection_state_change = 121;
+        PeerModifiedEvent peer_modified = 122;
+        InterfaceModifiedEvent interface_modified = 123;
+    }
+}
+
+message PeerModifiedEvent {
+    uint32 modified = 1;   
+}
+
+message InterfaceModifiedEvent {
+    uint32 modified = 1;
+}
+
+message PeerConnectionStateChangeEvent {
+    epdisc.ConnectionState new_state = 1;
+    epdisc.ConnectionState prev_state = 2;
+}
+
+message SignalingBackendReadyEvent {
+    signaling.BackendType type = 1;
+}
