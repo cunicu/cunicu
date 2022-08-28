@@ -5,15 +5,14 @@ import "strings"
 type InterfaceModifier int
 
 const (
-	InterfaceModifiedName         InterfaceModifier = (1 << iota)
-	InterfaceModifiedType         InterfaceModifier = (1 << iota)
-	InterfaceModifiedPrivateKey   InterfaceModifier = (1 << iota)
-	InterfaceModifiedListenPort   InterfaceModifier = (1 << iota)
-	InterfaceModifiedFirewallMark InterfaceModifier = (1 << iota)
-	InterfaceModifiedPeers        InterfaceModifier = (1 << iota)
-	InterfaceModifierCount                          = iota
-
 	InterfaceModifiedNone InterfaceModifier = 0
+	InterfaceModifiedName InterfaceModifier = (1 << iota)
+	InterfaceModifiedType
+	InterfaceModifiedPrivateKey
+	InterfaceModifiedListenPort
+	InterfaceModifiedFirewallMark
+	InterfaceModifiedPeers
+	InterfaceModifierCount = iota
 )
 
 var (

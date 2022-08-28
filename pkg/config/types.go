@@ -60,9 +60,9 @@ func (u BackendURL) MarshalText() ([]byte, error) {
 type OutputFormat int
 
 const (
-	OutputFormatJSON   OutputFormat = iota
-	OutputFormatLogger OutputFormat = iota
-	OutputFormatHuman  OutputFormat = iota
+	OutputFormatJSON OutputFormat = iota
+	OutputFormatLogger
+	OutputFormatHuman
 )
 
 var (
