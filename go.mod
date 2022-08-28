@@ -12,6 +12,7 @@ require (
 	github.com/pion/ice/v2 v2.2.7
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
+	github.com/pion/stun v0.3.5
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
@@ -77,7 +78,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pion/dtls/v2 v2.1.5 // indirect
 	github.com/pion/mdns v0.0.5 // indirect
-	github.com/pion/stun v0.3.5 // indirect
 	github.com/pion/transport v0.13.1 // indirect
 	github.com/pion/turn/v2 v2.0.8 // indirect
 	github.com/pion/udp v0.1.1 // indirect
