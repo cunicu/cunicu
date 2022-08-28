@@ -25,14 +25,14 @@ type HostsSync struct {
 }
 
 func New(w *watcher.Watcher) *HostsSync {
-	s := &HostsSync{
+	hs := &HostsSync{
 		watcher: w,
 		logger:  zap.L().Named("sync.hosts"),
 	}
 
-	w.OnPeer(s)
+	w.OnPeer(hs)
 
-	return s
+	return hs
 }
 
 func (hs *HostsSync) Start() error {

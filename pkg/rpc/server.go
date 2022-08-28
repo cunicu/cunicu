@@ -46,8 +46,8 @@ func NewServer(d *wice.Daemon, socket string) (*Server, error) {
 	s.watcher = NewWatcherServer(s, d.Watcher)
 	s.signaling = NewSignalingServer(s, d.Backend)
 
-	if d.EPDisc != nil {
-		s.epdisc = NewEndpointDiscoveryServer(s, d.EPDisc)
+	if d.EndpointDiscovery != nil {
+		s.epdisc = NewEndpointDiscoveryServer(s, d.EndpointDiscovery)
 	}
 
 	// Remove old unix sockets
