@@ -9,12 +9,9 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
-)
-
-const (
-	stunPort = 3478
 )
 
 type CoturnNode struct {
@@ -45,7 +42,7 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, er
 			"simple-log":     "",
 			"no-stdout-log":  "",
 			"log-file":       logPath,
-			"listening-port": strconv.Itoa(stunPort),
+			"listening-port": strconv.Itoa(stun.DefaultPort),
 			"realm":          "wice",
 			"cli-password":   "wice",
 		},
@@ -118,7 +115,7 @@ func (c *CoturnNode) Close() error {
 }
 
 func (c *CoturnNode) isReachable() bool {
-	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, stunPort)
+	hostPort := fmt.Sprintf("[%s]:%d", net.IPv6loopback, stun.DefaultPort)
 
 	return c.RunFunc(func() error {
 		conn, err := net.Dial("tcp6", hostPort)
@@ -149,19 +146,19 @@ func (c *CoturnNode) URLs() []*ice.URL {
 		{
 			Scheme: ice.SchemeTypeSTUN,
 			Host:   host,
-			Port:   stunPort,
+			Port:   stun.DefaultPort,
 			Proto:  ice.ProtoTypeUDP,
 		},
 		{
 			Scheme: ice.SchemeTypeTURN,
 			Host:   host,
-			Port:   stunPort,
+			Port:   stun.DefaultPort,
 			Proto:  ice.ProtoTypeUDP,
 		},
 		{
 			Scheme: ice.SchemeTypeTURN,
 			Host:   host,
-			Port:   stunPort,
+			Port:   stun.DefaultPort,
 			Proto:  ice.ProtoTypeTCP,
 		},
 	}
