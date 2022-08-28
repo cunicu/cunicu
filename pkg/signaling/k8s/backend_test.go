@@ -28,30 +28,37 @@ var logger = test.SetupLogging()
 var testenv *envtest.Environment
 var kcfg *os.File
 
-var _ = Describe("Kubernetes backend", Pending, func() {
+var _ = BeforeSuite(func() {
+	log.SetLogger(zapr.NewLogger(logger.Named("k8s")))
+
+	// Setup envtest
+	kubeBuilderAssets, err := exec.Command("setup-envtest", "use", "-p", "path").Output()
+	Expect(err).To(Succeed(), "Failed to run setup-envtest. Please install it first:\n\n    go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest\n")
+
+	testenv = &envtest.Environment{
+		CRDDirectoryPaths:     []string{"../../../etc/kubernetes/crds"},
+		BinaryAssetsDirectory: string(kubeBuilderAssets),
+	}
+
+	cfg, err := testenv.Start()
+	Expect(err).To(Succeed())
+
+	kcfg, err = os.CreateTemp("", "kubeconfig-*.yaml")
+	Expect(err).To(Succeed())
+
+	err = writeKubeconfig(cfg, kcfg)
+	Expect(err).To(Succeed())
+
+})
+
+var _ = AfterSuite(func() {
+	Expect(testenv.Stop()).To(Succeed())
+})
+
+var _ = Describe("Kubernetes backend", func() {
 	var u url.URL
 
 	BeforeEach(func() {
-		log.SetLogger(zapr.NewLogger(logger.Named("k8s")))
-
-		// Setup envtest
-		kubeBuilderAssets, err := exec.Command("setup-envtest", "use", "-p", "path").Output()
-		Expect(err).To(Succeed(), "Failed to run setup-envtest. Please install it first:\n\n    go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest\n")
-
-		testenv = &envtest.Environment{
-			CRDDirectoryPaths:     []string{"../../../etc/kubernetes/crds"},
-			BinaryAssetsDirectory: string(kubeBuilderAssets),
-		}
-
-		cfg, err := testenv.Start()
-		Expect(err).To(Succeed())
-
-		kcfg, err = os.CreateTemp("", "kubeconfig-*.yaml")
-		Expect(err).To(Succeed())
-
-		err = writeKubeconfig(cfg, kcfg)
-		Expect(err).To(Succeed())
-
 		u = url.URL{
 			Scheme:   "k8s",
 			Path:     kcfg.Name(),
@@ -59,11 +66,7 @@ var _ = Describe("Kubernetes backend", Pending, func() {
 		}
 	})
 
-	AfterEach(func() {
-		Expect(testenv.Stop()).To(Succeed())
-	})
-
-	test.BackendTest(&u, 10)
+	test.BackendTest(&u, 2)
 })
 
 func writeKubeconfig(rc *rest.Config, wr io.Writer) error {
