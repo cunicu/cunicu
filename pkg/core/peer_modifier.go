@@ -5,18 +5,17 @@ import "strings"
 type PeerModifier uint32
 
 const (
-	PeerModifiedPresharedKey      PeerModifier = (1 << iota)
-	PeerModifiedEndpoint          PeerModifier = (1 << iota)
-	PeerModifiedKeepaliveInterval PeerModifier = (1 << iota)
-	PeerModifiedHandshakeTime     PeerModifier = (1 << iota)
-	PeerModifiedReceiveBytes      PeerModifier = (1 << iota)
-	PeerModifiedTransmitBytes     PeerModifier = (1 << iota)
-	PeerModifiedAllowedIPs        PeerModifier = (1 << iota)
-	PeerModifiedProtocolVersion   PeerModifier = (1 << iota)
-	PeerModifiedName              PeerModifier = (1 << iota)
-	PeerModifierCount                          = iota
-
-	PeerModifiedNone PeerModifier = 0
+	PeerModifiedNone         PeerModifier = 0
+	PeerModifiedPresharedKey PeerModifier = (1 << iota)
+	PeerModifiedEndpoint
+	PeerModifiedKeepaliveInterval
+	PeerModifiedHandshakeTime
+	PeerModifiedReceiveBytes
+	PeerModifiedTransmitBytes
+	PeerModifiedAllowedIPs
+	PeerModifiedProtocolVersion
+	PeerModifiedName
+	PeerModifierCount = iota
 )
 
 var (

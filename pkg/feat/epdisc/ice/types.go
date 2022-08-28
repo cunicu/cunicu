@@ -86,10 +86,10 @@ func (u URL) MarshalText() ([]byte, error) {
 }
 
 const (
-	ConnectionStateCreating   ConnectionState = 100
-	ConnectionStateIdle       ConnectionState = 101
-	ConnectionStateConnecting ConnectionState = 102
-	ConnectionStateClosing    ConnectionState = 103
+	ConnectionStateCreating ConnectionState = 100 + iota
+	ConnectionStateIdle
+	ConnectionStateConnecting
+	ConnectionStateClosing
 )
 
 type ConnectionState ice.ConnectionState
