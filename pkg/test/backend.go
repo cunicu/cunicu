@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"sync/atomic"
 
-	gi "github.com/onsi/ginkgo/v2"
-	g "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
+
 	"riasc.eu/wice/pkg/crypto"
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
 	"riasc.eu/wice/pkg/signaling"
+
+	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
 )
 
 type readyHandler struct {
@@ -108,7 +110,7 @@ func BackendTest(u *url.URL, n int) {
 	var err error
 	var ps []*peer
 
-	gi.BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		backendReady := &readyHandler{}
 
 		ps = []*peer{}
@@ -123,26 +125,26 @@ func BackendTest(u *url.URL, n int) {
 			}
 
 			p.backend, err = signaling.NewBackend(cfg)
-			g.Expect(err).To(g.Succeed(), "Failed to create backend: %s", err)
+			gomega.Expect(err).To(gomega.Succeed(), "Failed to create backend: %s", err)
 
 			p.key, err = crypto.GeneratePrivateKey()
-			g.Expect(err).To(g.Succeed(), "Failed to generate private key: %s", err)
+			gomega.Expect(err).To(gomega.Succeed(), "Failed to generate private key: %s", err)
 
 			ps = append(ps, p)
 		}
 
 		// Wait until all backends are ready
-		g.Eventually(func() int { return int(backendReady.Count.Load()) }).Should(g.Equal(n))
+		gomega.Eventually(func() int { return int(backendReady.Count.Load()) }).Should(gomega.Equal(n))
 	})
 
-	gi.AfterEach(func() {
+	ginkgo.AfterEach(func() {
 		for _, p := range ps {
 			err := p.backend.Close()
-			g.Expect(err).To(g.Succeed())
+			gomega.Expect(err).To(gomega.Succeed())
 		}
 	})
 
-	gi.It("exchanges messages between multiple pairs", func() {
+	ginkgo.It("exchanges messages between multiple pairs", func() {
 		mh1 := newMessageHandler()
 		mh2 := newMessageHandler()
 		mh3 := newMessageHandler()
@@ -161,17 +163,17 @@ func BackendTest(u *url.URL, n int) {
 				}
 
 				err = p.backend.Subscribe(context.Background(), kp, mh1)
-				g.Expect(err).To(g.Succeed())
+				gomega.Expect(err).To(gomega.Succeed())
 
 				err = p.backend.Subscribe(context.Background(), kp, mh2)
-				g.Expect(err).To(g.Succeed())
+				gomega.Expect(err).To(gomega.Succeed())
 			}
 
 			err = p.backend.SubscribeAll(context.Background(), &p.key, mh3)
-			g.Expect(err).To(g.Succeed())
+			gomega.Expect(err).To(gomega.Succeed())
 
 			err = p.backend.SubscribeAll(context.Background(), &p.key, mh4)
-			g.Expect(err).To(g.Succeed())
+			gomega.Expect(err).To(gomega.Succeed())
 		}
 
 		// Send messages
@@ -182,15 +184,15 @@ func BackendTest(u *url.URL, n int) {
 				}
 
 				err := p.publish(o)
-				g.Expect(err).To(g.Succeed(), "Failed to publish signaling message: %s", err)
+				gomega.Expect(err).To(gomega.Succeed(), "Failed to publish signaling message: %s", err)
 			}
 		}
 
 		// Wait until we have exchanged all messages
-		g.Eventually(func() int { return int(mh1.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
-		g.Eventually(func() int { return int(mh2.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
-		g.Eventually(func() int { return int(mh3.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
-		g.Eventually(func() int { return int(mh4.Count.Load()) }).Should(g.BeNumerically(">=", n*n-n))
+		gomega.Eventually(func() int { return int(mh1.Count.Load()) }).Should(gomega.BeNumerically(">=", n*n-n))
+		gomega.Eventually(func() int { return int(mh2.Count.Load()) }).Should(gomega.BeNumerically(">=", n*n-n))
+		gomega.Eventually(func() int { return int(mh3.Count.Load()) }).Should(gomega.BeNumerically(">=", n*n-n))
+		gomega.Eventually(func() int { return int(mh4.Count.Load()) }).Should(gomega.BeNumerically(">=", n*n-n))
 
 		// Check if we received the message
 		for _, p := range ps {
@@ -199,10 +201,10 @@ func BackendTest(u *url.URL, n int) {
 					continue // Do not send messages to ourself
 				}
 
-				g.Expect(mh1.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
-				g.Expect(mh2.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
-				g.Expect(mh3.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
-				g.Expect(mh4.Check(p, o)).To(g.Succeed(), "Failed to receive message: %s", err)
+				gomega.Expect(mh1.Check(p, o)).To(gomega.Succeed(), "Failed to receive message: %s", err)
+				gomega.Expect(mh2.Check(p, o)).To(gomega.Succeed(), "Failed to receive message: %s", err)
+				gomega.Expect(mh3.Check(p, o)).To(gomega.Succeed(), "Failed to receive message: %s", err)
+				gomega.Expect(mh4.Check(p, o)).To(gomega.Succeed(), "Failed to receive message: %s", err)
 			}
 		}
 	})

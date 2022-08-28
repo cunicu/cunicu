@@ -34,7 +34,7 @@ type Backend struct {
 	clientSet *wicev1.Clientset
 	informer  cache.SharedInformer
 
-	term chan struct{}
+	stop chan struct{}
 
 	logger *zap.Logger
 }
@@ -52,7 +52,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 
 	b := &Backend{
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
-		term:                  make(chan struct{}),
+		stop:                  make(chan struct{}),
 		config:                defaultConfig,
 		logger:                logger,
 	}
@@ -95,14 +95,14 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	b.informer = factory.Wice().V1().SignalingEnvelopes().Informer()
 
 	b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    b.onSignalingEnvelopeAdded,
-		UpdateFunc: b.onSessionDescriptionUpdated,
+		AddFunc:    b.onEnvelopeAdded,
+		UpdateFunc: b.onEnvelopeUpdated,
 	})
 
-	go b.informer.Run(b.term)
+	go b.informer.Run(b.stop)
 	b.logger.Debug("Started watching node resources")
 
-	cache.WaitForNamedCacheSync("signalingenvelopes", b.term, b.informer.HasSynced)
+	cache.WaitForNamedCacheSync("signalingenvelopes", b.stop, b.informer.HasSynced)
 
 	go b.periodicCleanup()
 	b.logger.Debug("Started regular cleanup")
@@ -169,12 +169,12 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 }
 
 func (b *Backend) Close() error {
-	close(b.term)
+	close(b.stop)
 
 	return nil // TODO: Shutdown backend
 }
 
-func (b *Backend) onSignalingEnvelopeAdded(obj any) {
+func (b *Backend) onEnvelopeAdded(obj any) {
 	env := obj.(*v1.SignalingEnvelope)
 
 	b.logger.Debug("New envelope found on API server", zap.String("name", env.ObjectMeta.Name))
@@ -183,10 +183,10 @@ func (b *Backend) onSignalingEnvelopeAdded(obj any) {
 	}
 }
 
-func (b *Backend) onSessionDescriptionUpdated(old any, new any) {
+func (b *Backend) onEnvelopeUpdated(old any, new any) {
 	newEnv := new.(*v1.SignalingEnvelope)
 
-	b.logger.Debug("SignalingEnvelope updated", zap.String("name", newEnv.ObjectMeta.Name))
+	b.logger.Debug("Envelope updated", zap.String("name", newEnv.ObjectMeta.Name))
 	if err := b.process(newEnv); err != nil {
 		b.logger.Error("Failed to process SignalEnvelope", zap.Error(err))
 	}
@@ -208,12 +208,12 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 	}
 
 	// Delete envelope
-	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
-	if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
-		b.logger.Warn("Failed to delete envelope", zap.Error(err))
-	} else {
-		b.logger.Debug("Deleted envelope from API server", zap.String("envelope", env.ObjectMeta.Name))
-	}
+	// envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+	// if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
+	// 	b.logger.Warn("Failed to delete envelope", zap.Error(err))
+	// } else {
+	// 	b.logger.Debug("Deleted envelope from API server", zap.String("envelope", env.ObjectMeta.Name))
+	// }
 
 	return nil
 }
@@ -233,10 +233,13 @@ func (b *Backend) reprocess() error {
 
 func (b *Backend) periodicCleanup() {
 	ticker := time.NewTicker(cleanupInterval)
-
-	b.cleanup()
-	for range ticker.C {
-		b.cleanup()
+	for {
+		select {
+		case <-ticker.C:
+			b.cleanup()
+		case <-b.stop:
+			return
+		}
 	}
 }
 
