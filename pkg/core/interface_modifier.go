@@ -12,7 +12,7 @@ const (
 	InterfaceModifiedListenPort
 	InterfaceModifiedFirewallMark
 	InterfaceModifiedPeers
-	InterfaceModifierCount = iota
+	InterfaceModifierCount = 6
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 func (i InterfaceModifier) Strings() []string {
 	modifiers := []string{}
 
-	for j := 0; j <= InterfaceModifierCount; j++ {
+	for j := 0; j < InterfaceModifierCount; j++ {
 		if i&(1<<j) != 0 {
 			modifiers = append(modifiers, InterfaceModifiersStrings[j])
 		}
