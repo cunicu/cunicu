@@ -1,3 +1,4 @@
+// Package log implements adapters between logging types of various used packages
 package log
 
 import (

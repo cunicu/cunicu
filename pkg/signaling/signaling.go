@@ -1,3 +1,4 @@
+// Package signaling implements various signaling backends to exchange encrypted messages between peers
 package signaling
 
 import (

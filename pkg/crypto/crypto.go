@@ -1,3 +1,4 @@
+// Package crypto implements basic crypto primitives used in the project
 package crypto
 
 import "crypto/rand"
