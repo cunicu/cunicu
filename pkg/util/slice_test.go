@@ -29,29 +29,6 @@ var _ = Context("Slice", func() {
 		})
 	})
 
-	Describe("Index", func() {
-		var a []int
-
-		BeforeEach(func() {
-			a = make([]int, 100)
-			for i := 0; i < 100; i++ {
-				a[i] = i
-			}
-		})
-
-		It("can created an indexed map from a slice", func() {
-			Expect(a).To(HaveLen(100))
-
-			b := util.IndexSlice(a, func(x *int) int { return *x + 1000 })
-
-			Expect(b).To(HaveLen(100))
-
-			for i := 0; i < 100; i++ {
-				Expect(*b[i+1000]).To(Equal(i))
-			}
-		})
-	})
-
 	Describe("Diff", func() {
 		cmp := func(a, b *int) int {
 			return *a - *b

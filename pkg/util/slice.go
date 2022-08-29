@@ -50,17 +50,6 @@ func DiffSliceFunc[T any](old, new []T, cmp func(a, b *T) int) (added, removed, 
 	return
 }
 
-func IndexSlice[T any, I comparable](s []T, index func(*T) I) map[I]*T {
-	m := map[I]*T{}
-
-	for i := range s {
-		e := &s[i]
-		m[index(e)] = e
-	}
-
-	return m
-}
-
 func ShuffleSlice[T any](s []T) {
 	rand.Shuffle(len(s), func(i, j int) {
 		s[i], s[j] = s[j], s[i]
