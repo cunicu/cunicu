@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package wice.pske;
+option go_package = "riasc.eu/wice/pkg/proto/feat/pske";
+
+message PresharedKeyEstablishment {
+    bytes public_key = 1;
+    bytes cipher_text = 2;
+}
