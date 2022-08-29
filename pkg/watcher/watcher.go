@@ -86,6 +86,10 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 }
 
 func (w *Watcher) Close() error {
+	if err := w.Sync(); err != nil {
+		return fmt.Errorf("final sync failed")
+	}
+
 	close(w.stop)
 
 	return nil
@@ -218,6 +222,16 @@ func (w *Watcher) Peer(intf string, pk *crypto.Key) *core.Peer {
 
 	if p, ok := i.Peers[*pk]; ok {
 		return p
+	}
+
+	return nil
+}
+
+func (w *Watcher) PeerByKey(pk *crypto.Key) *core.Peer {
+	for _, i := range w.Interfaces {
+		if p, ok := i.Peers[*pk]; ok {
+			return p
+		}
 	}
 
 	return nil

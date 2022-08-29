@@ -112,7 +112,9 @@ var _ = Describe("watcher", func() {
 				sk, err := crypto.GenerateKey()
 				Expect(err).To(Succeed())
 
-				err = i.AddPeer(sk.PublicKey())
+				err = i.AddPeer(&wgtypes.PeerConfig{
+					PublicKey: wgtypes.Key(sk.PublicKey()),
+				})
 				Expect(err).To(Succeed())
 
 				Eventually(func(g Gomega) {
