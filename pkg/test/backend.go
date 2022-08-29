@@ -108,6 +108,7 @@ func (p *peer) publish(o *peer) error {
 // and exchanges a test message between each pair of backends
 func BackendTest(u *url.URL, n int) {
 	var err error
+	var first bool
 	var ps []*peer
 
 	ginkgo.BeforeEach(func() {
@@ -162,18 +163,24 @@ func BackendTest(u *url.URL, n int) {
 					Theirs: o.key.PublicKey(),
 				}
 
-				err = p.backend.Subscribe(context.Background(), kp, mh1)
+				first, err = p.backend.Subscribe(context.Background(), kp, mh1)
 				gomega.Expect(err).To(gomega.Succeed())
+				gomega.Expect(first).To(gomega.BeTrue())
 
-				err = p.backend.Subscribe(context.Background(), kp, mh2)
+				first, err = p.backend.Subscribe(context.Background(), kp, mh2)
 				gomega.Expect(err).To(gomega.Succeed())
+				gomega.Expect(first).To(gomega.BeFalse())
 			}
 
-			err = p.backend.SubscribeAll(context.Background(), &p.key, mh3)
-			gomega.Expect(err).To(gomega.Succeed())
+			kp := &crypto.KeyPair{Ours: p.key, Theirs: signaling.AnyKey}
 
-			err = p.backend.SubscribeAll(context.Background(), &p.key, mh4)
+			first, err = p.backend.Subscribe(context.Background(), kp, mh3)
 			gomega.Expect(err).To(gomega.Succeed())
+			gomega.Expect(first).To(gomega.BeTrue())
+
+			first, err = p.backend.Subscribe(context.Background(), kp, mh4)
+			gomega.Expect(err).To(gomega.Succeed())
+			gomega.Expect(first).To(gomega.BeFalse())
 		}
 
 		// Send messages

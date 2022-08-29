@@ -22,6 +22,9 @@ type Interface struct {
 
 	nat *proxy.NAT
 
+	natRule      *proxy.NATRule
+	natRuleSrflx *proxy.NATRule
+
 	udpMux      ice.UDPMux
 	udpMuxSrflx ice.UniversalUDPMux
 
@@ -62,13 +65,9 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 			return nil, fmt.Errorf("failed to setup NAT: %w", err)
 		}
 
-		// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
-		if err := i.nat.RedirectNonSTUN(i.udpMuxPort, i.ListenPort); err != nil {
-			return nil, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
-		}
-
-		if err := i.nat.RedirectNonSTUN(i.udpMuxSrflxPort, i.ListenPort); err != nil {
-			return nil, fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
+		// Setup DNAT redirects (STUN ports -> WireGuard listen ports)
+		if err := i.SetupRedirects(); err != nil {
+			return nil, fmt.Errorf("failed to setup redirects: %w", err)
 		}
 	}
 
@@ -104,4 +103,41 @@ func (i *Interface) Marshal() *protoepdisc.Interface {
 	}
 
 	return is
+}
+
+func (i *Interface) UpdateRedirects() error {
+	// Userspace devices need no redirects
+	if i.nat == nil {
+		return nil
+	}
+
+	// Delete old rules if presetn
+	if i.natRule != nil {
+		if err := i.natRule.Delete(); err != nil {
+			return fmt.Errorf("failed to delete rule: %w", err)
+		}
+	}
+
+	if i.natRuleSrflx != nil {
+		if err := i.natRuleSrflx.Delete(); err != nil {
+			return fmt.Errorf("failed to delete rule: %w", err)
+		}
+	}
+
+	return i.SetupRedirects()
+}
+
+func (i *Interface) SetupRedirects() error {
+	var err error
+
+	// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
+	if i.natRule, err = i.nat.RedirectNonSTUN(i.udpMuxPort, i.ListenPort); err != nil {
+		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
+	}
+
+	if i.natRuleSrflx, err = i.nat.RedirectNonSTUN(i.udpMuxSrflxPort, i.ListenPort); err != nil {
+		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
+	}
+
+	return nil
 }

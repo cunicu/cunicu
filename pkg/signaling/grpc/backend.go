@@ -60,26 +60,29 @@ func (b *Backend) Type() signalingproto.BackendType {
 	return signalingproto.BackendType_GRPC
 }
 
-func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
-	if created, err := b.SubscriptionsRegistry.SubscribeAll(sk, h); err != nil {
-		return err
-	} else if created {
-		pk := sk.PublicKey()
-		return b.subscribeFromServer(ctx, &pk)
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	first, err := b.SubscriptionsRegistry.Subscribe(kp, h)
+	if err != nil {
+		return false, err
+	} else if first {
+		pk := kp.Ours.PublicKey()
+		return first, b.subscribeFromServer(ctx, &pk)
 	}
 
-	return nil
+	return first, nil
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
-	if created, err := b.SubscriptionsRegistry.Subscribe(kp, h); err != nil {
-		return err
-	} else if created {
+// Unsubscribe from messages send by a specific peer
+func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	last, err := b.SubscriptionsRegistry.Unsubscribe(kp, h)
+	if err != nil {
+		return false, err
+	} else if last {
 		pk := kp.Ours.PublicKey()
-		return b.subscribeFromServer(ctx, &pk)
+		return last, b.unsubscribeFromServer(ctx, &pk)
 	}
 
-	return nil
+	return last, nil
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {
@@ -140,6 +143,12 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 			}
 		}
 	}()
+
+	return nil
+}
+
+func (b *Backend) unsubscribeFromServer(ctx context.Context, pk *crypto.Key) error {
+	// TODO: Cancel subscription stream
 
 	return nil
 }

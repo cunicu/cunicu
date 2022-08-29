@@ -13,7 +13,7 @@ import (
 type Proxy interface {
 	io.Closer
 
-	Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error)
+	UpdateCandidatePair(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error)
 
 	Type() protoepdisc.ProxyType
 }

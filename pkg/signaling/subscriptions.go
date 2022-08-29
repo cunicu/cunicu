@@ -7,22 +7,26 @@ import (
 
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/util"
 )
 
 var (
 	ErrNotSubscribed = errors.New("missing subscription")
+
+	AnyKey crypto.Key
 )
 
 type Subscription struct {
-	onMessages    map[crypto.Key][]MessageHandler
-	onAllMessages []MessageHandler
+	onMessages map[crypto.Key][]MessageHandler
 
+	mu sync.RWMutex
 	sk crypto.Key
 }
 
 type SubscriptionsRegistry struct {
-	subs     map[crypto.Key]*Subscription
-	subsLock sync.RWMutex
+	subs map[crypto.Key]*Subscription
+
+	mu sync.RWMutex
 }
 
 func NewSubscriptionsRegistry() SubscriptionsRegistry {
@@ -46,17 +50,16 @@ func (s *SubscriptionsRegistry) NewMessage(env *Envelope) error {
 }
 
 func (s *SubscriptionsRegistry) NewSubscription(k *crypto.Key) (*Subscription, error) {
-	s.subsLock.Lock()
-	defer s.subsLock.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if _, ok := s.subs[k.PublicKey()]; ok {
 		return nil, errors.New("already existing")
 	}
 
 	sub := &Subscription{
-		onMessages:    map[crypto.Key][]MessageHandler{},
-		onAllMessages: []MessageHandler{},
-		sk:            *k,
+		onMessages: map[crypto.Key][]MessageHandler{},
+		sk:         *k,
 	}
 
 	s.subs[k.PublicKey()] = sub
@@ -65,8 +68,8 @@ func (s *SubscriptionsRegistry) NewSubscription(k *crypto.Key) (*Subscription, e
 }
 
 func (s *SubscriptionsRegistry) GetSubscription(pk *crypto.Key) (*Subscription, error) {
-	s.subsLock.Lock()
-	defer s.subsLock.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	sub, ok := s.subs[*pk]
 	if !ok {
@@ -89,17 +92,6 @@ func (s *SubscriptionsRegistry) GetOrCreateSubscription(sk *crypto.Key) (bool, *
 	return true, sub, err
 }
 
-func (s *SubscriptionsRegistry) SubscribeAll(sk *crypto.Key, h MessageHandler) (bool, error) {
-	created, sub, err := s.GetOrCreateSubscription(sk)
-	if err != nil {
-		return false, err
-	}
-
-	sub.onAllMessages = append(sub.onAllMessages, h)
-
-	return created, nil
-}
-
 func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair, h MessageHandler) (bool, error) {
 	created, sub, err := s.GetOrCreateSubscription(&kp.Ours)
 	if err != nil {
@@ -111,11 +103,15 @@ func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair, h MessageHandler) 
 	return created, nil
 }
 
-func (s *SubscriptionsRegistry) Unsubscribe(pk *crypto.Key) {
-	s.subsLock.Lock()
-	defer s.subsLock.Unlock()
+func (s *SubscriptionsRegistry) Unsubscribe(kp *crypto.KeyPair, h MessageHandler) (bool, error) {
+	sub, err := s.GetSubscription(&kp.Ours)
+	if err != nil {
+		return false, err
+	}
 
-	delete(s.subs, *pk)
+	sub.RemoveOnMessages(&kp.Theirs, h)
+
+	return len(sub.onMessages[kp.Theirs]) == 0, nil
 }
 
 func (s *Subscription) NewMessage(env *Envelope) error {
@@ -137,8 +133,13 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 
 	zap.L().Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("pkp", pkp))
 
-	for _, cb := range s.onAllMessages {
-		cb.OnSignalingMessage(&pkp, msg)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if cbs, ok := s.onMessages[AnyKey]; ok {
+		for _, cb := range cbs {
+			cb.OnSignalingMessage(&pkp, msg)
+		}
 	}
 
 	if cbs, ok := s.onMessages[kp.Theirs]; ok {
@@ -151,9 +152,17 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 }
 
 func (s *Subscription) OnMessages(pk *crypto.Key, h MessageHandler) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.onMessages[*pk] = append(s.onMessages[*pk], h)
 }
 
-func (s *Subscription) OnAllMessages(h MessageHandler) {
-	s.onAllMessages = append(s.onAllMessages, h)
+func (s *Subscription) RemoveOnMessages(pk *crypto.Key, h MessageHandler) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.onMessages[*pk] = util.FilterSlice(s.onMessages[*pk], func(j MessageHandler) bool {
+		return h != j
+	})
 }
