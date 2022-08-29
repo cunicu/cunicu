@@ -46,11 +46,11 @@ func BuildTestBinary(name string) (string, []any, error) {
 			buildArgs = append(buildArgs, "-race")
 		}
 
-		// Generate coverage for all wice packages
-		profileFlags["coverpkg"] = "../..."
-
 		// Build a test binary if profiling is requested
 		if len(profileFlags) > 0 {
+			// Generate coverage for all wice packages
+			profileFlags["coverpkg"] = "../..."
+
 			buildArgs = append(buildArgs, "-tags", "test")
 
 			for k, v := range profileFlags {

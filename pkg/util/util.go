@@ -37,8 +37,8 @@ func CmpNet(a, b *net.IPNet) int {
 	return bytes.Compare(a.IP, b.IP)
 }
 
-func IsATTY() bool {
-	fi, err := os.Stdout.Stat()
+func IsATTY(f *os.File) bool {
+	fi, err := f.Stat()
 	if err != nil {
 		panic(fmt.Errorf("failed to stat stdout: %w", err))
 	}

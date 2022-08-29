@@ -13,21 +13,6 @@ import (
 	t "riasc.eu/wice/pkg/util/terminal"
 )
 
-func NewInterfaceType(t wgtypes.DeviceType) InterfaceType {
-	switch t {
-	case wgtypes.LinuxKernel:
-		return InterfaceType_LINUX_KERNEL
-	case wgtypes.OpenBSDKernel:
-		return InterfaceType_OPENBSD_KERNEL
-	case wgtypes.WindowsKernel:
-		return InterfaceType_WINDOWS_KERNEL
-	case wgtypes.Userspace:
-		return InterfaceType_USERSPACE
-	}
-
-	return InterfaceType_UNKNOWN
-}
-
 func (p *Peer) Peer() wgtypes.Peer {
 	allowedIPs := []net.IPNet{}
 	for _, allowedIP := range p.AllowedIps {
