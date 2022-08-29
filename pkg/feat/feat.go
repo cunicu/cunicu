@@ -8,6 +8,7 @@ import (
 	"riasc.eu/wice/pkg/feat/cfgsync"
 	"riasc.eu/wice/pkg/feat/epdisc"
 	"riasc.eu/wice/pkg/feat/hsync"
+	"riasc.eu/wice/pkg/feat/pdisc"
 	"riasc.eu/wice/pkg/feat/rtsync"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/watcher"
@@ -41,6 +42,10 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	if cfg.EndpointDisc.Enabled {
 		ep = epdisc.New(w, cfg, c, b)
 		feats = append(feats, ep)
+	}
+
+	if cfg.Community != "" {
+		feats = append(feats, pdisc.New(w, c, b, cfg.Community))
 	}
 
 	return feats, ep

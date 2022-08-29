@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 
 	"golang.org/x/exp/slices"
@@ -73,6 +74,16 @@ func MapSlice[T any](s []T, cb func(T) T) []T {
 
 	for _, t := range s {
 		n = append(n, cb(t))
+	}
+
+	return n
+}
+
+func StringSlice[T any](s []T) []string {
+	n := []string{}
+
+	for _, t := range s {
+		n = append(n, fmt.Sprintf("%v", t))
 	}
 
 	return n

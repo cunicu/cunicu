@@ -3,15 +3,18 @@ package core
 import (
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"time"
 
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/util"
+	"riasc.eu/wice/pkg/util/buildinfo"
 	"riasc.eu/wice/pkg/wg"
 
 	proto "riasc.eu/wice/pkg/proto"
@@ -254,16 +257,17 @@ func (i *Interface) Configure(cfg *wg.Config) error {
 	return nil
 }
 
-func (i *Interface) AddPeer(pk crypto.Key) error {
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				PublicKey: wgtypes.Key(pk),
-			},
-		},
-	}
+func (i *Interface) AddPeer(pcfg *wgtypes.PeerConfig) error {
+	return i.client.ConfigureDevice(i.Name(), wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{*pcfg},
+	})
+}
 
-	return i.client.ConfigureDevice(i.Name(), cfg)
+func (i *Interface) UpdatePeer(pcfg *wgtypes.PeerConfig) error {
+	pcfg2 := *pcfg
+	pcfg2.UpdateOnly = true
+
+	return i.AddPeer(&pcfg2)
 }
 
 func (i *Interface) RemovePeer(pk crypto.Key) error {
@@ -344,13 +348,41 @@ func (i *Interface) MarshalWithPeers(cb func(p *Peer) *coreproto.Peer) *coreprot
 	return q
 }
 
-func (i *Interface) MarshalDescription() (*pdiscproto.PeerDescription, error) {
+func (i *Interface) MarshalDescription(chg pdiscproto.PeerDescriptionChange, pkOld *crypto.Key) (*pdiscproto.PeerDescription, error) {
+	allowedIPs := []*net.IPNet{
+		i.PublicKey().IPv6Address(),
+		i.PublicKey().IPv4Address(),
+	}
+
+	// Only allow a single IP from the network
+	for _, allowedIP := range allowedIPs {
+		for i := range allowedIP.Mask {
+			allowedIP.Mask[i] = 0xff
+		}
+	}
+
 	hn, err := os.Hostname()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hostname: %w", err)
 	}
 
-	return &pdiscproto.PeerDescription{
-		Hostname: hn,
-	}, nil
+	pd := &pdiscproto.PeerDescription{
+		Change:     chg,
+		Hostname:   hn,
+		AllowedIps: util.StringSlice(allowedIPs),
+		BuildInfo:  buildinfo.BuildInfo(),
+	}
+
+	if pkOld != nil {
+		if pd.Change != pdiscproto.PeerDescriptionChange_PEER_UPDATE {
+			return nil, fmt.Errorf("can not change public key in non-update message")
+		}
+
+		pd.PublicKeyNew = i.PublicKey().Bytes()
+		pd.PublicKey = pkOld.Bytes()
+	} else {
+		pd.PublicKey = i.PublicKey().Bytes()
+	}
+
+	return pd, nil
 }

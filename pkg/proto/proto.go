@@ -5,7 +5,7 @@ package proto
 //go:generate protoc --proto_path=../../proto --go_out=.      --go_opt=paths=import,module=riasc.eu/wice/pkg/proto core/peer.proto core/interface.proto
 //go:generate protoc --proto_path=../../proto --go_out=.      --go_opt=paths=import,module=riasc.eu/wice/pkg/proto signaling/signaling.proto
 //go:generate protoc --proto_path=../../proto --go_out=.      --go_opt=paths=import,module=riasc.eu/wice/pkg/proto rpc/daemon.proto rpc/epdisc.proto rpc/event.proto rpc/signaling.proto rpc/watcher.proto
-//go:generate protoc --proto_path=../../proto --go_out=.      --go_opt=paths=import,module=riasc.eu/wice/pkg/proto feat/epdisc.proto feat/epdisc_candidate.proto
+//go:generate protoc --proto_path=../../proto --go_out=.      --go_opt=paths=import,module=riasc.eu/wice/pkg/proto feat/epdisc.proto feat/epdisc_candidate.proto feat/pdisc.proto
 
 //go:generate protoc --proto_path=../../proto --go-grpc_out=. --go-grpc_opt=paths=import,module=riasc.eu/wice/pkg/proto rpc/daemon.proto rpc/epdisc.proto rpc/signaling.proto rpc/watcher.proto
 //go:generate protoc --proto_path=../../proto --go-grpc_out=. --go-grpc_opt=paths=import,module=riasc.eu/wice/pkg/proto signaling/signaling.proto

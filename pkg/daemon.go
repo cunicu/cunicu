@@ -142,6 +142,12 @@ func (d *Daemon) Restart() {
 }
 
 func (d *Daemon) Close() error {
+	for _, dev := range d.devices {
+		if err := dev.Close(); err != nil {
+			return fmt.Errorf("failed to delete device: %w", err)
+		}
+	}
+
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close interface: %w", err)
 	}
@@ -154,12 +160,6 @@ func (d *Daemon) Close() error {
 
 	if err := d.Client.Close(); err != nil {
 		return fmt.Errorf("failed to close WireGuard client: %w", err)
-	}
-
-	for _, dev := range d.devices {
-		if err := dev.Close(); err != nil {
-			return fmt.Errorf("failed to delete device: %w", err)
-		}
 	}
 
 	d.logger.Debug("Closed daemon")
