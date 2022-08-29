@@ -5,7 +5,6 @@ import "strings"
 type PeerModifier uint32
 
 const (
-	PeerModifiedNone         PeerModifier = 0
 	PeerModifiedPresharedKey PeerModifier = (1 << iota)
 	PeerModifiedEndpoint
 	PeerModifiedKeepaliveInterval
@@ -15,7 +14,9 @@ const (
 	PeerModifiedAllowedIPs
 	PeerModifiedProtocolVersion
 	PeerModifiedName
-	PeerModifierCount = 8
+
+	PeerModifierCount              = 8
+	PeerModifiedNone  PeerModifier = 0
 )
 
 var (
