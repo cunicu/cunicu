@@ -58,7 +58,7 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client) *AutoCon
 	s := &AutoConfig{
 		client: client,
 		config: cfg,
-		logger: zap.L().Named("auto"),
+		logger: zap.L().Named("autocfg"),
 	}
 
 	w.OnAll(s)

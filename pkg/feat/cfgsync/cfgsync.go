@@ -37,7 +37,7 @@ func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, 
 		client:  client,
 		cfgPath: cfgPath,
 		user:    user,
-		logger:  zap.L().Named("sync.config"),
+		logger:  zap.L().Named("cfgsync"),
 	}
 
 	w.OnInterface(cs)

@@ -27,7 +27,7 @@ type HostsSync struct {
 func New(w *watcher.Watcher) *HostsSync {
 	hs := &HostsSync{
 		watcher: w,
-		logger:  zap.L().Named("sync.hosts"),
+		logger:  zap.L().Named("hsync"),
 	}
 
 	w.OnPeer(hs)

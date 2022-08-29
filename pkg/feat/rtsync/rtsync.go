@@ -25,7 +25,7 @@ func New(w *watcher.Watcher, table string) *RouteSync {
 	rs := &RouteSync{
 		gwMap:  map[netip.Addr]*core.Peer{},
 		stop:   make(chan struct{}),
-		logger: zap.L().Named("sync.routes"),
+		logger: zap.L().Named("rtsync"),
 	}
 
 	w.OnPeer(rs)
