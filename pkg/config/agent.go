@@ -21,14 +21,10 @@ func (c *Config) AgentConfig() (*ice.AgentConfig, error) {
 	for _, u := range c.EndpointDisc.ICE.URLs {
 		p := u.URL
 
-		// Set ICE credentials for TURN/TURNS servers
-		if p.Scheme == ice.SchemeTypeTURN || p.Scheme == ice.SchemeTypeTURNS {
-			p.Username = c.EndpointDisc.ICE.Username
-			p.Password = c.EndpointDisc.ICE.Password
-		}
+		p.Username = c.EndpointDisc.ICE.Username
+		p.Password = c.EndpointDisc.ICE.Password
 
 		cfg.Urls = append(cfg.Urls, &p)
-
 	}
 
 	if len(c.EndpointDisc.ICE.NAT1to1IPs) > 0 {

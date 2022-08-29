@@ -16,11 +16,6 @@ func Time(s time.Time) *Timestamp {
 	}
 }
 
-func (t *Timestamp) Set(s time.Time) {
-	t.Nanos = int32(s.Nanosecond())
-	t.Seconds = int32(s.Unix())
-}
-
 func (t *Timestamp) Time() time.Time {
 	return time.Unix(int64(t.Seconds), int64(t.Nanos))
 }

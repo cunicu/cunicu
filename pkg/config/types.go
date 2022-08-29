@@ -57,47 +57,48 @@ func (u BackendURL) MarshalText() ([]byte, error) {
 	return []byte(s), nil
 }
 
-type OutputFormat int
+type OutputFormat string
 
 const (
-	OutputFormatJSON OutputFormat = iota
-	OutputFormatLogger
-	OutputFormatHuman
+	OutputFormatJSON   OutputFormat = "json"
+	OutputFormatLogger OutputFormat = "logger"
+	OutputFormatHuman  OutputFormat = "human"
 )
 
 var (
-	OutputFormatNames = []string{"json", "logger", "human"}
+	OutputFormats = []OutputFormat{
+		OutputFormatJSON,
+		OutputFormatLogger,
+		OutputFormatHuman,
+	}
 )
 
 func (f *OutputFormat) UnmarshalText(text []byte) error {
-	for i, of := range OutputFormatNames {
-		if of == string(text) {
-			*f = OutputFormat(i)
-			return nil
-		}
+	*f = OutputFormat(text)
+
+	switch *f {
+	case OutputFormatJSON:
+	case OutputFormatLogger:
+	case OutputFormatHuman:
+		return nil
 	}
 
 	return fmt.Errorf("unknown output format: %s", string(text))
 }
 
 func (f OutputFormat) MarshalText() ([]byte, error) {
-	return []byte(OutputFormatNames[int(f)]), nil
+	return []byte(f), nil
 }
 
 func (f OutputFormat) String() string {
-	b, err := f.MarshalText()
-	if err != nil {
-		panic(fmt.Errorf("failed marshal: %w", err))
-	}
-
-	return string(b)
+	return string(f)
 }
 
-func (f OutputFormat) Set(str string) error {
+func (f *OutputFormat) Set(str string) error {
 	return f.UnmarshalText([]byte(str))
 }
 
-func (f OutputFormat) Type() string {
+func (f *OutputFormat) Type() string {
 	return "string"
 }
 

@@ -54,7 +54,7 @@ func (c *Config) lookupTXT(name string) error {
 	for txtName, settingName := range txtSettingMap {
 		if values, ok := rrs[txtName]; ok {
 			if len(values) > 1 {
-				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'wice-%s' as there are more than once records with this prefix", txtName))
+				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'wice-%s' as there are more than one records with this prefix", txtName))
 			} else {
 				// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
 				c.SetDefault(settingName, values[0])
