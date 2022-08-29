@@ -43,7 +43,7 @@ func (b *Backend) Type() signalingproto.BackendType {
 }
 
 func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
-	return subs.Unsubscribe(kp, h)
+	return subs.Subscribe(kp, h)
 }
 
 func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {

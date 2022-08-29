@@ -38,7 +38,7 @@ func (n *NAT) AddRule(r *nftables.Rule) (*NATRule, error) {
 		return nil, fmt.Errorf("failed to flush: %w", err)
 	}
 
-	rs, err := n.NFConn.GetRule(r.Table, r.Chain)
+	rs, err := n.NFConn.GetRules(r.Table, r.Chain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rules: %w", err)
 	}

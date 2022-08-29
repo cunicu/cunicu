@@ -37,7 +37,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	case "auto":
 		fallthrough
 	default:
-		color = util.IsATTY()
+		color = util.IsATTY(os.Stdout)
 	}
 
 	if !color {

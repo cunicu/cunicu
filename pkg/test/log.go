@@ -63,5 +63,5 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 		ginkgo.GinkgoWriter.TeeTo(t.NewANSIStripper(f))
 	}
 
-	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths)
+	return log.SetupLogging(zap.DebugLevel, outputPaths, outputPaths, true)
 }

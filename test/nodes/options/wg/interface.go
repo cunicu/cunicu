@@ -66,6 +66,7 @@ func (ski SetupKernelInterface) Apply(i *nodes.WireGuardInterface) {
 type PeerSelector nodes.WireGuardPeerSelectorFunc
 
 var FullMeshPeers PeerSelector = func(i, j *nodes.WireGuardInterface) bool { return true }
+var NoPeers PeerSelector = func(i, j *nodes.WireGuardInterface) bool { return false }
 
 func (ps PeerSelector) Apply(i *nodes.WireGuardInterface) {
 	i.PeerSelector = nodes.WireGuardPeerSelectorFunc(ps)

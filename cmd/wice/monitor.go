@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -24,7 +23,7 @@ func init() {
 	addClientCommand(rootCmd, monitorCmd)
 
 	f := monitorCmd.PersistentFlags()
-	f.VarP(&format, "format", "f", fmt.Sprintf("Output `format` (one of: %s)", strings.Join(config.OutputFormatNames, ", ")))
+	f.VarP(&format, "format", "f", fmt.Sprintf("Output `format` (one of: json, logger, human)"))
 }
 
 func monitor(cmd *cobra.Command, args []string) {
