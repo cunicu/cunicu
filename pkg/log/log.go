@@ -2,18 +2,22 @@
 package log
 
 import (
-	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 	"k8s.io/klog/v2"
 )
 
-func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []string) *zap.Logger {
+func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []string, color bool) *zap.Logger {
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.99")
+	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.009")
+	if color {
+		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	} else {
+		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
+	}
 	cfg.DisableCaller = true
 	cfg.DisableStacktrace = true
 	cfg.OutputPaths = outputPaths
@@ -24,7 +28,7 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 	}
 
 	if len(cfg.ErrorOutputPaths) == 0 {
-		cfg.OutputPaths = []string{"stderr"}
+		cfg.ErrorOutputPaths = []string{"stderr"}
 	}
 
 	logger, err := cfg.Build()
@@ -33,12 +37,8 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 	}
 
 	// Redirect Kubernetes log to Zap
-	klogger := logger.Named("backend.k8s").WithOptions(
-		zap.WrapCore(func(c zapcore.Core) zapcore.Core {
-			return &k8sCore{Core: c}
-		}),
-	)
-	klog.SetLogger(zapr.NewLogger(klogger))
+	klogger := logger.Named("backend.k8s")
+	klog.SetLogger(NewK8SLogger(klogger))
 
 	// Redirect gRPC log to Zap
 	glogger := logger.Named("grpc")
@@ -53,7 +53,10 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 // WithLevel sets the loggers leveler to the one given.
 func WithLevel(level zapcore.LevelEnabler) zap.Option {
 	return zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-		return &lvlCore{Core: core, l: level}
+		return &lvlCore{
+			Core: core,
+			l:    level,
+		}
 	})
 }
 

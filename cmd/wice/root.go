@@ -55,10 +55,11 @@ var (
 		DisableAutoGenTag: true,
 	}
 
-	logLevel = config.Level{Level: zapcore.InfoLevel}
-	logFile  string
-	color    bool
-	stdout   io.Writer
+	logLevel  = config.Level{Level: zapcore.InfoLevel}
+	logFile   string
+	colorMode string
+	color     bool
+	stdout    io.Writer
 )
 
 func init() {
@@ -72,7 +73,7 @@ func init() {
 	pf := rootCmd.PersistentFlags()
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
-	pf.BoolVarP(&color, "color", "C", true, "Enable colorization of output")
+	pf.StringVarP(&colorMode, "color", "C", "auto", "Enable colorization of output (one of: auto, always, never)")
 }
 
 func onInitialize() {
@@ -80,8 +81,17 @@ func onInitialize() {
 	util.SetupRand()
 
 	// Handle color output
+	switch colorMode {
+	case "auto":
+		color = util.IsATTY(os.Stdout)
+	case "always":
+		color = true
+	case "never":
+		color = false
+	}
+
 	stdout = os.Stdout
-	if supportsColor := util.IsATTY(); !supportsColor || !color {
+	if !color {
 		stdout = terminal.NewANSIStripper(stdout)
 	}
 
@@ -94,7 +104,7 @@ func onInitialize() {
 		errOutputPaths = append(errOutputPaths, logFile)
 	}
 
-	logger = log.SetupLogging(logLevel.Level, outputPaths, errOutputPaths)
+	logger = log.SetupLogging(logLevel.Level, outputPaths, errOutputPaths, color)
 }
 
 func main() {
