@@ -34,7 +34,7 @@ func (p *UserBindProxy) Close() error {
 	return nil
 }
 
-func (p *UserBindProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
+func (p *UserBindProxy) UpdateCandidatePair(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
 	var err error
 
 	p.logger.Debug("Forwarding via in-process bind")

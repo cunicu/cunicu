@@ -2,6 +2,7 @@
 package epdisc
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -10,7 +11,9 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/crypto"
 	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
+	"riasc.eu/wice/pkg/feat/epdisc/proxy"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
@@ -51,7 +54,7 @@ func New(w *watcher.Watcher, cfg *config.Config, client *wgctrl.Client, backend 
 }
 
 func (e *EndpointDiscovery) Start() error {
-	e.logger.Info("Started ICE endpoint discovery")
+	e.logger.Info("Started endpoint discovery")
 
 	return nil
 }
@@ -98,10 +101,33 @@ func (e *EndpointDiscovery) OnInterfaceRemoved(ci *core.Interface) {
 }
 
 func (e *EndpointDiscovery) OnInterfaceModified(ci *core.Interface, old *wg.Device, m core.InterfaceModifier) {
-	// i := e.interfaces[ci]
+	i := e.Interfaces[ci]
 
-	// TODO: Handle changed listen port
-	// if m&core.InterfaceModifiedListenPort != 0 {}
+	if m.Is(core.InterfaceModifiedListenPort) {
+		if err := i.UpdateRedirects(); err != nil {
+			e.logger.Error("Failed to update DPAT redirects", zap.Error(err))
+		}
+	}
+
+	for _, cp := range i.Peers {
+		p := e.Peers[cp]
+
+		if m.Is(core.InterfaceModifiedListenPort) {
+			if kproxy, ok := p.proxy.(*proxy.KernelProxy); ok {
+				if err := kproxy.UpdateListenPort(i.ListenPort); err != nil {
+					e.logger.Error("Failed to update SPAT redirect", zap.Error(err))
+				}
+			}
+		}
+
+		if m.Is(core.InterfaceModifiedPrivateKey) {
+
+			skOld := crypto.Key(old.PrivateKey)
+			if err := p.Resubscribe(context.Background(), skOld); err != nil {
+				e.logger.Error("Failed to update subscription", zap.Error(err))
+			}
+		}
+	}
 }
 
 func (e *EndpointDiscovery) OnPeerAdded(cp *core.Peer) {
@@ -127,9 +153,17 @@ func (e *EndpointDiscovery) OnPeerRemoved(cp *core.Peer) {
 }
 
 func (e *EndpointDiscovery) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
-	// p := e.peers[cp]
+	p := e.Peers[cp]
 
 	// TODO: Handle changed endpoint addresses
 	//       What do we do when they have been changed externally?
-	// if m&core.PeerModifiedEndpoint != 0 {}
+	if m.Is(core.PeerModifiedEndpoint) {
+		// Check if change was external
+		epNew := p.Endpoint
+		epExpected := p.lastEndpoint
+
+		if (epExpected != nil && epNew != nil) && (!epNew.IP.Equal(epExpected.IP) || epNew.Port != epExpected.Port) {
+			e.logger.Warn("Endpoint address has been changed externally. This is breaks the connection and is most likely not desired.")
+		}
+	}
 }

@@ -2,7 +2,6 @@ package signaling
 
 import (
 	"context"
-	"errors"
 	"net/url"
 
 	"riasc.eu/wice/pkg/crypto"
@@ -56,18 +55,24 @@ func (mb *MultiBackend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *Me
 	return nil
 }
 
-func (mb *MultiBackend) SubscribeAll(ctx context.Context, kp *crypto.Key, h MessageHandler) error {
-	return errors.New("not implemented yet") // TODO
-}
-
-func (mb *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error {
+func (mb *MultiBackend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) (bool, error) {
 	for _, b := range mb.Backends {
-		if err := b.Subscribe(ctx, kp, h); err != nil {
-			return err
+		if _, err := b.Subscribe(ctx, kp, h); err != nil {
+			return false, err
 		}
 	}
 
-	return nil
+	return false, nil
+}
+
+func (mb *MultiBackend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) (bool, error) {
+	for _, b := range mb.Backends {
+		if _, err := b.Unsubscribe(ctx, kp, h); err != nil {
+			return false, err
+		}
+	}
+
+	return false, nil
 }
 
 func (mb *MultiBackend) Close() error {

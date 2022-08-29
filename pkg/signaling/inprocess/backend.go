@@ -42,14 +42,12 @@ func (b *Backend) Type() signalingproto.BackendType {
 	return signalingproto.BackendType_INPROCESS
 }
 
-func (b *Backend) SubscribeAll(ctx context.Context, kp *crypto.Key, h signaling.MessageHandler) error {
-	_, err := subs.SubscribeAll(kp, h)
-	return err
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	return subs.Unsubscribe(kp, h)
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
-	_, err := subs.Subscribe(kp, h)
-	return err
+func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	return subs.Unsubscribe(kp, h)
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {

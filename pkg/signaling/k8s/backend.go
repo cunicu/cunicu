@@ -118,22 +118,18 @@ func (b *Backend) Type() signalingproto.BackendType {
 	return signalingproto.BackendType_K8S
 }
 
-func (b *Backend) SubscribeAll(ctx context.Context, sk *crypto.Key, h signaling.MessageHandler) error {
-	if _, err := b.SubscriptionsRegistry.SubscribeAll(sk, h); err != nil {
-		return err
+func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	first, err := b.SubscriptionsRegistry.Subscribe(kp, h)
+	if err != nil {
+		return false, err
 	}
 
 	// Process existing envelopes in cache
-	return b.reprocess()
+	return first, b.reprocess()
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) error {
-	if _, err := b.SubscriptionsRegistry.Subscribe(kp, h); err != nil {
-		return err
-	}
-
-	// Process existing envelopes in cache
-	return b.reprocess()
+func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+	return b.SubscriptionsRegistry.Unsubscribe(kp, h)
 }
 
 func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {

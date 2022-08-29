@@ -22,10 +22,12 @@ const (
 type KernelProxy struct {
 	listenPort int
 
-	nat *NAT
+	nat     *NAT
+	natRule *NATRule
 
-	typ      epdiscproto.ProxyType
-	conn     *ice.Conn
+	ep       *net.UDPAddr
+	cp       *ice.CandidatePair
+	connICE  *ice.Conn
 	connUser *net.UDPConn
 
 	logger *zap.Logger
@@ -35,7 +37,6 @@ func NewKernelProxy(nat *NAT, listenPort int) (*KernelProxy, error) {
 	p := &KernelProxy{
 		nat:        nat,
 		listenPort: listenPort,
-		typ:        epdiscproto.ProxyType_NO_PROXY,
 		logger:     zap.L().Named("proxy").With(zap.String("type", "kernel")),
 	}
 
@@ -53,48 +54,91 @@ func (p *KernelProxy) Close() error {
 	return nil
 }
 
-func (p *KernelProxy) Update(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
-	// By default we proxy through the userspace
-	var ep *net.UDPAddr
+func (p *KernelProxy) UpdateListenPort(listenPort int) error {
+	return p.Update(nil, nil, listenPort)
+}
 
-	if cp.Local.Type() == ice.CandidateTypeHost || cp.Local.Type() == ice.CandidateTypeServerReflexive {
-		ep = &net.UDPAddr{
-			IP:   net.ParseIP(cp.Remote.Address()),
-			Port: cp.Remote.Port(),
-		}
-
-		// Update SNAT set for UDPMuxSrflx
-		if err := p.nat.MasqueradeSourcePort(p.listenPort, cp.Local.Port(), ep); err != nil {
-			return nil, err
-		}
-
-		p.typ = epdiscproto.ProxyType_KERNEL_NAT
-	} else {
-		// We cant to anything for prfx and relay candidates.
-		// Let them pass through the userspace connection
-
-		// We create the user connection only on demand to avoid opening unused sockets
-		if p.connUser == nil {
-			if err := p.setupUserConn(conn); err != nil {
-				return nil, fmt.Errorf("failed to setup user connection: %w", err)
-			}
-		}
-
-		// Start copying if the underlying ice.Conn has changed
-		if conn != p.conn {
-			p.conn = conn
-
-			// Bi-directional copy between ICE and loopback UDP sockets
-			go p.copy(conn, p.connUser)
-			go p.copy(p.connUser, conn)
-		}
-
-		ep = p.connUser.LocalAddr().(*net.UDPAddr)
-
-		p.typ = epdiscproto.ProxyType_KERNEL_CONN
+func (p *KernelProxy) UpdateCandidatePair(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error) {
+	if err := p.Update(cp, conn, -1); err != nil {
+		return nil, err
 	}
 
-	return ep, nil
+	return p.ep, nil
+}
+
+func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, newListenPort int) error {
+	var err error
+
+	if newListenPort > 0 {
+		p.listenPort = newListenPort
+	}
+
+	if newCP != nil {
+		p.cp = newCP
+	}
+
+	if p.cp != nil {
+		switch p.Type() {
+		case epdiscproto.ProxyType_KERNEL_NAT:
+			p.ep = &net.UDPAddr{
+				IP:   net.ParseIP(p.cp.Remote.Address()),
+				Port: p.cp.Remote.Port(),
+			}
+
+			// Delete any old SPAT rule
+			if p.natRule != nil {
+				if err := p.natRule.Delete(); err != nil {
+					return fmt.Errorf("failed to delete rule: %w", err)
+				}
+			}
+
+			// Setup SNAT redirect (WireGuard listen-port -> STUN port)
+			if p.natRule, err = p.nat.MasqueradeSourcePort(p.listenPort, p.cp.Local.Port(), p.ep); err != nil {
+				return err
+			}
+
+		case epdiscproto.ProxyType_KERNEL_CONN:
+			// We cant to anything for prfx and relay candidates.
+			// Let them pass through the userspace connection
+
+			// We create the user connection only on demand to avoid opening unused sockets
+			create := p.connUser == nil
+
+			// Also recreate the user connection in case the WireGuard listen port has changed
+			if ra, ok := p.connUser.RemoteAddr().(*net.UDPAddr); ok && ra.Port != p.listenPort {
+				create = true
+			}
+
+			var newConnUser *net.UDPConn
+			if create {
+				if newConnUser, err = p.newUserConn(newConnICE); err != nil {
+					return fmt.Errorf("failed to setup user connection: %w", err)
+				}
+
+				p.logger.Debug("Created new proxy connection", zap.Any("la", p.connUser.LocalAddr()))
+			}
+
+			// Start copying if the underlying ice.Conn has changed
+			if newConnICE != p.connICE || newConnUser != p.connUser {
+				if p.connUser != nil {
+					if err := p.connUser.Close(); err != nil {
+						return fmt.Errorf("failed to close old user connection: %w", err)
+					}
+				}
+
+				p.connICE = newConnICE
+				p.connUser = newConnUser
+
+				// Bi-directional copy between ICE and loopback UDP sockets
+				go p.copy(newConnICE, p.connUser)
+				go p.copy(p.connUser, newConnICE)
+			}
+
+			p.ep = p.connUser.LocalAddr().(*net.UDPAddr)
+		}
+	}
+
+	return nil
 }
 
 func (p *KernelProxy) copy(dst io.Writer, src io.Reader) {
@@ -121,30 +165,36 @@ func (p *KernelProxy) copy(dst io.Writer, src io.Reader) {
 	}
 }
 
-func (p *KernelProxy) setupUserConn(iceConn *ice.Conn) error {
-	var err error
-
+func (p *KernelProxy) newUserConn(iceConn *ice.Conn) (*net.UDPConn, error) {
 	// User-space proxying
 	rAddr := net.UDPAddr{
 		IP:   net.IPv6loopback,
 		Port: int(p.listenPort),
 	}
+
 	lAddr := net.UDPAddr{
 		IP:   net.IPv6loopback,
 		Port: 0, // choose randomly
 	}
 
-	if p.connUser, err = net.DialUDP("udp", &lAddr, &rAddr); err != nil {
-		return err
+	conn, err := net.DialUDP("udp", &lAddr, &rAddr)
+	if err != nil {
+		return nil, err
 	}
 
 	p.logger.Info("Setup user-space proxy",
 		zap.Any("localAddress", p.connUser.LocalAddr()),
 		zap.Any("remoteAddress", p.connUser.RemoteAddr()))
 
-	return nil
+	return conn, nil
 }
 
 func (p *KernelProxy) Type() epdiscproto.ProxyType {
-	return p.typ
+	if p.cp == nil {
+		return epdiscproto.ProxyType_NO_PROXY
+	} else if p.cp.Local.Type() == ice.CandidateTypeHost || p.cp.Local.Type() == ice.CandidateTypeServerReflexive {
+		return epdiscproto.ProxyType_KERNEL_NAT
+	} else {
+		return epdiscproto.ProxyType_KERNEL_CONN
+	}
 }

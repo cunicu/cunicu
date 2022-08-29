@@ -1,8 +1,11 @@
 package proxy
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"net"
+	"sync/atomic"
 
 	"github.com/google/nftables"
 	"github.com/google/nftables/binaryutil"
@@ -16,6 +19,49 @@ type NAT struct {
 	table        *nftables.Table
 	chainEgress  *nftables.Chain
 	chainIngress *nftables.Chain
+
+	lastID atomic.Uint32
+}
+
+type NATRule struct {
+	*nftables.Rule
+	nat *NAT
+}
+
+func (n *NAT) AddRule(r *nftables.Rule) (*NATRule, error) {
+	id := n.lastID.Add(1)
+
+	r.UserData = binaryutil.NativeEndian.PutUint32(id)
+	r = n.NFConn.AddRule(r)
+
+	if err := n.NFConn.Flush(); err != nil {
+		return nil, fmt.Errorf("failed to flush: %w", err)
+	}
+
+	rs, err := n.NFConn.GetRule(r.Table, r.Chain)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get rules: %w", err)
+	}
+
+	for _, nr := range rs {
+		if bytes.Equal(nr.UserData, r.UserData) {
+			r.Handle = nr.Handle
+			break
+		}
+	}
+
+	if r.Handle == 0 {
+		return nil, errors.New("rule not found")
+	}
+
+	return &NATRule{
+		Rule: r,
+		nat:  n,
+	}, nil
+}
+
+func (nr *NATRule) Delete() error {
+	return nr.nat.NFConn.DelRule(nr.Rule)
 }
 
 func NewNAT(ident string) (*NAT, error) {
@@ -72,8 +118,8 @@ func (n *NAT) Close() error {
 }
 
 // RedirectNonSTUN redirects non-STUN UDP ingress traffic directed at port 'toPort' to port 'toPort'.
-func (n *NAT) RedirectNonSTUN(origPort, newPort int) error {
-	n.NFConn.AddRule(&nftables.Rule{
+func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
+	r := &nftables.Rule{
 		Table: n.table,
 		Chain: n.chainIngress,
 		Exprs: []expr.Any{
@@ -129,13 +175,13 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) error {
 				Len:            2,
 			},
 		},
-	})
-	return n.NFConn.Flush()
+	}
+
+	return n.AddRule(r)
 }
 
 // Perform SNAT to the source port of WireGuard UDP traffic to match port of our local ICE candidate
-func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) error {
-
+func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NATRule, error) {
 	var destIP []byte
 	var destIPOffset, destIPLength uint32
 
@@ -150,7 +196,7 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) erro
 		destIPLength = net.IPv4len
 	}
 
-	n.NFConn.AddRule(&nftables.Rule{
+	r := &nftables.Rule{
 		Table: n.table,
 		Chain: n.chainEgress,
 		Exprs: []expr.Any{
@@ -221,7 +267,7 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) erro
 				Len:            2,
 			},
 		},
-	})
+	}
 
-	return n.NFConn.Flush()
+	return n.AddRule(r)
 }

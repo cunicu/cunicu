@@ -3,6 +3,7 @@ package epdisc
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
+	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
 	"riasc.eu/wice/pkg/feat/epdisc/proxy"
 	"riasc.eu/wice/pkg/log"
@@ -33,6 +35,7 @@ type Peer struct {
 	proxy           proxy.Proxy
 	connectionState util.AtomicEnum[icex.ConnectionState]
 	lastStateChange time.Time
+	lastEndpoint    *net.UDPAddr
 	restarts        uint
 	credentials     protoepdisc.Credentials
 
@@ -64,8 +67,8 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	p.connectionState.Store(ice.ConnectionStateClosed)
 
 	// Initialize signaling channel
-	kp := p.PublicPrivateKeyPair()
-	if err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
+	kp := cp.PublicPrivateKeyPair()
+	if _, err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
 		// TODO: Attempt retry?
 		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
@@ -107,6 +110,32 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	go p.run()
 
 	return p, nil
+}
+
+func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
+	// TODO: Attempt retries?
+
+	// Create new subscription
+	kpNew := p.PublicPrivateKeyPair()
+	if _, err := p.backend.Subscribe(ctx, kpNew, p); err != nil {
+		return fmt.Errorf("failed to subscribe to offers: %w", err)
+	}
+
+	// Remove old subscription
+	kpOld := &crypto.KeyPair{
+		Ours:   skOld,
+		Theirs: p.PublicKey(),
+	}
+
+	if _, err := p.backend.Unsubscribe(ctx, kpOld, p); err != nil {
+		return fmt.Errorf("failed to unsubscribe from offers: %w", err)
+	}
+
+	p.logger.Info("Updated subcription",
+		zap.Any("old", kpOld.Public()),
+		zap.Any("new", kpNew.Public()))
+
+	return nil
 }
 
 func (p *Peer) ConnectionState() icex.ConnectionState {
@@ -286,7 +315,7 @@ func (p *Peer) connect(ufrag, pwd string) error {
 		return fmt.Errorf("failed to get selected candidate pair: %w", err)
 	}
 
-	ep, err := p.proxy.Update(cp, conn)
+	ep, err := p.proxy.UpdateCandidatePair(cp, conn)
 	if err != nil {
 		return fmt.Errorf("failed to update proxy: %w", err)
 	}
@@ -294,6 +323,8 @@ func (p *Peer) connect(ufrag, pwd string) error {
 	if err := p.UpdateEndpoint(ep); err != nil {
 		return fmt.Errorf("failed to update endpoint: %w", err)
 	}
+
+	p.lastEndpoint = ep
 
 	return nil
 }
