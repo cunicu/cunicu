@@ -268,6 +268,7 @@ func (c *Config) Setup(args []string) error {
 		c.AddConfigPath(filepath.Join("$HOME", ".config"))
 		c.AddConfigPath(".")
 		c.SetConfigName("wice")
+		c.SetConfigType("yaml")
 
 		if err := c.MergeInConfig(); err == nil {
 			c.logger.Debug("Using configuration file", zap.String("file", c.ConfigFileUsed()))
