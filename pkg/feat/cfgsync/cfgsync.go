@@ -117,7 +117,7 @@ func (cs *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 		return
 	}
 
-	i := cs.watcher.Interfaces.ByName(name)
+	i := cs.watcher.InterfaceByName(name)
 
 	if event.Op&(fsnotify.Create|fsnotify.Write) != 0 {
 		if i == nil {

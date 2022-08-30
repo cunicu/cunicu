@@ -44,10 +44,10 @@ func (e InterfaceEvent) String() string {
 
 // Watcher monitors both userspace and kernel for changes to WireGuard interfaces
 type Watcher struct {
-	Interfaces    core.InterfaceList
-	InterfaceLock sync.RWMutex
+	interfaces core.InterfaceList
+	devices    []*wgtypes.Device
 
-	devices []*wgtypes.Device
+	mu sync.RWMutex
 
 	onInterface []core.InterfaceHandler
 
@@ -66,12 +66,10 @@ type Watcher struct {
 
 func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (*Watcher, error) {
 	return &Watcher{
-		Interfaces:    core.InterfaceList{},
-		InterfaceLock: sync.RWMutex{},
+		interfaces: core.InterfaceList{},
+		devices:    []*wgtypes.Device{},
 
 		onInterface: []core.InterfaceHandler{},
-
-		devices: []*wgtypes.Device{},
 
 		client:   client,
 		filter:   filter,
@@ -87,7 +85,7 @@ func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (
 
 func (w *Watcher) Close() error {
 	if err := w.Sync(); err != nil {
-		return fmt.Errorf("final sync failed")
+		return fmt.Errorf("final sync failed: %w", err)
 	}
 
 	close(w.stop)
@@ -113,6 +111,7 @@ func (w *Watcher) Run() {
 	w.logger.Debug("Started watching for changes of WireGuard kernel devices")
 
 	ticker := time.NewTicker(w.interval)
+	defer ticker.Stop()
 
 out:
 	for {
@@ -142,6 +141,9 @@ out:
 }
 
 func (w *Watcher) Sync() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	var err error
 
 	var new = []*wgtypes.Device{}
@@ -161,7 +163,7 @@ func (w *Watcher) Sync() error {
 	})
 
 	for _, wgd := range removed {
-		i, ok := w.Interfaces[wgd.Name]
+		i, ok := w.interfaces[wgd.Name]
 		if !ok {
 			w.logger.Warn("Failed to find matching interface", zap.Any("intf", wgd.Name))
 			continue
@@ -173,7 +175,7 @@ func (w *Watcher) Sync() error {
 			h.OnInterfaceRemoved(i)
 		}
 
-		delete(w.Interfaces, wgd.Name)
+		delete(w.interfaces, wgd.Name)
 	}
 
 	for _, wgd := range added {
@@ -190,7 +192,7 @@ func (w *Watcher) Sync() error {
 		// We purposefully prune the peer list here to force full initial sync of all peers
 		i.Device.Peers = nil
 
-		w.Interfaces[wgd.Name] = i
+		w.interfaces[wgd.Name] = i
 
 		for _, h := range w.onInterface {
 			h.OnInterfaceAdded(i)
@@ -200,7 +202,7 @@ func (w *Watcher) Sync() error {
 	}
 
 	for _, wgd := range kept {
-		i, ok := w.Interfaces[wgd.Name]
+		i, ok := w.interfaces[wgd.Name]
 		if !ok {
 			w.logger.Warn("Failed to find matching interface", zap.Any("intf", wgd.Name))
 			continue
@@ -215,7 +217,7 @@ func (w *Watcher) Sync() error {
 }
 
 func (w *Watcher) Peer(intf string, pk *crypto.Key) *core.Peer {
-	i := w.Interfaces.ByName(intf)
+	i := w.InterfaceByName(intf)
 	if i == nil {
 		return nil
 	}
@@ -227,12 +229,61 @@ func (w *Watcher) Peer(intf string, pk *crypto.Key) *core.Peer {
 	return nil
 }
 
-func (w *Watcher) PeerByKey(pk *crypto.Key) *core.Peer {
-	for _, i := range w.Interfaces {
+func (w *Watcher) PeerByPublicKey(pk *crypto.Key) *core.Peer {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	for _, i := range w.interfaces {
 		if p, ok := i.Peers[*pk]; ok {
 			return p
 		}
 	}
 
 	return nil
+}
+
+func (w *Watcher) InterfaceByName(name string) *core.Interface {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	return w.interfaces.ByName(name)
+}
+
+func (w *Watcher) InterfaceByPublicKey(pk crypto.Key) *core.Interface {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	return w.interfaces.ByPublicKey(pk)
+}
+
+func (w *Watcher) InterfaceByIndex(idx int) *core.Interface {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	return w.interfaces.ByIndex(idx)
+}
+
+func (w *Watcher) ForEachInterface(cb func(i *core.Interface) error) error {
+	w.mu.RLock()
+	defer w.mu.Unlock()
+
+	for _, i := range w.interfaces {
+		if err := cb(i); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (w *Watcher) ForEachPeer(cb func(p *core.Peer) error) error {
+	return w.ForEachInterface(func(i *core.Interface) error {
+		for _, p := range i.Peers {
+			if err := cb(p); err != nil {
+				return nil
+			}
+		}
+
+		return nil
+	})
 }

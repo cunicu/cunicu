@@ -105,7 +105,7 @@ func (pd *PeerDiscovery) OnInterfaceModified(i *core.Interface, old *wg.Device, 
 
 func (pd *PeerDiscovery) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
 	if msg.Peer != nil {
-		if i := pd.watcher.Interfaces.ByPublicKey(kp.Theirs); i != nil {
+		if i := pd.watcher.InterfaceByPublicKey(kp.Theirs); i != nil {
 			// Received our own peer description. Ignoring...
 			return
 		}
@@ -122,7 +122,7 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 		return fmt.Errorf("invalid public key: %w", err)
 	}
 
-	p := pd.watcher.PeerByKey(&pk)
+	p := pd.watcher.PeerByPublicKey(&pk)
 	cfg := pdisc.Config()
 
 	switch pdisc.Change {
@@ -146,10 +146,10 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 
 	switch pdisc.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
-		for _, i := range pd.watcher.Interfaces {
-			if err := i.AddPeer(&cfg); err != nil {
-				return fmt.Errorf("failed to add peer: %w", err)
-			}
+		if err := pd.watcher.ForEachInterface(func(i *core.Interface) error {
+			return i.AddPeer(&cfg)
+		}); err != nil {
+			return fmt.Errorf("failed to add peer: %w", err)
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
@@ -177,11 +177,12 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 
 	// Re-announce ourself in case this is a new peer we didnt knew already
 	if p == nil {
+		// TODO: Check if delay is really necessary
 		time.AfterFunc(1*time.Second, func() {
-			for _, i := range pd.watcher.Interfaces {
-				if err := pd.sendPeerDescription(i, pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
-					pd.logger.Error("Failed to send peer description", zap.Error(err))
-				}
+			if err := pd.watcher.ForEachInterface(func(i *core.Interface) error {
+				return pd.sendPeerDescription(i, pdiscproto.PeerDescriptionChange_PEER_ADD, nil)
+			}); err != nil {
+				pd.logger.Error("Failed to send peer description", zap.Error(err))
 			}
 		})
 	}
