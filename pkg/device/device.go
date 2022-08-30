@@ -1,4 +1,4 @@
-// The device package implements OS abstractions for managing WireGuard links
+// Package device implements OS abstractions for managing WireGuard links
 package device
 
 import (
