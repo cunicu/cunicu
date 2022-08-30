@@ -44,7 +44,7 @@ var _ = Describe("device", func() {
 	}
 
 	test := func() {
-		BeforeEach(func() {
+		BeforeEach(OncePerOrdered, func() {
 			d, err = device.NewDevice(devName, user)
 			Expect(err).To(Succeed())
 		})
