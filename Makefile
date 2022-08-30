@@ -32,7 +32,7 @@ wice:
 	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/wice
 
 tests:
-	ginkgo run $(GINKGO_OPTS) --procs=2 --coverprofile=coverprofile.out ./pkg/...
+	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/...
 
 tests-integration:
 	mkdir -p test/logs
@@ -65,8 +65,10 @@ install-deps:
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest
 
+ci: install-deps vet staticcheck tests
+
 clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf wice lcov.info test/logs/
 
-.PHONY: all wice tests tests-watch coverage clean vet staticcheck install-deps
+.PHONY: all wice tests tests-watch coverage clean vet staticcheck install-deps ci
