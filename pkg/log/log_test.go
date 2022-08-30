@@ -25,7 +25,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Logging Suite")
 }
 
-var _ = Context("log", func() {
+var _ = Context("log", Label("broken-on-windows"), func() {
 	var logger *zap.Logger
 	var lvl zapcore.Level
 	var logPath, msg, scope string
