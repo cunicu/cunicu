@@ -101,11 +101,12 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 			// We cant to anything for prfx and relay candidates.
 			// Let them pass through the userspace connection
 
-			// We create the user connection only on demand to avoid opening unused sockets
-			create := p.connUser == nil
-
-			// Also recreate the user connection in case the WireGuard listen port has changed
-			if ra, ok := p.connUser.RemoteAddr().(*net.UDPAddr); ok && ra.Port != p.listenPort {
+			var create = false
+			if p.connUser == nil {
+				// We lazily create the user connection on demand to avoid opening unused sockets
+				create = true
+			} else if ra, ok := p.connUser.RemoteAddr().(*net.UDPAddr); ok && ra.Port != p.listenPort {
+				// Also recreate the user connection in case the WireGuard listen port has changed
 				create = true
 			}
 
@@ -114,8 +115,9 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 				if newConnUser, err = p.newUserConn(newConnICE); err != nil {
 					return fmt.Errorf("failed to setup user connection: %w", err)
 				}
-
-				p.logger.Debug("Created new proxy connection", zap.Any("la", p.connUser.LocalAddr()))
+				p.logger.Info("Setup user-space proxy connection",
+					zap.Any("localAddress", newConnUser.LocalAddr()),
+					zap.Any("remoteAddress", newConnUser.RemoteAddr()))
 			}
 
 			// Start copying if the underlying ice.Conn has changed
@@ -181,10 +183,6 @@ func (p *KernelProxy) newUserConn(iceConn *ice.Conn) (*net.UDPConn, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	p.logger.Info("Setup user-space proxy",
-		zap.Any("localAddress", p.connUser.LocalAddr()),
-		zap.Any("remoteAddress", p.connUser.RemoteAddr()))
 
 	return conn, nil
 }

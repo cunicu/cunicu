@@ -46,7 +46,7 @@ var _ = Context("simple", Serial, func() {
 		NumAgents int
 	)
 
-	BeforeEach(func() {
+	BeforeEach(OncePerOrdered, func() {
 		n.Init()
 
 		NumAgents = 3
@@ -61,11 +61,11 @@ var _ = Context("simple", Serial, func() {
 		)
 	})
 
-	AfterEach(func() {
+	AfterEach(OncePerOrdered, func() {
 		n.Close()
 	})
 
-	JustBeforeEach(func() {
+	JustBeforeEach(OncePerOrdered, func() {
 		By("Initializing core network")
 
 		nw, err = g.NewNetwork(n.Name, n.NetworkOptions...)
