@@ -1,4 +1,4 @@
-// The errors package defines project-wide errors
+// Package errors defines custom project-wide errors
 package errors
 
 import "errors"
