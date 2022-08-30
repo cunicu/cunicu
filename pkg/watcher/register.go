@@ -26,6 +26,12 @@ func (h *allHandler) OnInterfaceModified(i *core.Interface, old *wg.Device, m co
 	h.AllHandler.OnInterfaceModified(i, old, m)
 }
 
+func (h *allHandler) OnPeerAdded(p *core.Peer) {
+	p.OnModified(h)
+
+	h.AllHandler.OnPeerAdded(p)
+}
+
 // Peer handler
 
 type peerHandler struct {
