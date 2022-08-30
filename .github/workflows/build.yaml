@@ -134,8 +134,12 @@ jobs:
       run: make staticcheck
 
     - name: Run tests
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
+      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os != 'windows' }}
       run: sudo --preserve-env env "PATH=$PATH" make tests
+
+    - name: Run tests for Windows # which has no sudo
+      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'windows' }}
+      run: make tests
 
     - name: Run integration tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
