@@ -83,7 +83,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	// Do not use WireGuard interfaces for ICE
 	origFilter := p.agentConfig.InterfaceFilter
 	p.agentConfig.InterfaceFilter = func(name string) bool {
-		return origFilter(name) && i.Discovery.watcher.Interfaces.ByName(name) == nil
+		return origFilter(name) && i.Discovery.watcher.InterfaceByName(name) == nil
 	}
 
 	p.agentConfig.UDPMux = i.udpMux

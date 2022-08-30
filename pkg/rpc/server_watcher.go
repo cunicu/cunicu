@@ -37,9 +37,6 @@ func (s *WatcherServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams)
 	var err error
 	var pk crypto.Key
 
-	s.InterfaceLock.Lock()
-	defer s.InterfaceLock.Unlock()
-
 	if p.Peer != nil {
 		if pk, err = crypto.ParseKeyBytes(p.Peer); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid peer key")
@@ -47,27 +44,25 @@ func (s *WatcherServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams)
 	}
 
 	qis := []*coreproto.Interface{}
-	for _, ci := range s.Interfaces {
-		if p.Intf != "" && ci.Name() != p.Intf {
-			continue
+	s.ForEachInterface(func(ci *core.Interface) error {
+		if p.Intf == "" || ci.Name() == p.Intf {
+			qis = append(qis, ci.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
+				if pk.IsSet() && pk != cp.PublicKey() {
+					return nil
+				}
+
+				qp := cp.Marshal()
+
+				if s.epdisc != nil {
+					qp.Ice = s.epdisc.PeerStatus(cp)
+				}
+
+				return qp
+			}))
 		}
 
-		qi := ci.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
-			if pk.IsSet() && pk != cp.PublicKey() {
-				return nil
-			}
-
-			qp := cp.Marshal()
-
-			if s.epdisc != nil {
-				qp.Ice = s.epdisc.PeerStatus(cp)
-			}
-
-			return qp
-		})
-
-		qis = append(qis, qi)
-	}
+		return nil
+	})
 
 	// Check if filters matched anything
 	if p.Intf != "" && len(qis) == 0 {

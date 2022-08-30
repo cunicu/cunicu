@@ -48,27 +48,27 @@ func (hs *HostsSync) Close() error {
 func (hs *HostsSync) Hosts() []Host {
 	hosts := []Host{}
 
-	for _, i := range hs.watcher.Interfaces {
-		for _, p := range i.Peers {
-			// We use a shorted version of the public key as a DNS name here
-			pkName := p.PublicKey().String()[:8]
+	hs.watcher.ForEachPeer(func(p *core.Peer) error {
+		// We use a shorted version of the public key as a DNS name here
+		pkName := p.PublicKey().String()[:8]
 
-			h := Host{
-				IP:    p.PublicKey().IPv6Address().IP,
-				Names: []string{pkName},
-				Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
-					i.KernelDevice.Name(),
-					i.KernelDevice.Index(),
-					p.PublicKey().String()),
-			}
-
-			if p.Name != "" {
-				h.Names = append(h.Names, p.Name)
-			}
-
-			hosts = append(hosts, h)
+		h := Host{
+			IP:    p.PublicKey().IPv6Address().IP,
+			Names: []string{pkName},
+			Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
+				p.Interface.KernelDevice.Name(),
+				p.Interface.KernelDevice.Index(),
+				p.PublicKey().String()),
 		}
-	}
+
+		if p.Name != "" {
+			h.Names = append(h.Names, p.Name)
+		}
+
+		hosts = append(hosts, h)
+
+		return nil
+	})
 
 	return hosts
 }
