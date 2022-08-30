@@ -48,14 +48,13 @@ var _ = BeforeSuite(func() {
 
 	err = writeKubeconfig(cfg, kcfg)
 	Expect(err).To(Succeed())
-
 })
 
 var _ = AfterSuite(func() {
 	Expect(testenv.Stop()).To(Succeed())
 })
 
-var _ = Describe("Kubernetes backend", func() {
+var _ = Describe("Kubernetes backend", Label("broken-on-windows"), func() {
 	var u url.URL
 
 	BeforeEach(func() {
