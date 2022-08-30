@@ -49,18 +49,20 @@ type PeerRemovedEvent struct {
 }
 
 type PeerModifiedEvent struct {
-	Peer     *Peer
-	Old      *wgtypes.Peer
-	Modified PeerModifier
+	Peer              *Peer
+	Old               *wgtypes.Peer
+	Modified          PeerModifier
+	AllowedIPsAdded   []net.IPNet
+	AllowedIPsRemoved []net.IPNet
 }
 
 type EventsHandler struct {
 	Events chan Event
 }
 
-func NewMockHandler() *EventsHandler {
+func NewEventsHandler(len int) *EventsHandler {
 	return &EventsHandler{
-		Events: make(chan Event),
+		Events: make(chan Event, len),
 	}
 }
 
@@ -85,5 +87,5 @@ func (h *EventsHandler) OnPeerRemoved(p *Peer) {
 }
 
 func (h *EventsHandler) OnPeerModified(p *Peer, old *wgtypes.Peer, m PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
-	h.Events <- PeerModifiedEvent{p, old, m}
+	h.Events <- PeerModifiedEvent{p, old, m, ipsAdded, ipsRemoved}
 }

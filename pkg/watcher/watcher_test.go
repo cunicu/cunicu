@@ -43,29 +43,29 @@ var _ = Describe("watcher", func() {
 	var user bool
 	var h *core.EventsHandler
 
-	BeforeEach(OncePerOrdered, func() {
-		// Generate unique name per test
-		devName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
-
-		c, err = wgctrl.New()
-		Expect(err).To(Succeed())
-
-		w, err = watcher.New(c, time.Second, nil)
-		Expect(err).To(Succeed())
-
-		h = core.NewMockHandler()
-
-		w.OnAll(h)
-
-		go w.Run()
-	})
-
-	AfterEach(OncePerOrdered, func() {
-		err := w.Close()
-		Expect(err).To(Succeed())
-	})
-
 	test := func() {
+		BeforeEach(OncePerOrdered, func() {
+			// Generate unique name per test
+			devName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
+
+			c, err = wgctrl.New()
+			Expect(err).To(Succeed())
+
+			w, err = watcher.New(c, time.Hour, func(dev string) bool { return dev == devName })
+			Expect(err).To(Succeed())
+
+			h = core.NewEventsHandler(16)
+
+			w.OnAll(h)
+
+			go w.Run()
+		})
+
+		AfterEach(OncePerOrdered, func() {
+			err := w.Close()
+			Expect(err).To(Succeed())
+		})
+
 		Describe("can watch changes", Ordered, func() {
 			var i *core.Interface
 			var p *core.Peer
@@ -75,16 +75,16 @@ var _ = Describe("watcher", func() {
 				d, err = device.NewDevice(devName, user)
 				Expect(err).To(Succeed())
 
-				Eventually(func(g Gomega) {
-					var ie core.InterfaceAddedEvent
-					g.Eventually(h.Events).Should(Receive(&ie))
+				err = w.Sync()
+				Expect(err).To(Succeed())
 
-					// Remember interface for further test subjects
-					i = ie.Interface
+				var ie core.InterfaceAddedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&ie))
 
-					g.Expect(ie.Interface).NotTo(BeNil())
-					g.Expect(ie.Interface.Name()).To(Equal(devName))
-				}).Should(Succeed())
+				i = ie.Interface
+
+				Expect(ie.Interface).NotTo(BeNil())
+				Expect(ie.Interface.Name()).To(Equal(devName))
 			})
 
 			It("modifying the interface", func() {
@@ -98,14 +98,17 @@ var _ = Describe("watcher", func() {
 				})
 				Expect(err).To(Succeed())
 
-				Eventually(func(g Gomega) {
-					var ie core.InterfaceModifiedEvent
-					g.Eventually(h.Events).Should(Receive(&ie))
+				err = w.Sync()
+				Expect(err).To(Succeed())
 
-					g.Expect(ie.Modified & core.InterfaceModifiedListenPort).NotTo(BeZero())
-					g.Expect(ie.Interface.ListenPort).To(Equal(newListenPort))
-					g.Expect(ie.Old.ListenPort).To(Equal(oldListenPort))
-				}).Should(Succeed())
+				var ie core.InterfaceModifiedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&ie))
+
+				Expect(ie.Interface).NotTo(BeNil())
+				Expect(ie.Interface.Name()).To(Equal(devName))
+				Expect(ie.Modified & core.InterfaceModifiedListenPort).NotTo(BeZero())
+				Expect(ie.Interface.ListenPort).To(Equal(newListenPort))
+				Expect(ie.Old.ListenPort).To(Equal(oldListenPort))
 			})
 
 			It("adding a peer", func() {
@@ -117,22 +120,21 @@ var _ = Describe("watcher", func() {
 				})
 				Expect(err).To(Succeed())
 
-				Eventually(func(g Gomega) {
-					var ie core.InterfaceModifiedEvent
-					g.Eventually(h.Events).Should(Receive(&ie))
+				err = w.Sync()
+				Expect(err).To(Succeed())
 
-					g.Expect(ie.Modified & core.InterfaceModifiedPeers).NotTo(BeZero())
-				}).Should(Succeed())
+				var ie core.InterfaceModifiedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&ie))
 
-				Eventually(func(g Gomega) {
-					var ie core.PeerAddedEvent
-					g.Eventually(h.Events).Should(Receive(&ie))
+				Expect(ie.Modified & core.InterfaceModifiedPeers).NotTo(BeZero())
 
-					// Remember peer for further test subjects
-					p = ie.Peer
+				var pe core.PeerAddedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&pe))
 
-					g.Expect(ie.Peer.PublicKey()).To(Equal(sk.PublicKey()))
-				}).Should(Succeed())
+				// Remember peer for further test subjects
+				p = pe.Peer
+
+				Expect(pe.Peer.PublicKey()).To(Equal(sk.PublicKey()))
 			})
 
 			It("modifying a peer", func() {
@@ -142,42 +144,65 @@ var _ = Describe("watcher", func() {
 				err = p.UpdateEndpoint(ep)
 				Expect(err).To(Succeed())
 
-				Eventually(func(g Gomega) {
-					var ie core.PeerModifiedEvent
-					g.Eventually(h.Events).Should(Receive(&ie))
+				err = w.Sync()
+				Expect(err).To(Succeed())
 
-					g.Expect(ie.Modified & core.PeerModifiedEndpoint).NotTo(BeZero())
-					g.Expect(ie.Peer.Endpoint.IP.Equal(ep.IP)).To(BeTrue())
-					g.Expect(ie.Peer.Endpoint.Port).To(Equal(ep.Port))
-				}).Should(Succeed())
+				var pe core.PeerModifiedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&pe))
+
+				Expect(pe.Peer.PublicKey()).To(Equal(p.PublicKey()))
+				Expect(pe.Modified & core.PeerModifiedEndpoint).NotTo(BeZero())
+				Expect(pe.Peer.Endpoint.IP.Equal(ep.IP)).To(BeTrue())
+				Expect(pe.Peer.Endpoint.Port).To(Equal(ep.Port))
 			})
 
 			It("removing a peer", func() {
+				err := i.RemovePeer(p.PublicKey())
+				Expect(err).To(Succeed())
 
+				err = w.Sync()
+				Expect(err).To(Succeed())
+
+				var ie core.InterfaceModifiedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&ie))
+
+				Expect(ie.Modified & core.InterfaceModifiedPeers).NotTo(BeZero())
+
+				var pe core.PeerRemovedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&pe))
+
+				Expect(pe.Peer.PublicKey()).To(Equal(p.PublicKey()))
 			})
 
 			It("removing an interface", func() {
 				err = d.Close()
 				Expect(err).To(Succeed())
 
-				// Eventually(func() int { return h.interfaceCount }).Should(BeNumerically("==", 0))
+				err = w.Sync()
+				Expect(err).To(Succeed())
+
+				var ie core.InterfaceRemovedEvent
+				Expect(h.Events).To(test.ReceiveEvent(&ie))
+
+				Expect(ie.Interface).NotTo(BeNil())
+				Expect(ie.Interface.Name()).To(Equal(devName))
 			})
 		})
 	}
 
 	Describe("kernel", func() {
-		BeforeEach(func() {
+		BeforeEach(OncePerOrdered, func() {
 			user = false
 		})
 
 		test()
 	})
 
-	Describe("user", func() {
-		BeforeEach(func() {
-			user = true
-		})
+	// Describe("user", func() {
+	// 	BeforeEach(OncePerOrdered, func() {
+	// 		user = true
+	// 	})
 
-		test()
-	})
+	// 	test()
+	// })
 })
