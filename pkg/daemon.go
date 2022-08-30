@@ -61,7 +61,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Create watcher
-	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, &cfg.WireGuard.InterfaceFilter.Regexp); err != nil {
+	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, cfg.WireGuard.InterfaceFilter.Regexp.MatchString); err != nil {
 		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
 	}
 
