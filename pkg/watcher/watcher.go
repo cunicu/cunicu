@@ -3,7 +3,6 @@ package watcher
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +19,8 @@ const (
 	InterfaceAdded InterfaceEventOp = iota
 	InterfaceDeleted
 )
+
+type InterfaceFilterFunc func(string) bool
 
 type InterfaceEventOp int
 type InterfaceEvent struct {
@@ -58,13 +59,13 @@ type Watcher struct {
 	stop   chan any
 
 	// Settings
-	filter   *regexp.Regexp
+	filter   InterfaceFilterFunc
 	interval time.Duration
 
 	logger *zap.Logger
 }
 
-func New(client *wgctrl.Client, interval time.Duration, filter *regexp.Regexp) (*Watcher, error) {
+func New(client *wgctrl.Client, interval time.Duration, filter InterfaceFilterFunc) (*Watcher, error) {
 	return &Watcher{
 		interfaces: core.InterfaceList{},
 		devices:    []*wgtypes.Device{},
@@ -155,7 +156,7 @@ func (w *Watcher) Sync() error {
 
 	// Ignore devices which do not match the filter
 	new = util.FilterSlice(new, func(d *wgtypes.Device) bool {
-		return w.filter == nil || w.filter.Match([]byte(d.Name))
+		return w.filter == nil || w.filter(d.Name)
 	})
 
 	added, removed, kept := util.DiffSliceFunc(old, new, func(a, b **wgtypes.Device) int {
