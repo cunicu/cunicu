@@ -47,16 +47,18 @@ var _ = Context("log", func() {
 
 	Context("simple", func() {
 		It("can log via created logger", func() {
+			scope = ""
 			logger.Info(msg)
 		})
 
 		It("can log via std logger", func() {
+			scope = ""
 			stdlog.Print(msg)
 		})
 
 		It("can log via global logger", func() {
-			logger = zap.L()
-			logger.Info(msg)
+			scope = ""
+			zap.L().Info(msg)
 		})
 
 		It("can log via pion logger", func() {
