@@ -135,7 +135,7 @@ jobs:
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os }}
-      run: make tests
+      run: sudo --preserve-env env "PATH=$PATH" make tests
 
     - name: Run integration tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
