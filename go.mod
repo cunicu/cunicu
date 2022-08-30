@@ -6,6 +6,7 @@ require (
 	github.com/cilium/ebpf v0.9.1
 	github.com/dchest/siphash v1.2.3
 	github.com/fsnotify/fsnotify v1.5.4
+	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/nftables v0.0.0-20220808154552-2eca00135732
 	github.com/mitchellh/mapstructure v1.5.0
@@ -48,7 +49,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
