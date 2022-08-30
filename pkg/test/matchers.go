@@ -1,7 +1,11 @@
 package test
 
 import (
+	"errors"
+	"time"
+
 	"github.com/onsi/gomega/types"
+	"riasc.eu/wice/pkg/core"
 
 	"fmt"
 )
@@ -35,4 +39,41 @@ func (matcher *entropyMatcher) FailureMessage(actual any) (message string) {
 
 func (matcher *entropyMatcher) NegatedFailureMessage(actual any) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nto have an entropy lower than %f", actual, matcher.minEntropy)
+}
+
+func ReceiveEvent[E any](e *E) types.GomegaMatcher {
+	return &eventMatcher[E]{
+		event: e,
+	}
+}
+
+type eventMatcher[E any] struct {
+	event *E
+}
+
+func (matcher *eventMatcher[E]) Match(actual any) (success bool, err error) {
+	events, ok := actual.(chan core.Event)
+	if !ok {
+		return false, errors.New("actual is not an event channel")
+	}
+
+	to := time.NewTimer(time.Second)
+	select {
+	case <-to.C:
+		return false, nil
+	case evt := <-events:
+		if *matcher.event, ok = evt.(E); !ok {
+			return false, fmt.Errorf("received wrong type of event: %#+v", evt)
+		}
+
+		return true, nil
+	}
+}
+
+func (matcher *eventMatcher[E]) FailureMessage(actual any) (message string) {
+	return "Did not receive expected event"
+}
+
+func (matcher *eventMatcher[E]) NegatedFailureMessage(actual any) (message string) {
+	return "Received event unexpectely"
 }
