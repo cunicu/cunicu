@@ -1,6 +1,6 @@
 <p align="center" >
     <img style="width: 50%; margin: 4em 0" src="docs/images/wice_logo.svg" alt="wice logo" />
-    <h1 align="center">WireGuard Interactive Connectivity Establishment</h1>
+    <h1 align="center">WireGuard® Interactive Connectivity Establishment</h1>
 </p>
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/stv0g/wice/build?style=flat-square)](https://github.com/stv0g/wice/actions)
@@ -15,7 +15,7 @@
 
 ## 🚧 ɯice is currently still in an Alpha state and not usable yet
 
-[ɯice][wice] is a user-space daemon managing [WireGuard][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
+[ɯice][wice] is a user-space daemon managing [WireGuard®][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of WireGuard in a single binary for environments in which WireGuard kernel support has not landed yet.
 
@@ -63,3 +63,7 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 [wice]: https://github.com/stv0g/wice
 
 [erigrid]: https://erigrid2.eu
+
+## Trademark
+
+""WireGuard" and the "WireGuard" logo are [registered trademarks](https://www.wireguard.com/trademark-policy/) of Jason A. Donenfeld.
