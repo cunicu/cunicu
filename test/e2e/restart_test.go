@@ -1,4 +1,4 @@
-package test_test
+package e2e_test
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/proto"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/nodes"
-	wopt "riasc.eu/wice/test/nodes/options/wg"
+	"riasc.eu/wice/test/e2e/nodes"
+	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,7 +38,7 @@ import (
  *    └────┘       └────┘
  *         wice Agents
  */
-var _ = Context("restart", func() {
+var _ = Context("restart: Restart ICE agents", func() {
 	var (
 		err error
 		n   Network
@@ -123,9 +124,7 @@ var _ = Context("restart", func() {
 		ConnectivityTestCycle := func() {
 			n.ConnectivityTests()
 
-			It("", func() {
-				By("Triggering restart")
-
+			It("Triggering restart", func() {
 				restart(gap)
 
 				time.Sleep(gap)
@@ -134,7 +133,7 @@ var _ = Context("restart", func() {
 			n.ConnectivityTests()
 		}
 
-		Context("quick", Ordered, func() {
+		Context("quick: Waiting 3 seconds", Ordered, func() {
 			BeforeEach(func() {
 				gap = 3 * time.Second
 			})
@@ -142,7 +141,7 @@ var _ = Context("restart", func() {
 			ConnectivityTestCycle()
 		})
 
-		Context("slow", Ordered, func() {
+		Context("slow: Waiting 10 seconds to trigger an ICE disconnect", Ordered, func() {
 			BeforeEach(func() {
 				gap = 10 * time.Second // > ICE failed/disconnected timeout (5s)
 			})
@@ -151,7 +150,7 @@ var _ = Context("restart", func() {
 		})
 	}
 
-	Context("agent", func() {
+	Context("agent: Restart agent", func() {
 		RestartTest(func(gap time.Duration) {
 			By("Stopping first agent")
 
@@ -169,7 +168,7 @@ var _ = Context("restart", func() {
 		})
 	})
 
-	Context("addresses", Pending, func() {
+	Context("addresses: Change uplink IP address", Pending, func() {
 		RestartTest(func(gap time.Duration) {
 			i := n1.Interface("eth0")
 			Expect(i).NotTo(BeNil(), "Failed to find agent interface")
@@ -206,7 +205,7 @@ var _ = Context("restart", func() {
 		})
 	})
 
-	Context("link", Pending, func() {
+	Context("link: Bring uplink down and up", Pending, func() {
 		RestartTest(func(gap time.Duration) {
 			i := n1.Interface("eth0")
 			Expect(i).NotTo(BeNil(), "Failed to find agent interface")
@@ -227,36 +226,62 @@ var _ = Context("restart", func() {
 		})
 	})
 
-	Context("rpc", func() {
+	Context("peer-rpc: Restart peer via RPC", func() {
 		RestartTest(func(gap time.Duration) {
 			ctx := context.Background()
 
-			i := n1.WireGuardInterfaces[0]
-			p := i.Peers[0]
-			pk := (*crypto.Key)(&p.PublicKey)
-
 			By("Initiating restart via RPC")
 
+			i := n1.WireGuardInterfaces[0]
+			pk := (*crypto.Key)(&i.Peers[0].PublicKey)
 			err = n1.Client.RestartPeer(ctx, i.Name, pk)
 			Expect(err).To(Succeed(), "Failed to restart peer: %s", err)
 		})
 	})
 
-	Context("signaling", Pending, func() {
+	Context("agent-rpc: Restart agent via RPC", Pending, func() {
 		RestartTest(func(gap time.Duration) {
+			ctx := context.Background()
+
+			By("Initiating agent restart via RPC")
+
+			_, err = n1.Client.Restart(ctx, &proto.Empty{})
+			Expect(err).To(Succeed(), "Failed to restart peer: %s", err)
+		})
+	})
+
+	Context("signaling: Restart signaling server", Pending, func() {
+		RestartTest(func(gap time.Duration) {
+			ctx := context.Background()
+
 			By("Stopping signaling server")
 
 			err = s1.Stop()
 			Expect(err).To(Succeed(), "Failed to stop signaling server")
 
+			By("Restarting peer")
+
+			i := n1.WireGuardInterfaces[0]
+			pk := (*crypto.Key)(&i.Peers[0].PublicKey)
+			err = n1.Client.RestartPeer(ctx, i.Name, pk)
+			Expect(err).To(Succeed(), "Failed to restart peer: %s", err)
+
 			By("Waiting some time")
 
 			time.Sleep(gap)
 
-			By("Re-starting signaling server again")
+			By("Starting signaling server again")
 
 			err = s1.Start("", n.BasePath)
 			Expect(err).To(Succeed(), "Failed to restart signaling server: %s", err)
+		})
+	})
+
+	Context("private-key: Trigger recreation of peer by changing private-key of interface", func() {
+		RestartTest(func(gap time.Duration) {
+			By("Changing private-key")
+
+			// i.Configuring
 		})
 	})
 })

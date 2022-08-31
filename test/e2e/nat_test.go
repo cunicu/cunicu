@@ -1,4 +1,4 @@
-package test_test
+package e2e_test
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
-	"riasc.eu/wice/test/nodes"
-	wopt "riasc.eu/wice/test/nodes/options/wg"
+	"riasc.eu/wice/test/e2e/nodes"
+	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 )
 
 /* Typical wide-area NAT setup
@@ -40,7 +40,7 @@ import (
  *  │  n1  │   │  n2  │  │ (n3) │
  *  └──────┘   └──────┘  └──────┘
  */
-var _ = Context("nat simple", func() {
+var _ = Context("nat simple: Simple home-router NAT setup", func() {
 	var (
 		err error
 
@@ -141,7 +141,7 @@ var _ = Context("nat simple", func() {
 		n.SignalingNodes = nodes.SignalingList{s1}
 	})
 
-	Context("2-nodes", func() {
+	Context("2-nodes: Two agents connected to lan1 & lan2", func() {
 		JustBeforeEach(func() {
 			n.Start()
 		})
@@ -149,7 +149,7 @@ var _ = Context("nat simple", func() {
 		n.ConnectivityTests()
 	})
 
-	Context("3-nodes", func() {
+	Context("3-nodes: Additional agent connected to lan2", func() {
 		JustBeforeEach(func() {
 			AddAgent(3, lan2)
 

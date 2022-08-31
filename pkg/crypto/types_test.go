@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

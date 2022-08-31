@@ -7,4 +7,4 @@ dist/
 *.test
 *.out.*
 lcov.info
-test/logs/
+test/e2e/logs/

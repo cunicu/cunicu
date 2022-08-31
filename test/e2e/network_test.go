@@ -1,4 +1,4 @@
-package test_test
+package e2e_test
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -16,9 +15,9 @@ import (
 	copt "github.com/stv0g/gont/pkg/options/capture"
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/test"
 	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/test/nodes"
+	"riasc.eu/wice/test"
+	"riasc.eu/wice/test/e2e/nodes"
 )
 
 var (
@@ -157,8 +156,27 @@ func (n *Network) Close() {
 	Expect(err).To(Succeed(), "Failed to close network; %s", err)
 
 	n.StopHandshakeTracer()
+	n.WriteSpecReport()
 
 	GinkgoWriter.ClearTeeWriters()
+}
+
+func (n *Network) WriteSpecReport() {
+	report := CurrentSpecReport()
+	report.CapturedGinkgoWriterOutput = ""
+
+	reportJSON, err := report.MarshalJSON()
+	Expect(err).To(Succeed(), "Failed to marshal report: %s", err)
+
+	reportJSON, err = util.ReIndentJSON(reportJSON, "", "  ")
+	Expect(err).To(Succeed(), "Failed to indent report: %s", err)
+
+	reportFileName := filepath.Join(n.BasePath, "report.json")
+	reportFile, err := os.OpenFile(reportFileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	Expect(err).To(Succeed(), "Failed to open report file: %s", err)
+
+	_, err = reportFile.Write(reportJSON)
+	Expect(err).To(Succeed(), "Failed to write report: %s", err)
 }
 
 func (n *Network) ConnectivityTests() {
@@ -182,9 +200,7 @@ func (n *Network) Init() {
 	*n = Network{}
 
 	n.Name = fmt.Sprintf("wice-%d", rand.Uint32())
-
-	name := GinkgoT().Name()
-	n.BasePath = filepath.Join(strings.Split(name, " ")...)
+	n.BasePath = filepath.Join(SpecName()...)
 	n.BasePath = filepath.Join("logs", n.BasePath)
 
 	logFilename := filepath.Join(n.BasePath, "test.log")

@@ -1,5 +1,6 @@
 ---
 ignore:
+# Auto-generated files
 - pkg/proto/**/*.pb.go
 - pkg/signaling/k8s/apis/**/*
 - pkg/signaling/k8s/client/**/*

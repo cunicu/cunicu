@@ -1,4 +1,4 @@
-package test_test
+package e2e_test
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
-	"riasc.eu/wice/test/nodes"
-	wopt "riasc.eu/wice/test/nodes/options/wg"
+	"riasc.eu/wice/test/e2e/nodes"
+	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 )
 
 /* Carrier Grade NAT setup with two relays and a single signaling server
@@ -39,7 +39,7 @@ import (
  *             │  n1  │              │  n2  │
  *             └──────┘              └──────┘
  */
-var _ = Context("nat double", func() {
+var _ = Context("nat double: Carrier Grade NAT setup with two relays and a single signaling server", func() {
 	var (
 		err error
 
@@ -221,7 +221,7 @@ var _ = Context("nat double", func() {
 		n.SignalingNodes = nodes.SignalingList{s1}
 	})
 
-	Context("2-nodes", func() {
+	Context("2-nodes: Two agents connected to lan1 and lan2", func() {
 		JustBeforeEach(func() {
 			n.Start()
 		})
@@ -229,7 +229,7 @@ var _ = Context("nat double", func() {
 		n.ConnectivityTests()
 	})
 
-	Context("3-nodes", func() {
+	Context("3-nodes: Additional agent connected to lan2", func() {
 		JustBeforeEach(func() {
 			AddAgent(3, lan2)
 
@@ -239,7 +239,7 @@ var _ = Context("nat double", func() {
 		n.ConnectivityTests()
 	})
 
-	Context("4-nodes", func() {
+	Context("4-nodes: Additional agent connected to wan2", func() {
 		JustBeforeEach(func() {
 			AddAgent(3, lan2)
 			AddAgent(4, wan2)
@@ -250,7 +250,7 @@ var _ = Context("nat double", func() {
 		n.ConnectivityTests()
 	})
 
-	Context("5-nodes", func() {
+	Context("5-nodes: Additional agent connected to wan1", func() {
 		JustBeforeEach(func() {
 			AddAgent(3, lan2)
 			AddAgent(4, wan2)

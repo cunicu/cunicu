@@ -14,10 +14,10 @@ import (
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/test"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/watcher"
 	"riasc.eu/wice/pkg/wg"
+	"riasc.eu/wice/test"
 )
 
 func TestSuite(t *testing.T) {

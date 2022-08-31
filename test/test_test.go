@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/test"
 )
 
 func TestSuite(t *testing.T) {
