@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	peerModifiersStrings = []string{
+	PeerModifiersStrings = []string{
 		"preshared-key",
 		"endpoint",
 		"keepalive-interval",
@@ -38,7 +38,7 @@ func (i PeerModifier) Strings() []string {
 
 	for j := 0; j <= PeerModifierCount; j++ {
 		if i&(1<<j) != 0 {
-			modifiers = append(modifiers, peerModifiersStrings[j])
+			modifiers = append(modifiers, PeerModifiersStrings[j])
 		}
 	}
 

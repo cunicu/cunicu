@@ -143,7 +143,10 @@ func (e *EndpointDiscovery) OnPeerAdded(cp *core.Peer) {
 }
 
 func (e *EndpointDiscovery) OnPeerRemoved(cp *core.Peer) {
-	p := e.Peers[cp]
+	p, ok := e.Peers[cp]
+	if !ok {
+		return
+	}
 
 	if err := p.Close(); err != nil {
 		e.logger.Error("Failed to de-initialize ICE peer", zap.Error(err))

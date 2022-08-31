@@ -142,15 +142,14 @@ out:
 }
 
 func (w *Watcher) Sync() error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	var err error
-
 	var new = []*wgtypes.Device{}
 	var old = w.devices
 
+	w.mu.Lock()
+
 	if new, err = w.client.Devices(); err != nil {
+		w.mu.Unlock()
 		return fmt.Errorf("failed to list WireGuard interfaces: %w", err)
 	}
 
@@ -162,6 +161,8 @@ func (w *Watcher) Sync() error {
 	added, removed, kept := util.DiffSliceFunc(old, new, func(a, b **wgtypes.Device) int {
 		return strings.Compare((*a).Name, (*b).Name)
 	})
+
+	w.mu.Unlock()
 
 	for _, wgd := range removed {
 		i, ok := w.interfaces[wgd.Name]
@@ -266,7 +267,7 @@ func (w *Watcher) InterfaceByIndex(idx int) *core.Interface {
 
 func (w *Watcher) ForEachInterface(cb func(i *core.Interface) error) error {
 	w.mu.RLock()
-	defer w.mu.Unlock()
+	defer w.mu.RUnlock()
 
 	for _, i := range w.interfaces {
 		if err := cb(i); err != nil {

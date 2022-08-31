@@ -269,12 +269,15 @@ func (p *Peer) Marshal() *coreproto.Peer {
 
 	q := &coreproto.Peer{
 		PublicKey:                   p.PublicKey().Bytes(),
-		Endpoint:                    p.Endpoint.String(),
 		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval / time.Second),
 		TransmitBytes:               p.TransmitBytes,
 		ReceiveBytes:                p.ReceiveBytes,
 		AllowedIps:                  allowedIPs,
 		ProtocolVersion:             uint32(p.ProtocolVersion),
+	}
+
+	if p.Endpoint != nil {
+		q.Endpoint = p.Endpoint.String()
 	}
 
 	if p.PresharedKey().IsSet() {
