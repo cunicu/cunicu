@@ -328,11 +328,15 @@ func (i *Interface) MarshalWithPeers(cb func(p *Peer) *coreproto.Peer) *coreprot
 		Ifindex:      uint32(i.KernelDevice.Index()),
 	}
 
-	if cb != nil {
-		for _, p := range i.Peers {
-			if qp := cb(p); qp != nil {
-				q.Peers = append(q.Peers, qp)
-			}
+	if cb == nil {
+		cb = func(p *Peer) *coreproto.Peer {
+			return p.Marshal()
+		}
+	}
+
+	for _, p := range i.Peers {
+		if qp := cb(p); qp != nil {
+			q.Peers = append(q.Peers, qp)
 		}
 	}
 

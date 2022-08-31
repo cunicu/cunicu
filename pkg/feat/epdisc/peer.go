@@ -379,7 +379,7 @@ func (p *Peer) Marshal() *protoepdisc.Peer {
 		q.LastStateChangeTimestamp = proto.Time(p.lastStateChange)
 	}
 
-	if cs != ice.ConnectionStateClosed {
+	if p.agent != nil && cs != ice.ConnectionStateClosed {
 		cp, err := p.agent.GetSelectedCandidatePair()
 		if err == nil && cp != nil {
 			q.SelectedCandidatePair = &protoepdisc.CandidatePair{
