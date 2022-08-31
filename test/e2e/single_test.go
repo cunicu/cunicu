@@ -1,8 +1,8 @@
-package test_test
+package e2e_test
 
 import (
 	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/nodes"
+	"riasc.eu/wice/test/e2e/nodes"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -10,7 +10,7 @@ import (
 	gopt "github.com/stv0g/gont/pkg/options"
 )
 
-var _ = Context("single", Pending, func() {
+var _ = Context("single: A single node to test RPC and watcher", Pending, func() {
 	var n Network
 
 	BeforeEach(func() {
@@ -43,17 +43,17 @@ var _ = Context("single", Pending, func() {
 		n.AgentNodes = nodes.AgentList{n1}
 	})
 
-	Context("create", func() {
-		Context("kernel", func() {
+	Context("create: Create a new interface", func() {
+		Context("kernel: Kernel-space", func() {
 
 		})
 
-		Context("userspace", func() {
+		Context("userspace: User-space", func() {
 
 		})
 	})
 
-	Context("watcher", Ordered, func() {
+	Context("watcher: Watch for changes of WireGuard interfaces and peers", Ordered, func() {
 		It("detects a new interface", func() {
 
 		})
@@ -79,15 +79,19 @@ var _ = Context("single", Pending, func() {
 		})
 	})
 
-	Context("host-sync", func() {
+	Context("hsync: /etc/hosts synchronization", func() {
 
 	})
 
-	Context("route-sync", func() {
+	Context("rtsync: Route synchronization", func() {
 
 	})
 
-	Context("config-sync", func() {
+	Context("cfgsync: Config file synchronization", func() {
+
+	})
+
+	Context("autocfg: Auto-configuration of missing interface parameters", func() {
 
 	})
 })

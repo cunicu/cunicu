@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/test"
 
 	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
 	signalingproto "riasc.eu/wice/pkg/proto/signaling"

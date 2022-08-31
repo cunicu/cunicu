@@ -9,9 +9,9 @@ LDFLAGS = -X riasc.eu/wice/pkg/util/buildinfo.Version=$(shell git describe --tag
 		  -X riasc.eu/wice/pkg/util/buildinfo.Date=$(shell date -Iseconds) \
 		  -X riasc.eu/wice/pkg/util/buildinfo.BuiltBy=Makefile \
 
-PKGS ?= ./cmd/... ./pkg/...
+PKGS ?= ./cmd/... ./pkg/... ./test
 ifeq ($(GOOS),linux)
-    PKGS += ./test/...
+    PKGS += ./test/e2e/...
 endif
 
 GINKGO_OPTS =  --compilers=2 \
@@ -34,9 +34,9 @@ wice:
 tests:
 	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/...
 
-tests-integration:
+tests-e2e:
 	mkdir -p test/logs
-	ginkgo run $(GINKGO_OPTS) --output-dir=./test/logs --coverprofile=coverprofile_integration.out ./test
+	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_integration.out ./test/e2e
 
 coverprofile_merged.out: $(shell find . -name "*.out" -type f)
 	gocov-merger -o $@ $^

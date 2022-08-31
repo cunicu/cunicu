@@ -13,7 +13,7 @@ import (
 	"github.com/pion/ice/v2"
 
 	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/test"
+	"riasc.eu/wice/test"
 
 	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
 )

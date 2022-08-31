@@ -7,7 +7,7 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test/nodes"
+	"riasc.eu/wice/test/e2e/nodes"
 )
 
 // PublicKey specifies the public key of this peer.  PublicKey is a

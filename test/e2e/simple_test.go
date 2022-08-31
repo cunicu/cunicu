@@ -1,13 +1,13 @@
-package test_test
+package e2e_test
 
 import (
 	"fmt"
 
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/nodes"
-	opt "riasc.eu/wice/test/nodes/options"
-	wopt "riasc.eu/wice/test/nodes/options/wg"
+	"riasc.eu/wice/test/e2e/nodes"
+	opt "riasc.eu/wice/test/e2e/nodes/options"
+	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,7 +37,7 @@ import (
  *        └────┘  └────┘     └────┘
  *               wice Agents
  */
-var _ = Context("simple", Serial, func() {
+var _ = Context("simple: Simple local-area switched topology with variable number of agents", Serial, func() {
 	var (
 		err error
 		n   Network
@@ -142,38 +142,38 @@ var _ = Context("simple", Serial, func() {
 
 	ConnectivityTestsForAllCandidateTypes := func() {
 		Context("candidate-types", func() {
-			Context("any", func() {
-				Context("ipv4", func() {
+			Context("any: Allow any candidate type", func() {
+				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-network-type", "udp4")
 				})
 
-				Context("ipv6", func() {
+				Context("ipv6: Allow IPv6 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-network-type", "udp6")
 				})
 			})
 
-			Context("host", func() {
-				Context("ipv4", func() {
+			Context("host: Allow only host candidates", func() {
+				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4")
 				})
 
-				Context("ipv6", func() {
+				Context("ipv6: Allow IPv6 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp6")
 				})
 			})
 
-			Context("srflx", func() {
-				Context("ipv4", func() {
+			Context("srflx: Allow only server reflexive candidates", func() {
+				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp4")
 				})
 
-				Context("ipv6", func() {
+				Context("ipv6: Allow IPv6 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp6")
 				})
 			})
 
-			Context("relay", func() {
-				Context("ipv4", func() {
+			Context("relay: Allow only relay candidates", func() {
+				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp4")
 				})
 
@@ -185,11 +185,11 @@ var _ = Context("simple", Serial, func() {
 		})
 	}
 
-	Context("kernel", func() {
+	Context("kernel: Use kernel WireGuard interface", func() {
 		ConnectivityTestsForAllCandidateTypes()
 	})
 
-	Context("userspace", func() {
+	Context("userspace: Use wireguard-go userspace interfaces", func() {
 		BeforeEach(func() {
 			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
 				wopt.WriteConfigFile(true),
@@ -204,8 +204,8 @@ var _ = Context("simple", Serial, func() {
 		ConnectivityTestsForAllCandidateTypes()
 	})
 
-	Context("filtered", func() {
-		Context("p2p", func() {
+	Context("filtered: Block WireGuard UDP traffic", func() {
+		Context("p2p: Between agents only", func() {
 			BeforeEach(func() {
 				// We are dropped packets between the ɯice nodes to force ICE using the relay
 				n.AgentOptions = append(n.AgentOptions,
@@ -225,7 +225,7 @@ var _ = Context("simple", Serial, func() {
 			n.ConnectivityTests()
 		})
 
-		Context("all-udp", func() {
+		Context("all-udp: All UDP entirely", func() {
 			BeforeEach(func() {
 				n.AgentOptions = append(n.AgentOptions,
 					gopt.Filter(g.FilterInput,
@@ -237,6 +237,34 @@ var _ = Context("simple", Serial, func() {
 			})
 
 			n.ConnectivityTests()
+		})
+	})
+
+	Context("pdisc: Peer Discovery", Pending, Ordered, func() {
+		BeforeEach(OncePerOrdered, func() {
+			n.AgentOptions = append(n.AgentOptions,
+				opt.ExtraArgs{"--community", "hallo"},
+			)
+
+			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
+				wopt.NoPeers,
+			)
+
+			NumAgents = 3
+		})
+
+		n.ConnectivityTests()
+
+		It("", func() {
+			By("Check existing peers 2")
+
+			n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
+				out, _, err := a.Run("wg")
+				Expect(err).To(Succeed())
+
+				GinkgoWriter.Write(out)
+				return nil
+			})
 		})
 	})
 })

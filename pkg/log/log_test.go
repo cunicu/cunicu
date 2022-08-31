@@ -25,6 +25,8 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Logging Suite")
 }
 
+// TODO: This test is currently broken on Windows dues:
+// https://github.com/uber-go/zap/issues/621
 var _ = Context("log", Label("broken-on-windows"), func() {
 	var logger *zap.Logger
 	var lvl zapcore.Level

@@ -1,6 +1,6 @@
 //go:build !tracer
 
-package test_test
+package e2e_test
 
 type HandshakeTracer any
 

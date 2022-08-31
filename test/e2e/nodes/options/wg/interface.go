@@ -7,7 +7,7 @@ import (
 	g "github.com/stv0g/gont/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test/nodes"
+	"riasc.eu/wice/test/e2e/nodes"
 )
 
 type PrivateKey crypto.Key

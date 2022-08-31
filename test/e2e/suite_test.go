@@ -1,8 +1,9 @@
-package test_test
+package e2e_test
 
 import (
 	"flag"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 	"riasc.eu/wice/pkg/util"
 
+	"github.com/onsi/ginkgo/v2/reporters"
 	"github.com/onsi/ginkgo/v2/types"
 )
 
@@ -33,7 +35,6 @@ func TestSuite(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Test Suite", types.ReporterConfig{
-		JSONReport:        "logs/report.json",
 		SlowSpecThreshold: 1 * time.Minute,
 	})
 }
@@ -45,3 +46,36 @@ var _ = BeforeSuite(func() {
 
 	DeferCleanup(gexec.CleanupBuildArtifacts)
 })
+
+var _ = ReportAfterSuite("Write report", func(r Report) {
+	r.SpecReports = nil
+	reporters.GenerateJSONReport(r, "logs/report.json")
+})
+
+func SpecName() []string {
+	sr := CurrentSpecReport()
+
+	normalize := func(s string) ([]string, bool) {
+		p := strings.SplitN(s, ":", 2)
+		if len(p) != 2 {
+			return []string{}, false
+		}
+
+		ps := strings.Split(strings.ToLower(p[0]), " ")
+
+		return ps, true
+	}
+
+	sn := []string{}
+	for _, txt := range sr.ContainerHierarchyTexts {
+		if n, ok := normalize(txt); ok {
+			sn = append(sn, n...)
+		}
+	}
+
+	if n, ok := normalize(sr.LeafNodeText); ok {
+		sn = append(sn, n...)
+	}
+
+	return sn
+}
