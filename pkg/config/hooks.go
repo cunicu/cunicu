@@ -11,7 +11,7 @@ type hookBase struct {
 	Type string `yaml:"type"`
 }
 
-func hookDecodeHook(f, t reflect.Type, data interface{}) (interface{}, error) {
+func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 	if f.Kind() != reflect.Map || t.Name() != "HookSetting" {
 		return data, nil
 	}
