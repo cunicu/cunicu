@@ -62,14 +62,6 @@ func (d *BSDKernelDevice) DeleteAddress(ip *net.IPNet) error {
 	return exec.Command("ifconfig", d.Name(), ip.String(), "-alias").Run()
 }
 
-func (d *BSDKernelDevice) AddRoute(dst *net.IPNet) error {
-	return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
-}
-
-func (d *BSDKernelDevice) DeleteRoute(dst *net.IPNet) error {
-	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
-}
-
 func (d *BSDKernelDevice) Index() int {
 	return d.index
 }

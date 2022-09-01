@@ -15,6 +15,4 @@ func (s *RouteSync) syncKernel() error {
 	return errors.ErrNotSupported
 }
 
-func (s *RouteSync) watchKernel() {
-	s.logger.Error("Kernel to WireGuard route synchronization is not supported on this platform.")
-}
+func (s *RouteSync) watchKernel() {}

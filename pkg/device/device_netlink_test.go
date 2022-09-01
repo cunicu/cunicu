@@ -8,6 +8,7 @@ import (
 	"net"
 
 	wgdevice "golang.zx2c4.com/wireguard/device"
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/device"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -89,7 +90,7 @@ var _ = Describe("device", func() {
 				err = d.SetUp()
 				Expect(err).To(Succeed())
 
-				err = d.AddRoute(addr)
+				err = d.AddRoute(addr, config.DefaultRouteTable)
 				Expect(err).To(Succeed())
 
 				routes, err := netlink.RouteGet(addr.IP)
@@ -99,7 +100,7 @@ var _ = Describe("device", func() {
 			})
 
 			It("can delete the route again", func() {
-				err = d.DeleteRoute(addr)
+				err = d.DeleteRoute(addr, config.DefaultRouteTable)
 				Expect(err).To(Succeed())
 
 				routes, err := netlink.RouteGet(addr.IP)

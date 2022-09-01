@@ -13,6 +13,8 @@ import (
 	"riasc.eu/wice/pkg/device"
 )
 
+// removeKernel removes all routes from the kernel which have the peers link-local address
+// configured as their destination
 func (s *RouteSync) removeKernel(p *core.Peer) error {
 	pk := p.PublicKey()
 	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
@@ -27,13 +29,17 @@ func (s *RouteSync) removeKernel(p *core.Peer) error {
 	}
 
 	for _, route := range routes {
+		if route.Table != s.table {
+			continue
+		}
+
 		gw, ok := netip.AddrFromSlice(route.Gw)
 		if !ok {
 			return errors.New("failed to get address from slice")
 		}
 
 		if gwV4.Compare(gw) == 0 || gwV6.Compare(gw) == 0 {
-			if err := p.Interface.KernelDevice.DeleteRoute(route.Dst); err != nil && !errors.Is(err, syscall.ESRCH) {
+			if err := p.Interface.KernelDevice.DeleteRoute(route.Dst, s.table); err != nil && !errors.Is(err, syscall.ESRCH) {
 				s.logger.Error("Failed to delete route", zap.Error(err))
 				continue
 			}
@@ -43,6 +49,8 @@ func (s *RouteSync) removeKernel(p *core.Peer) error {
 	return nil
 }
 
+// syncKernel adds routes from the kernel routing table as new AllowedIPs to the respective peer
+// based on the destination address of the route.
 func (s *RouteSync) syncKernel() error {
 	routes, err := netlink.RouteList(nil, unix.AF_INET6)
 	if err != nil {
@@ -61,6 +69,8 @@ func (s *RouteSync) syncKernel() error {
 	return nil
 }
 
+// watchKernel watches for added/removed routes in the kernel routing table and adds/removes AllowedIPs
+// to the respective peers based on the destination address of the routes.
 func (s *RouteSync) watchKernel() {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
@@ -92,6 +102,11 @@ func (s *RouteSync) watchKernel() {
 
 func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	// s.logger.Debug("Received netlink route update", zap.Any("update", ru))
+
+	if ru.Table != s.table {
+		// s.logger.Debug("Ignore route from another table")
+		return nil
+	}
 
 	if ru.Protocol == device.RouteProtocol {
 		// s.logger.Debug("Ignoring route which was installed by ourself")

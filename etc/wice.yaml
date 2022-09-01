@@ -48,7 +48,7 @@ config_sync:
 route_sync:
   enabled: true
 
-  table: main
+  table: 254 # See /etc/iproute2/rt_tables for table ids
 
 # Discover the WireGuard endpoint of peers
 endpoint_disc:
