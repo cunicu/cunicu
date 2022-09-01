@@ -55,8 +55,8 @@ type ConfigSyncSettings struct {
 }
 
 type RouteSyncSettings struct {
-	Enabled bool   `yaml:"enabled,omitempty"`
-	Table   string `yaml:"table,omitempty"`
+	Enabled bool `yaml:"enabled,omitempty"`
+	Table   int  `yaml:"table,omitempty"`
 }
 
 type WireGuardSettings struct {

@@ -116,13 +116,14 @@ func (i *LinuxKernelDevice) DeleteAddress(ip *net.IPNet) error {
 	return netlink.AddrDel(i.link, addr)
 }
 
-func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet) error {
+func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet, table int) error {
 	i.logger.Debug("Add route", zap.String("dst", dst.String()))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
 		Dst:       dst,
 		Protocol:  RouteProtocol,
+		Table:     table,
 	}
 
 	if err := netlink.RouteAdd(route); err != nil && !errors.Is(err, os.ErrExist) {
@@ -132,12 +133,13 @@ func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet) error {
 	return nil
 }
 
-func (i *LinuxKernelDevice) DeleteRoute(dst *net.IPNet) error {
+func (i *LinuxKernelDevice) DeleteRoute(dst *net.IPNet, table int) error {
 	i.logger.Debug("Delete route", zap.String("dst", dst.String()))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
 		Dst:       dst,
+		Table:     table,
 	}
 
 	return netlink.RouteDel(route)

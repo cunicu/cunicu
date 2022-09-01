@@ -26,10 +26,10 @@ type Device interface {
 	SetDown() error
 
 	AddAddress(ip *net.IPNet) error
-	AddRoute(dst *net.IPNet) error
+	AddRoute(dst *net.IPNet, table int) error
 
 	DeleteAddress(ip *net.IPNet) error
-	DeleteRoute(dst *net.IPNet) error
+	DeleteRoute(dst *net.IPNet, table int) error
 }
 
 func NewDevice(name string, user bool) (kernelDev Device, err error) {

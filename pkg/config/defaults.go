@@ -35,7 +35,7 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("endpoint_disc.ice.urls", []string{DefaultURL})
 	c.SetDefault("host_sync.enabled", true)
 	c.SetDefault("route_sync.enabled", true)
-	c.SetDefault("route_sync.table", "main")
+	c.SetDefault("route_sync.table", DefaultRouteTable)
 	c.SetDefault("rpc.socket", DefaultSocketPath)
 	c.SetDefault("rpc.wait", false)
 	c.SetDefault("watch_interval", "1s")
