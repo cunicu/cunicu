@@ -16,7 +16,7 @@ var (
 )
 
 func (c *Config) SetDefaults() {
-	c.SetDefault("hooks.enabled", true)
+	c.SetDefault("hooks", []HookSetting{})
 	c.SetDefault("auto_config.enabled", true)
 	c.SetDefault("backends", DefaultBackends)
 	c.SetDefault("config_sync.enabled", true)

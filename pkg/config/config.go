@@ -382,7 +382,7 @@ func (c *Config) Load() error {
 
 // decode takes an input structure and uses reflection to translate it to
 // the output structure. output must be a pointer to a map or struct.
-func decode(input interface{}, output interface{}) error {
+func decode(input any, output any) error {
 	cfg := &mapstructure.DecoderConfig{
 		Metadata: nil,
 		Result:   output,
