@@ -150,7 +150,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
-        path: test/logs/
+        path: test/e2e/logs/
 
     - name: Create merged coverage profile
       if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
