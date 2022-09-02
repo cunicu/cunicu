@@ -3,12 +3,12 @@ package watcher_test
 import (
 	"fmt"
 	"math/rand"
-	"net"
 	"testing"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	g "github.com/stv0g/gont/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"riasc.eu/wice/pkg/core"
@@ -39,40 +39,62 @@ var _ = Describe("watcher", func() {
 	var err error
 	var c *wgctrl.Client
 	var w *watcher.Watcher
-	var devName string
 	var user bool
 	var h *core.EventsHandler
+	var ns *g.Namespace
 
-	test := func() {
-		BeforeEach(OncePerOrdered, func() {
-			// Generate unique name per test
-			devName = fmt.Sprintf("wg-test-%d", rand.Intn(1000))
+	JustBeforeEach(OncePerOrdered, func() {
+		name := fmt.Sprintf("wg-test-%d", rand.Intn(1000))
+		ns, err = g.NewNamespace(name)
+		Expect(err).To(Succeed())
+
+		func() {
+			exit, err := ns.Enter()
+			Expect(err).To(Succeed())
+
+			defer exit()
 
 			c, err = wgctrl.New()
 			Expect(err).To(Succeed())
+		}()
 
-			w, err = watcher.New(c, time.Hour, func(dev string) bool { return dev == devName })
+		w, err = watcher.New(c, time.Hour, func(dev string) bool { return dev == "wg0" })
+		Expect(err).To(Succeed())
+
+		h = core.NewEventsHandler(16)
+
+		w.OnAll(h)
+
+		go w.Run()
+	})
+
+	JustAfterEach(OncePerOrdered, func() {
+		err := w.Close()
+		Expect(err).To(Succeed())
+
+		err = ns.Close()
+		Expect(err).To(Succeed())
+	})
+
+	// Overload It() to enter/exit namespace
+	It := func(name string, function func()) {
+		It(name, Offset(1), func() {
+			exit, err := ns.Enter()
 			Expect(err).To(Succeed())
 
-			h = core.NewEventsHandler(16)
-
-			w.OnAll(h)
-
-			go w.Run()
+			function()
+			exit()
 		})
+	}
 
-		AfterEach(OncePerOrdered, func() {
-			err := w.Close()
-			Expect(err).To(Succeed())
-		})
-
+	Test := func() {
 		Describe("can watch changes", Ordered, func() {
 			var i *core.Interface
 			var p *core.Peer
 			var d device.Device
 
 			It("adding interface", func() {
-				d, err = device.NewDevice(devName, user)
+				d, err = device.NewDevice("wg0", user)
 				Expect(err).To(Succeed())
 
 				err = w.Sync()
@@ -84,7 +106,7 @@ var _ = Describe("watcher", func() {
 				i = ie.Interface
 
 				Expect(ie.Interface).NotTo(BeNil())
-				Expect(ie.Interface.Name()).To(Equal(devName))
+				Expect(ie.Interface.Name()).To(Equal("wg0"))
 			})
 
 			It("modifying the interface", func() {
@@ -105,7 +127,7 @@ var _ = Describe("watcher", func() {
 				Expect(h.Events).To(test.ReceiveEvent(&ie))
 
 				Expect(ie.Interface).NotTo(BeNil())
-				Expect(ie.Interface.Name()).To(Equal(devName))
+				Expect(ie.Interface.Name()).To(Equal("wg0"))
 				Expect(ie.Modified & core.InterfaceModifiedListenPort).NotTo(BeZero())
 				Expect(ie.Interface.ListenPort).To(Equal(newListenPort))
 				Expect(ie.Old.ListenPort).To(Equal(oldListenPort))
@@ -138,10 +160,10 @@ var _ = Describe("watcher", func() {
 			})
 
 			It("modifying a peer", func() {
-				ep, err := net.ResolveUDPAddr("udp", "1.1.1.1:1234")
+				psk, err := crypto.GeneratePrivateKey()
 				Expect(err).To(Succeed())
 
-				err = p.UpdateEndpoint(ep)
+				err = p.SetPresharedKey(&psk)
 				Expect(err).To(Succeed())
 
 				err = w.Sync()
@@ -151,9 +173,8 @@ var _ = Describe("watcher", func() {
 				Expect(h.Events).To(test.ReceiveEvent(&pe))
 
 				Expect(pe.Peer.PublicKey()).To(Equal(p.PublicKey()))
-				Expect(pe.Modified & core.PeerModifiedEndpoint).NotTo(BeZero())
-				Expect(pe.Peer.Endpoint.IP.Equal(ep.IP)).To(BeTrue())
-				Expect(pe.Peer.Endpoint.Port).To(Equal(ep.Port))
+				Expect(pe.Modified & core.PeerModifiedPresharedKey).NotTo(BeZero())
+				Expect(pe.Peer.PresharedKey()).To(Equal(psk))
 			})
 
 			It("removing a peer", func() {
@@ -185,7 +206,7 @@ var _ = Describe("watcher", func() {
 				Expect(h.Events).To(test.ReceiveEvent(&ie))
 
 				Expect(ie.Interface).NotTo(BeNil())
-				Expect(ie.Interface.Name()).To(Equal(devName))
+				Expect(ie.Interface.Name()).To(Equal("wg0"))
 			})
 		})
 	}
@@ -195,14 +216,14 @@ var _ = Describe("watcher", func() {
 			user = false
 		})
 
-		test()
+		Test()
 	})
 
-	// Describe("user", func() {
-	// 	BeforeEach(OncePerOrdered, func() {
-	// 		user = true
-	// 	})
+	Describe("user", func() {
+		BeforeEach(OncePerOrdered, func() {
+			user = true
+		})
 
-	// 	test()
-	// })
+		Test()
+	})
 })
