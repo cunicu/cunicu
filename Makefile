@@ -35,8 +35,7 @@ tests:
 	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/...
 
 tests-e2e:
-	mkdir -p test/logs
-	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_integration.out ./test/e2e
+	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_e2e.out ./test/e2e
 
 coverprofile_merged.out: $(shell find . -name "*.out" -type f)
 	gocov-merger -o $@ $^
