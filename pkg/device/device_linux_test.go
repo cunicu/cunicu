@@ -15,7 +15,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	gont "github.com/stv0g/gont/pkg"
+	g "github.com/stv0g/gont/pkg"
 	nl "github.com/vishvananda/netlink"
 )
 
@@ -23,7 +23,7 @@ var _ = Describe("device", func() {
 	var err error
 	var d device.Device
 	var user bool
-	var ns *gont.Namespace
+	var ns *g.Namespace
 	var nlh *nl.Handle
 	var l nl.Link
 
@@ -42,7 +42,7 @@ var _ = Describe("device", func() {
 
 	JustBeforeEach(OncePerOrdered, func() {
 		name := fmt.Sprintf("wg-test-%d", rand.Intn(1000))
-		ns, err = gont.NewNamespace(name)
+		ns, err = g.NewNamespace(name)
 		Expect(err).To(Succeed())
 
 		func() {
