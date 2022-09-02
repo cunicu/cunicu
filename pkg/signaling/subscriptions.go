@@ -104,7 +104,8 @@ func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair, h MessageHandler) 
 }
 
 func (s *SubscriptionsRegistry) Unsubscribe(kp *crypto.KeyPair, h MessageHandler) (bool, error) {
-	sub, err := s.GetSubscription(&kp.Ours)
+	pk := kp.Ours.PublicKey()
+	sub, err := s.GetSubscription(&pk)
 	if err != nil {
 		return false, err
 	}
