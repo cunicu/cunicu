@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/proto"
@@ -41,12 +43,17 @@ func NewServer(opts ...grpc.ServerOption) *Server {
 		}
 
 		opts = slices.Clone(opts)
-		opts = append(opts, grpc.Creds(
-			credentials.NewTLS(&tls.Config{
-				MinVersion:   tls.VersionTLS13,
-				KeyLogWriter: wr,
+		opts = append(opts,
+			grpc.Creds(
+				credentials.NewTLS(&tls.Config{
+					MinVersion:   tls.VersionTLS13,
+					KeyLogWriter: wr,
+				}),
+			),
+			grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+				MinTime: 5 * time.Second,
 			}),
-		))
+		)
 	}
 
 	s := &Server{

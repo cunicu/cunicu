@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"riasc.eu/wice/pkg/signaling"
 	"riasc.eu/wice/pkg/util/buildinfo"
 )
@@ -68,6 +70,9 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	c.Options = append(c.Options,
 		grpc.WithTransportCredentials(creds),
 		grpc.WithUserAgent(buildinfo.UserAgent()),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time: 10 * time.Second,
+		}),
 	)
 
 	if c.URI.Host == "" {
