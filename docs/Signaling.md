@@ -31,6 +31,7 @@ stateDiagram-v2
     Unknown --> Idle: 1. Create new agent<br>2. Send local credentials
 
     Idle --> New: On remote credentials<br>1. Start gathering local candidates
+    Idle --> Idle: Repeatedly send local credentials with back-off
 
     New --> Connecting: On remote candidate<br>1. Connect
     Connecting --> Checking
