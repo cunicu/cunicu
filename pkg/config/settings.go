@@ -75,6 +75,12 @@ type HostSyncSettings struct {
 	Enabled bool `yaml:"enabled,omitempty"`
 }
 
+type PeerDiscoverySettings struct {
+	Enabled bool `yaml:"enabled,omitempty"`
+
+	Whitelist []Key `yaml:"whitelist,omitempty"`
+}
+
 type EndpointDiscoverySettings struct {
 	Enabled bool `yaml:"enabled,omitempty"`
 
@@ -110,6 +116,7 @@ type Settings struct {
 	HostSync     HostSyncSettings          `yaml:"host_sync,omitempty"`
 	Hooks        []HookSetting             `yaml:"hooks,omitempty"`
 	EndpointDisc EndpointDiscoverySettings `yaml:"endpoint_disc,omitempty"`
+	PeerDisc     PeerDiscoverySettings     `yaml:"peer_disc,omitempty"`
 }
 
 func (s *Settings) Dump(wr io.Writer) error {

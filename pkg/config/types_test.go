@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
 	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/crypto"
 )
 
 var _ = Context("types", func() {
@@ -100,4 +101,41 @@ var _ = Context("types", func() {
 		}
 	})
 
+	Context("key", func() {
+		var key crypto.Key
+		var keyStr, brokenKeyStr string
+
+		BeforeEach(func() {
+			var err error
+
+			key, err = crypto.GenerateKey()
+			Expect(err).To(Succeed())
+
+			keyStr = key.String()
+			brokenKeyStr = keyStr[:len(keyStr)-2]
+		})
+
+		It("unmarshal", func() {
+			var keyCfg config.Key
+
+			err := keyCfg.UnmarshalText([]byte(keyStr))
+			Expect(err).To(Succeed())
+
+			Expect(keyCfg).To(BeEquivalentTo(key))
+		})
+
+		It("marshal", func() {
+			keyCfg := config.Key(key)
+
+			keyCfgStr, err := keyCfg.MarshalText()
+			Expect(err).To(Succeed())
+			Expect(string(keyCfgStr)).To(Equal(keyStr))
+		})
+
+		It("fails on invalid key", func() {
+			var k config.Key
+			err := k.UnmarshalText([]byte(brokenKeyStr))
+			Expect(err).To(HaveOccurred())
+		})
+	})
 })
