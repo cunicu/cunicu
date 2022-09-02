@@ -19,12 +19,13 @@ wice self-update [flags]
 
 ```
   -h, --help              help for self-update
-  -o, --output filename   Save the downloaded file as filename (default "/tmp/go-build2034746773/b001/exe/wice")
+  -o, --output filename   Save the downloaded file as filename (default "/tmp/go-build3033162298/b001/exe/wice")
 ```
 
 ### Options inherited from parent commands
 
 ```
+  -C, --color string       Enable colorization of output (one of: auto, always, never) (default "auto")
   -l, --log-file string    path of a file to write logs to
   -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```

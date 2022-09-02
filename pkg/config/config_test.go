@@ -42,13 +42,6 @@ var _ = Describe("parse command line arguments", func() {
 		Expect(c.Backends[1].Scheme).To(Equal("p2p"))
 	})
 
-	It("can parse a duration value", func() {
-		c, err := config.ParseArgs("--ice-restart-timeout", "10s")
-
-		Expect(err).To(Succeed())
-		Expect(c.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
-	})
-
 	It("parse an interface list", func() {
 		c, err := config.ParseArgs("wg0", "wg1")
 

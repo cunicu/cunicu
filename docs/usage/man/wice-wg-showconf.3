@@ -3,31 +3,27 @@
 
 .SH NAME
 .PP
-wice-signal - Start gRPC signaling server
+wice-wg-showconf - Shows the current configuration and device information
 
 
 .SH SYNOPSIS
 .PP
-\fBwice signal [flags]\fP
+\fBwice wg showconf [flags] \fP
 
 
 .SH DESCRIPTION
 .PP
-Start gRPC signaling server
+Sets the current configuration of  to the contents of , which must be in the wg(8) format.
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for signal
+	help for showconf
 
 .PP
-\fB-L\fP, \fB--listen\fP=":8080"
-	listen address
-
-.PP
-\fB-S\fP, \fB--secure\fP[=false]
-	listen with TLS
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/wice.sock"
+	Unix control and monitoring socket
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -46,4 +42,4 @@ Start gRPC signaling server
 
 .SH SEE ALSO
 .PP
-\fBwice(3)\fP
+\fBwice-wg(3)\fP

@@ -1,15 +1,20 @@
-## wice wg genpsk
+## wice wg showconf
 
-Generates a random preshared key in base64 and prints it to standard output.
+Shows the current configuration and device information
+
+### Synopsis
+
+Sets the current configuration of <interface> to the contents of <configuration-filename>, which must be in the wg(8) format.
 
 ```
-wice wg genpsk [flags]
+wice wg showconf [flags] <interface>
 ```
 
 ### Options
 
 ```
-  -h, --help   help for genpsk
+  -h, --help                help for showconf
+  -s, --rpc-socket string   Unix control and monitoring socket (default "/var/run/wice.sock")
 ```
 
 ### Options inherited from parent commands

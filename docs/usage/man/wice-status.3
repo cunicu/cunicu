@@ -1,25 +1,25 @@
 .nh
-.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Sep 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
-wice-status - Show current status of ɯice daemon
+wice-status - Show current status of the ɯice daemon, its interfaces and peers
 
 
 .SH SYNOPSIS
 .PP
-\fBwice status [flags]\fP
+\fBwice status [flags] [intf [peer]]\fP
 
 
 .SH DESCRIPTION
 .PP
-Show current status of ɯice daemon
+Show current status of the ɯice daemon, its interfaces and peers
 
 
 .SH OPTIONS
 .PP
-\fB-c\fP, \fB--color\fP[=true]
-	Enable colorization of output
+\fB-f\fP, \fB--format\fP="human"
+	Output \fB\fCformat\fR (one of: human, json)
 
 .PP
 \fB-h\fP, \fB--help\fP[=false]
@@ -30,19 +30,19 @@ Show current status of ɯice daemon
 	Format and indent JSON ouput
 
 .PP
-\fB-j\fP, \fB--json\fP[=false]
-	Format status in JSON
-
-.PP
 \fB-s\fP, \fB--rpc-socket\fP="/var/run/wice.sock"
 	Unix control and monitoring socket
 
 .PP
-\fB-v\fP, \fB--verbose\fP=6
+\fB-v\fP, \fB--verbose\fP=5
 	Verbosity level for output (1-6)
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
 .PP
 \fB-l\fP, \fB--log-file\fP=""
 	path of a file to write logs to

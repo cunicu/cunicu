@@ -1,5 +1,5 @@
 .nh
-.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Sep 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
@@ -18,8 +18,8 @@ Monitor the ɯice daemon for events
 
 .SH OPTIONS
 .PP
-\fB-f\fP, \fB--format\fP="json"
-	Output \fB\fCformat\fR (one of: json, csv, logger)
+\fB-f\fP, \fB--format\fP="human"
+	Output \fB\fCformat\fR (one of: json, logger, human)
 
 .PP
 \fB-h\fP, \fB--help\fP[=false]
@@ -31,6 +31,10 @@ Monitor the ɯice daemon for events
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
 .PP
 \fB-l\fP, \fB--log-file\fP=""
 	path of a file to write logs to

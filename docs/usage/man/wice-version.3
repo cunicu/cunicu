@@ -3,31 +3,27 @@
 
 .SH NAME
 .PP
-wice-signal - Start gRPC signaling server
+wice-version - Show current status of the ɯice daemon, its interfaces and peers
 
 
 .SH SYNOPSIS
 .PP
-\fBwice signal [flags]\fP
+\fBwice version [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Start gRPC signaling server
+Show current status of the ɯice daemon, its interfaces and peers
 
 
 .SH OPTIONS
 .PP
+\fB-f\fP, \fB--format\fP="human"
+	Output \fB\fCformat\fR (one of: human, json)
+
+.PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for signal
-
-.PP
-\fB-L\fP, \fB--listen\fP=":8080"
-	listen address
-
-.PP
-\fB-S\fP, \fB--secure\fP[=false]
-	listen with TLS
+	help for version
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS

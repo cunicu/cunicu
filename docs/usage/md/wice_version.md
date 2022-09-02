@@ -1,15 +1,16 @@
-## wice wg genpsk
+## wice version
 
-Generates a random preshared key in base64 and prints it to standard output.
+Show current status of the ɯice daemon, its interfaces and peers
 
 ```
-wice wg genpsk [flags]
+wice version [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for genpsk
+  -f, --format format   Output format (one of: human, json) (default "human")
+  -h, --help            help for version
 ```
 
 ### Options inherited from parent commands
@@ -22,5 +23,5 @@ wice wg genpsk [flags]
 
 ### SEE ALSO
 
-* [wice wg](wice_wg.md)	 - WireGuard commands
+* [wice](wice.md)	 - ɯice
 
