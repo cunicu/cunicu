@@ -7,8 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jpillora/backoff"
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
@@ -67,7 +69,7 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 	p.connectionState.Store(ice.ConnectionStateClosed)
 
 	// Initialize signaling channel
-	kp := cp.PublicPrivateKeyPair()
+	kp := p.PublicPrivateKeyPair()
 	if _, err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
 		// TODO: Attempt retry?
 		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
@@ -259,11 +261,26 @@ func (p *Peer) createAgent() error {
 		return fmt.Errorf("failed to switch to idle state")
 	}
 
-	if err := p.sendCredentials(true); err != nil {
-		return fmt.Errorf("failed to send peer credentials: %w", err)
-	}
+	// Send peer credentials as long as we remain in ConnectionStateIdle
+	go p.resendCredentialsWithBackoff(true)
 
 	return nil
+}
+
+func (p *Peer) resendCredentialsWithBackoff(need bool) {
+	bo := backoff.Backoff{
+		Factor: 1.6,
+		Min:    time.Second,
+		Max:    time.Minute,
+	}
+
+	for p.ConnectionState() == icex.ConnectionStateIdle {
+		if err := p.sendCredentials(need); err != nil {
+			p.logger.Error("Failed to send peer credentials", zap.Error(err))
+		}
+
+		time.Sleep(bo.Duration())
+	}
 }
 
 // isSessionRestart checks if a received offer should restart the
@@ -329,6 +346,8 @@ func (p *Peer) connect(ufrag, pwd string) error {
 	return nil
 }
 
+// setConnectionState updates the connection state of the peer and invokes registered handlers.
+// It returns the previous connection state.
 func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState {
 	prev := p.connectionState.Swap(new)
 
@@ -345,6 +364,8 @@ func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState
 	return prev
 }
 
+// setConnectionStateIf updates the connection state of the peer if the previous state matches the one supplied.
+// It returns true if the state has been changed.
 func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 	swapped := p.connectionState.CompareAndSwap(prev, new)
 	if swapped {
@@ -362,6 +383,7 @@ func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 	return swapped
 }
 
+// Marshal marshals a description of the peer into a Protobuf description
 func (p *Peer) Marshal() *protoepdisc.Peer {
 	cs := p.ConnectionState()
 

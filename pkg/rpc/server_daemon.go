@@ -90,5 +90,5 @@ func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto
 		return nil, status.Error(codes.Unimplemented, "not supported on this platform")
 	}
 
-	return nil, nil
+	return &proto.Empty{}, nil
 }
