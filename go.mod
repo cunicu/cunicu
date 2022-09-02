@@ -9,6 +9,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/nftables v0.0.0-20220808154552-2eca00135732
+	github.com/jpillora/backoff v1.0.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v2 v2.2.7
 	github.com/pion/logging v0.2.2

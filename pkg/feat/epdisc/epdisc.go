@@ -121,7 +121,6 @@ func (e *EndpointDiscovery) OnInterfaceModified(ci *core.Interface, old *wg.Devi
 		}
 
 		if m.Is(core.InterfaceModifiedPrivateKey) {
-
 			skOld := crypto.Key(old.PrivateKey)
 			if err := p.Resubscribe(context.Background(), skOld); err != nil {
 				e.logger.Error("Failed to update subscription", zap.Error(err))
