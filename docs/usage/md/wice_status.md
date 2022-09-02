@@ -1,25 +1,25 @@
 ## wice status
 
-Show current status of ɯice daemon
+Show current status of the ɯice daemon, its interfaces and peers
 
 ```
-wice status [flags]
+wice status [flags] [intf [peer]]
 ```
 
 ### Options
 
 ```
-  -c, --color               Enable colorization of output (default true)
+  -f, --format format       Output format (one of: human, json) (default "human")
   -h, --help                help for status
   -i, --indent              Format and indent JSON ouput (default true)
-  -j, --json                Format status in JSON
   -s, --rpc-socket string   Unix control and monitoring socket (default "/var/run/wice.sock")
-  -v, --verbose int         Verbosity level for output (1-6) (default 6)
+  -v, --verbose int         Verbosity level for output (1-6) (default 5)
 ```
 
 ### Options inherited from parent commands
 
 ```
+  -C, --color string       Enable colorization of output (one of: auto, always, never) (default "auto")
   -l, --log-file string    path of a file to write logs to
   -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
 ```

@@ -86,39 +86,27 @@ var _ = Describe("Agent config", func() {
 
 	Context("Interface filter", func() {
 		It("can parse an interface filter", func() {
-			cfg, err := config.ParseArgs("--ice-interface-filter", "eth\\d+")
+			cfg, err := config.ParseArgs("--wg-interface-filter", "wg\\d+")
 			Expect(err).To(Succeed())
 
-			aCfg, err := cfg.AgentConfig()
-			Expect(err).To(Succeed())
-
-			Expect(aCfg.InterfaceFilter("eth0")).To(BeTrue())
-			Expect(aCfg.InterfaceFilter("wifi0")).To(BeFalse())
+			Expect(cfg.WireGuard.InterfaceFilter.MatchString("wg0")).To(BeTrue())
+			Expect(cfg.WireGuard.InterfaceFilter.MatchString("et0")).To(BeFalse())
 		})
 	})
 
 	Context("Interface filter with invalid regex", func() {
 		It("can parse an interface filter", func() {
-			_, err := config.ParseArgs("--ice-interface-filter", "eth(")
+			_, err := config.ParseArgs("--wg-interface-filter", "eth(")
 			Expect(err).To(HaveOccurred())
 		})
 	})
 
-	It("Some more arguments", func() {
-		cfg, err := config.ParseArgs("--ice-mdns", "--ice-nat-1to1-ip=1.2.3.4,4.5.6.7", "--ice-nat-1to1-ip", "10.10.10.10")
-		Expect(err).To(Succeed())
-
-		aCfg, err := cfg.AgentConfig()
-		Expect(err).To(Succeed())
-
-		Expect(aCfg.MulticastDNSMode).To(Equal(ice.MulticastDNSModeQueryAndGather))
-		Expect(aCfg.NAT1To1IPs).To(Equal([]string{"1.2.3.4", "4.5.6.7", "10.10.10.10"}))
-	})
-
 	Context("default values", func() {
-		It("has sensible default values", func() {
-			cfg, err := config.ParseArgs("--ice-interface-filter", "eth\\d+")
+		It("has default values", func() {
+			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
+
+			Expect(cfg.WireGuard.InterfaceFilter.MatchString("wg1234")).To(BeTrue())
 
 			aCfg, err := cfg.AgentConfig()
 			Expect(err).To(Succeed())

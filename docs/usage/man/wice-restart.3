@@ -3,31 +3,27 @@
 
 .SH NAME
 .PP
-wice-signal - Start gRPC signaling server
+wice-restart - Restart the ɯice daemon
 
 
 .SH SYNOPSIS
 .PP
-\fBwice signal [flags]\fP
+\fBwice restart [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Start gRPC signaling server
+Restart the ɯice daemon
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for signal
+	help for restart
 
 .PP
-\fB-L\fP, \fB--listen\fP=":8080"
-	listen address
-
-.PP
-\fB-S\fP, \fB--secure\fP[=false]
-	listen with TLS
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/wice.sock"
+	Unix control and monitoring socket
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS

@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -117,20 +116,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (one of host, srflx, prflx, relay)")
 	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")
-	flags.StringSlice("ice-nat-1to1-ip", []string{}, "An `IP` address which will be added as local server reflexive candidates")
-
-	flags.Uint16("ice-port-min", 0, "Minimum `port` for allocation policy for ICE sockets (range: 0-65535)")
-	flags.Uint16("ice-port-max", 0, "Maximum `port` for allocation policy for ICE sockets (range: 0-65535)")
-	flags.BoolP("ice-lite", "L", false, "Lite agents do not perform connectivity check and only provide host candidates")
-	flags.BoolP("ice-mdns", "m", false, "Enable local Multicast DNS discovery")
-	flags.Uint16("ice-max-binding-requests", 0, "Maximum `number` of binding request before considering a pair failed")
-	flags.BoolP("ice-insecure-skip-verify", "k", false, "Skip verification of TLS certificates for secure STUN/TURN servers")
-	flags.String("ice-interface-filter", ".*", "A `regex` for filtering local interfaces for ICE candidate gathering (e.g. \"eth[0-9]+\")")
-	flags.Duration("ice-disconnected-timeout", 0, "Time until an Agent transitions disconnected")
-	flags.Duration("ice-failed-timeout", 0, "Time until an Agent transitions to failed after disconnected")
-	flags.Duration("ice-keepalive-interval", 0, "Interval between STUN keepalives")
-	flags.Duration("ice-check-interval", 0, "Interval at which the agent performs candidate checks in the connecting phase")
-	flags.Duration("ice-restart-timeout", 0, "Time to wait before ICE restart")
 
 	// Peer discovery
 	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
@@ -165,70 +150,21 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"wg-interface-filter": "wireguard.interface_filter",
 
 		// Endpoint discovery
-		"endpoint-disc":            "endpoint_disc.enabled",
-		"url":                      "endpoint_disc.ice.urls",
-		"username":                 "endpoint_disc.ice.username",
-		"password":                 "endpoint_disc.ice.password",
-		"ice-candidate-type":       "endpoint_disc.ice.candidate_types",
-		"ice-network-type":         "endpoint_disc.ice.network_types",
-		"ice-nat-1to1-ip":          "endpoint_disc.ice.nat_1to1_ips",
-		"ice-port-min":             "endpoint_disc.ice.port.min",
-		"ice-port-max":             "endpoint_disc.ice.port.max",
-		"ice-lite":                 "endpoint_disc.ice.lite",
-		"ice-mdns":                 "endpoint_disc.ice.mdns",
-		"ice-max-binding-requests": "endpoint_disc.ice.max_binding_requests",
-		"ice-insecure-skip-verify": "endpoint_disc.ice.insecure_skip_verify",
-		"ice-interface-filter":     "endpoint_disc.ice.interface_filter",
-		"ice-disconnected-timeout": "endpoint_disc.ice.disconnected_timeout",
-		"ice-failed-timeout":       "endpoint_disc.ice.failed_timeout",
-		"ice-keepalive-interval":   "endpoint_disc.ice.keepalive_interval",
-		"ice-check-interval":       "endpoint_disc.ice.check_interval",
-		"ice-restart-timeout":      "endpoint_disc.ice.restart_timeout",
+		"endpoint-disc":      "endpoint_disc.enabled",
+		"url":                "endpoint_disc.ice.urls",
+		"username":           "endpoint_disc.ice.username",
+		"password":           "endpoint_disc.ice.password",
+		"ice-candidate-type": "endpoint_disc.ice.candidate_types",
+		"ice-network-type":   "endpoint_disc.ice.network_types",
 
 		// Peer discovery
 		"peer-disc": "peer_disc.enabled",
 		"community": "community",
 	}
 
-	showAdvancedFlags := os.Getenv("WICE_ADVANCED_CLI") != ""
-	advancedFlags := map[string]bool{
-		"host-sync":                true,
-		"config-sync":              true,
-		"route-sync":               true,
-		"endpoint-disc":            true,
-		"peer-disc":                true,
-		"auto-config":              true,
-		"watch-interval":           true,
-		"wg-config-path":           true,
-		"wg-config-watch":          true,
-		"wg-route-table":           true,
-		"ice-candidate-type":       true,
-		"ice-network-type":         true,
-		"ice-nat-1to1-ip":          true,
-		"ice-port-min":             true,
-		"ice-port-max":             true,
-		"ice-lite":                 true,
-		"ice-mdns":                 true,
-		"ice-max-binding-requests": true,
-		"ice-insecure-skip-verify": true,
-		"ice-interface-filter":     true,
-		"ice-disconnected-timeout": true,
-		"ice-failed-timeout":       true,
-		"ice-keepalive-interval":   true,
-		"ice-check-interval":       true,
-		"ice-restart-timeout":      true,
-		"rpc-wait":                 true,
-	}
-
 	flags.VisitAll(func(flag *pflag.Flag) {
 		if newName, ok := flagMap[flag.Name]; ok {
 			if err := c.BindPFlag(newName, flag); err != nil {
-				panic(err)
-			}
-		}
-
-		if hide, ok := advancedFlags[flag.Name]; ok && hide && !showAdvancedFlags {
-			if err := flags.MarkHidden(flag.Name); err != nil {
 				panic(err)
 			}
 		}

@@ -1,19 +1,36 @@
 .nh
-.TH "ɯice" "3" "Aug 2022" "https://github.com/stv0g/wice" ""
+.TH "ɯice" "3" "Sep 2022" "https://github.com/stv0g/wice" ""
 
 .SH NAME
 .PP
-wice-wg-show - Shows the current configuration and device information
+wice-wg-show - Shows current WireGuard configuration and runtime information of specified \&.
 
 
 .SH SYNOPSIS
 .PP
-\fBwice wg show [flags]\fP
+\fBwice wg show [flags] {  | all | interfaces } [public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump]\fP
 
 
 .SH DESCRIPTION
 .PP
-Shows the current configuration and device information
+Shows current WireGuard configuration and runtime information of specified \&.
+
+.PP
+If no  is specified,  defaults to all.
+
+.PP
+If 'interfaces' is specified, prints a list of all WireGuard interaces, one per line, and quits.
+
+.PP
+If no options are given after the interface specification, then prints a list of all attributes in a visually pleasing way meant for the terminal.
+Otherwise, prints specified information grouped by newlines and tabs, meant to be used in scripts.
+
+.PP
+For this script-friendly display, if 'all' is specified, then the first field for all categories of information is the interface name.
+
+.PP
+If 'dump' is specified, then several lines are printed; the first contains in order separated by tab: private-key, public-key, listen-port, fwmark.
+Subsequent lines are printed for each peer and contain in order separated by tab: public-key, preshared-key, endpoint, allowed-ips, latest-handshake, transfer-rx, transfer-tx, persistent-keepalive.
 
 
 .SH OPTIONS
@@ -27,6 +44,10 @@ Shows the current configuration and device information
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
 .PP
 \fB-l\fP, \fB--log-file\fP=""
 	path of a file to write logs to

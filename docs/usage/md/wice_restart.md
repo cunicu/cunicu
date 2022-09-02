@@ -1,15 +1,16 @@
-## wice wg genpsk
+## wice restart
 
-Generates a random preshared key in base64 and prints it to standard output.
+Restart the ɯice daemon
 
 ```
-wice wg genpsk [flags]
+wice restart [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for genpsk
+  -h, --help                help for restart
+  -s, --rpc-socket string   Unix control and monitoring socket (default "/var/run/wice.sock")
 ```
 
 ### Options inherited from parent commands
@@ -22,5 +23,5 @@ wice wg genpsk [flags]
 
 ### SEE ALSO
 
-* [wice wg](wice_wg.md)	 - WireGuard commands
+* [wice](wice.md)	 - ɯice
 

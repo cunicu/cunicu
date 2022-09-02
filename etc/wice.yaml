@@ -89,25 +89,24 @@ endpoint_disc:
     urls:
     - stun:stun.l.google.com:19302
 
-    # Credentials for STUN/TURN servers configured above
+    # Credentials for STUN/TURN servers configured above.
     username: ""
     password: ""
 
-    # Allow connections to STUNS/TURNS servers for which
-    # we cant validate their TLS certificates
+    # Allow connections to STUNS/TURNS servers for which we can not validate TLS certificates.
     insecure_skip_verify: false
 
     # Limit available network and candidate types
     network_types: [udp4, udp6, tcp4, tcp6]
     candidate_types: [host, srflx, prflx ,relay]
 
-    # Regular expression whitelist of interfaces which are used to gather ICE candidates.
+    # Regular expression whitelist of interfaces which are used to gather ICE candidates (e.g. \"eth[0-9]+\").
     interface_filter: .*
 
     # Lite agents do not perform connectivity check and only provide host candidates.
     lite: false
 
-    # Attempt to find candidates via mDNS discovery
+    # Enable local Multicast DNS discovery
     mdns: false
 
     # Sets the max amount of binding requests the agent will send over a candidate pair for validation or nomination.
@@ -121,19 +120,26 @@ endpoint_disc:
 
     # Limit the port range used by ICE
     port:
+        # Minimum port for allocation policy for ICE sockets (range: 0-65535)
         min: 49152
+
+        # Maximum port for allocation policy for ICE sockets (range: 0-65535)
         max: 65535
 
-    # The check interval controls how often our task loop runs when in the connecting state.
+    # Interval at which the agent performs candidate checks in the connecting phase
     check_interval: 200ms
     
+    # Time until an Agent transitions disconnected
     # If the duration is 0, the ICE Agent will never go to disconnected
     disconnected_timeout: 5s
 
+    # Time until an Agent transitions to failed after disconnected
     # If the duration is 0, we will never go to failed.
     failed_timeout: 5s
+
+    # Time to wait before ICE restart
     restart_timeout: 5s
 
-    # Determines how often should we send ICE keepalives (should be less then connection timeout above).
-    # A keepalive interval of 0 means we never send keepalive packets
+    # Interval between STUN keepalives (should be less then connection timeout above).
+    # Af the interval is 0, we never send keepalive packets
     keepalive_interval: 2s
