@@ -60,7 +60,7 @@ func (matcher *eventMatcher[E]) Match(actual any) (success bool, err error) {
 	to := time.NewTimer(time.Second)
 	select {
 	case <-to.C:
-		return false, nil
+		return false, fmt.Errorf("timed-out")
 	case evt := <-events:
 		if *matcher.event, ok = evt.(E); !ok {
 			return false, fmt.Errorf("received wrong type of event: %#+v", evt)
@@ -75,5 +75,5 @@ func (matcher *eventMatcher[E]) FailureMessage(actual any) (message string) {
 }
 
 func (matcher *eventMatcher[E]) NegatedFailureMessage(actual any) (message string) {
-	return "Received event unexpectely"
+	return "Received event unexpectedly"
 }
