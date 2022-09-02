@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 
+	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
 	"riasc.eu/wice/pkg/signaling"
@@ -24,15 +25,24 @@ type PeerDiscovery struct {
 
 	community crypto.Key
 
+	whitelistMap map[crypto.Key]any
+
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, c *wgctrl.Client, b signaling.Backend, community string) *PeerDiscovery {
+func New(w *watcher.Watcher, c *wgctrl.Client, b signaling.Backend, community string, whitelist []config.Key) *PeerDiscovery {
 	pd := &PeerDiscovery{
 		backend:   b,
 		watcher:   w,
 		community: crypto.GenerateKeyFromPassword(community),
 		logger:    zap.L().Named("pdisc"),
+	}
+
+	if whitelist != nil {
+		pd.whitelistMap = map[crypto.Key]any{}
+		for _, k := range whitelist {
+			pd.whitelistMap[crypto.Key(k)] = nil
+		}
 	}
 
 	w.OnInterface(pd)
@@ -64,7 +74,7 @@ func (pd *PeerDiscovery) Close() error {
 func (pd *PeerDiscovery) OnInterfaceAdded(i *core.Interface) {
 	i.OnModified(pd)
 
-	// Ignore interface which dont have a private key yet
+	// Ignore interface which do not have a private key yet
 	if !i.PrivateKey().IsSet() {
 		return
 	}
@@ -75,7 +85,7 @@ func (pd *PeerDiscovery) OnInterfaceAdded(i *core.Interface) {
 }
 
 func (pd *PeerDiscovery) OnInterfaceRemoved(i *core.Interface) {
-	// Ignore interface which dont have a private key yet
+	// Ignore interface which do not have a private key yet
 	if !i.PrivateKey().IsSet() {
 		return
 	}
@@ -86,13 +96,13 @@ func (pd *PeerDiscovery) OnInterfaceRemoved(i *core.Interface) {
 }
 
 func (pd *PeerDiscovery) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
-	// Ignore interface which dont have a private key yet
+	// Ignore interface which do not have a private key yet
 	if !i.PrivateKey().IsSet() {
 		return
 	}
 
 	// Only send an update if the private key changed.
-	// There are currently no other attributes which would need to be reannounced
+	// There are currently no other attributes which would need to be re-announced
 	if m.Is(core.InterfaceModifiedPrivateKey) {
 		if skOld := crypto.Key(old.PrivateKey); skOld.IsSet() {
 			pkOld := skOld.PublicKey()
@@ -122,8 +132,12 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 		return fmt.Errorf("invalid public key: %w", err)
 	}
 
+	if !pd.isWhitelisted(pk) {
+		pd.logger.Warn("Ignoring non-whitelisted peer", zap.Any("peer", pk))
+		return nil
+	}
+
 	p := pd.watcher.PeerByPublicKey(&pk)
-	cfg := pdisc.Config()
 
 	switch pdisc.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
@@ -143,6 +157,8 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 			return fmt.Errorf("cant remove non-existing peer")
 		}
 	}
+
+	cfg := pdisc.Config()
 
 	switch pdisc.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
@@ -175,7 +191,7 @@ func (pd *PeerDiscovery) onPeerDescription(pdisc *pdiscproto.PeerDescription) er
 		}
 	}
 
-	// Re-announce ourself in case this is a new peer we didnt knew already
+	// Re-announce ourself in case this is a new peer we did not knew already
 	if p == nil {
 		// TODO: Check if delay is really necessary
 		time.AfterFunc(1*time.Second, func() {
@@ -212,4 +228,14 @@ func (pd *PeerDiscovery) sendPeerDescription(i *core.Interface, chg pdiscproto.P
 	pd.logger.Debug("Send peer description", zap.Any("description", d))
 
 	return nil
+}
+
+func (pd *PeerDiscovery) isWhitelisted(pk crypto.Key) bool {
+	if pd.whitelistMap == nil {
+		return true
+	} else if _, ok := pd.whitelistMap[pk]; ok {
+		return true
+	}
+
+	return false
 }

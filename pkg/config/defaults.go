@@ -20,6 +20,7 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("auto_config.enabled", true)
 	c.SetDefault("backends", DefaultBackends)
 	c.SetDefault("config_sync.enabled", true)
+	c.SetDefault("peer_disc.enabled", true)
 	c.SetDefault("config_sync.path", wg.ConfigPath)
 	c.SetDefault("config_sync.watch", false)
 	c.SetDefault("endpoint_disc.enabled", true)

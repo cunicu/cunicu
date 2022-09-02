@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"go.uber.org/zap/zapcore"
+	"riasc.eu/wice/pkg/crypto"
 )
 
 type Regexp struct {
@@ -127,4 +128,21 @@ type Level struct {
 
 func (l *Level) Type() string {
 	return "string"
+}
+
+type Key crypto.Key
+
+func (k *Key) UnmarshalText(text []byte) error {
+	l, err := crypto.ParseKey(string(text))
+	if err != nil {
+		return err
+	}
+
+	*k = Key(l)
+
+	return nil
+}
+
+func (k Key) MarshalText() ([]byte, error) {
+	return []byte(crypto.Key(k).String()), nil
 }
