@@ -148,7 +148,7 @@ var _ = Describe("parse command line arguments", func() {
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/wice.yaml"),
 						ghttp.RespondWith(http.StatusOK,
-							"community: this-is-a-test\n",
+							"watch_interval: 1337s\n",
 							http.Header{
 								"Content-type": []string{"text/yaml"},
 							}),
@@ -160,7 +160,7 @@ var _ = Describe("parse command line arguments", func() {
 				cfg, err := config.ParseArgs("--config", server.URL()+"/wice.yaml")
 
 				Expect(err).To(Succeed())
-				Expect(cfg.PeerDisc.Community).To(Equal("this-is-a-test"))
+				Expect(cfg.WatchInterval).To(BeNumerically("==", 1337*time.Second))
 			})
 
 			AfterEach(func() {

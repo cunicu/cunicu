@@ -46,9 +46,9 @@ func (c *Config) lookupTXT(name string) error {
 	}
 
 	txtSettingMap := map[string]string{
-		"community":                  "peer_disc.community",
-		"endpoint-disc-ice-username": "endpoint_disc.ice.username",
-		"endpoint-disc-ice-password": "endpoint_disc.ice.password",
+		"community":    "peer_disc.community",
+		"ice-username": "endpoint_disc.ice.username",
+		"ice-password": "endpoint_disc.ice.password",
 	}
 
 	for txtName, settingName := range txtSettingMap {
