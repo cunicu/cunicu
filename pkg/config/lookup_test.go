@@ -45,9 +45,9 @@ var _ = Describe("lookup", func() {
 				TXT: []string{
 					"wice-backend=p2p",
 					"wice-backend=grpc://example.com:8080",
-					"wice-peer-disc-community=my-community-password",
-					"wice-endpoint-disc-ice-username=user1",
-					"wice-endpoint-disc-ice-password=pass1",
+					"wice-community=my-community-password",
+					"wice-ice-username=user1",
+					"wice-ice-password=pass1",
 					fmt.Sprintf("wice-config=%s%s", webSrv.URL(), cfgPath),
 				},
 			},

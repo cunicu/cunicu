@@ -33,6 +33,7 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("endpoint_disc.ice.port.min", EphemeralPortMin)
 	c.SetDefault("endpoint_disc.ice.restart_timeout", "5s")
 	c.SetDefault("endpoint_disc.ice.urls", []string{DefaultURL})
+	c.SetDefault("endpoint_disc.ice.interface_filter", ".*")
 	c.SetDefault("host_sync.enabled", true)
 	c.SetDefault("route_sync.enabled", true)
 	c.SetDefault("route_sync.table", DefaultRouteTable)
@@ -41,4 +42,5 @@ func (c *Config) SetDefaults() {
 	c.SetDefault("watch_interval", "1s")
 	c.SetDefault("wireguard.port.max", EphemeralPortMax)
 	c.SetDefault("wireguard.port.min", wg.DefaultPort)
+	c.SetDefault("wireguard.interface_filter", ".*")
 }
