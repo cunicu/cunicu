@@ -42,7 +42,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 		return &proto.Empty{}, status.Errorf(codes.InvalidArgument, "failed to parse key: %s", err)
 	}
 
-	p := s.watcher.Peer(params.Intf, &pk)
+	p := s.daemon.Peer(params.Intf, &pk)
 	if p == nil {
 		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
 	}

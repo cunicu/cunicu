@@ -29,7 +29,6 @@ type Client struct {
 	rpcproto.EndpointDiscoverySocketClient
 	rpcproto.SignalingClient
 	rpcproto.DaemonClient
-	rpcproto.WatcherClient
 
 	conn   *grpc.ClientConn
 	logger *zap.Logger
@@ -78,7 +77,6 @@ func Connect(path string) (*Client, error) {
 		EndpointDiscoverySocketClient: rpcproto.NewEndpointDiscoverySocketClient(conn),
 		SignalingClient:               rpcproto.NewSignalingClient(conn),
 		DaemonClient:                  rpcproto.NewDaemonClient(conn),
-		WatcherClient:                 rpcproto.NewWatcherClient(conn),
 
 		conn:             conn,
 		logger:           logger,

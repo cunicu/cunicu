@@ -18,7 +18,6 @@ import (
 type Server struct {
 	daemon    *DaemonServer
 	epdisc    *EndpointDiscoveryServer
-	watcher   *WatcherServer
 	signaling *SignalingServer
 
 	grpc *grpc.Server
@@ -43,7 +42,6 @@ func NewServer(d *wice.Daemon, socket string) (*Server, error) {
 
 	// Register services
 	s.daemon = NewDaemonServer(s, d)
-	s.watcher = NewWatcherServer(s, d.Watcher)
 	s.signaling = NewSignalingServer(s, d.Backend)
 
 	if d.EndpointDiscovery != nil {
