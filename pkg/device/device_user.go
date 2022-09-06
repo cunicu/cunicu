@@ -60,6 +60,13 @@ func NewUserDevice(name string) (*UserDevice, error) {
 		name = realName
 	}
 
+	// Create new device
+	dev.device = device.NewDevice(tunDev, dev.Bind, wgDeviceLogger)
+
+	if dev.Device, err = FindKernelDevice(name); err != nil {
+		return nil, err
+	}
+
 	// Open UAPI socket
 	if dev.api, err = ListenUAPI(name); err != nil {
 		return nil, err
@@ -67,13 +74,6 @@ func NewUserDevice(name string) (*UserDevice, error) {
 
 	// Handle UApi requests
 	go dev.handleUserAPI()
-
-	// Create new device
-	dev.device = device.NewDevice(tunDev, dev.Bind, wgDeviceLogger)
-
-	if dev.Device, err = FindKernelDevice(name); err != nil {
-		return nil, err
-	}
 
 	logger.Info("Started in-process wireguard-go interface")
 
@@ -107,9 +107,6 @@ func (d *UserDevice) handleUserAPI() {
 			}
 
 			d.logger.Error("Failed to accept new user api connection", zap.Error(err))
-			continue
-		} else if d.device == nil {
-			d.logger.Warn("Dropping user api connection as device is not ready yet")
 			continue
 		}
 
