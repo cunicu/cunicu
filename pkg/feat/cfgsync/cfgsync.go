@@ -133,13 +133,13 @@ func (cs *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 					zap.String("intf", i.Name()),
 					zap.String("config_file", cfg))
 			}
-		} else {
-			if err := i.SyncConfig(cfg); err != nil {
-				cs.logger.Error("Failed to sync interface configuration",
-					zap.Error(err),
-					zap.String("intf", i.Name()),
-					zap.String("config_file", cfg))
-			}
+		}
+
+		if err := i.SyncConfig(cfg); err != nil {
+			cs.logger.Error("Failed to sync interface configuration",
+				zap.Error(err),
+				zap.String("intf", i.Name()),
+				zap.String("config_file", cfg))
 		}
 	} else if event.Op&(fsnotify.Remove) != 0 {
 		if i == nil {
