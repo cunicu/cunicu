@@ -147,6 +147,22 @@ func (d *Daemon) Restart() {
 	d.logger.Debug("Restarting daemon")
 }
 
+func (d *Daemon) Sync() error {
+	if err := d.Watcher.Sync(); err != nil {
+		return err
+	}
+
+	for _, f := range d.Features {
+		if s, ok := f.(feat.Syncable); ok {
+			if err := s.Sync(); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (d *Daemon) Close() error {
 	for _, dev := range d.devices {
 		if err := dev.Close(); err != nil {
