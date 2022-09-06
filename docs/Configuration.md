@@ -13,7 +13,6 @@ Alternatively a configuration file can be used for a persistent configuration:
 
 ```yaml title="wice.yaml"
 watch_interval: 1s
-community: "some-common-password"
 
 backends:
 - grpc://localhost:8080?insecure=true&skip_verify=true
@@ -64,8 +63,19 @@ route_sync:
 
   table: main
 
-# Discover the WireGuard endpoint of peers
-endpoint_disc:
+# Discovery of other WireGuard peers
+peer_disc:
+  enabled: true
+
+  # A list of WireGuard public keys which are accepted peers
+  whitelist:
+  - coNsGPwVPdpahc8U+dbbWGzTAdCd6+1BvPIYg10wDCI=
+  - AOZzBaNsoV7P8vo0D5UmuIJUQ7AjMbHbGt2EA8eAuEc=
+
+  # A passphrase shared among all peers of the same community
+  community: "some-common-password"
+
+# Discovery of WireGuard endpoint addressesendpoint_disc:
   enabled: true
 
   # Interactive Connectivity Establishment parameters
@@ -152,7 +162,7 @@ _turn._tcp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
 _turns._tcp.example.com. 3600 IN SRV 10 0 5349 turn.example.com.
 
 example.com.             3600 IN TXT "wice-backend=p2p"
-example.com.             3600 IN TXT "wice-community=my-community-password"
+example.com.             3600 IN TXT "wice-peer-disc-community=my-community-password"
 example.com.             3600 IN TXT "wice-endpoint-disc-ice-username=user1"
 example.com.             3600 IN TXT "wice-endpoint-disc-ice-password=pass1"
 example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"

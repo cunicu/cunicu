@@ -78,7 +78,8 @@ type HostSyncSettings struct {
 type PeerDiscoverySettings struct {
 	Enabled bool `yaml:"enabled,omitempty"`
 
-	Whitelist []Key `yaml:"whitelist,omitempty"`
+	Community string `yaml:"community,omitempty"`
+	Whitelist []Key  `yaml:"whitelist,omitempty"`
 }
 
 type EndpointDiscoverySettings struct {
@@ -103,7 +104,6 @@ type ExecHookSetting struct {
 }
 
 type Settings struct {
-	Community     string        `yaml:"community,omitempty"`
 	WatchInterval time.Duration `yaml:"watch_interval,omitempty"`
 
 	Backends []BackendURL `yaml:"backends,omitempty"`

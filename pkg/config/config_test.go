@@ -153,7 +153,7 @@ var _ = Describe("parse command line arguments", func() {
 				cfg, err := config.ParseArgs("--config", server.URL()+"/wice.yaml")
 
 				Expect(err).To(Succeed())
-				Expect(cfg.Community).To(Equal("this-is-a-test"))
+				Expect(cfg.PeerDisc.Community).To(Equal("this-is-a-test"))
 			})
 
 			AfterEach(func() {

@@ -118,7 +118,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")
 
 	// Peer discovery
-	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
+	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 
 	flagMap := map[string]string{
 		// Hooks
@@ -159,7 +159,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 		// Peer discovery
 		"peer-disc": "peer_disc.enabled",
-		"community": "community",
+		"community": "peer_disc.community",
 	}
 
 	flags.VisitAll(func(flag *pflag.Flag) {
