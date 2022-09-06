@@ -106,7 +106,13 @@ func (d *Daemon) Run() error {
 
 	signals := util.SetupSignals(util.SigUpdate)
 
-	go d.Watcher.Run()
+	d.logger.Debug("Started initial synchronization")
+	if err := d.Watcher.Sync(); err != nil {
+		d.logger.Fatal("Initial synchronization failed", zap.Error(err))
+	}
+	d.logger.Debug("Finished initial synchronization")
+
+	go d.Watcher.Watch()
 
 out:
 	for {

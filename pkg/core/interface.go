@@ -300,7 +300,7 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	}
 
 	if i.KernelDevice, err = device.FindDevice(wgDev.Name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find kernel device: %w", err)
 	}
 
 	i.logger.Info("Added interface",
