@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/crypto"
+	"riasc.eu/wice/pkg/log"
 	"riasc.eu/wice/pkg/util"
 	"riasc.eu/wice/pkg/util/buildinfo"
 
@@ -144,5 +148,82 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams) 
 
 	return &rpcproto.StatusResp{
 		Interfaces: qis,
+	}, nil
+}
+
+func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParams) (*proto.Empty, error) {
+	errs := []error{}
+	settings := map[string]any{}
+
+	for key, value := range p.Settings {
+		switch key {
+		case "log.verbosity":
+			level, err := strconv.Atoi(value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("invalid level: %w", err))
+				break
+			} else if level > 10 || level < 0 {
+				errs = append(errs, fmt.Errorf("invalid level (must be between 0 and 10 inclusive)"))
+				break
+			}
+
+			log.Verbosity.SetLevel(level)
+
+		case "log.severity":
+			level, err := zapcore.ParseLevel(value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("invalid level: %w", err))
+				break
+			} else if level < zapcore.DebugLevel || level > zapcore.FatalLevel {
+				errs = append(errs, fmt.Errorf("invalid level"))
+				break
+			}
+
+			log.Severity.SetLevel(level)
+
+		default:
+			settings[key] = value
+		}
+	}
+
+	if err := s.Config.Update(settings); err != nil {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		errstrs := []string{}
+		for _, err := range errs {
+			errstrs = append(errstrs, err.Error())
+		}
+
+		return nil, status.Error(codes.InvalidArgument, strings.Join(errstrs, ", "))
+	}
+
+	return &proto.Empty{}, nil
+}
+
+func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParams) (*rpcproto.GetConfigResp, error) {
+	settings := map[string]string{}
+
+	match := func(key string) bool {
+		return p.KeyFilter == "" || strings.HasPrefix(key, p.KeyFilter)
+	}
+
+	if match("log.verbosity") {
+		settings["log.verbosity"] = fmt.Sprint(log.Verbosity.Level())
+	}
+
+	if match("log.severity") {
+		settings["log.severity"] = log.Severity.String()
+	}
+
+	for _, key := range s.Config.Viper.AllKeys() {
+		if match(key) {
+			settings[key] = fmt.Sprintf("%v", s.Config.Get(key))
+		}
+	}
+
+	return &rpcproto.GetConfigResp{
+		Settings: settings,
 	}, nil
 }
