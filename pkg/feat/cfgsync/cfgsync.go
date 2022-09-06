@@ -26,17 +26,19 @@ type ConfigSync struct {
 	// Settings
 	cfgPath string
 	user    bool
+	filter  func(string) bool
 
 	logger *zap.Logger
 }
 
 // New creates a new Syncer
-func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, user bool) *ConfigSync {
+func New(w *watcher.Watcher, client *wgctrl.Client, cfgPath string, watch bool, user bool, filter func(string) bool) *ConfigSync {
 	cs := &ConfigSync{
 		watcher: w,
 		client:  client,
 		cfgPath: cfgPath,
 		user:    user,
+		filter:  filter,
 		logger:  zap.L().Named("cfgsync"),
 	}
 
@@ -112,8 +114,12 @@ func (cs *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 	name := strings.TrimSuffix(filename, extension)
 
 	if extension != ".conf" {
-		cs.logger.Warn("Ignoring non-configuration file",
-			zap.String("config_file", cfg))
+		cs.logger.Warn("Ignoring non-configuration file", zap.String("config_file", cfg))
+		return
+	}
+
+	if !cs.filter(name) {
+		cs.logger.Warn("Ignoring configuration file for interface which does not match the interface filter", zap.String("config_file", cfg))
 		return
 	}
 
