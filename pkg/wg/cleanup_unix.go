@@ -4,7 +4,6 @@ package wg
 
 import (
 	"errors"
-	"io/fs"
 	"net"
 	"os"
 	"path"
@@ -17,25 +16,31 @@ import (
 func CleanupUserSockets() error {
 	logger := zap.L().Named("wg")
 
+	// Ignore non-existing dir
 	if _, err := os.Stat(SocketPath); err != nil && errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
 
-	return filepath.Walk(SocketPath, func(p string, i fs.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	des, err := os.ReadDir(SocketPath)
+	if err != nil {
+		return err
+	}
 
-		if !i.IsDir() && path.Ext(p) == ".sock" {
+	for _, de := range des {
+		p := filepath.Join(SocketPath, de.Name())
+
+		if path.Ext(p) == ".sock" {
 			if c, err := net.Dial("unix", p); err == nil {
 				c.Close()
 			} else if !errors.Is(err, unix.ENOENT) {
 				logger.Warn("Delete stale WireGuard user socket", zap.String("path", p))
 
-				return unix.Unlink(p)
+				if err := unix.Unlink(p); err != nil {
+					return err
+				}
 			}
 		}
+	}
 
-		return nil
-	})
+	return nil
 }
