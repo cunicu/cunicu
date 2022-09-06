@@ -55,11 +55,12 @@ var (
 		DisableAutoGenTag: true,
 	}
 
-	logLevel  = config.Level{Level: zapcore.InfoLevel}
-	logFile   string
-	colorMode string
-	color     bool
-	stdout    io.Writer
+	logLevel           = config.Level{Level: zapcore.InfoLevel}
+	verbosityLevel int = 0
+	logFile        string
+	colorMode      string
+	color          bool
+	stdout         io.Writer
 )
 
 func init() {
@@ -71,6 +72,7 @@ func init() {
 	f.SortFlags = false
 
 	pf := rootCmd.PersistentFlags()
+	pf.IntVarP(&verbosityLevel, "verbose", "v", 0, "verbosity level")
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
 	pf.StringVarP(&colorMode, "color", "C", "auto", "Enable colorization of output (one of: auto, always, never)")
@@ -104,7 +106,7 @@ func onInitialize() {
 		errOutputPaths = append(errOutputPaths, logFile)
 	}
 
-	logger = log.SetupLogging(logLevel.Level, outputPaths, errOutputPaths, color)
+	logger = log.SetupLogging(logLevel.Level, verbosityLevel, outputPaths, errOutputPaths, color)
 }
 
 func main() {

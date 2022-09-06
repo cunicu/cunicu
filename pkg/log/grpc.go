@@ -18,8 +18,7 @@ type grpcLogger struct {
 	verbosity int
 }
 
-func NewGRPCLogger(logger *zap.Logger) grpclog.LoggerV2 {
-	var verbosity int
+func NewGRPCLogger(logger *zap.Logger, verbosity int) grpclog.LoggerV2 {
 	var level zapcore.Level
 
 	verbosityLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
@@ -36,7 +35,7 @@ func NewGRPCLogger(logger *zap.Logger) grpclog.LoggerV2 {
 		level = zap.WarnLevel
 	}
 
-	logger = logger.WithOptions(WithLevel(level))
+	logger = logger.WithOptions(zap.IncreaseLevel(level))
 
 	return &grpcLogger{
 		SugaredLogger: logger.Sugar(),

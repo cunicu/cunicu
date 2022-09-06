@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	indent    bool
-	verbosity int
+	indent bool
 
 	statusCmd = &cobra.Command{
 		Use:   "status [flags] [intf [peer]]",
@@ -27,7 +26,6 @@ var (
 func init() {
 	pf := statusCmd.PersistentFlags()
 	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
-	pf.IntVarP(&verbosity, "verbose", "v", 5, "Verbosity level for output (1-6)")
 	pf.BoolVarP(&indent, "indent", "i", true, "Format and indent JSON ouput")
 
 	addClientCommand(rootCmd, statusCmd)
@@ -76,6 +74,6 @@ func status(cmd *cobra.Command, args []string) {
 		}
 
 	case config.OutputFormatHuman:
-		sts.Dump(stdout, verbosity)
+		sts.Dump(stdout, verbosityLevel)
 	}
 }
