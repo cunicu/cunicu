@@ -29,7 +29,7 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	}
 
 	if cfg.ConfigSync.Enabled {
-		feats = append(feats, cfgsync.New(w, c, cfg.ConfigSync.Path, cfg.ConfigSync.Watch, cfg.WireGuard.Userspace))
+		feats = append(feats, cfgsync.New(w, c, cfg.ConfigSync.Path, cfg.ConfigSync.Watch, cfg.WireGuard.Userspace, cfg.WireGuard.InterfaceFilter.MatchString))
 	}
 
 	if cfg.RouteSync.Enabled {
