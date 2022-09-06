@@ -28,6 +28,8 @@ type DaemonClient interface {
 	UnWait(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
 	Stop(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
 	Restart(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
+	Sync(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
+	GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error)
 }
 
 type daemonClient struct {
@@ -106,6 +108,24 @@ func (c *daemonClient) Restart(ctx context.Context, in *proto.Empty, opts ...grp
 	return out, nil
 }
 
+func (c *daemonClient) Sync(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
+	out := new(proto.Empty)
+	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/Sync", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daemonClient) GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error) {
+	out := new(StatusResp)
+	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/GetStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaemonServer is the server API for Daemon service.
 // All implementations must embed UnimplementedDaemonServer
 // for forward compatibility
@@ -115,6 +135,8 @@ type DaemonServer interface {
 	UnWait(context.Context, *proto.Empty) (*proto.Empty, error)
 	Stop(context.Context, *proto.Empty) (*proto.Empty, error)
 	Restart(context.Context, *proto.Empty) (*proto.Empty, error)
+	Sync(context.Context, *proto.Empty) (*proto.Empty, error)
+	GetStatus(context.Context, *StatusParams) (*StatusResp, error)
 	mustEmbedUnimplementedDaemonServer()
 }
 
@@ -136,6 +158,12 @@ func (UnimplementedDaemonServer) Stop(context.Context, *proto.Empty) (*proto.Emp
 }
 func (UnimplementedDaemonServer) Restart(context.Context, *proto.Empty) (*proto.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Restart not implemented")
+}
+func (UnimplementedDaemonServer) Sync(context.Context, *proto.Empty) (*proto.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
+}
+func (UnimplementedDaemonServer) GetStatus(context.Context, *StatusParams) (*StatusResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
 }
 func (UnimplementedDaemonServer) mustEmbedUnimplementedDaemonServer() {}
 
@@ -243,6 +271,42 @@ func _Daemon_Restart_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_Sync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).Sync(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.rpc.Daemon/Sync",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).Sync(ctx, req.(*proto.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Daemon_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatusParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).GetStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wice.rpc.Daemon/GetStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).GetStatus(ctx, req.(*StatusParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -265,6 +329,14 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Restart",
 			Handler:    _Daemon_Restart_Handler,
+		},
+		{
+			MethodName: "Sync",
+			Handler:    _Daemon_Sync_Handler,
+		},
+		{
+			MethodName: "GetStatus",
+			Handler:    _Daemon_GetStatus_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
