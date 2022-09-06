@@ -33,7 +33,7 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	}
 
 	if cfg.RouteSync.Enabled {
-		feats = append(feats, rtsync.New(w, cfg.RouteSync.Table))
+		feats = append(feats, rtsync.New(w, cfg.RouteSync.Table, cfg.RouteSync.Watch))
 	}
 
 	if cfg.HostSync.Enabled {

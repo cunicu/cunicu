@@ -22,7 +22,7 @@ type RouteSync struct {
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, table int) *RouteSync {
+func New(w *watcher.Watcher, table int, watch bool) *RouteSync {
 	rs := &RouteSync{
 		gwMap:  map[netip.Addr]*core.Peer{},
 		table:  table,
@@ -32,7 +32,9 @@ func New(w *watcher.Watcher, table int) *RouteSync {
 
 	w.OnPeer(rs)
 
-	go rs.watchKernel()
+	if watch {
+		go rs.watchKernel()
+	}
 
 	return rs
 }
