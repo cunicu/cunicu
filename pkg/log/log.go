@@ -8,10 +8,18 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []string, color bool) *zap.Logger {
+var (
+	Verbosity VerbosityLevel
+	Severity  zap.AtomicLevel
+)
+
+func SetupLogging(severity zapcore.Level, verbosity int, outputPaths []string, errOutputPaths []string, color bool) *zap.Logger {
+	Severity = zap.NewAtomicLevelAt(severity)
+	Verbosity = NewVerbosityLevelAt(verbosity)
+
 	cfg := zap.NewDevelopmentConfig()
 
-	cfg.Level = zap.NewAtomicLevelAt(level)
+	cfg.Level = Severity
 	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.009")
 	if color {
 		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
@@ -42,7 +50,7 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 
 	// Redirect gRPC log to Zap
 	glogger := logger.Named("grpc")
-	grpclog.SetLoggerV2(NewGRPCLogger(glogger))
+	grpclog.SetLoggerV2(NewGRPCLogger(glogger, verbosity))
 
 	zap.RedirectStdLog(logger)
 	zap.ReplaceGlobals(logger)
@@ -50,27 +58,26 @@ func SetupLogging(level zapcore.Level, outputPaths []string, errOutputPaths []st
 	return logger
 }
 
-// WithLevel sets the loggers leveler to the one given.
-func WithLevel(level zapcore.LevelEnabler) zap.Option {
+func WithVerbose(verbose int) zap.Option {
 	return zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-		return &lvlCore{
-			Core: core,
-			l:    level,
+		return &verbosityCore{
+			Core:    core,
+			verbose: verbose,
 		}
 	})
 }
 
-type lvlCore struct {
+type verbosityCore struct {
 	zapcore.Core
-	l zapcore.LevelEnabler
+	verbose int
 }
 
-func (c *lvlCore) Enabled(lvl zapcore.Level) bool {
-	return c.l.Enabled(lvl)
+func (c *verbosityCore) Enabled(lvl zapcore.Level) bool {
+	return c.Core.Enabled(lvl) && (lvl != zap.DebugLevel || Verbosity.Enabled(c.verbose))
 }
 
-func (c *lvlCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
-	if c.l.Enabled(ent.Level) {
+func (c *verbosityCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+	if c.Enabled(ent.Level) {
 		return ce.AddCore(ent, c)
 	}
 

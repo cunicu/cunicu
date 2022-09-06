@@ -101,25 +101,27 @@ func (s *RouteSync) watchKernel() {
 }
 
 func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
-	// s.logger.Debug("Received netlink route update", zap.Any("update", ru))
+	logger := s.logger.WithOptions(log.WithVerbose(10))
+
+	logger.Debug("Received netlink route update", zap.Any("update", ru))
 
 	if ru.Table != s.table {
-		// s.logger.Debug("Ignore route from another table")
+		logger.Debug("Ignore route from another table")
 		return nil
 	}
 
 	if ru.Protocol == device.RouteProtocol {
-		// s.logger.Debug("Ignoring route which was installed by ourself")
+		logger.Debug("Ignoring route which was installed by ourself")
 		return nil
 	}
 
 	if ru.Gw == nil {
-		// s.logger.Debug("Ignoring route with missing gateway")
+		logger.Debug("Ignoring route with missing gateway")
 		return nil
 	}
 
 	if !ru.Gw.IsLinkLocalUnicast() {
-		// s.logger.Debug("Ignoring non-link-local gateway", zap.Any("gw", ru.Gw))
+		logger.Debug("Ignoring non-link-local gateway", zap.Any("gw", ru.Gw))
 		return nil
 	}
 
@@ -130,12 +132,14 @@ func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	p, ok := s.gwMap[gw]
 	if !ok {
-		// s.logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
+		logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
 		return nil
 	}
 
-	if p.Interface.KernelDevice.Index() != ru.LinkIndex {
-		// s.logger.Debug("Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
+	logger = logger.With(zap.Any("peer", p))
+
+	if ru.LinkIndex != p.Interface.KernelDevice.Index() {
+		logger.Debug("Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
 		return nil
 	}
 

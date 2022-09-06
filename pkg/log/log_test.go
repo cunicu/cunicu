@@ -44,7 +44,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 	})
 
 	JustBeforeEach(func() {
-		logger = log.SetupLogging(lvl, []string{logPath}, nil, true)
+		logger = log.SetupLogging(lvl, 0, []string{logPath}, nil, true)
 	})
 
 	Context("simple", func() {
