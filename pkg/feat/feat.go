@@ -15,6 +15,10 @@ import (
 	"riasc.eu/wice/pkg/watcher"
 )
 
+type Syncable interface {
+	Sync() error
+}
+
 type Feature interface {
 	Start() error
 	Close() error
