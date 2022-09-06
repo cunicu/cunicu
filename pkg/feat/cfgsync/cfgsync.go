@@ -157,3 +157,19 @@ func (cs *ConfigSync) handleFsnotifyEvent(event fsnotify.Event) {
 		cs.logger.Warn("We do not support tracking renamed WireGuard configuration files yet")
 	}
 }
+
+func (cs *ConfigSync) Sync() error {
+	des, err := os.ReadDir(cs.cfgPath)
+	if err != nil {
+		return fmt.Errorf("failed to list config files in '%s': %w", cs.cfgPath, err)
+	}
+
+	for _, de := range des {
+		cs.handleFsnotifyEvent(fsnotify.Event{
+			Name: filepath.Join(cs.cfgPath, de.Name()),
+			Op:   fsnotify.Write,
+		})
+	}
+
+	return nil
+}
