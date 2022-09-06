@@ -45,7 +45,7 @@ var _ = Describe("lookup", func() {
 				TXT: []string{
 					"wice-backend=p2p",
 					"wice-backend=grpc://example.com:8080",
-					"wice-community=my-community-password",
+					"wice-peer-disc-community=my-community-password",
 					"wice-endpoint-disc-ice-username=user1",
 					"wice-endpoint-disc-ice-password=pass1",
 					fmt.Sprintf("wice-config=%s%s", webSrv.URL(), cfgPath),
@@ -124,7 +124,7 @@ var _ = Describe("lookup", func() {
 		c, err := config.ParseArgs("--domain", "example.com")
 
 		Expect(err).To(Succeed())
-		Expect(c.Community).To(Equal("my-community-password"))
+		Expect(c.PeerDisc.Community).To(Equal("my-community-password"))
 		Expect(c.EndpointDisc.ICE.Username).To(Equal("user1"))
 		Expect(c.EndpointDisc.ICE.Password).To(Equal("pass1"))
 		Expect(c.Backends).To(ConsistOf(

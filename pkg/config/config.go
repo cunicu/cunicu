@@ -133,7 +133,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.Duration("ice-restart-timeout", 0, "Time to wait before ICE restart")
 
 	// Peer discovery
-	flags.StringP("community", "x", "", "A community `passphrase` for discovering other peers")
+	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 
 	flagMap := map[string]string{
 		// Hooks
@@ -187,7 +187,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 
 		// Peer discovery
 		"peer-disc": "peer_disc.enabled",
-		"community": "community",
+		"community": "peer_disc.community",
 	}
 
 	showAdvancedFlags := os.Getenv("WICE_ADVANCED_CLI") != ""

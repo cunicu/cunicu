@@ -1,6 +1,5 @@
 # An interval at which wice will periodically check for added, removed or modified WireGuard interfaces.
 watch_interval: 1s
-community: "some-common-password"
 
 backends:
 - grpc://localhost:8080?insecure=true&skip_verify=true
@@ -79,7 +78,19 @@ hooks:
     User-Agent: ahoi
     Authorization: Bearer XXXXXX
 
-# Discover the WireGuard endpoint of peers
+# Discovery of other WireGuard peers
+peer_disc:
+  enabled: true
+
+  # A list of WireGuard public keys which are accepted peers
+  whitelist:
+  - coNsGPwVPdpahc8U+dbbWGzTAdCd6+1BvPIYg10wDCI=
+  - AOZzBaNsoV7P8vo0D5UmuIJUQ7AjMbHbGt2EA8eAuEc=
+
+  # A passphrase shared among all peers of the same community
+  community: "some-common-password"
+
+# Discovery of WireGuard endpoint addresses
 endpoint_disc:
   enabled: true
 
