@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -27,6 +28,7 @@ type Config struct {
 	ConfigFiles []string
 	Domain      string
 
+	mu     sync.Mutex
 	flags  *pflag.FlagSet
 	logger *zap.Logger
 }
@@ -79,7 +81,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	c.SetDefaults()
 
 	// Feature flags
-	flags.BoolP("hooks", "K", true, "Enable execution of hooks")
 	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
 	flags.BoolP("config-sync", "S", true, "Enable synchronization of WireGuard configuration files")
 	flags.BoolP("endpoint-disc", "I", true, "Enable ICE endpoint discovery")
@@ -121,9 +122,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 
 	flagMap := map[string]string{
-		// Hooks
-		"hooks": "hooks.enabled",
-
 		// Config sync
 		"config-sync":  "config_sync.enabled",
 		"config-path":  "config_sync.path",
@@ -221,14 +219,9 @@ func (c *Config) Setup(args []string) error {
 	c.AutomaticEnv()
 	c.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	if err := c.Load(); err != nil {
-		return err
-	}
+	c.Set("wireguard.interfaces", args)
 
-	// We append the interfaces here because Config.Load() will overwrite them otherwise
-	c.WireGuard.Interfaces = append(c.WireGuard.Interfaces, args...)
-
-	return c.Check()
+	return c.Load()
 }
 
 func (c *Config) Check() error {
@@ -313,7 +306,7 @@ func (c *Config) Load() error {
 		return fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	return nil
+	return c.Check()
 }
 
 // decode takes an input structure and uses reflection to translate it to
@@ -331,4 +324,44 @@ func decode(input any, output any) error {
 	}
 
 	return decoder.Decode(input)
+}
+
+func (c *Config) Update(new map[string]any) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	prev := map[string]any{}
+
+	for key, value := range new {
+		prev[key] = c.Viper.Get(key)
+		c.Viper.Set(key, value)
+	}
+
+	if err := c.Load(); err != nil {
+		// Restore previous values if failed
+		for key, value := range prev {
+			c.Viper.Set(key, value)
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) Set(key string, new any) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	prev := c.Viper.Get(key)
+	c.Viper.Set(key, new)
+
+	if err := c.Load(); err != nil {
+		// Restore previous value if failed
+		c.Viper.Set(key, prev)
+
+		return err
+	}
+
+	return nil
 }

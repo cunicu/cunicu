@@ -16,6 +16,18 @@ message StatusParams {
     bytes peer = 2;
 }
 
+message SetConfigParams {
+    map<string, string> settings = 1;
+}
+
+message GetConfigParams {
+    string key_filter = 1;
+}
+
+message GetConfigResp {
+    map<string, string> settings = 1;
+}
+
 service Daemon {
     rpc GetBuildInfo(Empty) returns (BuildInfo) {}
     rpc StreamEvents(Empty) returns (stream Event) {}
@@ -24,4 +36,6 @@ service Daemon {
     rpc Restart(Empty) returns (Empty) {}
     rpc Sync(Empty) returns (Empty) {}
     rpc GetStatus(StatusParams) returns (StatusResp) {}
+    rpc SetConfig(SetConfigParams) returns (Empty) {}
+    rpc GetConfig(GetConfigParams) returns (GetConfigResp) {}
 }

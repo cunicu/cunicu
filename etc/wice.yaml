@@ -32,7 +32,7 @@ rpc:
   # Mostly useful for testing automation
   wait: false
 
-# Synchronize WireGuard interface configurations with wg(8) config-files.
+# Synchronize local WireGuard interface configuration with wg(8) config-files.
 config_sync:
   enabled: false
   
@@ -41,14 +41,23 @@ config_sync:
   # Filenames must match the interface name with a '.conf' suffix.
   path: /etc/wireguard
 
-  # Watch the configuration files for changes and apply them accordingly.
+  # Watch the configuration files via inotify(7) for changes and apply them accordingly.
   watch: false
   
-# Synchronize WireGuard AllowedIPs with Kernel routing table
+# Synchronize the kernel routing table with WireGuard's AllowedIPs setting
+# 
+# It checks for routes in the kernel routing table which have a peers link-local address
+# as next-hop and adds those routes to the AllowedIPs setting of the respective peer.
+#
+# In reverse, also networks listed in a peers AllowedIPs setting will be installed as a
+# kernel route with the peers link-local address as the routes next-hop. 
 route_sync:
   enabled: true
 
   table: 254 # See /etc/iproute2/rt_tables for table ids
+
+  # Keep watching the for changes in the kernel routing table via netlink multicast group.
+  watch: true
 
 # Pass events to external processes or web hook handlers
 hooks:
@@ -73,7 +82,7 @@ hooks:
   # HTTP method of request
   method: POST
 
-  # Pass additional headers
+  # Pass additional HTTP headers.
   headers:
     User-Agent: ahoi
     Authorization: Bearer XXXXXX
@@ -94,9 +103,9 @@ peer_disc:
 endpoint_disc:
   enabled: true
 
-  # Interactive Connectivity Establishment parameters
+  # Interactive Connectivity Establishment (ICE) parameters
   ice:
-    # A list of STUN and TURN servers used by ICE
+    # A list of STUN and TURN servers used by ICE.
     urls:
     - stun:stun.l.google.com:19302
 
@@ -107,7 +116,7 @@ endpoint_disc:
     # Allow connections to STUNS/TURNS servers for which we can not validate TLS certificates.
     insecure_skip_verify: false
 
-    # Limit available network and candidate types
+    # Limit available network and candidate types.
     network_types: [udp4, udp6, tcp4, tcp6]
     candidate_types: [host, srflx, prflx ,relay]
 
@@ -117,7 +126,7 @@ endpoint_disc:
     # Lite agents do not perform connectivity check and only provide host candidates.
     lite: false
 
-    # Enable local Multicast DNS discovery
+    # Enable local Multicast DNS discovery.
     mdns: false
 
     # Sets the max amount of binding requests the agent will send over a candidate pair for validation or nomination.
@@ -140,7 +149,7 @@ endpoint_disc:
     # Interval at which the agent performs candidate checks in the connecting phase
     check_interval: 200ms
     
-    # Time until an Agent transitions disconnected
+    # Time until an Agent transitions disconnected.
     # If the duration is 0, the ICE Agent will never go to disconnected
     disconnected_timeout: 5s
 
