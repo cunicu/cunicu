@@ -94,13 +94,7 @@ func (w *Watcher) Close() error {
 	return nil
 }
 
-func (w *Watcher) Run() {
-	w.logger.Debug("Started initial synchronization")
-	if err := w.Sync(); err != nil {
-		w.logger.Fatal("Initial synchronization failed", zap.Error(err))
-	}
-	w.logger.Debug("Finished initial synchronization")
-
+func (w *Watcher) Watch() {
 	if err := w.watchUser(); err != nil {
 		w.logger.Fatal("Failed to watch userspace interfaces", zap.Error(err))
 	}
@@ -111,8 +105,11 @@ func (w *Watcher) Run() {
 	}
 	w.logger.Debug("Started watching for changes of WireGuard kernel devices")
 
-	ticker := time.NewTicker(w.interval)
-	defer ticker.Stop()
+	ticker := &time.Ticker{}
+	if w.interval > 0 {
+		ticker = time.NewTicker(w.interval)
+		defer ticker.Stop()
+	}
 
 out:
 	for {
