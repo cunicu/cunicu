@@ -37,6 +37,12 @@ func CmpNet(a, b *net.IPNet) int {
 	return bytes.Compare(a.IP, b.IP)
 }
 
+func ContainsNet(outer, inner *net.IPNet) bool {
+	outerOnes, _ := outer.Mask.Size()
+	innerOnes, _ := inner.Mask.Size()
+	return outerOnes <= innerOnes && outer.Contains(inner.IP)
+}
+
 func IsATTY(f *os.File) bool {
 	fi, err := f.Stat()
 	if err != nil {
