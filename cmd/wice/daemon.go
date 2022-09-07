@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
-	"golang.zx2c4.com/wireguard/wgctrl"
 	wice "riasc.eu/wice/pkg"
 	"riasc.eu/wice/pkg/config"
 	"riasc.eu/wice/pkg/rpc"
@@ -15,7 +15,7 @@ var (
 		Use:               "daemon [interfaces...]",
 		Short:             "Start the daemon",
 		Run:               daemon,
-		ValidArgsFunction: daemonCompletionArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	cfg *config.Config
@@ -29,35 +29,16 @@ func init() {
 
 	cfg = config.NewConfig(pf)
 
-	rootCmd.AddCommand(daemonCmd)
-}
+	daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp))
+	daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp))
 
-func daemonCompletionArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// Create WireGuard netlink socket
-	client, err := wgctrl.New()
-	if err != nil {
-		logger.Fatal("Failed to create WireGuard client", zap.Error(err))
-	}
-
-	devs, err := client.Devices()
-	if err != nil {
-		return []string{}, cobra.ShellCompDirectiveError | cobra.ShellCompDirectiveNoFileComp
-	}
-
-	var existing = map[string]any{}
-	var intfNames = []string{}
-
-	for _, arg := range args {
-		existing[arg] = nil
-	}
-
-	for _, dev := range devs {
-		if _, exists := existing[dev.Name]; !exists {
-			intfNames = append(intfNames, dev.Name)
+	pf.VisitAll(func(f *pflag.Flag) {
+		if f.Value.Type() == "bool" {
+			daemonCmd.RegisterFlagCompletionFunc(f.Name, config.BooleanCompletions)
 		}
-	}
+	})
 
-	return intfNames, cobra.ShellCompDirectiveNoFileComp
+	rootCmd.AddCommand(daemonCmd)
 }
 
 func daemon(cmd *cobra.Command, args []string) {

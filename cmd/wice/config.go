@@ -26,7 +26,7 @@ var (
 		Short:             "Update the value of a configuration setting",
 		Run:               set,
 		Args:              cobra.ExactArgs(2),
-		ValidArgsFunction: validSettings,
+		ValidArgsFunction: validConfigSettings,
 	}
 
 	getCmd = &cobra.Command{
@@ -34,7 +34,7 @@ var (
 		Short:             "Get current value of a configuration setting",
 		Run:               get,
 		Args:              cobra.RangeArgs(0, 1),
-		ValidArgsFunction: validSettings,
+		ValidArgsFunction: validConfigSettings,
 	}
 )
 
@@ -83,7 +83,7 @@ func getCompletions(typ reflect.Type, haveCompleted, toComplete string) ([]strin
 	return comps, flags
 }
 
-func validSettings(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func validConfigSettings(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) > 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}

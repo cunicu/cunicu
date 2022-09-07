@@ -14,8 +14,8 @@ var (
 )
 
 func addClientCommand(rcmd, cmd *cobra.Command) {
-	cmd.PersistentPreRunE = connect
-	cmd.PersistentPostRunE = disconnect
+	cmd.PersistentPreRunE = rpcConnect
+	cmd.PersistentPostRunE = rpcDisconnect
 
 	pf := cmd.PersistentFlags()
 	pf.StringVarP(&rpcSockPath, "rpc-socket", "s", config.DefaultSocketPath, "Unix control and monitoring socket")
@@ -23,7 +23,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 	rcmd.AddCommand(cmd)
 }
 
-func connect(cmd *cobra.Command, args []string) error {
+func rpcConnect(cmd *cobra.Command, args []string) error {
 	var err error
 
 	if rpcClient, err = rpc.Connect(rpcSockPath); err != nil {
@@ -33,6 +33,6 @@ func connect(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func disconnect(cmd *cobra.Command, args []string) error {
+func rpcDisconnect(cmd *cobra.Command, args []string) error {
 	return rpcClient.Close()
 }

@@ -31,13 +31,38 @@ For this script-friendly display, if 'all' is specified, then the first field fo
 
 If 'dump' is specified, then several lines are printed; the first contains in order separated by tab: private-key, public-key, listen-port, fwmark.
 Subsequent lines are printed for each peer and contain in order separated by tab: public-key, preshared-key, endpoint, allowed-ips, latest-handshake, transfer-rx, transfer-tx, persistent-keepalive.`,
-		RunE: wgShow,
-		Args: cobra.MaximumNArgs(2),
+		RunE:              wgShow,
+		Args:              cobra.MaximumNArgs(2),
+		ValidArgsFunction: wgShowValidArgs,
 	}
 )
 
 func init() {
 	addClientCommand(wgCmd, wgShowCmd)
+}
+
+func wgShowValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	comps := []string{}
+
+	if len(args) == 0 {
+		comps = []string{"all", "interfaces"}
+
+		rpcConnect(cmd, args)
+		defer rpcDisconnect(cmd, args)
+
+		sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{})
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		for _, i := range sts.Interfaces {
+			comps = append(comps, i.Name)
+		}
+	} else if len(args) == 1 {
+		comps = []string{"public-key", "private-key", "listen-port", "fwmark", "peers", "preshared-keys", "endpoints", "allowed-ips", "latest-handshakes", "transfer", "persistent-keepalive", "dump"}
+	}
+
+	return comps, cobra.ShellCompDirectiveNoFileComp
 }
 
 func wgShow(cmd *cobra.Command, args []string) error {
