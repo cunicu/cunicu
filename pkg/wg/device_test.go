@@ -45,7 +45,7 @@ PostDown   = bla2
 			err = cfg.Dump(wr)
 			Expect(err).To(Succeed(), "failed to dump config: %s", err)
 
-			Expect(wr.String()).To(Equal(cfgStr), "configs not equal:\n%s\n%s", cfgStr, wr.String())
+			Expect(wr.String()).To(Equal(cfgStr), "configs not equal:\n%s\n%s", cfgStr, wr)
 		})
 	}
 

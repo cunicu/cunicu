@@ -110,7 +110,7 @@ func (d *UserDevice) handleUserAPI() {
 			continue
 		}
 
-		d.logger.Debug("Handle new IPC connection", zap.String("socket", conn.LocalAddr().String()))
+		d.logger.Debug("Handle new IPC connection", zap.Any("socket", conn.LocalAddr()))
 		go d.device.IpcHandle(conn)
 	}
 }

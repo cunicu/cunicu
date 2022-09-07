@@ -50,7 +50,7 @@ func wgGenKey(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	fmt.Println(key.String())
+	fmt.Printf("%s\n", key)
 
 	return nil
 }
@@ -66,7 +66,7 @@ func wgPubKey(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	fmt.Println(privKey.PublicKey().String())
+	fmt.Printf("%s\n", privKey.PublicKey())
 
 	return nil
 }

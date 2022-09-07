@@ -41,6 +41,10 @@ type Interface struct {
 	logger *zap.Logger
 }
 
+func (i *Interface) String() string {
+	return i.Device.Name
+}
+
 func (i *Interface) OnModified(h InterfaceHandler) {
 	i.onModified = append(i.onModified, h)
 }
@@ -304,8 +308,8 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	}
 
 	i.logger.Info("Added interface",
-		zap.String("pk", i.PrivateKey().PublicKey().String()),
-		zap.String("type", i.Type.String()),
+		zap.Any("pk", i.PublicKey()),
+		zap.Any("type", i.Type),
 		zap.Int("num_peers", len(i.Peers)),
 	)
 

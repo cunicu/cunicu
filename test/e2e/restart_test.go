@@ -177,7 +177,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 
 			for _, a := range i.Addresses {
 				err = i.DeleteAddress(&a)
-				Expect(err).To(Succeed(), "Failed to remove IP address '%s': %s", a.String(), err)
+				Expect(err).To(Succeed(), "Failed to remove IP address '%s': %s", a, err)
 			}
 
 			By("Waiting some time")
@@ -191,7 +191,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 				ao.IP = util.OffsetIP(ao.IP, 128)
 
 				err = i.AddAddress(&ao)
-				Expect(err).To(Succeed(), "Failed to add IP address '%s': %s", a.String(), err)
+				Expect(err).To(Succeed(), "Failed to add IP address '%s': %s", a, err)
 			}
 
 			out, _, _ := n1.Run("ip", "a")

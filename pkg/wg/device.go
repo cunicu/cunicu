@@ -79,7 +79,7 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 	slices.SortFunc(d.Peers, func(a, b wgtypes.Peer) bool { return CmpPeerHandshakeTime(&a, &b) < 0 })
 
 	for _, p := range d.Peers {
-		if _, err := fmt.Fprintf(wr, " \n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey.String()); err != nil {
+		if _, err := fmt.Fprintf(wr, " \n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey); err != nil {
 			return err
 		}
 

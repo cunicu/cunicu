@@ -81,8 +81,8 @@ func (rs *RouteSync) OnPeerRemoved(p *core.Peer) {
 	if err := rs.removeKernel(p); err != nil {
 		rs.logger.Error("Failed to remove kernel routes for peer",
 			zap.Error(err),
-			zap.String("intf", p.Interface.Name()),
-			zap.String("peer", p.String()),
+			zap.Any("intf", p.Interface),
+			zap.Any("peer", p),
 		)
 	}
 }
@@ -95,9 +95,9 @@ func (rs *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.Peer
 		}
 
 		rs.logger.Info("Added new AllowedIP to kernel routing table",
-			zap.String("dst", dst.String()),
-			zap.String("intf", p.Interface.Name()),
-			zap.Any("peer", p.PublicKey()))
+			zap.Any("dst", dst),
+			zap.Any("intf", p.Interface),
+			zap.Any("peer", p))
 	}
 
 	for _, dst := range ipsRemoved {
@@ -107,8 +107,8 @@ func (rs *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.Peer
 		}
 
 		rs.logger.Info("Remove vanished AllowedIP from kernel routing table",
-			zap.String("dst", dst.String()),
-			zap.String("intf", p.Interface.Name()),
-			zap.Any("peer", p.PublicKey()))
+			zap.Any("dst", dst),
+			zap.Any("intf", p.Interface),
+			zap.Any("peer", p))
 	}
 }

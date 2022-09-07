@@ -58,7 +58,7 @@ func (hs *HostsSync) Hosts() []Host {
 			Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
 				p.Interface.KernelDevice.Name(),
 				p.Interface.KernelDevice.Index(),
-				p.PublicKey().String()),
+				p.PublicKey()),
 		}
 
 		if p.Name != "" {

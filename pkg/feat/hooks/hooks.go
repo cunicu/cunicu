@@ -54,7 +54,7 @@ func (h *Hooks) NewWebHook(cfg *config.WebHookSetting) {
 	hk := &WebHook{
 		WebHookSetting: cfg,
 		logger: h.logger.Named("web").With(
-			zap.String("url", cfg.URL.String()),
+			zap.Any("url", cfg.URL),
 		),
 	}
 
