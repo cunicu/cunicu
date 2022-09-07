@@ -124,7 +124,7 @@ out:
 			w.logger.Debug("Completed periodic interface synchronization")
 
 		case event := <-w.events:
-			w.logger.Debug("Received interface event", zap.String("event", event.String()))
+			w.logger.Debug("Received interface event", zap.Any("event", event))
 			if err := w.Sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}

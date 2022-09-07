@@ -108,7 +108,7 @@ func (b *UserBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
 }
 
 func (b *UserBind) UpdateEndpoint(ep *net.UDPAddr, c net.Conn) (*UserEndpoint, error) {
-	// b.logger.Debug("UpdateEndpoint", zap.String("ep", ep.String()))
+	// b.logger.Debug("UpdateEndpoint", zap.Any("ep", ep))
 
 	// Remove v4-in-v6 prefix
 	epip := ep.IP

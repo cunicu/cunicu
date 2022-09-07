@@ -118,7 +118,7 @@ out:
 	for {
 		select {
 		case sig := <-signals:
-			d.logger.Debug("Received signal", zap.String("signal", sig.String()))
+			d.logger.Debug("Received signal", zap.Any("signal", sig))
 			switch sig {
 			case util.SigUpdate:
 				if err := d.Sync(); err != nil {

@@ -39,14 +39,16 @@ func addresses(cmd *cobra.Command, args []string) {
 
 	key, err := crypto.ParseKey(string(keyB64))
 	if err != nil {
-		logger.Fatal("Failed to parse key", zap.Error(err), zap.String("key", string(keyB64)))
+		logger.Fatal("Failed to parse key",
+			zap.Error(err),
+			zap.String("key", string(keyB64)))
 	}
 
 	if v6 || (!v4 && !v6) {
-		fmt.Println(key.IPv6Address().String())
+		fmt.Printf("%s\n", key.IPv6Address())
 	}
 
 	if v4 || (!v4 && !v6) {
-		fmt.Println(key.IPv4Address().String())
+		fmt.Printf("%s\n", key.IPv4Address())
 	}
 }

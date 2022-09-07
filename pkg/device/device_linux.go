@@ -92,7 +92,7 @@ func (i *LinuxKernelDevice) SetDown() error {
 }
 
 func (i *LinuxKernelDevice) AddAddress(ip *net.IPNet) error {
-	i.logger.Debug("Add address", zap.String("addr", ip.String()))
+	i.logger.Debug("Add address", zap.Any("addr", ip))
 
 	addr := &netlink.Addr{
 		IPNet: ip,
@@ -107,7 +107,7 @@ func (i *LinuxKernelDevice) AddAddress(ip *net.IPNet) error {
 }
 
 func (i *LinuxKernelDevice) DeleteAddress(ip *net.IPNet) error {
-	i.logger.Debug("Delete address", zap.String("addr", ip.String()))
+	i.logger.Debug("Delete address", zap.Any("addr", ip))
 
 	addr := &netlink.Addr{
 		IPNet: ip,
@@ -117,7 +117,7 @@ func (i *LinuxKernelDevice) DeleteAddress(ip *net.IPNet) error {
 }
 
 func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet, table int) error {
-	i.logger.Debug("Add route", zap.String("dst", dst.String()))
+	i.logger.Debug("Add route", zap.Any("dst", dst))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
@@ -134,7 +134,7 @@ func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet, table int) error {
 }
 
 func (i *LinuxKernelDevice) DeleteRoute(dst *net.IPNet, table int) error {
-	i.logger.Debug("Delete route", zap.String("dst", dst.String()))
+	i.logger.Debug("Delete route", zap.Any("dst", dst))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,

@@ -44,12 +44,12 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 
 	p := s.daemon.Peer(params.Intf, &pk)
 	if p == nil {
-		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk)
 	}
 
 	ip := s.Peers[p]
 	if ip == nil {
-		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk.String())
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "unknown peer %s/%s", params.Intf, pk)
 	}
 
 	err = ip.Restart()

@@ -158,7 +158,7 @@ func (a *AutoConfig) fixupInterface(i *core.Interface) error {
 	}
 
 	if i.ListenPort == 0 {
-		logger.Warn("Device has no listen port. Setting a random one..")
+		logger.Warn("Device has no listen port. Setting a random one.")
 
 		port, err := util.FindNextPortToListen("udp", a.config.WireGuard.Port.Min, a.config.WireGuard.Port.Max)
 		if err != nil {

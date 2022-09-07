@@ -62,10 +62,10 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 // String returns the peers public key as a base64-encoded string
 func (p *Peer) String() string {
 	if p.Name != "" {
-		return fmt.Sprintf("%s[%s]", p.Name, p.PublicKey().String())
+		return fmt.Sprintf("[%s]%s", p.Name, p.PublicKey())
 	}
 
-	return fmt.Sprintf("[%s]", p.PublicKey().String())
+	return p.PublicKey().String()
 }
 
 // PublicKey returns the Curve25199 public key of the WireGuard peer
@@ -184,7 +184,7 @@ func (p *Peer) AddAllowedIP(a *net.IPNet) error {
 		},
 	}
 
-	p.logger.Debug("Adding new allowed IP", zap.String("ip", a.String()))
+	p.logger.Debug("Adding new allowed IP", zap.Any("ip", a))
 
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
@@ -206,7 +206,7 @@ func (p *Peer) RemoveAllowedIP(a *net.IPNet) error {
 		},
 	}
 
-	p.logger.Debug("Remove allowed IP", zap.String("ip", a.String()))
+	p.logger.Debug("Remove allowed IP", zap.Any("ip", a))
 
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
