@@ -16,10 +16,12 @@ var (
 	indent bool
 
 	statusCmd = &cobra.Command{
-		Use:   "status [flags] [intf [peer]]",
-		Short: "Show current status of the ɯice daemon, its interfaces and peers",
-		Run:   status,
-		Args:  cobra.RangeArgs(0, 2),
+		Use:               "status [flags] [intf [peer]]",
+		Short:             "Show current status of the ɯice daemon, its interfaces and peers",
+		Aliases:           []string{"show"},
+		Run:               status,
+		Args:              cobra.RangeArgs(0, 2),
+		ValidArgsFunction: statusValidArgs,
 	}
 )
 
@@ -28,7 +30,41 @@ func init() {
 	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
 	pf.BoolVarP(&indent, "indent", "i", true, "Format and indent JSON ouput")
 
+	daemonCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp))
+
 	addClientCommand(rootCmd, statusCmd)
+}
+
+func statusValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// Establish RPC connection
+	rpcConnect(cmd, args)
+	defer rpcDisconnect(cmd, args)
+
+	p := &rpcproto.StatusParams{}
+
+	if len(args) > 0 {
+		p.Intf = args[0]
+	}
+
+	sts, err := rpcClient.GetStatus(context.Background(), p)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	comps := []string{}
+
+	for _, i := range sts.Interfaces {
+		if len(args) == 0 {
+			comps = append(comps, i.Name)
+		} else {
+			for _, p := range i.Peers {
+				pk, _ := crypto.ParseKeyBytes(p.PublicKey)
+				comps = append(comps, pk.String())
+			}
+		}
+	}
+
+	return comps, cobra.ShellCompDirectiveNoFileComp
 }
 
 func status(cmd *cobra.Command, args []string) {

@@ -134,8 +134,6 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 		"route-sync":  "route_sync.enabled",
 		"route-table": "route_sync.table",
 
-		"setup": "setup.enabled",
-
 		"backend":        "backends",
 		"watch-interval": "watch_interval",
 
