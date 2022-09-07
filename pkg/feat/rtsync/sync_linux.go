@@ -11,6 +11,8 @@ import (
 	"golang.org/x/sys/unix"
 	"riasc.eu/wice/pkg/core"
 	"riasc.eu/wice/pkg/device"
+	"riasc.eu/wice/pkg/log"
+	"riasc.eu/wice/pkg/util"
 )
 
 // removeKernel removes all routes from the kernel which have the peers link-local address
@@ -143,6 +145,15 @@ func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return nil
 	}
 
+	for _, aip := range p.AllowedIPs {
+		if util.ContainsNet(&aip, ru.Dst) {
+			logger.Debug("Ignoring route as it is already covered by the current AllowedIPs",
+				zap.Any("allowed_ip", aip),
+				zap.Any("dst", ru.Dst))
+			return nil
+		}
+	}
+
 	switch ru.Type {
 	case unix.RTM_NEWROUTE:
 		if err := p.AddAllowedIP(ru.Dst); err != nil {
@@ -152,6 +163,38 @@ func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	case unix.RTM_DELROUTE:
 		if err := p.RemoveAllowedIP(ru.Dst); err != nil {
 			return fmt.Errorf("failed to remove allowed IP: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *RouteSync) Sync() error {
+	if err := s.syncFamily(unix.AF_INET); err != nil {
+		return fmt.Errorf("failed to sync IPv4 routes: %w", err)
+	}
+
+	if err := s.syncFamily(unix.AF_INET6); err != nil {
+		return fmt.Errorf("failed to sync IPv6 routes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *RouteSync) syncFamily(family int) error {
+	rts, err := netlink.RouteListFiltered(family, &netlink.Route{
+		Table: s.table,
+	}, netlink.RT_FILTER_TABLE)
+	if err != nil {
+		return fmt.Errorf("failed to list routes: %w", err)
+	}
+
+	for _, rte := range rts {
+		if err := s.handleRouteUpdate(&netlink.RouteUpdate{
+			Route: rte,
+			Type:  unix.RTM_NEWROUTE,
+		}); err != nil {
+			s.logger.Error("Failed to handle route update", zap.Error(err))
 		}
 	}
 
