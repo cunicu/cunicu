@@ -73,7 +73,7 @@ func (hs *HostsSync) Hosts() []Host {
 	return hosts
 }
 
-func (hs *HostsSync) updateHostsFile() error {
+func (hs *HostsSync) Sync() error {
 	lines, err := readLines(hostsPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -112,13 +112,13 @@ func (hs *HostsSync) updateHostsFile() error {
 }
 
 func (hs *HostsSync) OnPeerAdded(p *core.Peer) {
-	if err := hs.updateHostsFile(); err != nil {
+	if err := hs.Sync(); err != nil {
 		hs.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
 func (hs *HostsSync) OnPeerRemoved(p *core.Peer) {
-	if err := hs.updateHostsFile(); err != nil {
+	if err := hs.Sync(); err != nil {
 		hs.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
@@ -126,7 +126,7 @@ func (hs *HostsSync) OnPeerRemoved(p *core.Peer) {
 func (hs *HostsSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	// Only update if the name has changed
 	if m.Is(core.PeerModifiedName) {
-		if err := hs.updateHostsFile(); err != nil {
+		if err := hs.Sync(); err != nil {
 			hs.logger.Error("Failed to update hosts file", zap.Error(err))
 		}
 	}
