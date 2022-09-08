@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://cunicu.li/blog</id>
+    <title>cunīcu Blog</title>
+    <updated>2022-09-08T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://cunicu.li/blog"/>
+    <subtitle>cunīcu Blog</subtitle>
+    <icon>https://cunicu.li/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[Welcome]]></title>
+        <id>welcome</id>
+        <link href="https://cunicu.li/blog/welcome"/>
+        <updated>2022-09-08T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Hello, welcome to the cunīcu blog. We will start posting some updates here soon.]]></summary>
+        <content type="html"><![CDATA[<p>Hello, welcome to the cunīcu blog. We will start posting some updates here soon.</p>]]></content>
+        <author>
+            <name>Steffen Vogel</name>
+            <uri>https://github.com/stv0g</uri>
+        </author>
+        <category label="hello" term="hello"/>
+    </entry>
+</feed>
