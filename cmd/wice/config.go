@@ -11,8 +11,8 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
-	"riasc.eu/wice/pkg/config"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/config"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 var (

@@ -1,10 +1,10 @@
 package v1
 
 import (
+	"github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"riasc.eu/wice/pkg/signaling/k8s/apis/wice"
 )
 
 // SchemeGroupVersion is group version used to register these objects

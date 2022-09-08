@@ -5,11 +5,11 @@ import (
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test"
 
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 var _ = Describe("message encryption", func() {

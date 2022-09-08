@@ -7,10 +7,10 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/randutil"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/util"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"golang.org/x/exp/slices"
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	"riasc.eu/wice/pkg/util"
-	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 const (

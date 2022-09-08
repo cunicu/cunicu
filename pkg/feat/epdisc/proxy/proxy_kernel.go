@@ -10,7 +10,7 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	epdiscproto "riasc.eu/wice/pkg/proto/feat/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 const (

@@ -2,12 +2,12 @@ PKG = $(shell grep module go.mod | cut -f2 -d" ")
 
 export CGO_ENABLED = 0
 
-LDFLAGS = -X riasc.eu/wice/pkg/util/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
-		  -X riasc.eu/wice/pkg/util/buildinfo.Tag=$(shell git describe --tags) \
-          -X riasc.eu/wice/pkg/util/buildinfo.Commit=$(shell git rev-parse HEAD) \
-		  -X riasc.eu/wice/pkg/util/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
-		  -X riasc.eu/wice/pkg/util/buildinfo.Date=$(shell date -Iseconds) \
-		  -X riasc.eu/wice/pkg/util/buildinfo.BuiltBy=Makefile \
+LDFLAGS = -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag=$(shell git describe --tags) \
+          -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit=$(shell git rev-parse HEAD) \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Date=$(shell date -Iseconds) \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=Makefile \
 
 PKGS ?= ./cmd/... ./pkg/... ./test
 ifeq ($(GOOS),linux)

@@ -27,7 +27,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
 )
 
 // FakeSignalingEnvelopes implements SignalingEnvelopeInterface

@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
 )
 
 // SignalingEnvelopeLister helps list SignalingEnvelopes.

@@ -4,11 +4,11 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	grpcx "riasc.eu/wice/pkg/signaling/grpc"
-	"riasc.eu/wice/pkg/util"
 )
 
 var (

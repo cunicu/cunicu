@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"riasc.eu/wice/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/proto"
 )
 
 var (

@@ -11,15 +11,15 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	"riasc.eu/wice/pkg/util/buildinfo"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	hooksproto "riasc.eu/wice/pkg/proto/feat/hooks"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	hooksproto "github.com/stv0g/cunicu/pkg/proto/feat/hooks"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type WebHook struct {

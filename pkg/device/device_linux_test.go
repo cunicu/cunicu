@@ -8,10 +8,10 @@ import (
 	"net"
 	"syscall"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/device"
 	"golang.org/x/sys/unix"
 	wgdevice "golang.zx2c4.com/wireguard/device"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/device"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

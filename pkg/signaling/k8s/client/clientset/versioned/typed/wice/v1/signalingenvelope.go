@@ -26,8 +26,8 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
-	scheme "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/scheme"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
+	scheme "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/scheme"
 )
 
 // SignalingEnvelopesGetter has a method to return a SignalingEnvelopeInterface.

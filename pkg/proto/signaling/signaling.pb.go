@@ -10,10 +10,10 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
-	proto "riasc.eu/wice/pkg/proto"
-	epdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
-	pdisc "riasc.eu/wice/pkg/proto/feat/pdisc"
-	pske "riasc.eu/wice/pkg/proto/feat/pske"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	epdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
+	pdisc "github.com/stv0g/cunicu/pkg/proto/feat/pdisc"
+	pske "github.com/stv0g/cunicu/pkg/proto/feat/pske"
 	sync "sync"
 )
 

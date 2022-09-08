@@ -7,10 +7,10 @@ import (
 	"math"
 	"math/big"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
 
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {

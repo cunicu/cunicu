@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package wice.rpc;
-option go_package = "riasc.eu/wice/pkg/proto/rpc";
+option go_package = "github.com/stv0g/cunicu/pkg/proto/rpc";
 
 import "common.proto";
 

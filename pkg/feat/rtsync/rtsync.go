@@ -7,10 +7,10 @@ import (
 	"net/netip"
 	"syscall"
 
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/watcher"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/watcher"
 )
 
 type RouteSync struct {

@@ -14,12 +14,12 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/proto"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 type Server struct {

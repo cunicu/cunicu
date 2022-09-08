@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/util"
-	t "riasc.eu/wice/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/util"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 )
 
 var _ = Context("human", func() {

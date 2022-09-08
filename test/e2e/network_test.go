@@ -15,9 +15,9 @@ import (
 	copt "github.com/stv0g/gont/pkg/options/capture"
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/test"
-	"riasc.eu/wice/test/e2e/nodes"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/test"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 )
 
 var (

@@ -1,8 +1,8 @@
 package v1
 
 import (
+	"github.com/stv0g/cunicu/pkg/signaling"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"riasc.eu/wice/pkg/signaling"
 )
 
 // +genclient

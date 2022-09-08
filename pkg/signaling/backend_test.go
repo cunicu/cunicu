@@ -3,8 +3,8 @@ package signaling_test
 import (
 	"net/url"
 
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/signaling/inprocess"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling/inprocess"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

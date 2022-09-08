@@ -11,7 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	proto "riasc.eu/wice/pkg/proto"
+	proto "github.com/stv0g/cunicu/pkg/proto"
 )
 
 // This is a compile-time assertion to ensure that this generated file

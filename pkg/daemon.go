@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/feat"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/watcher"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/feat"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/watcher"
-	"riasc.eu/wice/pkg/wg"
 
-	"riasc.eu/wice/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling"
 )
 
 type Daemon struct {

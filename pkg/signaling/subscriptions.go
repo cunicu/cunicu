@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/util"
 )
 
 var (

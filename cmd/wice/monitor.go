@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/util"
 )
 
 var monitorCmd = &cobra.Command{

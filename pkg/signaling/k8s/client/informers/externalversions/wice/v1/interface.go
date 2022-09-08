@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	internalinterfaces "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

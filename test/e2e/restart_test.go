@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/proto"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/e2e/nodes"
-	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
+	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

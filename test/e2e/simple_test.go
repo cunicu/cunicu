@@ -3,11 +3,11 @@ package e2e_test
 import (
 	"fmt"
 
+	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
+	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 	"golang.org/x/sys/unix"
-	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/e2e/nodes"
-	opt "riasc.eu/wice/test/e2e/nodes/options"
-	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

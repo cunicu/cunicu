@@ -9,9 +9,9 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 type UserBindProxy struct {

@@ -3,7 +3,7 @@
 package watcher
 
 import (
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 func (w *Watcher) watchKernel() error {

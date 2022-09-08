@@ -26,10 +26,10 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
-	versioned "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned"
-	internalinterfaces "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/client/listers/wice/v1"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
+	versioned "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/listers/wice/v1"
 )
 
 // SignalingEnvelopeInformer provides access to a shared informer and lister for

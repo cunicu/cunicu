@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/onsi/gomega/gexec"
-	"riasc.eu/wice/test"
+	"github.com/stv0g/cunicu/test"
 )
 
 var (

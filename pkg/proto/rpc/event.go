@@ -3,8 +3,8 @@ package rpc
 import (
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/crypto"
 )
 
 func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {

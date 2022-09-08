@@ -3,7 +3,7 @@ package rpc
 import (
 	"fmt"
 
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type Event struct {

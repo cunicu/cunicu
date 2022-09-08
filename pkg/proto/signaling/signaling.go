@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"golang.org/x/crypto/nacl/box"
 	"google.golang.org/protobuf/proto"
-	"riasc.eu/wice/pkg/crypto"
 )
 
 func (e *Envelope) PublicKeyPair() (crypto.PublicKeyPair, error) {

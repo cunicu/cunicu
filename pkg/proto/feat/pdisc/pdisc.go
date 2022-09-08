@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
 )
 
 func (pd *PeerDescription) Config() wgtypes.PeerConfig {

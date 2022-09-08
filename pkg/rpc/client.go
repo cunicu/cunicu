@@ -10,17 +10,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/proto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	"riasc.eu/wice/pkg/proto"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
-	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type Client struct {

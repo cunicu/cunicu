@@ -7,15 +7,15 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	"riasc.eu/wice/pkg/wg"
 )
 
 type ExecHook struct {

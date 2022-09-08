@@ -23,7 +23,7 @@ import (
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other

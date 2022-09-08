@@ -45,12 +45,12 @@ builds:
 
   ldflags:
   - -s -w
-  - -X riasc.eu/wice/pkg/util/buildinfo.Version={{.Version}}
-  - -X riasc.eu/wice/pkg/util/buildinfo.Commit={{.Commit}}
-  - -X riasc.eu/wice/pkg/util/buildinfo.Date={{.Date}}
-  - -X riasc.eu/wice/pkg/util/buildinfo.Tag={{.Tag}}
-  - -X riasc.eu/wice/pkg/util/buildinfo.Branch={{.Branch}}
-  - -X riasc.eu/wice/pkg/util/buildinfo.BuiltBy=GoReleaser
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version={{.Version}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit={{.Commit}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Date={{.Date}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag={{.Tag}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch={{.Branch}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=GoReleaser
 
 archives:
 - builds:

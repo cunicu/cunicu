@@ -1,7 +1,7 @@
 package core
 
 import (
-	"riasc.eu/wice/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/crypto"
 )
 
 // InterfaceList stores all WireGuard interfaces indexed by their unique ifindex

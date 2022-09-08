@@ -13,11 +13,11 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/rpc"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/rpc"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type AgentOption interface {

@@ -1,7 +1,7 @@
 package k8s
 
 import (
-	"riasc.eu/wice/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling"
 )
 
 type BackendConfig struct {

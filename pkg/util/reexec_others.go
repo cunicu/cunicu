@@ -2,7 +2,7 @@
 
 package util
 
-import "riasc.eu/wice/pkg/errors"
+import "github.com/stv0g/cunicu/pkg/errors"
 
 const ReexecSelfSupported = false
 

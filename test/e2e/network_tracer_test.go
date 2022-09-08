@@ -8,8 +8,8 @@ import (
 	"github.com/gopacket/gopacket/pcapgo"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/wg/tracer"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/wg/tracer"
 )
 
 type HandshakeTracer tracer.HandshakeTracer

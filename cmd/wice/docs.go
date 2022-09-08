@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
-	"riasc.eu/wice/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 )
 
 var (

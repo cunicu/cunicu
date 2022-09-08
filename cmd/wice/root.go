@@ -6,11 +6,11 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap/zapcore"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/log"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/util/terminal"
 )
 
 const (

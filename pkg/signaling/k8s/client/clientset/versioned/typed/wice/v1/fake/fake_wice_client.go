@@ -21,7 +21,7 @@ package fake
 import (
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
 )
 
 type FakeWiceV1 struct {

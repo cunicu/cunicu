@@ -5,10 +5,10 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
+	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
-	"riasc.eu/wice/test/e2e/nodes"
-	wopt "riasc.eu/wice/test/e2e/nodes/options/wg"
 )
 
 /* Carrier Grade NAT setup with two relays and a single signaling server

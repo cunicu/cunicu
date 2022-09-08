@@ -6,12 +6,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling/grpc"
 
-	proto "riasc.eu/wice/pkg/proto"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 type SignalingServer struct {

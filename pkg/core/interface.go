@@ -11,15 +11,15 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/util/buildinfo"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	proto "riasc.eu/wice/pkg/proto"
-	coreproto "riasc.eu/wice/pkg/proto/core"
-	pdiscproto "riasc.eu/wice/pkg/proto/feat/pdisc"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feat/pdisc"
 )
 
 type Interface struct {

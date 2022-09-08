@@ -6,17 +6,17 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc/proxy"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/watcher"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	"riasc.eu/wice/pkg/feat/epdisc/proxy"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/watcher"
-	"riasc.eu/wice/pkg/wg"
 )
 
 type EndpointDiscovery struct {

@@ -5,10 +5,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
 
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 var (

@@ -11,16 +11,16 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/log"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
-	wice "riasc.eu/wice/pkg"
-	proto "riasc.eu/wice/pkg/proto"
-	coreproto "riasc.eu/wice/pkg/proto/core"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	wice "github.com/stv0g/cunicu/pkg"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type DaemonServer struct {

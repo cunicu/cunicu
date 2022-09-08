@@ -3,8 +3,8 @@ package wg_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 var _ = It("detects the kernel module", func() {

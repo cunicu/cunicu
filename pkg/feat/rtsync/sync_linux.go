@@ -6,13 +6,13 @@ import (
 	"net/netip"
 	"syscall"
 
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/log"
-	"riasc.eu/wice/pkg/util"
 )
 
 // removeKernel removes all routes from the kernel which have the peers link-local address

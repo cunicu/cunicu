@@ -4,7 +4,7 @@ import (
 	"net"
 	"os/exec"
 
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 func (d *BSDKernelDevice) AddRoute(dst *net.IPNet, table int) error {

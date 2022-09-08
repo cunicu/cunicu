@@ -12,12 +12,12 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/log"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 	"k8s.io/klog/v2"
-	"riasc.eu/wice/pkg/log"
-	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 func TestSuite(t *testing.T) {

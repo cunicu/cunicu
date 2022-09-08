@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/wg/tracer"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/util"
-	"riasc.eu/wice/pkg/wg/tracer"
 )
 
 var (

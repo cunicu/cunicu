@@ -2,17 +2,17 @@
 package feat
 
 import (
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/feat/autocfg"
+	"github.com/stv0g/cunicu/pkg/feat/cfgsync"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	"github.com/stv0g/cunicu/pkg/feat/hooks"
+	"github.com/stv0g/cunicu/pkg/feat/hsync"
+	"github.com/stv0g/cunicu/pkg/feat/pdisc"
+	"github.com/stv0g/cunicu/pkg/feat/rtsync"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/watcher"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/feat/autocfg"
-	"riasc.eu/wice/pkg/feat/cfgsync"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	"riasc.eu/wice/pkg/feat/hooks"
-	"riasc.eu/wice/pkg/feat/hsync"
-	"riasc.eu/wice/pkg/feat/pdisc"
-	"riasc.eu/wice/pkg/feat/rtsync"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/watcher"
 )
 
 type Syncable interface {

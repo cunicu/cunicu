@@ -3,9 +3,9 @@ package grpc
 import (
 	"sync"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/util"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util"
 )
 
 type topicRegistry struct {

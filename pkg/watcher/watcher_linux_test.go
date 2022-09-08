@@ -8,15 +8,15 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/watcher"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test"
 	g "github.com/stv0g/gont/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/watcher"
-	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test"
 )
 
 var _ = Describe("watcher", func() {
