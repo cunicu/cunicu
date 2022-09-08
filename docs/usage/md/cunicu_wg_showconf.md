@@ -4,10 +4,10 @@ Shows the current configuration and device information
 
 ### Synopsis
 
-Sets the current configuration of <interface> to the contents of <configuration-filename>, which must be in the wg(8) format.
+Sets the current configuration of \<interface\> to the contents of \<configuration-filename\>, which must be in the wg(8) format.
 
 ```
-cunicu wg showconf [flags] <interface>
+cunicu wg showconf [flags] \<interface\>
 ```
 
 ### Options

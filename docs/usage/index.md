@@ -4,7 +4,7 @@
 
 For a detailed documentation of the `cunicu` command-line tool please have a look at the following page:
 
--   [`cunicu`](./usage/md/cunicu.md)
+-   [`cunicu`](./md/cunicu.md)
 
 ## Daemon
 

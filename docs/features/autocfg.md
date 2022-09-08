@@ -1,8 +1,8 @@
 ---
-title: Hooks
+title: Auto-configuration
 ---
 
-# Hooks
+# Auto-configuration
 
 :::info
 

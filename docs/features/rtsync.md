@@ -1,8 +1,8 @@
 ---
-title: Hooks
+title: Route Synchronization
 ---
 
-# Hooks
+# Route Synchronization
 
 :::info
 
