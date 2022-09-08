@@ -217,7 +217,9 @@ func (c *Config) Setup(args []string) error {
 	c.AutomaticEnv()
 	c.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	c.Set("wireguard.interfaces", args)
+	if len(args) > 0 {
+		c.Set("wireguard.interfaces", args)
+	}
 
 	return c.Load()
 }
