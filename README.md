@@ -19,7 +19,7 @@
 
 ## Documentation
 
-cunīcu's documentation can be found here: [cunicu.li/docs]](https://cunicu.li/docs).
+cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/docs).
 
 ## Authors
 
