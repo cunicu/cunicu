@@ -1,8 +1,8 @@
 package wg_test
 
 import (
+	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

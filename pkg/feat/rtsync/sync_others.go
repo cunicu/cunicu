@@ -3,8 +3,8 @@
 package rtsync
 
 import (
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 func (s *RouteSync) removeKernel(p *core.Peer) error {

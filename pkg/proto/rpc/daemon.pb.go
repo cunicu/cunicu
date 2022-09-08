@@ -10,8 +10,8 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
-	proto "riasc.eu/wice/pkg/proto"
-	core "riasc.eu/wice/pkg/proto/core"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	core "github.com/stv0g/cunicu/pkg/proto/core"
 	sync "sync"
 )
 

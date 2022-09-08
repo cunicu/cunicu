@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap/zapcore"
-	"riasc.eu/wice/pkg/crypto"
 )
 
 type Regexp struct {

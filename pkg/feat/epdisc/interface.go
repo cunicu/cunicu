@@ -6,13 +6,13 @@ import (
 	"errors"
 
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc/proxy"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/feat/epdisc/proxy"
 
-	errorsx "riasc.eu/wice/pkg/errors"
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	errorsx "github.com/stv0g/cunicu/pkg/errors"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 type Interface struct {

@@ -1,6 +1,6 @@
 package epdisc
 
-import icex "riasc.eu/wice/pkg/feat/epdisc/ice"
+import icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
 
 type OnConnectionStateHandler interface {
 	OnConnectionStateChange(p *Peer, new, prev icex.ConnectionState)

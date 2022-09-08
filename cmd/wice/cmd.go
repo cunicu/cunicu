@@ -1,10 +1,10 @@
 package main
 
 import (
+	_ "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	_ "github.com/stv0g/cunicu/pkg/signaling/inprocess"
+	_ "github.com/stv0g/cunicu/pkg/signaling/k8s"
 	"go.uber.org/zap"
-	_ "riasc.eu/wice/pkg/signaling/grpc"
-	_ "riasc.eu/wice/pkg/signaling/inprocess"
-	_ "riasc.eu/wice/pkg/signaling/k8s"
 )
 
 var (

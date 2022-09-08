@@ -9,10 +9,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"riasc.eu/wice/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util"
 
-	wice "riasc.eu/wice/pkg"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	wice "github.com/stv0g/cunicu/pkg"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type Server struct {

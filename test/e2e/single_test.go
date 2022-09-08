@@ -1,8 +1,8 @@
 package e2e_test
 
 import (
-	"riasc.eu/wice/pkg/wg"
-	"riasc.eu/wice/test/e2e/nodes"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

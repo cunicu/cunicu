@@ -27,9 +27,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned"
-	internalinterfaces "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
-	wice "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/wice"
+	versioned "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
+	wice "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/wice"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.

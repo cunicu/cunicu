@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/util"
 )
 
 const (

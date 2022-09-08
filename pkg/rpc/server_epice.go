@@ -4,16 +4,16 @@ import (
 	"context"
 	"io"
 
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/proto"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	"riasc.eu/wice/pkg/proto"
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
 )
 
 type EndpointDiscoveryServer struct {

@@ -10,12 +10,12 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/watcher"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/watcher"
-	"riasc.eu/wice/pkg/wg"
 )
 
 // ConfigSync synchronizes the WireGuard device configuration with an on-disk configuration file.

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package wice.pske;
-option go_package = "riasc.eu/wice/pkg/proto/feat/pske";
+option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/pske";
 
 message PresharedKeyEstablishment {
     bytes public_key = 1;

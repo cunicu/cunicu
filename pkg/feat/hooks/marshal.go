@@ -1,8 +1,8 @@
 package hooks
 
 import (
-	"riasc.eu/wice/pkg/core"
-	coreproto "riasc.eu/wice/pkg/proto/core"
+	"github.com/stv0g/cunicu/pkg/core"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 )
 
 func marshalRedactedInterface(i *core.Interface) *coreproto.Interface {

@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"riasc.eu/wice/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
 	"go.uber.org/zap"
 

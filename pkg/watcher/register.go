@@ -1,8 +1,8 @@
 package watcher
 
 import (
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 // All handler

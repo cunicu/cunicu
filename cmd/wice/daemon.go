@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	wice "github.com/stv0g/cunicu/pkg"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/rpc"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
-	wice "riasc.eu/wice/pkg"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/rpc"
 )
 
 var (

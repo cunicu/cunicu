@@ -4,12 +4,12 @@ import (
 	"errors"
 
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
 
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 // onConnectionStateChange is a callback which gets called by the ICE agent

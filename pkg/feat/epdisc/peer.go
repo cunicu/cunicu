@@ -11,18 +11,18 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/device"
-	"riasc.eu/wice/pkg/feat/epdisc/proxy"
-	"riasc.eu/wice/pkg/log"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/util"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc/proxy"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util"
 
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
-	proto "riasc.eu/wice/pkg/proto"
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 type Peer struct {

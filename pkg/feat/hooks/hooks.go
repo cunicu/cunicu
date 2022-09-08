@@ -1,10 +1,10 @@
 package hooks
 
 import (
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/feat/epdisc"
+	"github.com/stv0g/cunicu/pkg/watcher"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/feat/epdisc"
-	"riasc.eu/wice/pkg/watcher"
 )
 
 type Hooks struct {

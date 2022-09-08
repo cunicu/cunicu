@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -3,7 +3,7 @@ package util_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util"
 )
 
 var _ = Describe("fanout", func() {

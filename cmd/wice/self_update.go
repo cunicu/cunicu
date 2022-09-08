@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/selfupdate"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/selfupdate"
-	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 var selfUpdateCmd = &cobra.Command{

@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/core"
+	"github.com/stv0g/cunicu/pkg/core"
 )
 
 var _ = Context("interface modifier", func() {

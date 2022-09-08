@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/util"
 )
 
 // DownloadAndVerifyRelease downloads a released version of

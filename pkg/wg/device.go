@@ -6,10 +6,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/util"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/util"
-	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 type Device wgtypes.Device

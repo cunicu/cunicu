@@ -7,8 +7,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/signaling/grpc"
-	"riasc.eu/wice/test"
+	"github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {

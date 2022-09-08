@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test/e2e/nodes"
 )
 
 // PublicKey specifies the public key of this peer.  PublicKey is a

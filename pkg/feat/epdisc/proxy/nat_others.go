@@ -5,7 +5,7 @@ package proxy
 import (
 	"net"
 
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 type NATRule struct{}

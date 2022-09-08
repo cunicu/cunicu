@@ -10,15 +10,15 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
 
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	informers "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned"
-	informers "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions"
 )
 
 const (

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package wice.epdisc;
-option go_package = "riasc.eu/wice/pkg/proto/feat/epdisc";
+option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/epdisc";
 
 import "common.proto";
 

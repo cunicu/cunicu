@@ -5,12 +5,12 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 func (s *Server) OnInterfaceAdded(i *core.Interface) {

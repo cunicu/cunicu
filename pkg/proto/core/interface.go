@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/stv0g/cunicu/pkg/util"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/util"
-	t "riasc.eu/wice/pkg/util/terminal"
-	"riasc.eu/wice/pkg/wg"
 )
 
 func (i *Interface) Device() *wg.Device {

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package wice.hooks;
-option go_package = "riasc.eu/wice/pkg/proto/feat/hooks";
+option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/hooks";
 
 import "core/interface.proto";
 import "core/peer.proto";

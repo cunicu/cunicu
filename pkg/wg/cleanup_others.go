@@ -3,7 +3,7 @@
 package wg
 
 import (
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 func CleanupUserSockets() error {

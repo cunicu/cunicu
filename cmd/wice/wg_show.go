@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 var (

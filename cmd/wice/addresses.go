@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/crypto"
 )
 
 var (

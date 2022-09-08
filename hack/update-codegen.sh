@@ -9,8 +9,8 @@ CODEGEN_PKG="${CODEGEN_PKG:-$(cd "${SCRIPT_ROOT}"; ls -d -1 ./vendor/k8s.io/code
 
 echo "Calling ${CODEGEN_PKG}/generate-groups.sh"
 "${CODEGEN_PKG}"/generate-groups.sh all \
-    riasc.eu/wice/pkg/signaling/k8s/client \
-    riasc.eu/wice/pkg/signaling/k8s/apis \
+    github.com/stv0g/cunicu/pkg/signaling/k8s/client \
+    github.com/stv0g/cunicu/pkg/signaling/k8s/apis \
     wice:v1 \
     --go-header-file="${CODEGEN_PKG}"/hack/boilerplate.go.txt \
-    --trim-path-prefix riasc.eu/wice
+    --trim-path-prefix github.com/stv0g/cunicu

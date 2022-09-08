@@ -24,9 +24,9 @@ import (
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
-	clientset "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
-	fakewicev1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1/fake"
+	clientset "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
+	fakewicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.

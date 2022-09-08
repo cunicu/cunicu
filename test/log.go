@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/onsi/ginkgo/v2"
+	"github.com/stv0g/cunicu/pkg/log"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap"
-	"riasc.eu/wice/pkg/log"
-	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 type writerWrapper struct {

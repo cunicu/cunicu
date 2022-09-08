@@ -7,7 +7,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	protoepdisc "riasc.eu/wice/pkg/proto/feat/epdisc"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
 )
 
 type Proxy interface {

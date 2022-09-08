@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/crypto"
 )
 
 var _ = Context("types", func() {

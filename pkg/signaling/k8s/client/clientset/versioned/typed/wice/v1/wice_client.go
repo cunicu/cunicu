@@ -22,8 +22,8 @@ import (
 	"net/http"
 
 	rest "k8s.io/client-go/rest"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
-	"riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/scheme"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
+	"github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/scheme"
 )
 
 type WiceV1Interface interface {

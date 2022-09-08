@@ -25,7 +25,7 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
 )
 
 type Interface interface {

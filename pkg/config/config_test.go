@@ -12,10 +12,10 @@ import (
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
 
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/test"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/test"
 
-	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
 )
 
 func TestSuite(t *testing.T) {

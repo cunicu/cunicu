@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"riasc.eu/wice/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/proto"
 )
 
 var _ = Context("common", func() {

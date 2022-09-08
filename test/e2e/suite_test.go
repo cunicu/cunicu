@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/onsi/gomega/gexec"
-	"riasc.eu/wice/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util"
 
 	"github.com/onsi/ginkgo/v2/reporters"
 	"github.com/onsi/ginkgo/v2/types"

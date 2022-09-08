@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/util"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/util"
-	t "riasc.eu/wice/pkg/util/terminal"
 )
 
 func (p *Peer) Peer() wgtypes.Peer {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/types"
-	"riasc.eu/wice/pkg/core"
+	"github.com/stv0g/cunicu/pkg/core"
 
 	"fmt"
 )

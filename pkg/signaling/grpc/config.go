@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 type BackendConfig struct {

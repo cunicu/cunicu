@@ -3,8 +3,8 @@ package core
 import (
 	"net"
 
+	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/wg"
 )
 
 type InterfaceHandler interface {

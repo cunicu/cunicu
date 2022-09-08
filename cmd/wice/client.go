@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/rpc"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/rpc"
 )
 
 var (

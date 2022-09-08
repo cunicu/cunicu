@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/crypto"
 
-	rpcproto "riasc.eu/wice/pkg/proto/rpc"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 var (

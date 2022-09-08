@@ -6,7 +6,7 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"riasc.eu/wice/pkg/log"
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 func CreateUDPMux() (ice.UDPMux, int, error) {

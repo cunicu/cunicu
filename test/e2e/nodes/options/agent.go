@@ -1,7 +1,7 @@
 package options
 
 import (
-	"riasc.eu/wice/test/e2e/nodes"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 )
 
 type ExtraArgs []any

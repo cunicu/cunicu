@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/wg"
 )
 
 type WireGuardPeerSelectorFunc func(i, j *WireGuardInterface) bool

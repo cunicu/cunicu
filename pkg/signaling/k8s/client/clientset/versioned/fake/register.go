@@ -24,7 +24,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	wicev1 "riasc.eu/wice/pkg/signaling/k8s/apis/wice/v1"
+	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
 )
 
 var scheme = runtime.NewScheme()

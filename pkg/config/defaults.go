@@ -1,6 +1,6 @@
 package config
 
-import "riasc.eu/wice/pkg/wg"
+import "github.com/stv0g/cunicu/pkg/wg"
 
 const (
 	DefaultSocketPath = "/var/run/wice.sock"

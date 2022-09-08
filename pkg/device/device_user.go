@@ -7,10 +7,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/device"
 	"golang.zx2c4.com/wireguard/tun"
-	"riasc.eu/wice/pkg/wg"
 )
 
 var (

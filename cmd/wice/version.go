@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/rpc"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/proto"
-	"riasc.eu/wice/pkg/rpc"
-	"riasc.eu/wice/pkg/util/buildinfo"
 )
 
 var (

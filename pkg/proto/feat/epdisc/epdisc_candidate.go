@@ -6,9 +6,9 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"riasc.eu/wice/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/proto"
 
-	t "riasc.eu/wice/pkg/util/terminal"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 )
 
 func NewCandidate(ic ice.Candidate) *Candidate {

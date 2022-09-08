@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 	g "github.com/stv0g/gont/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/test/e2e/nodes"
 )
 
 type PrivateKey crypto.Key

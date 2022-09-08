@@ -2,9 +2,9 @@
 package signaling
 
 import (
-	"riasc.eu/wice/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/crypto"
 
-	signalingproto "riasc.eu/wice/pkg/proto/signaling"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 type Message = signalingproto.Message

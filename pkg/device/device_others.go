@@ -3,7 +3,7 @@
 package device
 
 import (
-	"riasc.eu/wice/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 func FindKernelDevice(name string) (Device, error) {

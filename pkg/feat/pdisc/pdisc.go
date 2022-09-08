@@ -9,14 +9,14 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 
-	"riasc.eu/wice/pkg/config"
-	"riasc.eu/wice/pkg/core"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/signaling"
-	"riasc.eu/wice/pkg/watcher"
-	"riasc.eu/wice/pkg/wg"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/watcher"
+	"github.com/stv0g/cunicu/pkg/wg"
 
-	pdiscproto "riasc.eu/wice/pkg/proto/feat/pdisc"
+	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feat/pdisc"
 )
 
 type PeerDiscovery struct {

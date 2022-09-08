@@ -19,8 +19,8 @@ limitations under the License.
 package wice
 
 import (
-	internalinterfaces "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
-	v1 "riasc.eu/wice/pkg/signaling/k8s/client/informers/externalversions/wice/v1"
+	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/wice/v1"
 )
 
 // Interface provides access to each of this group's versions.

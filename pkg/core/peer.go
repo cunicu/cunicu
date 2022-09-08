@@ -8,13 +8,13 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/util"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"riasc.eu/wice/pkg/crypto"
-	"riasc.eu/wice/pkg/util"
 
-	proto "riasc.eu/wice/pkg/proto"
-	coreproto "riasc.eu/wice/pkg/proto/core"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 )
 
 type SignalingState int
