@@ -49,7 +49,7 @@ Website:
 var (
 	rootCmd = &cobra.Command{
 		Use:   "wice",
-		Short: "ɯice",
+		Short: "cunicu",
 		Long:  "WireGuard Interactive Connectivity Establishment",
 
 		DisableAutoGenTag: true,

@@ -107,7 +107,7 @@ func (n *Network) Start() {
 	By("Starting agent nodes")
 
 	err = n.AgentNodes.Start(n.BasePath, n.AgentArgs()...)
-	Expect(err).To(Succeed(), "Failed to start ɯice: %s", err)
+	Expect(err).To(Succeed(), "Failed to start cunicu: %s", err)
 }
 
 func (n *Network) AgentArgs() []any {

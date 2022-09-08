@@ -1,6 +1,6 @@
 ## wice monitor
 
-Monitor the ɯice daemon for events
+Monitor the cunicu daemon for events
 
 ```
 wice monitor [flags]
@@ -24,5 +24,5 @@ wice monitor [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

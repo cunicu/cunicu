@@ -98,7 +98,7 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.DurationP("watch-interval", "i", 0, "An interval at which we are periodically polling the kernel for updates on WireGuard interfaces")
 
 	// RPC socket flags
-	flags.StringP("rpc-socket", "s", "", "The `path` of the unix socket used by other ɯice commands")
+	flags.StringP("rpc-socket", "s", "", "The `path` of the unix socket used by other cunicu commands")
 	flags.Bool("rpc-wait", false, "Wait until first client connected to control socket before continuing start")
 
 	// WireGuard

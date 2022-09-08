@@ -24,5 +24,5 @@ wice signal [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

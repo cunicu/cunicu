@@ -24,7 +24,7 @@ See each sub-command's help for details on how to use the generated script.
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 * [wice completion bash](wice_completion_bash.md)	 - Generate the autocompletion script for bash
 * [wice completion fish](wice_completion_fish.md)	 - Generate the autocompletion script for fish
 * [wice completion powershell](wice_completion_powershell.md)	 - Generate the autocompletion script for powershell

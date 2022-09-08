@@ -1,6 +1,6 @@
 ## wice version
 
-Show current status of the ɯice daemon, its interfaces and peers
+Show current status of the cunicu daemon, its interfaces and peers
 
 ```
 wice version [flags]
@@ -23,5 +23,5 @@ wice version [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

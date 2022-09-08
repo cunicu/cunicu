@@ -55,7 +55,7 @@ var _ = Describe("parse command line arguments", func() {
 		Expect(err).To(HaveOccurred())
 	})
 
-	It("should not load anything from domains without ɯice auto-configuration", func() {
+	It("should not load anything from domains without cunicu auto-configuration", func() {
 		_, err := config.ParseArgs("-D", "google.com")
 
 		Expect(err).To(

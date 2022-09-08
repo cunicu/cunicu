@@ -57,7 +57,7 @@ Checkout the [`pkg/pb/signaling.proto`](../pkg/pb/signaling.proto) for details.
 
 ## Backends
 
-ɯice can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
+cunicu can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
 
 ### Available backends
 

@@ -1,6 +1,6 @@
 ## wice stop
 
-Shutdown the ɯice daemon
+Shutdown the cunicu daemon
 
 ```
 wice stop [flags]
@@ -23,5 +23,5 @@ wice stop [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

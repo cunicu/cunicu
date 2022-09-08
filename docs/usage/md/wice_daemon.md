@@ -25,7 +25,7 @@ wice daemon [interfaces...] [flags]
   -P, --password password                   The password for STUN/TURN credentials
   -R, --route-sync                          Enable synchronization of AllowedIPs and Kernel routing table (default true)
   -T, --route-table string                  Kernel routing table to use (default "main")
-  -s, --rpc-socket path                     The path of the unix socket used by other ɯice commands
+  -s, --rpc-socket path                     The path of the unix socket used by other cunicu commands
       --rpc-wait                            Wait until first client connected to control socket before continuing start
   -a, --url URL                             One or more URLs of STUN and/or TURN servers
   -U, --username username                   The username for STUN/TURN credentials
@@ -45,5 +45,5 @@ wice daemon [interfaces...] [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

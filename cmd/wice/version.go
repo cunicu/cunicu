@@ -16,7 +16,7 @@ import (
 var (
 	versionCmd = &cobra.Command{
 		Use:   "version",
-		Short: "Show current status of the ɯice daemon, its interfaces and peers",
+		Short: "Show current status of the cunicu daemon, its interfaces and peers",
 		RunE:  version,
 		Args:  cobra.NoArgs,
 	}
