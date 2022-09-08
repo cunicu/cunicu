@@ -27,12 +27,12 @@ You can fetch that script, and then execute it locally.
 It's well documented so that you can read through it and understand what it is doing before you run it.
 
 ```bash
-curl -fsSL -o get_cunicu.sh https://raw.githubusercontent.com/stv0g/cunicu/master/scripts/get_cunicu.sh
+curl -fsSL -o get_cunicu.sh https://get.cunicu.li
 chmod 700 get_cunicu.sh
 ./get_cunicu.sh
 ```
 
-Yes, you can `curl https://raw.githubusercontent.com/stv0g/cunicu/master/scripts/get_cunicu.sh | bash` if you want to live on the edge.
+Yes, you can `curl -fsSL https://get.cunicu.li | bash` if you want to live on the edge.
 
 ## Through Package Managers
 
