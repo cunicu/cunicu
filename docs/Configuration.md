@@ -1,17 +1,17 @@
 # Configuration
 
-This page describes the ways of configuring the cunicu daemon (`wice daemon`).
+This page describes the ways of configuring the cunicu daemon (`cunicu daemon`).
 
 ## Command Line Flags
 
-The `wice daemon` can almost fully be configured by passing command line arguments.
-A full overview is available in its [manpage](./usage/md/wice_daemon.md).
+The `cunicu daemon` can almost fully be configured by passing command line arguments.
+A full overview is available in its [manpage](./usage/md/cunicu_daemon.md).
 
 ## Configuration File
 
 Alternatively a configuration file can be used for a persistent configuration:
 
-```yaml title="wice.yaml"
+```yaml title="cunicu.yaml"
 watch_interval: 1s
 
 backends:
@@ -32,16 +32,16 @@ wireguard:
   - wg-vpn
 
   # Port range for ListenPort setting of newly created WireGuard interfaces
-  # wice will select the first available port in this range.
+  # cunīcu will select the first available port in this range.
   port:
     min: 52820
     max: 65535
 
 # Control socket settings
 socket:
-  path: /var/run/wice.sock
+  path: /var/run/cunicu.sock
 
-  # Start of wice daemon will block until its unblocked via the control socket
+  # Start of cunīcu daemon will block until its unblocked via the control socket
   # Mostly useful for testing automation
   wait: false
 
@@ -139,20 +139,20 @@ peer_disc:
 All the settings from the configuration file can also be passed via environment variables by following the following rules:
 
 -   Convert the setting name to uppercase
--   Prefixing the setting name with `WICE_`
+-   Prefixing the setting name with `CUNICU_`
 -   Nested settings are separated by underscores
 
-**Example:** The setting `endpoint_disc.ice.max_binding_requests` can be set by the environment variable `WICE_ENDPOINT_DISC_ICE_MAX_BINDING_REQUESTS`
+**Example:** The setting `endpoint_disc.ice.max_binding_requests` can be set by the environment variable `CUNICU_ENDPOINT_DISC_ICE_MAX_BINDING_REQUESTS`
 
 **Note:** Setting lists such as `endpoint_disc.ice.urls` or `backends` can currently not be set via environment variables.
 
 ## DNS Auto-configuration
 
-cunicu als supports retrieving parts of the configuration via DNS lookups.
+cunīcu als supports retrieving parts of the configuration via DNS lookups.
 
-When `wice daemon` is started with a `--domain example.com` parameter it will look for the following DNS records to obtain its configuration.
+When `cunicu daemon` is started with a `--domain example.com` parameter it will look for the following DNS records to obtain its configuration.
 
-STUN and TURN servers used for ICE are retrieved by SVR lookups and other cunicu settings are retrieved via TXT lookups: 
+STUN and TURN servers used for ICE are retrieved by SVR lookups and other cunīcu settings are retrieved via TXT lookups: 
 
 ```text
 _stun._udp.example.com.  3600 IN SRV 10 0 3478 stun.example.com.
@@ -161,24 +161,24 @@ _turn._udp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
 _turn._tcp.example.com.  3600 IN SRV 10 0 3478 turn.example.com.
 _turns._tcp.example.com. 3600 IN SRV 10 0 5349 turn.example.com.
 
-example.com.             3600 IN TXT "wice-backend=p2p"
-example.com.             3600 IN TXT "wice-peer-disc-community=my-community-password"
-example.com.             3600 IN TXT "wice-endpoint-disc-ice-username=user1"
-example.com.             3600 IN TXT "wice-endpoint-disc-ice-password=pass1"
-example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
+example.com.             3600 IN TXT "cunicu-backend=p2p"
+example.com.             3600 IN TXT "cunicu-peer-disc-community=my-community-password"
+example.com.             3600 IN TXT "cunicu-endpoint-disc-ice-username=user1"
+example.com.             3600 IN TXT "cunicu-endpoint-disc-ice-password=pass1"
+example.com.             3600 IN TXT "cunicu-config=https://example.com/cunicu.yaml"
 ```
 
-**Note:** The `wice-backend` and `wice-config` TXT records can be provided multiple times. Others not.
+**Note:** The `cunicu-backend` and `cunicu-config` TXT records can be provided multiple times. Others not.
 
 ## Remote Configuration File
 
-When `wice daemon` can be started with `--config` options pointing to HTTPS URIs.
-cunicu will download all configuration files in the order they are specified on the command line and merge them subsequently.
+When `cunicu daemon` can be started with `--config` options pointing to HTTPS URIs.
+cunīcu will download all configuration files in the order they are specified on the command line and merge them subsequently.
 
 This feature can be combined with the DNS auto-configuration method by providing a TXT record pointing to the configuration file:
 
 ```text
-example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
+example.com.             3600 IN TXT "cunicu-config=https://example.com/cunicu.yaml"
 ```
 
 **Note:** Remote configuration files must be fetched via HTTPS if they are not hosted locally and required a trusted server certificate.

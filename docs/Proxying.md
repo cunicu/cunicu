@@ -1,21 +1,21 @@
 # Proxying
 
-cunicu implements multiple ways of running an ICE agent alongside WireGuard on the same UDP ports.
+cunīcu implements multiple ways of running an ICE agent alongside WireGuard on the same UDP ports.
 
 ## Kernel WireGuard module
 
 ### User-space
 
 For each WG peer a new local UDP socket is opened.
-cunicu will update the endpoint address of the peer to this the local address of the new sockets.
+cunīcu will update the endpoint address of the peer to this the local address of the new sockets.
 
-WireGuard traffic is proxied by cunicu between the local UDP and the ICE socket.
+WireGuard traffic is proxied by cunīcu between the local UDP and the ICE socket.
 
 ### RAW Sockets + BPF filter (Kernel)
 
 We allocate a single [Linux RAW socket][raw-sockets] and assign a [eBPF][golang-bpf] filter to this socket which will only match STUN traffic to a specific UDP port.
-UDP headers are parsed/produced by cunicu.
-cunicu uses a UDPMux to mux all peers ICE Agents over this single RAW socket. 
+UDP headers are parsed/produced by cunīcu.
+cunīcu uses a UDPMux to mux all peers ICE Agents over this single RAW socket. 
 
 ### NFtables port-redirection (Kernel)
 
@@ -24,11 +24,11 @@ The input rule will match all non-STUN traffic directed at the local port of the
 The output rule will mach all traffic originating from the listen port of the WG interface and directed to the port of the remote candidate and rewrites the source port to the port of the local ICE candidate.  
 
 WireGuard traffic passes only through the Netfilter chains and remains inside the kernel.
-Only STUN binding requests are passed to cunicu.
+Only STUN binding requests are passed to cunīcu.
 
 ```bash
 $ sudo nft list ruleset
-table inet wice {
+table inet cunicu {
     chain ingress {
         type filter hook input priority raw; policy accept;
         udp dport 37281 @th,96,32 != 554869826 notrack udp dport set 1001
@@ -50,22 +50,22 @@ Similar to NFTables port-natting by using the legacy IPTables API.
 ### User-space Proxy
 
 Just like for the Kernel WireGuard module, a dedicated UDP socket for each WG peer is created.
-cunicu will update the endpoint address of the peer to this the local address of the new sockets.
+cunīcu will update the endpoint address of the peer to this the local address of the new sockets.
 
-WireGuard traffic is proxied by cunicu between the local UDP and the ICE socket.
+WireGuard traffic is proxied by cunīcu between the local UDP and the ICE socket.
 
 ### In-process socket
 
-cunicu implements wireguard-go's `conn.Bind` interface to handle WireGuard's network IO.
+cunīcu implements wireguard-go's `conn.Bind` interface to handle WireGuard's network IO.
 
 WireGuard traffic is passed directly between `conn.Bind` and Pion's `ice.Conn`.
 No round-trip through the kernel stack is required.
 
-**Note:** This variant only works for the compiled-in version of wireguard-go in cunicu.
+**Note:** This variant only works for the compiled-in version of wireguard-go in cunīcu.
 
 ## Flowchart
 
-![](./images/wice_proxy.svg)
+![](./images/proxy.svg)
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 

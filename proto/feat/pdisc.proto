@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice.pdisc;
+package cunicu.pdisc;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/pdisc";
 
 import "common.proto";
@@ -28,6 +28,6 @@ message PeerDescription {
     // List of allowed IPs
     repeated string allowed_ips = 5;
 
-    // wice build information
+    // cunicu build information
     BuildInfo build_info = 6;
 }

@@ -3,7 +3,7 @@ package config
 import "github.com/stv0g/cunicu/pkg/wg"
 
 const (
-	DefaultSocketPath = "/var/run/wice.sock"
+	DefaultSocketPath = "/var/run/cunicu.sock"
 	DefaultURL        = "stun:stun.l.google.com:19302"
 
 	// Ephemeral Port Range (RFC6056 Sect. 2.1)
@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	DefaultBackends = []string{"grpc://wice.0l.de:443"}
+	DefaultBackends = []string{"grpc://signal.cunicu.li:443"}
 )
 
 func (c *Config) SetDefaults() {

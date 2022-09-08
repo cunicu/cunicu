@@ -13,8 +13,8 @@ type BackendConfig struct {
 }
 
 var defaultConfig = BackendConfig{
-	GenerateName: "wice-",
-	Namespace:    "wice",
+	GenerateName: "cunicu-",
+	Namespace:    "cunicu",
 }
 
 func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {

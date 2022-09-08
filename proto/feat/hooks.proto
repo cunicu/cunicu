@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice.hooks;
+package cunicu.hooks;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/hooks";
 
 import "core/interface.proto";

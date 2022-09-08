@@ -349,40 +349,40 @@ func file_rpc_daemon_proto_rawDescGZIP() []byte {
 
 var file_rpc_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_rpc_daemon_proto_goTypes = []interface{}{
-	(*StatusResp)(nil),      // 0: wice.rpc.StatusResp
-	(*StatusParams)(nil),    // 1: wice.rpc.StatusParams
-	(*SetConfigParams)(nil), // 2: wice.rpc.SetConfigParams
-	(*GetConfigParams)(nil), // 3: wice.rpc.GetConfigParams
-	(*GetConfigResp)(nil),   // 4: wice.rpc.GetConfigResp
-	nil,                     // 5: wice.rpc.SetConfigParams.SettingsEntry
-	nil,                     // 6: wice.rpc.GetConfigResp.SettingsEntry
-	(*core.Interface)(nil),  // 7: wice.core.Interface
-	(*proto.Empty)(nil),     // 8: wice.Empty
-	(*proto.BuildInfo)(nil), // 9: wice.BuildInfo
-	(*Event)(nil),           // 10: wice.rpc.Event
+	(*StatusResp)(nil),      // 0: cunicu.rpc.StatusResp
+	(*StatusParams)(nil),    // 1: cunicu.rpc.StatusParams
+	(*SetConfigParams)(nil), // 2: cunicu.rpc.SetConfigParams
+	(*GetConfigParams)(nil), // 3: cunicu.rpc.GetConfigParams
+	(*GetConfigResp)(nil),   // 4: cunicu.rpc.GetConfigResp
+	nil,                     // 5: cunicu.rpc.SetConfigParams.SettingsEntry
+	nil,                     // 6: cunicu.rpc.GetConfigResp.SettingsEntry
+	(*core.Interface)(nil),  // 7: cunicu.core.Interface
+	(*proto.Empty)(nil),     // 8: cunicu.Empty
+	(*proto.BuildInfo)(nil), // 9: cunicu.BuildInfo
+	(*Event)(nil),           // 10: cunicu.rpc.Event
 }
 var file_rpc_daemon_proto_depIdxs = []int32{
-	7,  // 0: wice.rpc.StatusResp.interfaces:type_name -> wice.core.Interface
-	5,  // 1: wice.rpc.SetConfigParams.settings:type_name -> wice.rpc.SetConfigParams.SettingsEntry
-	6,  // 2: wice.rpc.GetConfigResp.settings:type_name -> wice.rpc.GetConfigResp.SettingsEntry
-	8,  // 3: wice.rpc.Daemon.GetBuildInfo:input_type -> wice.Empty
-	8,  // 4: wice.rpc.Daemon.StreamEvents:input_type -> wice.Empty
-	8,  // 5: wice.rpc.Daemon.UnWait:input_type -> wice.Empty
-	8,  // 6: wice.rpc.Daemon.Stop:input_type -> wice.Empty
-	8,  // 7: wice.rpc.Daemon.Restart:input_type -> wice.Empty
-	8,  // 8: wice.rpc.Daemon.Sync:input_type -> wice.Empty
-	1,  // 9: wice.rpc.Daemon.GetStatus:input_type -> wice.rpc.StatusParams
-	2,  // 10: wice.rpc.Daemon.SetConfig:input_type -> wice.rpc.SetConfigParams
-	3,  // 11: wice.rpc.Daemon.GetConfig:input_type -> wice.rpc.GetConfigParams
-	9,  // 12: wice.rpc.Daemon.GetBuildInfo:output_type -> wice.BuildInfo
-	10, // 13: wice.rpc.Daemon.StreamEvents:output_type -> wice.rpc.Event
-	8,  // 14: wice.rpc.Daemon.UnWait:output_type -> wice.Empty
-	8,  // 15: wice.rpc.Daemon.Stop:output_type -> wice.Empty
-	8,  // 16: wice.rpc.Daemon.Restart:output_type -> wice.Empty
-	8,  // 17: wice.rpc.Daemon.Sync:output_type -> wice.Empty
-	0,  // 18: wice.rpc.Daemon.GetStatus:output_type -> wice.rpc.StatusResp
-	8,  // 19: wice.rpc.Daemon.SetConfig:output_type -> wice.Empty
-	4,  // 20: wice.rpc.Daemon.GetConfig:output_type -> wice.rpc.GetConfigResp
+	7,  // 0: cunicu.rpc.StatusResp.interfaces:type_name -> cunicu.core.Interface
+	5,  // 1: cunicu.rpc.SetConfigParams.settings:type_name -> cunicu.rpc.SetConfigParams.SettingsEntry
+	6,  // 2: cunicu.rpc.GetConfigResp.settings:type_name -> cunicu.rpc.GetConfigResp.SettingsEntry
+	8,  // 3: cunicu.rpc.Daemon.GetBuildInfo:input_type -> cunicu.Empty
+	8,  // 4: cunicu.rpc.Daemon.StreamEvents:input_type -> cunicu.Empty
+	8,  // 5: cunicu.rpc.Daemon.UnWait:input_type -> cunicu.Empty
+	8,  // 6: cunicu.rpc.Daemon.Stop:input_type -> cunicu.Empty
+	8,  // 7: cunicu.rpc.Daemon.Restart:input_type -> cunicu.Empty
+	8,  // 8: cunicu.rpc.Daemon.Sync:input_type -> cunicu.Empty
+	1,  // 9: cunicu.rpc.Daemon.GetStatus:input_type -> cunicu.rpc.StatusParams
+	2,  // 10: cunicu.rpc.Daemon.SetConfig:input_type -> cunicu.rpc.SetConfigParams
+	3,  // 11: cunicu.rpc.Daemon.GetConfig:input_type -> cunicu.rpc.GetConfigParams
+	9,  // 12: cunicu.rpc.Daemon.GetBuildInfo:output_type -> cunicu.BuildInfo
+	10, // 13: cunicu.rpc.Daemon.StreamEvents:output_type -> cunicu.rpc.Event
+	8,  // 14: cunicu.rpc.Daemon.UnWait:output_type -> cunicu.Empty
+	8,  // 15: cunicu.rpc.Daemon.Stop:output_type -> cunicu.Empty
+	8,  // 16: cunicu.rpc.Daemon.Restart:output_type -> cunicu.Empty
+	8,  // 17: cunicu.rpc.Daemon.Sync:output_type -> cunicu.Empty
+	0,  // 18: cunicu.rpc.Daemon.GetStatus:output_type -> cunicu.rpc.StatusResp
+	8,  // 19: cunicu.rpc.Daemon.SetConfig:output_type -> cunicu.Empty
+	4,  // 20: cunicu.rpc.Daemon.GetConfig:output_type -> cunicu.rpc.GetConfigResp
 	12, // [12:21] is the sub-list for method output_type
 	3,  // [3:12] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name

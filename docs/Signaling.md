@@ -57,7 +57,7 @@ Checkout the [`pkg/pb/signaling.proto`](../pkg/pb/signaling.proto) for details.
 
 ## Backends
 
-cunicu can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
+cunīcu can support multiple backends for signaling session information such as session IDs, ICE candidates, public keys and STUN credentials.
 
 ### Available backends
 
@@ -79,7 +79,7 @@ A backend must:
 
 ### Interface
 
-All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/stv0g/wice/blob/master/pkg/signaling/backend.go):
+All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/stv0g/cunicu/blob/master/pkg/signaling/backend.go):
 
 ```go
 type Message = pb.SignalingMessage

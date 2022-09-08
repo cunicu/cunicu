@@ -1,0 +1,133 @@
+.nh
+.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+
+.SH NAME
+.PP
+cunicu-daemon - Start the daemon
+
+
+.SH SYNOPSIS
+.PP
+\fBcunicu daemon [interfaces...] [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Start the daemon
+
+
+.SH OPTIONS
+.PP
+\fB-A\fP, \fB--auto-config\fP[=true]
+	Enable setup of link-local addresses and missing interface options
+
+.PP
+\fB-b\fP, \fB--backend\fP=[]
+	One or more \fB\fCURL\fRs to signaling backends
+
+.PP
+\fB-x\fP, \fB--community\fP=""
+	A \fB\fCpassphrase\fR shared with other peers in the same community
+
+.PP
+\fB-c\fP, \fB--config\fP=[]
+	One or more \fB\fCfilename\fRs of configuration files
+
+.PP
+\fB-w\fP, \fB--config-path\fP=""
+	The \fB\fCdirectory\fR of WireGuard wg/wg-quick configuration files
+
+.PP
+\fB-S\fP, \fB--config-sync\fP[=true]
+	Enable synchronization of WireGuard configuration files
+
+.PP
+\fB-W\fP, \fB--config-watch\fP[=false]
+	Watch and synchronize changes to the WireGuard configuration files
+
+.PP
+\fB-D\fP, \fB--domain\fP=""
+	A DNS \fB\fCdomain\fR name used for DNS auto-configuration
+
+.PP
+\fB-I\fP, \fB--endpoint-disc\fP[=true]
+	Enable ICE endpoint discovery
+
+.PP
+\fB-H\fP, \fB--host-sync\fP[=true]
+	Enable synchronization of /etc/hosts file
+
+.PP
+\fB--ice-candidate-type\fP=[]
+	Usable \fB\fCcandidate-type\fRs (one of host, srflx, prflx, relay)
+
+.PP
+\fB--ice-network-type\fP=[]
+	Usable \fB\fCnetwork-type\fRs (one of udp4, udp6, tcp4, tcp6)
+
+.PP
+\fB-P\fP, \fB--password\fP=""
+	The \fB\fCpassword\fR for STUN/TURN credentials
+
+.PP
+\fB-R\fP, \fB--route-sync\fP[=true]
+	Enable synchronization of AllowedIPs and Kernel routing table
+
+.PP
+\fB-T\fP, \fB--route-table\fP="main"
+	Kernel routing table to use
+
+.PP
+\fB-s\fP, \fB--rpc-socket\fP=""
+	The \fB\fCpath\fR of the unix socket used by other cunicu commands
+
+.PP
+\fB--rpc-wait\fP[=false]
+	Wait until first client connected to control socket before continuing start
+
+.PP
+\fB-a\fP, \fB--url\fP=[]
+	One or more \fB\fCURL\fRs of STUN and/or TURN servers
+
+.PP
+\fB-U\fP, \fB--username\fP=""
+	The \fB\fCusername\fR for STUN/TURN credentials
+
+.PP
+\fB-i\fP, \fB--watch-interval\fP=0s
+	An interval at which we are periodically polling the kernel for updates on WireGuard interfaces
+
+.PP
+\fB-f\fP, \fB--wg-interface-filter\fP=".\fI"
+	A \fB\fCregex\fR for filtering WireGuard interfaces (e.g. "wg-.\fP")
+
+.PP
+\fB-u\fP, \fB--wg-userspace\fP[=false]
+	Create new interfaces with userspace WireGuard implementation
+
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for daemon
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
+.PP
+\fB-d\fP, \fB--log-level\fP="info"
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
+
+.PP
+\fB-v\fP, \fB--verbose\fP=0
+	verbosity level
+
+
+.SH SEE ALSO
+.PP
+\fBcunicu(3)\fP

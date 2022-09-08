@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice.rpc;
+package cunicu.rpc;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/rpc";
 
 import "common.proto";

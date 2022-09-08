@@ -124,8 +124,8 @@ jobs:
         GOARCH: ${{ matrix.host_arch }}
       run: make install-deps
 
-    - name: Run wice build
-      run: make wice
+    - name: Run cunicu build
+      run: make cunicu
       
     - name: Run vet
       run: make vet

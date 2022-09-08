@@ -1,0 +1,49 @@
+.nh
+.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+
+.SH NAME
+.PP
+cunicu-config-get - Get current value of a configuration setting
+
+
+.SH SYNOPSIS
+.PP
+\fBcunicu config get key [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Get current value of a configuration setting
+
+
+.SH OPTIONS
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for get
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
+.PP
+\fB-d\fP, \fB--log-level\fP="info"
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
+
+.PP
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
+	Unix control and monitoring socket
+
+.PP
+\fB-v\fP, \fB--verbose\fP=0
+	verbosity level
+
+
+.SH SEE ALSO
+.PP
+\fBcunicu-config(3)\fP

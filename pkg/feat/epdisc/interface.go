@@ -60,7 +60,7 @@ func NewInterface(ci *core.Interface, d *EndpointDiscovery) (*Interface, error) 
 	// Setup Netfilter PAT for non-userspace devices
 	if _, ok := i.KernelDevice.(*device.UserDevice); !ok {
 		// Setup NAT
-		ident := fmt.Sprintf("wice-if%d", i.KernelDevice.Index())
+		ident := fmt.Sprintf("cunicu-if%d", i.KernelDevice.Index())
 		if i.nat, err = proxy.NewNAT(ident); err != nil && !errors.Is(err, errorsx.ErrNotSupported) {
 			return nil, fmt.Errorf("failed to setup NAT: %w", err)
 		}

@@ -17,7 +17,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
-	wice "github.com/stv0g/cunicu/pkg"
+	cunicu "github.com/stv0g/cunicu/pkg"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
@@ -27,10 +27,10 @@ type DaemonServer struct {
 	rpcproto.UnimplementedDaemonServer
 
 	*Server
-	*wice.Daemon
+	*cunicu.Daemon
 }
 
-func NewDaemonServer(s *Server, d *wice.Daemon) *DaemonServer {
+func NewDaemonServer(s *Server, d *cunicu.Daemon) *DaemonServer {
 	ds := &DaemonServer{
 		Server: s,
 		Daemon: d,

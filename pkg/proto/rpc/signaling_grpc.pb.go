@@ -37,7 +37,7 @@ func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 
 func (c *signalingClient) GetSignalingMessage(ctx context.Context, in *GetSignalingMessageParams, opts ...grpc.CallOption) (*GetSignalingMessageResp, error) {
 	out := new(GetSignalingMessageResp)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Signaling/GetSignalingMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Signaling/GetSignalingMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *signalingClient) GetSignalingMessage(ctx context.Context, in *GetSignal
 
 func (c *signalingClient) PutSignalingMessage(ctx context.Context, in *PutSignalingMessageParams, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Signaling/PutSignalingMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Signaling/PutSignalingMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func _Signaling_GetSignalingMessage_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Signaling/GetSignalingMessage",
+		FullMethod: "/cunicu.rpc.Signaling/GetSignalingMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SignalingServer).GetSignalingMessage(ctx, req.(*GetSignalingMessageParams))
@@ -113,7 +113,7 @@ func _Signaling_PutSignalingMessage_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Signaling/PutSignalingMessage",
+		FullMethod: "/cunicu.rpc.Signaling/PutSignalingMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SignalingServer).PutSignalingMessage(ctx, req.(*PutSignalingMessageParams))
@@ -125,7 +125,7 @@ func _Signaling_PutSignalingMessage_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Signaling_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wice.rpc.Signaling",
+	ServiceName: "cunicu.rpc.Signaling",
 	HandlerType: (*SignalingServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

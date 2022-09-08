@@ -1,6 +1,6 @@
 # Development
 
-wice is written in 100% Go and as such we heavily rely on the awesome tooling and packages for Golang:
+cunīcu is written in 100% Go and as such we heavily rely on the awesome tooling and packages for Golang:
 
 -   [GoReleaser](https://goreleaser.com/) for release automation
 -   [Ginkgo](https://onsi.github.io/ginkgo) and [Gomega](https://onsi.github.io/gomega) for testing
@@ -9,5 +9,6 @@ wice is written in 100% Go and as such we heavily rely on the awesome tooling an
 
 Furthermore use the following services to manage our development:
 
--   [GitHub](https://github.com/stv0g/wice) for source code management and CI pipelines
--   [Codacy](https://app.codacy.com/gh/stv0g/wice/dashboard) for code quality checks and coverage analysis
+-   [GitHub](https://github.com/stv0g/cunicu) for source code management and CI pipelines
+-   [Codacy](https://app.codacy.com/gh/stv0g/cunicu/dashboard) for code quality checks
+-   [Codecov](https://app.codecov.io/gh/stv0g/cunicu) for code coverage analysis

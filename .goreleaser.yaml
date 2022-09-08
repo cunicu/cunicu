@@ -1,5 +1,5 @@
 ---
-project_name: wice
+project_name: cunicu
 
 before:
   hooks:
@@ -20,9 +20,9 @@ checksum:
 #   args: ["-u", "09BE3BAE8D55D4CD8579285A9675EAC34897E6E2", "--output", "${signature}", "--detach-sign", "${artifact}"]
 
 builds:
-- id: wice
-  main: ./cmd/wice
-  binary: wice
+- id: cunicu
+  main: ./cmd/cunicu
+  binary: cunicu
   env:
   - CGO_ENABLED=0
   goos:
@@ -54,7 +54,7 @@ builds:
 
 archives:
 - builds:
-  - wice
+  - cunicu
 
   # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
   files:
@@ -68,7 +68,7 @@ archives:
 
 nfpms:
 - vendor: stv0g
-  homepage: https://github.com/stv0g/wice/
+  homepage: https://github.com/stv0g/cunicu/
   maintainer: Steffen Vogel <post@steffenvogel.de>
   license: Apache 2.0
 
@@ -81,10 +81,10 @@ nfpms:
   - wireguard-tools
 
   contents:
-  - src: "./etc/systemd/wice.service"
-    dst: "/usr/lib/systemd/system/wice.service"
-  - src: "./etc/wice.yaml"
-    dst: "/etc/wice.yaml"
+  - src: "./etc/systemd/cunicu.service"
+    dst: "/usr/lib/systemd/system/cunicu.service"
+  - src: "./etc/cunicu.yaml"
+    dst: "/etc/cunicu.yaml"
     type: config
   - src: "./docs/usage/man/*.3"
     dst: "/usr/share/man/man3"
@@ -171,7 +171,7 @@ publishers:
   cmd: >-
     bash -c "
       if [[ ${ARTIFACT_PATH} == *.rpm || ${ARTIFACT_PATH} == *.deb || ${ARTIFACT_PATH} == *.apk ]]; then
-        curl -F package=@${ARTIFACT_PATH} https://${GEMFURY_TOKEN}@push.fury.io/wice/
+        curl -F package=@${ARTIFACT_PATH} https://${GEMFURY_TOKEN}@push.fury.io/cunicu/
       fi
     "
   env:
@@ -188,7 +188,7 @@ changelog:
 release:
   github:
     owner: stv0g
-    name: wice
+    name: cunicu
 
   draft:  true
   prerelease: auto

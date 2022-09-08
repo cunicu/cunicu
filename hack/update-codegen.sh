@@ -11,6 +11,6 @@ echo "Calling ${CODEGEN_PKG}/generate-groups.sh"
 "${CODEGEN_PKG}"/generate-groups.sh all \
     github.com/stv0g/cunicu/pkg/signaling/k8s/client \
     github.com/stv0g/cunicu/pkg/signaling/k8s/apis \
-    wice:v1 \
+    cunicu:v1 \
     --go-header-file="${CODEGEN_PKG}"/hack/boilerplate.go.txt \
     --trim-path-prefix github.com/stv0g/cunicu

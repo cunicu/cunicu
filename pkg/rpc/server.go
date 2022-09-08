@@ -11,7 +11,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/util"
 
-	wice "github.com/stv0g/cunicu/pkg"
+	cunicu "github.com/stv0g/cunicu/pkg"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
@@ -30,7 +30,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer(d *wice.Daemon, socket string) (*Server, error) {
+func NewServer(d *cunicu.Daemon, socket string) (*Server, error) {
 	s := &Server{
 		events: util.NewFanOut[*rpcproto.Event](1),
 		logger: zap.L().Named("rpc.server"),

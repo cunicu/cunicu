@@ -22,27 +22,27 @@ import (
 	"fmt"
 	"net/http"
 
+	cunicuv1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/cunicu/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	WiceV1() wicev1.WiceV1Interface
+	CunicuV1() cunicuv1.CunicuV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	wiceV1 *wicev1.WiceV1Client
+	cunicuV1 *cunicuv1.CunicuV1Client
 }
 
-// WiceV1 retrieves the WiceV1Client
-func (c *Clientset) WiceV1() wicev1.WiceV1Interface {
-	return c.wiceV1
+// CunicuV1 retrieves the CunicuV1Client
+func (c *Clientset) CunicuV1() cunicuv1.CunicuV1Interface {
+	return c.cunicuV1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -60,6 +60,10 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 // where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
+
+	if configShallowCopy.UserAgent == "" {
+		configShallowCopy.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	// share the transport between all clients
 	httpClient, err := rest.HTTPClientFor(&configShallowCopy)
@@ -85,7 +89,7 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.wiceV1, err = wicev1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.cunicuV1, err = cunicuv1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +114,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.wiceV1 = wicev1.New(c)
+	cs.cunicuV1 = cunicuv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

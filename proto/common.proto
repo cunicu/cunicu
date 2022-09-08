@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice;
+package cunicu;
 option go_package = "github.com/stv0g/cunicu/pkg/proto";
 
 message Empty {}

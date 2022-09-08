@@ -225,15 +225,15 @@ func file_core_peer_proto_rawDescGZIP() []byte {
 
 var file_core_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_core_peer_proto_goTypes = []interface{}{
-	(*Peer)(nil),            // 0: wice.core.Peer
-	(*proto.Timestamp)(nil), // 1: wice.Timestamp
-	(*epdisc.Peer)(nil),     // 2: wice.epdisc.Peer
+	(*Peer)(nil),            // 0: cunicu.core.Peer
+	(*proto.Timestamp)(nil), // 1: cunicu.Timestamp
+	(*epdisc.Peer)(nil),     // 2: cunicu.epdisc.Peer
 }
 var file_core_peer_proto_depIdxs = []int32{
-	1, // 0: wice.core.Peer.last_handshake_timestamp:type_name -> wice.Timestamp
-	1, // 1: wice.core.Peer.last_receive_timestamp:type_name -> wice.Timestamp
-	1, // 2: wice.core.Peer.last_transmit_timestamp:type_name -> wice.Timestamp
-	2, // 3: wice.core.Peer.ice:type_name -> wice.epdisc.Peer
+	1, // 0: cunicu.core.Peer.last_handshake_timestamp:type_name -> cunicu.Timestamp
+	1, // 1: cunicu.core.Peer.last_receive_timestamp:type_name -> cunicu.Timestamp
+	1, // 2: cunicu.core.Peer.last_transmit_timestamp:type_name -> cunicu.Timestamp
+	2, // 3: cunicu.core.Peer.ice:type_name -> cunicu.epdisc.Peer
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

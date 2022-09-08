@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	hostsCommentPrefix = "wice"
+	hostsCommentPrefix = "cunicu"
 	hostsPath          = "/etc/hosts"
 )
 
@@ -79,7 +79,7 @@ func (hs *HostsSync) Sync() error {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	// Filter out lines not added by wice
+	// Filter out lines not added by cunīcu
 	lines = util.FilterSlice(lines, func(line string) bool {
 		h, err := ParseHost(line)
 		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix)

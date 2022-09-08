@@ -36,7 +36,7 @@ func NewEndpointDiscoverySocketClient(cc grpc.ClientConnInterface) EndpointDisco
 
 func (c *endpointDiscoverySocketClient) RestartPeer(ctx context.Context, in *RestartPeerParams, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.EndpointDiscoverySocket/RestartPeer", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.EndpointDiscoverySocket/RestartPeer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _EndpointDiscoverySocket_RestartPeer_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.EndpointDiscoverySocket/RestartPeer",
+		FullMethod: "/cunicu.rpc.EndpointDiscoverySocket/RestartPeer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EndpointDiscoverySocketServer).RestartPeer(ctx, req.(*RestartPeerParams))
@@ -94,7 +94,7 @@ func _EndpointDiscoverySocket_RestartPeer_Handler(srv interface{}, ctx context.C
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EndpointDiscoverySocket_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wice.rpc.EndpointDiscoverySocket",
+	ServiceName: "cunicu.rpc.EndpointDiscoverySocket",
 	HandlerType: (*EndpointDiscoverySocketServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

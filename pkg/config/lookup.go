@@ -27,7 +27,7 @@ func (c *Config) lookupTXT(name string) error {
 		return err
 	}
 
-	var re = regexp.MustCompile(`^(?m)wice-(.+?)=(.*)$`)
+	var re = regexp.MustCompile(`^(?m)cunicu-(.+?)=(.*)$`)
 
 	c.logger.Debug("TXT records found", zap.Any("records", rr))
 
@@ -54,7 +54,7 @@ func (c *Config) lookupTXT(name string) error {
 	for txtName, settingName := range txtSettingMap {
 		if values, ok := rrs[txtName]; ok {
 			if len(values) > 1 {
-				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'wice-%s' as there are more than one records with this prefix", txtName))
+				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'cunicu-%s' as there are more than one records with this prefix", txtName))
 			} else {
 				// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
 				c.SetDefault(settingName, values[0])
@@ -70,10 +70,10 @@ func (c *Config) lookupTXT(name string) error {
 		for _, configFile := range configFiles {
 			if u, err := url.Parse(configFile); err == nil {
 				if err := c.MergeRemoteConfig(u); err != nil {
-					return fmt.Errorf("failed to fetch config file from URL in wice-config TXT record: %s", err)
+					return fmt.Errorf("failed to fetch config file from URL in cunicu-config TXT record: %s", err)
 				}
 			} else {
-				return fmt.Errorf("failed to parse URL of config-file in wice-config TXT record: %s", err)
+				return fmt.Errorf("failed to parse URL of config-file in cunicu-config TXT record: %s", err)
 			}
 		}
 	}

@@ -32,7 +32,7 @@ const (
 	ConnectionState_FAILED       ConnectionState = 4 // ConnectionStateFailed ICE agent never could successfully connect
 	ConnectionState_DISCONNECTED ConnectionState = 5 // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
 	ConnectionState_CLOSED       ConnectionState = 6 // ConnectionStateClosed ICE agent has finished and is no longer handling requests
-	// Extended ICE Connection state from wice/pkg/ice/types.go
+	// Extended ICE Connection state from cunicu/pkg/ice/types.go
 	ConnectionState_CREATING   ConnectionState = 100 // ConnectionStateCreating New ICE agent is currently being created
 	ConnectionState_IDLE       ConnectionState = 101 // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
 	ConnectionState_CONNECTING ConnectionState = 102 // ConnectionStateConnecting ICE agent is now connecting to the remote
@@ -320,7 +320,7 @@ type Interface struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NatType      NATType `protobuf:"varint,1,opt,name=nat_type,json=natType,proto3,enum=wice.epdisc.NATType" json:"nat_type,omitempty"`
+	NatType      NATType `protobuf:"varint,1,opt,name=nat_type,json=natType,proto3,enum=cunicu.epdisc.NATType" json:"nat_type,omitempty"`
 	MuxPort      uint32  `protobuf:"varint,2,opt,name=mux_port,json=muxPort,proto3" json:"mux_port,omitempty"`
 	MuxSrflxPort uint32  `protobuf:"varint,3,opt,name=mux_srflx_port,json=muxSrflxPort,proto3" json:"mux_srflx_port,omitempty"`
 }
@@ -383,15 +383,15 @@ type Peer struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProxyType                ProxyType             `protobuf:"varint,1,opt,name=proxy_type,json=proxyType,proto3,enum=wice.epdisc.ProxyType" json:"proxy_type,omitempty"`
-	State                    ConnectionState       `protobuf:"varint,2,opt,name=state,proto3,enum=wice.epdisc.ConnectionState" json:"state,omitempty"`
+	ProxyType                ProxyType             `protobuf:"varint,1,opt,name=proxy_type,json=proxyType,proto3,enum=cunicu.epdisc.ProxyType" json:"proxy_type,omitempty"`
+	State                    ConnectionState       `protobuf:"varint,2,opt,name=state,proto3,enum=cunicu.epdisc.ConnectionState" json:"state,omitempty"`
 	SelectedCandidatePair    *CandidatePair        `protobuf:"bytes,4,opt,name=selected_candidate_pair,json=selectedCandidatePair,proto3" json:"selected_candidate_pair,omitempty"`
 	LocalCandidateStats      []*CandidateStats     `protobuf:"bytes,6,rep,name=local_candidate_stats,json=localCandidateStats,proto3" json:"local_candidate_stats,omitempty"`
 	RemoteCandidateStats     []*CandidateStats     `protobuf:"bytes,7,rep,name=remote_candidate_stats,json=remoteCandidateStats,proto3" json:"remote_candidate_stats,omitempty"`
 	CandidatePairStats       []*CandidatePairStats `protobuf:"bytes,8,rep,name=candidate_pair_stats,json=candidatePairStats,proto3" json:"candidate_pair_stats,omitempty"`
 	LastStateChangeTimestamp *proto.Timestamp      `protobuf:"bytes,9,opt,name=last_state_change_timestamp,json=lastStateChangeTimestamp,proto3" json:"last_state_change_timestamp,omitempty"`
 	Restarts                 uint32                `protobuf:"varint,10,opt,name=restarts,proto3" json:"restarts,omitempty"`
-	Reachability             Reachability          `protobuf:"varint,11,opt,name=reachability,proto3,enum=wice.epdisc.Reachability" json:"reachability,omitempty"`
+	Reachability             Reachability          `protobuf:"varint,11,opt,name=reachability,proto3,enum=cunicu.epdisc.Reachability" json:"reachability,omitempty"`
 }
 
 func (x *Peer) Reset() {
@@ -593,28 +593,28 @@ func file_feat_epdisc_proto_rawDescGZIP() []byte {
 var file_feat_epdisc_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_feat_epdisc_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_feat_epdisc_proto_goTypes = []interface{}{
-	(ConnectionState)(0),       // 0: wice.epdisc.ConnectionState
-	(Reachability)(0),          // 1: wice.epdisc.Reachability
-	(NATType)(0),               // 2: wice.epdisc.NATType
-	(ProxyType)(0),             // 3: wice.epdisc.ProxyType
-	(*Credentials)(nil),        // 4: wice.epdisc.Credentials
-	(*Interface)(nil),          // 5: wice.epdisc.Interface
-	(*Peer)(nil),               // 6: wice.epdisc.Peer
-	(*CandidatePair)(nil),      // 7: wice.epdisc.CandidatePair
-	(*CandidateStats)(nil),     // 8: wice.epdisc.CandidateStats
-	(*CandidatePairStats)(nil), // 9: wice.epdisc.CandidatePairStats
-	(*proto.Timestamp)(nil),    // 10: wice.Timestamp
+	(ConnectionState)(0),       // 0: cunicu.epdisc.ConnectionState
+	(Reachability)(0),          // 1: cunicu.epdisc.Reachability
+	(NATType)(0),               // 2: cunicu.epdisc.NATType
+	(ProxyType)(0),             // 3: cunicu.epdisc.ProxyType
+	(*Credentials)(nil),        // 4: cunicu.epdisc.Credentials
+	(*Interface)(nil),          // 5: cunicu.epdisc.Interface
+	(*Peer)(nil),               // 6: cunicu.epdisc.Peer
+	(*CandidatePair)(nil),      // 7: cunicu.epdisc.CandidatePair
+	(*CandidateStats)(nil),     // 8: cunicu.epdisc.CandidateStats
+	(*CandidatePairStats)(nil), // 9: cunicu.epdisc.CandidatePairStats
+	(*proto.Timestamp)(nil),    // 10: cunicu.Timestamp
 }
 var file_feat_epdisc_proto_depIdxs = []int32{
-	2,  // 0: wice.epdisc.Interface.nat_type:type_name -> wice.epdisc.NATType
-	3,  // 1: wice.epdisc.Peer.proxy_type:type_name -> wice.epdisc.ProxyType
-	0,  // 2: wice.epdisc.Peer.state:type_name -> wice.epdisc.ConnectionState
-	7,  // 3: wice.epdisc.Peer.selected_candidate_pair:type_name -> wice.epdisc.CandidatePair
-	8,  // 4: wice.epdisc.Peer.local_candidate_stats:type_name -> wice.epdisc.CandidateStats
-	8,  // 5: wice.epdisc.Peer.remote_candidate_stats:type_name -> wice.epdisc.CandidateStats
-	9,  // 6: wice.epdisc.Peer.candidate_pair_stats:type_name -> wice.epdisc.CandidatePairStats
-	10, // 7: wice.epdisc.Peer.last_state_change_timestamp:type_name -> wice.Timestamp
-	1,  // 8: wice.epdisc.Peer.reachability:type_name -> wice.epdisc.Reachability
+	2,  // 0: cunicu.epdisc.Interface.nat_type:type_name -> cunicu.epdisc.NATType
+	3,  // 1: cunicu.epdisc.Peer.proxy_type:type_name -> cunicu.epdisc.ProxyType
+	0,  // 2: cunicu.epdisc.Peer.state:type_name -> cunicu.epdisc.ConnectionState
+	7,  // 3: cunicu.epdisc.Peer.selected_candidate_pair:type_name -> cunicu.epdisc.CandidatePair
+	8,  // 4: cunicu.epdisc.Peer.local_candidate_stats:type_name -> cunicu.epdisc.CandidateStats
+	8,  // 5: cunicu.epdisc.Peer.remote_candidate_stats:type_name -> cunicu.epdisc.CandidateStats
+	9,  // 6: cunicu.epdisc.Peer.candidate_pair_stats:type_name -> cunicu.epdisc.CandidatePairStats
+	10, // 7: cunicu.epdisc.Peer.last_state_change_timestamp:type_name -> cunicu.Timestamp
+	1,  // 8: cunicu.epdisc.Peer.reachability:type_name -> cunicu.epdisc.Reachability
 	9,  // [9:9] is the sub-list for method output_type
 	9,  // [9:9] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name

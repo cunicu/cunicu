@@ -226,19 +226,19 @@ func file_rpc_signaling_proto_rawDescGZIP() []byte {
 
 var file_rpc_signaling_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_rpc_signaling_proto_goTypes = []interface{}{
-	(*GetSignalingMessageParams)(nil), // 0: wice.rpc.GetSignalingMessageParams
-	(*GetSignalingMessageResp)(nil),   // 1: wice.rpc.GetSignalingMessageResp
-	(*PutSignalingMessageParams)(nil), // 2: wice.rpc.PutSignalingMessageParams
-	(*signaling.Envelope)(nil),        // 3: wice.signaling.Envelope
-	(*proto.Empty)(nil),               // 4: wice.Empty
+	(*GetSignalingMessageParams)(nil), // 0: cunicu.rpc.GetSignalingMessageParams
+	(*GetSignalingMessageResp)(nil),   // 1: cunicu.rpc.GetSignalingMessageResp
+	(*PutSignalingMessageParams)(nil), // 2: cunicu.rpc.PutSignalingMessageParams
+	(*signaling.Envelope)(nil),        // 3: cunicu.signaling.Envelope
+	(*proto.Empty)(nil),               // 4: cunicu.Empty
 }
 var file_rpc_signaling_proto_depIdxs = []int32{
-	3, // 0: wice.rpc.GetSignalingMessageResp.envelope:type_name -> wice.signaling.Envelope
-	3, // 1: wice.rpc.PutSignalingMessageParams.envelope:type_name -> wice.signaling.Envelope
-	0, // 2: wice.rpc.Signaling.GetSignalingMessage:input_type -> wice.rpc.GetSignalingMessageParams
-	2, // 3: wice.rpc.Signaling.PutSignalingMessage:input_type -> wice.rpc.PutSignalingMessageParams
-	1, // 4: wice.rpc.Signaling.GetSignalingMessage:output_type -> wice.rpc.GetSignalingMessageResp
-	4, // 5: wice.rpc.Signaling.PutSignalingMessage:output_type -> wice.Empty
+	3, // 0: cunicu.rpc.GetSignalingMessageResp.envelope:type_name -> cunicu.signaling.Envelope
+	3, // 1: cunicu.rpc.PutSignalingMessageParams.envelope:type_name -> cunicu.signaling.Envelope
+	0, // 2: cunicu.rpc.Signaling.GetSignalingMessage:input_type -> cunicu.rpc.GetSignalingMessageParams
+	2, // 3: cunicu.rpc.Signaling.PutSignalingMessage:input_type -> cunicu.rpc.PutSignalingMessageParams
+	1, // 4: cunicu.rpc.Signaling.GetSignalingMessage:output_type -> cunicu.rpc.GetSignalingMessageResp
+	4, // 5: cunicu.rpc.Signaling.PutSignalingMessage:output_type -> cunicu.Empty
 	4, // [4:6] is the sub-list for method output_type
 	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
