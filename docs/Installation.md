@@ -42,7 +42,7 @@ cunīcu provides the ability to install via operating system package managers.
 
 ```bash
 sudo apt-get install apt-transport-https --yes
-echo "deb [arch=$(dpkg --print-architecture) trusted=yes] https://packages.riasc.eu/apt/ /" | sudo tee /etc/apt/sources.list.d/riasc.list
+echo "deb [arch=$(dpkg --print-architecture) trusted=yes] https://packages.cunicu.li/apt/ /" | sudo tee /etc/apt/sources.list.d/cunicu.list
 sudo apt-get update
 sudo apt-get install cunicu
 ```
@@ -50,10 +50,10 @@ sudo apt-get install cunicu
 ### From Yum (Redhat, Fedora, RockyLinux)
 
 ```bash
-sudo cat > /etc/yum.repos.d/riasc.repo <<EOF
-[riasc]
-name=RIasC
-baseurl=https://packages.riasc.eu/yum/
+sudo cat > /etc/yum.repos.d/cunicu.repo <<EOF
+[cunicu]
+name=cunicu
+baseurl=https://packages.cunicu/yum/
 enabled=1
 gpgcheck=0
 EOF
