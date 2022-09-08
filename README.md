@@ -43,7 +43,10 @@ Documentation of cunicu can be found in the [`docs/`](./docs) directory.
 
 ## Join us
 
-Please feel free to [join our Slack channel](https://join.slack.com/t/gophers/shared_invite/zt-1447h1rgj-s9W5BcyRzBxUwNAZJUKmaQ) `#wice` in the [Gophers workspace](https://gophers.slack.com/) and say 👋.
+
+## Name
+
+The project name _cunīcu_ is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
 
 ## License
 
