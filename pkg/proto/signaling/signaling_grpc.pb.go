@@ -8,10 +8,10 @@ package signaling
 
 import (
 	context "context"
+	proto "github.com/stv0g/cunicu/pkg/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	proto "github.com/stv0g/cunicu/pkg/proto"
 )
 
 // This is a compile-time assertion to ensure that this generated file
