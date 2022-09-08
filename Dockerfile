@@ -18,6 +18,6 @@ RUN make
 
 FROM alpine:3.16
 
-COPY --from=builder /app/wice /
+COPY --from=builder /app/cunicu /
 
-ENTRYPOINT ["/wice"]
+ENTRYPOINT ["/cunicu"]

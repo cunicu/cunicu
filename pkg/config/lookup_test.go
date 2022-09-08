@@ -21,7 +21,7 @@ var _ = Describe("lookup", func() {
 	var dnsSrv *mockdns.Server
 	var webSrv *ghttp.Server
 
-	var cfgPath = "/wice"
+	var cfgPath = "/cunicu"
 
 	BeforeEach(func() {
 		var err error
@@ -44,12 +44,12 @@ var _ = Describe("lookup", func() {
 			"example.com.": {
 				A: []string{"1.2.3.4"},
 				TXT: []string{
-					"wice-backend=p2p",
-					"wice-backend=grpc://example.com:8080",
-					"wice-community=my-community-password",
-					"wice-ice-username=user1",
-					"wice-ice-password=pass1",
-					fmt.Sprintf("wice-config=%s%s", webSrv.URL(), cfgPath),
+					"cunicu-backend=p2p",
+					"cunicu-backend=grpc://example.com:8080",
+					"cunicu-community=my-community-password",
+					"cunicu-ice-username=user1",
+					"cunicu-ice-password=pass1",
+					fmt.Sprintf("cunicu-config=%s%s", webSrv.URL(), cfgPath),
 				},
 			},
 			"_stun._udp.example.com.": {

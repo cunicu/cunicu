@@ -328,15 +328,15 @@ func file_common_proto_rawDescGZIP() []byte {
 
 var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_common_proto_goTypes = []interface{}{
-	(*Empty)(nil),      // 0: wice.Empty
-	(*Timestamp)(nil),  // 1: wice.Timestamp
-	(*BuildInfo)(nil),  // 2: wice.BuildInfo
-	(*BuildInfos)(nil), // 3: wice.BuildInfos
+	(*Empty)(nil),      // 0: cunicu.Empty
+	(*Timestamp)(nil),  // 1: cunicu.Timestamp
+	(*BuildInfo)(nil),  // 2: cunicu.BuildInfo
+	(*BuildInfos)(nil), // 3: cunicu.BuildInfos
 }
 var file_common_proto_depIdxs = []int32{
-	1, // 0: wice.BuildInfo.date:type_name -> wice.Timestamp
-	2, // 1: wice.BuildInfos.client:type_name -> wice.BuildInfo
-	2, // 2: wice.BuildInfos.daemon:type_name -> wice.BuildInfo
+	1, // 0: cunicu.BuildInfo.date:type_name -> cunicu.Timestamp
+	2, // 1: cunicu.BuildInfos.client:type_name -> cunicu.BuildInfo
+	2, // 2: cunicu.BuildInfos.daemon:type_name -> cunicu.BuildInfo
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

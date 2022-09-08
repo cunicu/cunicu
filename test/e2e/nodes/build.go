@@ -40,14 +40,14 @@ func BuildTestBinary(name string) (string, []any, error) {
 	if testBinaryPath == "" {
 		buildArgs := []string{}
 
-		// Pass-through -race option from Ginkgo to wice binary
+		// Pass-through -race option from Ginkgo to cunīcu binary
 		if test.IsRace {
 			buildArgs = append(buildArgs, "-race")
 		}
 
 		// Build a test binary if profiling is requested
 		if len(profileFlags) > 0 {
-			// Generate coverage for all wice packages
+			// Generate coverage for all cunīcu packages
 			profileFlags["coverpkg"] = "../../..."
 
 			buildArgs = append(buildArgs, "-tags", "test")
@@ -59,9 +59,9 @@ func BuildTestBinary(name string) (string, []any, error) {
 
 			// We compile a dummy go test binary here which just
 			// invokes main(), but is instrumented for profiling.
-			testBinaryPath, err = gexec.CompileTest("../../cmd/wice", buildArgs...)
+			testBinaryPath, err = gexec.CompileTest("../../cmd/cunicu", buildArgs...)
 		} else {
-			testBinaryPath, err = gexec.Build("../../cmd/wice", buildArgs...)
+			testBinaryPath, err = gexec.Build("../../cmd/cunicu", buildArgs...)
 		}
 	}
 

@@ -19,7 +19,7 @@ import (
  *  - 3x NAT routers        [nat?]
  *  - 2x WAN switches       [wan?]
  *  - 2x LAN switches       [lan?]
- *  - 2-5x wice Agent nodes [n?]
+ *  - 2-5x cunicu Agent nodes [n?]
  *
  *
  *             ┌──────┐   ┌──────┐   ┌──────┐

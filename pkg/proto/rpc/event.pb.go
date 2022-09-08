@@ -101,7 +101,7 @@ type Event struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type EventType        `protobuf:"varint,1,opt,name=type,proto3,enum=wice.rpc.EventType" json:"type,omitempty"`
+	Type EventType        `protobuf:"varint,1,opt,name=type,proto3,enum=cunicu.rpc.EventType" json:"type,omitempty"`
 	Time *proto.Timestamp `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
 	// Public key of peer which triggerd the event
 	Peer []byte `protobuf:"bytes,3,opt,name=peer,proto3" json:"peer,omitempty"`
@@ -338,8 +338,8 @@ type PeerConnectionStateChangeEvent struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NewState  epdisc.ConnectionState `protobuf:"varint,1,opt,name=new_state,json=newState,proto3,enum=wice.epdisc.ConnectionState" json:"new_state,omitempty"`
-	PrevState epdisc.ConnectionState `protobuf:"varint,2,opt,name=prev_state,json=prevState,proto3,enum=wice.epdisc.ConnectionState" json:"prev_state,omitempty"`
+	NewState  epdisc.ConnectionState `protobuf:"varint,1,opt,name=new_state,json=newState,proto3,enum=cunicu.epdisc.ConnectionState" json:"new_state,omitempty"`
+	PrevState epdisc.ConnectionState `protobuf:"varint,2,opt,name=prev_state,json=prevState,proto3,enum=cunicu.epdisc.ConnectionState" json:"prev_state,omitempty"`
 }
 
 func (x *PeerConnectionStateChangeEvent) Reset() {
@@ -393,7 +393,7 @@ type SignalingBackendReadyEvent struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type signaling.BackendType `protobuf:"varint,1,opt,name=type,proto3,enum=wice.signaling.BackendType" json:"type,omitempty"`
+	Type signaling.BackendType `protobuf:"varint,1,opt,name=type,proto3,enum=cunicu.signaling.BackendType" json:"type,omitempty"`
 }
 
 func (x *SignalingBackendReadyEvent) Reset() {
@@ -529,26 +529,26 @@ func file_rpc_event_proto_rawDescGZIP() []byte {
 var file_rpc_event_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_rpc_event_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_rpc_event_proto_goTypes = []interface{}{
-	(EventType)(0),                         // 0: wice.rpc.EventType
-	(*Event)(nil),                          // 1: wice.rpc.Event
-	(*PeerModifiedEvent)(nil),              // 2: wice.rpc.PeerModifiedEvent
-	(*InterfaceModifiedEvent)(nil),         // 3: wice.rpc.InterfaceModifiedEvent
-	(*PeerConnectionStateChangeEvent)(nil), // 4: wice.rpc.PeerConnectionStateChangeEvent
-	(*SignalingBackendReadyEvent)(nil),     // 5: wice.rpc.SignalingBackendReadyEvent
-	(*proto.Timestamp)(nil),                // 6: wice.Timestamp
-	(epdisc.ConnectionState)(0),            // 7: wice.epdisc.ConnectionState
-	(signaling.BackendType)(0),             // 8: wice.signaling.BackendType
+	(EventType)(0),                         // 0: cunicu.rpc.EventType
+	(*Event)(nil),                          // 1: cunicu.rpc.Event
+	(*PeerModifiedEvent)(nil),              // 2: cunicu.rpc.PeerModifiedEvent
+	(*InterfaceModifiedEvent)(nil),         // 3: cunicu.rpc.InterfaceModifiedEvent
+	(*PeerConnectionStateChangeEvent)(nil), // 4: cunicu.rpc.PeerConnectionStateChangeEvent
+	(*SignalingBackendReadyEvent)(nil),     // 5: cunicu.rpc.SignalingBackendReadyEvent
+	(*proto.Timestamp)(nil),                // 6: cunicu.Timestamp
+	(epdisc.ConnectionState)(0),            // 7: cunicu.epdisc.ConnectionState
+	(signaling.BackendType)(0),             // 8: cunicu.signaling.BackendType
 }
 var file_rpc_event_proto_depIdxs = []int32{
-	0, // 0: wice.rpc.Event.type:type_name -> wice.rpc.EventType
-	6, // 1: wice.rpc.Event.time:type_name -> wice.Timestamp
-	5, // 2: wice.rpc.Event.backend_ready:type_name -> wice.rpc.SignalingBackendReadyEvent
-	4, // 3: wice.rpc.Event.peer_connection_state_change:type_name -> wice.rpc.PeerConnectionStateChangeEvent
-	2, // 4: wice.rpc.Event.peer_modified:type_name -> wice.rpc.PeerModifiedEvent
-	3, // 5: wice.rpc.Event.interface_modified:type_name -> wice.rpc.InterfaceModifiedEvent
-	7, // 6: wice.rpc.PeerConnectionStateChangeEvent.new_state:type_name -> wice.epdisc.ConnectionState
-	7, // 7: wice.rpc.PeerConnectionStateChangeEvent.prev_state:type_name -> wice.epdisc.ConnectionState
-	8, // 8: wice.rpc.SignalingBackendReadyEvent.type:type_name -> wice.signaling.BackendType
+	0, // 0: cunicu.rpc.Event.type:type_name -> cunicu.rpc.EventType
+	6, // 1: cunicu.rpc.Event.time:type_name -> cunicu.Timestamp
+	5, // 2: cunicu.rpc.Event.backend_ready:type_name -> cunicu.rpc.SignalingBackendReadyEvent
+	4, // 3: cunicu.rpc.Event.peer_connection_state_change:type_name -> cunicu.rpc.PeerConnectionStateChangeEvent
+	2, // 4: cunicu.rpc.Event.peer_modified:type_name -> cunicu.rpc.PeerModifiedEvent
+	3, // 5: cunicu.rpc.Event.interface_modified:type_name -> cunicu.rpc.InterfaceModifiedEvent
+	7, // 6: cunicu.rpc.PeerConnectionStateChangeEvent.new_state:type_name -> cunicu.epdisc.ConnectionState
+	7, // 7: cunicu.rpc.PeerConnectionStateChangeEvent.prev_state:type_name -> cunicu.epdisc.ConnectionState
+	8, // 8: cunicu.rpc.SignalingBackendReadyEvent.type:type_name -> cunicu.signaling.BackendType
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
 	9, // [9:9] is the sub-list for extension type_name

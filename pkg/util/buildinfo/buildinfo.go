@@ -54,7 +54,7 @@ func BuildInfo() *proto.BuildInfo {
 }
 
 func UserAgent() string {
-	return fmt.Sprintf("wice/%s (%s/%s rev %s)", Version, runtime.GOOS, runtime.GOARCH, Commit)
+	return fmt.Sprintf("cunicu/%s (%s/%s rev %s)", Version, runtime.GOOS, runtime.GOARCH, Commit)
 }
 
 func ReadVCSInfos() (bool, string, bool, *time.Time) {

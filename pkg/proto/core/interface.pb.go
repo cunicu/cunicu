@@ -86,7 +86,7 @@ type Interface struct {
 	unknownFields protoimpl.UnknownFields
 
 	Name              string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type              InterfaceType     `protobuf:"varint,2,opt,name=type,proto3,enum=wice.core.InterfaceType" json:"type,omitempty"`
+	Type              InterfaceType     `protobuf:"varint,2,opt,name=type,proto3,enum=cunicu.core.InterfaceType" json:"type,omitempty"`
 	PublicKey         []byte            `protobuf:"bytes,3,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 	PrivateKey        []byte            `protobuf:"bytes,4,opt,name=private_key,json=privateKey,proto3" json:"private_key,omitempty"`
 	ListenPort        uint32            `protobuf:"varint,5,opt,name=listen_port,json=listenPort,proto3" json:"listen_port,omitempty"`
@@ -267,17 +267,17 @@ func file_core_interface_proto_rawDescGZIP() []byte {
 var file_core_interface_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_core_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_core_interface_proto_goTypes = []interface{}{
-	(InterfaceType)(0),       // 0: wice.core.InterfaceType
-	(*Interface)(nil),        // 1: wice.core.Interface
-	(*Peer)(nil),             // 2: wice.core.Peer
-	(*epdisc.Interface)(nil), // 3: wice.epdisc.Interface
-	(*proto.Timestamp)(nil),  // 4: wice.Timestamp
+	(InterfaceType)(0),       // 0: cunicu.core.InterfaceType
+	(*Interface)(nil),        // 1: cunicu.core.Interface
+	(*Peer)(nil),             // 2: cunicu.core.Peer
+	(*epdisc.Interface)(nil), // 3: cunicu.epdisc.Interface
+	(*proto.Timestamp)(nil),  // 4: cunicu.Timestamp
 }
 var file_core_interface_proto_depIdxs = []int32{
-	0, // 0: wice.core.Interface.type:type_name -> wice.core.InterfaceType
-	2, // 1: wice.core.Interface.peers:type_name -> wice.core.Peer
-	3, // 2: wice.core.Interface.ice:type_name -> wice.epdisc.Interface
-	4, // 3: wice.core.Interface.last_sync_timestamp:type_name -> wice.Timestamp
+	0, // 0: cunicu.core.Interface.type:type_name -> cunicu.core.InterfaceType
+	2, // 1: cunicu.core.Interface.peers:type_name -> cunicu.core.Peer
+	3, // 2: cunicu.core.Interface.ice:type_name -> cunicu.epdisc.Interface
+	4, // 3: cunicu.core.Interface.last_sync_timestamp:type_name -> cunicu.Timestamp
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

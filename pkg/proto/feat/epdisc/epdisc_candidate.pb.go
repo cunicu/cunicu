@@ -372,9 +372,9 @@ type Candidate struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The type of candidate
-	Type        CandidateType `protobuf:"varint,1,opt,name=type,proto3,enum=wice.epdisc.CandidateType" json:"type,omitempty"`
-	NetworkType NetworkType   `protobuf:"varint,2,opt,name=network_type,json=networkType,proto3,enum=wice.epdisc.NetworkType" json:"network_type,omitempty"`
-	TcpType     TCPType       `protobuf:"varint,3,opt,name=tcp_type,json=tcpType,proto3,enum=wice.epdisc.TCPType" json:"tcp_type,omitempty"`
+	Type        CandidateType `protobuf:"varint,1,opt,name=type,proto3,enum=cunicu.epdisc.CandidateType" json:"type,omitempty"`
+	NetworkType NetworkType   `protobuf:"varint,2,opt,name=network_type,json=networkType,proto3,enum=cunicu.epdisc.NetworkType" json:"network_type,omitempty"`
+	TcpType     TCPType       `protobuf:"varint,3,opt,name=tcp_type,json=tcpType,proto3,enum=cunicu.epdisc.TCPType" json:"tcp_type,omitempty"`
 	// An identifier that is equivalent for two candidates that are of the same type, share the same base, and come from the same STUN server.
 	Foundation string `protobuf:"bytes,4,opt,name=foundation,proto3" json:"foundation,omitempty"`
 	// A positive integer between 1 and 256 that identifies the specific component of the media stream for which this is a candidate.
@@ -498,7 +498,7 @@ type CandidatePairStats struct {
 	RemoteCandidateId string `protobuf:"bytes,3,opt,name=remote_candidate_id,json=remoteCandidateId,proto3" json:"remote_candidate_id,omitempty"`
 	// State represents the state of the checklist for the local and remote
 	// candidates in a pair.
-	State CandidatePairState `protobuf:"varint,4,opt,name=state,proto3,enum=wice.epdisc.CandidatePairState" json:"state,omitempty"`
+	State CandidatePairState `protobuf:"varint,4,opt,name=state,proto3,enum=cunicu.epdisc.CandidatePairState" json:"state,omitempty"`
 	// Nominated is true when this valid pair that should be used for media
 	// if it is the highest-priority one amongst those whose nominated flag is set
 	Nominated bool `protobuf:"varint,5,opt,name=nominated,proto3" json:"nominated,omitempty"`
@@ -824,14 +824,14 @@ type CandidateStats struct {
 	// it's possible that a connection will be bottlenecked by another type of network.
 	// For example, when using Wi-Fi tethering, the networkType of the relevant candidate
 	// would be "wifi", even when the next hop is over a cellular connection.
-	NetworkType NetworkType `protobuf:"varint,3,opt,name=network_type,json=networkType,proto3,enum=wice.epdisc.NetworkType" json:"network_type,omitempty"`
+	NetworkType NetworkType `protobuf:"varint,3,opt,name=network_type,json=networkType,proto3,enum=cunicu.epdisc.NetworkType" json:"network_type,omitempty"`
 	// IP is the IP address of the candidate, allowing for IPv4 addresses and
 	// IPv6 addresses, but fully qualified domain names (FQDNs) are not allowed.
 	Ip string `protobuf:"bytes,4,opt,name=ip,proto3" json:"ip,omitempty"`
 	// Port is the port number of the candidate.
 	Port int32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 	// CandidateType is the "Type" field of the ICECandidate.
-	CandidateType CandidateType `protobuf:"varint,6,opt,name=candidate_type,json=candidateType,proto3,enum=wice.epdisc.CandidateType" json:"candidate_type,omitempty"`
+	CandidateType CandidateType `protobuf:"varint,6,opt,name=candidate_type,json=candidateType,proto3,enum=cunicu.epdisc.CandidateType" json:"candidate_type,omitempty"`
 	// Priority is the "Priority" field of the ICECandidate.
 	Priority uint32 `protobuf:"varint,7,opt,name=priority,proto3" json:"priority,omitempty"`
 	// URL is the URL of the TURN or STUN server indicated in the that translated
@@ -1167,35 +1167,35 @@ func file_feat_epdisc_candidate_proto_rawDescGZIP() []byte {
 var file_feat_epdisc_candidate_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_feat_epdisc_candidate_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_feat_epdisc_candidate_proto_goTypes = []interface{}{
-	(CandidatePairState)(0),    // 0: wice.epdisc.CandidatePairState
-	(CandidateType)(0),         // 1: wice.epdisc.CandidateType
-	(NetworkType)(0),           // 2: wice.epdisc.NetworkType
-	(TCPType)(0),               // 3: wice.epdisc.TCPType
-	(*CandidatePair)(nil),      // 4: wice.epdisc.CandidatePair
-	(*RelatedAddress)(nil),     // 5: wice.epdisc.RelatedAddress
-	(*Candidate)(nil),          // 6: wice.epdisc.Candidate
-	(*CandidatePairStats)(nil), // 7: wice.epdisc.CandidatePairStats
-	(*CandidateStats)(nil),     // 8: wice.epdisc.CandidateStats
-	(*proto.Timestamp)(nil),    // 9: wice.Timestamp
+	(CandidatePairState)(0),    // 0: cunicu.epdisc.CandidatePairState
+	(CandidateType)(0),         // 1: cunicu.epdisc.CandidateType
+	(NetworkType)(0),           // 2: cunicu.epdisc.NetworkType
+	(TCPType)(0),               // 3: cunicu.epdisc.TCPType
+	(*CandidatePair)(nil),      // 4: cunicu.epdisc.CandidatePair
+	(*RelatedAddress)(nil),     // 5: cunicu.epdisc.RelatedAddress
+	(*Candidate)(nil),          // 6: cunicu.epdisc.Candidate
+	(*CandidatePairStats)(nil), // 7: cunicu.epdisc.CandidatePairStats
+	(*CandidateStats)(nil),     // 8: cunicu.epdisc.CandidateStats
+	(*proto.Timestamp)(nil),    // 9: cunicu.Timestamp
 }
 var file_feat_epdisc_candidate_proto_depIdxs = []int32{
-	6,  // 0: wice.epdisc.CandidatePair.local:type_name -> wice.epdisc.Candidate
-	6,  // 1: wice.epdisc.CandidatePair.remote:type_name -> wice.epdisc.Candidate
-	1,  // 2: wice.epdisc.Candidate.type:type_name -> wice.epdisc.CandidateType
-	2,  // 3: wice.epdisc.Candidate.network_type:type_name -> wice.epdisc.NetworkType
-	3,  // 4: wice.epdisc.Candidate.tcp_type:type_name -> wice.epdisc.TCPType
-	5,  // 5: wice.epdisc.Candidate.related_address:type_name -> wice.epdisc.RelatedAddress
-	9,  // 6: wice.epdisc.CandidatePairStats.timestamp:type_name -> wice.Timestamp
-	0,  // 7: wice.epdisc.CandidatePairStats.state:type_name -> wice.epdisc.CandidatePairState
-	9,  // 8: wice.epdisc.CandidatePairStats.last_packet_sent_timestamp:type_name -> wice.Timestamp
-	9,  // 9: wice.epdisc.CandidatePairStats.last_packet_received_timestamp:type_name -> wice.Timestamp
-	9,  // 10: wice.epdisc.CandidatePairStats.first_request_timestamp:type_name -> wice.Timestamp
-	9,  // 11: wice.epdisc.CandidatePairStats.last_request_timestamp:type_name -> wice.Timestamp
-	9,  // 12: wice.epdisc.CandidatePairStats.last_response_timestamp:type_name -> wice.Timestamp
-	9,  // 13: wice.epdisc.CandidatePairStats.consent_expired_timestamp:type_name -> wice.Timestamp
-	9,  // 14: wice.epdisc.CandidateStats.timestamp:type_name -> wice.Timestamp
-	2,  // 15: wice.epdisc.CandidateStats.network_type:type_name -> wice.epdisc.NetworkType
-	1,  // 16: wice.epdisc.CandidateStats.candidate_type:type_name -> wice.epdisc.CandidateType
+	6,  // 0: cunicu.epdisc.CandidatePair.local:type_name -> cunicu.epdisc.Candidate
+	6,  // 1: cunicu.epdisc.CandidatePair.remote:type_name -> cunicu.epdisc.Candidate
+	1,  // 2: cunicu.epdisc.Candidate.type:type_name -> cunicu.epdisc.CandidateType
+	2,  // 3: cunicu.epdisc.Candidate.network_type:type_name -> cunicu.epdisc.NetworkType
+	3,  // 4: cunicu.epdisc.Candidate.tcp_type:type_name -> cunicu.epdisc.TCPType
+	5,  // 5: cunicu.epdisc.Candidate.related_address:type_name -> cunicu.epdisc.RelatedAddress
+	9,  // 6: cunicu.epdisc.CandidatePairStats.timestamp:type_name -> cunicu.Timestamp
+	0,  // 7: cunicu.epdisc.CandidatePairStats.state:type_name -> cunicu.epdisc.CandidatePairState
+	9,  // 8: cunicu.epdisc.CandidatePairStats.last_packet_sent_timestamp:type_name -> cunicu.Timestamp
+	9,  // 9: cunicu.epdisc.CandidatePairStats.last_packet_received_timestamp:type_name -> cunicu.Timestamp
+	9,  // 10: cunicu.epdisc.CandidatePairStats.first_request_timestamp:type_name -> cunicu.Timestamp
+	9,  // 11: cunicu.epdisc.CandidatePairStats.last_request_timestamp:type_name -> cunicu.Timestamp
+	9,  // 12: cunicu.epdisc.CandidatePairStats.last_response_timestamp:type_name -> cunicu.Timestamp
+	9,  // 13: cunicu.epdisc.CandidatePairStats.consent_expired_timestamp:type_name -> cunicu.Timestamp
+	9,  // 14: cunicu.epdisc.CandidateStats.timestamp:type_name -> cunicu.Timestamp
+	2,  // 15: cunicu.epdisc.CandidateStats.network_type:type_name -> cunicu.epdisc.NetworkType
+	1,  // 16: cunicu.epdisc.CandidateStats.candidate_type:type_name -> cunicu.epdisc.CandidateType
 	17, // [17:17] is the sub-list for method output_type
 	17, // [17:17] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name

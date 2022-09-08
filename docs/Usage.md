@@ -2,9 +2,9 @@
 
 ## Command Line
 
-For a detailed documentation of the `wice` command-line tool please have a look at the following page:
+For a detailed documentation of the `cunicu` command-line tool please have a look at the following page:
 
--   [`wice`](./usage/md/wice.md)
+-   [`cunicu`](./usage/md/cunicu.md)
 
 ## Daemon
 

@@ -1,0 +1,100 @@
+.nh
+.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+
+.SH NAME
+.PP
+cunicu-completion-zsh - Generate the autocompletion script for zsh
+
+
+.SH SYNOPSIS
+.PP
+\fBcunicu completion zsh [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+Generate the autocompletion script for the zsh shell.
+
+.PP
+If shell completion is not already enabled in your environment you will need
+to enable it.  You can execute the following once:
+
+.PP
+.RS
+
+.nf
+echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+.fi
+.RE
+
+.PP
+To load completions in your current shell session:
+
+.PP
+.RS
+
+.nf
+source <(cunicu completion zsh); compdef _cunicu cunicu
+
+.fi
+.RE
+
+.PP
+To load completions for every new session, execute once:
+
+.SS Linux:
+.PP
+.RS
+
+.nf
+cunicu completion zsh > "${fpath[1]}/_cunicu"
+
+.fi
+.RE
+
+.SS macOS:
+.PP
+.RS
+
+.nf
+cunicu completion zsh > $(brew --prefix)/share/zsh/site-functions/_cunicu
+
+.fi
+.RE
+
+.PP
+You will need to start a new shell for this setup to take effect.
+
+
+.SH OPTIONS
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for zsh
+
+.PP
+\fB--no-descriptions\fP[=false]
+	disable completion descriptions
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
+.PP
+\fB-d\fP, \fB--log-level\fP="info"
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
+
+.PP
+\fB-v\fP, \fB--verbose\fP=0
+	verbosity level
+
+
+.SH SEE ALSO
+.PP
+\fBcunicu-completion(3)\fP

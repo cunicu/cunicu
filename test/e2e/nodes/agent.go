@@ -24,7 +24,7 @@ type AgentOption interface {
 	Apply(a *Agent)
 }
 
-// Agent is a host running the cunicu daemon.
+// Agent is a host running the cunīcu daemon.
 //
 // Each agent can have one or more WireGuard interfaces configured which are managed
 // by a single daemon.
@@ -85,10 +85,10 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var err error
 	var stdout, stderr io.Reader
-	var rpcSockPath = fmt.Sprintf("/var/run/wice.%s.sock", a.Name())
+	var rpcSockPath = fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
 	var logPath = fmt.Sprintf("%s/%s.log", dir, a.Name())
 
-	// Old RPC sockets are also removed by wice.
+	// Old RPC sockets are also removed by cunīcu.
 	// However we also need to do it here to avoid racing
 	// against rpc.Connect() further down here
 	if err := os.RemoveAll(rpcSockPath); err != nil {

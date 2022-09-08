@@ -85,7 +85,7 @@ var _ = Describe("parse command line arguments", func() {
 			Context("file with explicit path", func() {
 				BeforeEach(func() {
 					var err error
-					cfgFile, err = os.CreateTemp("", "wice-*.yaml")
+					cfgFile, err = os.CreateTemp("", "cunicu-*.yaml")
 					Expect(err).To(Succeed())
 				})
 
@@ -112,7 +112,7 @@ var _ = Describe("parse command line arguments", func() {
 			Context("in search path", func() {
 				BeforeEach(func() {
 					var err error
-					cfgFile, err = os.OpenFile("wice.json", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+					cfgFile, err = os.OpenFile("cunicu.json", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 					Expect(err).To(Succeed())
 				})
 
@@ -139,7 +139,7 @@ var _ = Describe("parse command line arguments", func() {
 				server = ghttp.NewServer()
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/wice.yaml"),
+						ghttp.VerifyRequest("GET", "/cunicu.yaml"),
 						ghttp.RespondWith(http.StatusOK,
 							"watch_interval: 1337s\n",
 							http.Header{
@@ -150,7 +150,7 @@ var _ = Describe("parse command line arguments", func() {
 			})
 
 			It("can fetch a valid remote configuration file", func() {
-				cfg, err := config.ParseArgs("--config", server.URL()+"/wice.yaml")
+				cfg, err := config.ParseArgs("--config", server.URL()+"/cunicu.yaml")
 
 				Expect(err).To(Succeed())
 				Expect(cfg.WatchInterval).To(BeNumerically("==", 1337*time.Second))
@@ -186,7 +186,7 @@ var _ = Describe("parse command line arguments", func() {
 
 var _ = Describe("use environment variables", func() {
 	BeforeEach(func() {
-		os.Setenv("WICE_ENDPOINT_DISC_ICE_CANDIDATE_TYPES", "srflx,relay")
+		os.Setenv("CUNICU_ENDPOINT_DISC_ICE_CANDIDATE_TYPES", "srflx,relay")
 	})
 
 	It("accepts settings via environment variables", func() {
@@ -258,6 +258,6 @@ var _ = Describe("dump", func() {
 })
 
 var _ = It("can parse the example config file", func() {
-	_, err := config.ParseArgs("--config", "../../etc/wice.yaml")
+	_, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
 	Expect(err).To(Succeed())
 })

@@ -1,6 +1,6 @@
 # TODOs
 
-Please also have a look at the current [GitHub issues](https://github.com/stv0g/wice/issues) of the project.
+Please also have a look at the current [GitHub issues](https://github.com/stv0g/cunicu/issues) of the project.
 
 -   Investigate distributed management of Access Control Lists (ACL)
     -   <https://ieeexplore.ieee.org/document/1437269>
@@ -15,14 +15,14 @@ Please also have a look at the current [GitHub issues](https://github.com/stv0g/
 
 -   Add better proxy implementations for OpenBSD, FreeBSD, Android and Windows
 
--   Add sub-commands for controlling `wice` daemon:
-    -   `wice show [[INTF] [PEER]]`
-    -   `wice add INTF`
-    -   `wice delete INTF`
-    -   `wice discover INTF GROUP`
-    -   `wice sync [INTF]`
-    -   `wice restart INTF PEER`
-    -   `wice monitor`
+-   Add sub-commands for controlling `cunicu` daemon:
+    -   `cunicu show [[INTF] [PEER]]`
+    -   `cunicu add INTF`
+    -   `cunicu delete INTF`
+    -   `cunicu discover INTF GROUP`
+    -   `cunicu sync [INTF]`
+    -   `cunicu restart INTF PEER`
+    -   `cunicu monitor`
 
 -   Add check for handshakes before attempting to ping
 

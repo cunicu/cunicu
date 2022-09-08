@@ -21,7 +21,7 @@ import (
  *  - 1x Relay node        [r1] (Coturn STUN/TURN server)
  *  - 1x Signaling node    [s1] (GRPC server)
  *  - 1x Switch            [sw1]
- *  - Yx  wice Agent nodes [n?]
+ *  - Yx  cunicu Agent nodes [n?]
  *
  *        Relay            Signaling
  *        ┌────┐            ┌────┐
@@ -35,7 +35,7 @@ import (
  *        ┌──┴─┐  ┌──┴─┐     ┌─┴──┐
  *        │ n1 │  │ n2 │ ... │ nY │
  *        └────┘  └────┘     └────┘
- *               wice Agents
+ *               cunicu Agents
  */
 var _ = Context("simple: Simple local-area switched topology with variable number of agents", Serial, func() {
 	var (
@@ -207,7 +207,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 	Context("filtered: Block WireGuard UDP traffic", func() {
 		Context("p2p: Between agents only", func() {
 			BeforeEach(func() {
-				// We are dropped packets between the cunicu nodes to force ICE using the relay
+				// We are dropped packets between the cunīcu nodes to force ICE using the relay
 				n.AgentOptions = append(n.AgentOptions,
 					gopt.Filter(g.FilterInput,
 						gfopt.InputInterfaceName("eth0"),

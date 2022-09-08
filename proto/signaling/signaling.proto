@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice.signaling;
+package cunicu.signaling;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/signaling";
 
 import "common.proto";

@@ -1,4 +1,4 @@
-package wice
+package cunicu
 
 import (
 	"errors"

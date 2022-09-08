@@ -23,13 +23,13 @@ import (
 	sync "sync"
 	time "time"
 
+	versioned "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	cunicu "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/cunicu"
+	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
-	internalinterfaces "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/internalinterfaces"
-	wice "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions/wice"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.
@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Wice() wice.Interface
+	Cunicu() cunicu.Interface
 }
 
-func (f *sharedInformerFactory) Wice() wice.Interface {
-	return wice.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Cunicu() cunicu.Interface {
+	return cunicu.New(f, f.namespace, f.tweakListOptions)
 }

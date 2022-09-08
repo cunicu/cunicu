@@ -44,7 +44,7 @@ func NewDaemonClient(cc grpc.ClientConnInterface) DaemonClient {
 
 func (c *daemonClient) GetBuildInfo(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.BuildInfo, error) {
 	out := new(proto.BuildInfo)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/GetBuildInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/GetBuildInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *daemonClient) GetBuildInfo(ctx context.Context, in *proto.Empty, opts .
 }
 
 func (c *daemonClient) StreamEvents(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Daemon_ServiceDesc.Streams[0], "/wice.rpc.Daemon/StreamEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &Daemon_ServiceDesc.Streams[0], "/cunicu.rpc.Daemon/StreamEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (x *daemonStreamEventsClient) Recv() (*Event, error) {
 
 func (c *daemonClient) UnWait(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/UnWait", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/UnWait", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *daemonClient) UnWait(ctx context.Context, in *proto.Empty, opts ...grpc
 
 func (c *daemonClient) Stop(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/Stop", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/Stop", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *daemonClient) Stop(ctx context.Context, in *proto.Empty, opts ...grpc.C
 
 func (c *daemonClient) Restart(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/Restart", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/Restart", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (c *daemonClient) Restart(ctx context.Context, in *proto.Empty, opts ...grp
 
 func (c *daemonClient) Sync(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/Sync", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/Sync", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *daemonClient) Sync(ctx context.Context, in *proto.Empty, opts ...grpc.C
 
 func (c *daemonClient) GetStatus(ctx context.Context, in *StatusParams, opts ...grpc.CallOption) (*StatusResp, error) {
 	out := new(StatusResp)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/GetStatus", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/GetStatus", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *daemonClient) GetStatus(ctx context.Context, in *StatusParams, opts ...
 
 func (c *daemonClient) SetConfig(ctx context.Context, in *SetConfigParams, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/SetConfig", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/SetConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (c *daemonClient) SetConfig(ctx context.Context, in *SetConfigParams, opts 
 
 func (c *daemonClient) GetConfig(ctx context.Context, in *GetConfigParams, opts ...grpc.CallOption) (*GetConfigResp, error) {
 	out := new(GetConfigResp)
-	err := c.cc.Invoke(ctx, "/wice.rpc.Daemon/GetConfig", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.rpc.Daemon/GetConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func _Daemon_GetBuildInfo_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/GetBuildInfo",
+		FullMethod: "/cunicu.rpc.Daemon/GetBuildInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).GetBuildInfo(ctx, req.(*proto.Empty))
@@ -255,7 +255,7 @@ func _Daemon_UnWait_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/UnWait",
+		FullMethod: "/cunicu.rpc.Daemon/UnWait",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).UnWait(ctx, req.(*proto.Empty))
@@ -273,7 +273,7 @@ func _Daemon_Stop_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/Stop",
+		FullMethod: "/cunicu.rpc.Daemon/Stop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).Stop(ctx, req.(*proto.Empty))
@@ -291,7 +291,7 @@ func _Daemon_Restart_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/Restart",
+		FullMethod: "/cunicu.rpc.Daemon/Restart",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).Restart(ctx, req.(*proto.Empty))
@@ -309,7 +309,7 @@ func _Daemon_Sync_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/Sync",
+		FullMethod: "/cunicu.rpc.Daemon/Sync",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).Sync(ctx, req.(*proto.Empty))
@@ -327,7 +327,7 @@ func _Daemon_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/GetStatus",
+		FullMethod: "/cunicu.rpc.Daemon/GetStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).GetStatus(ctx, req.(*StatusParams))
@@ -345,7 +345,7 @@ func _Daemon_SetConfig_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/SetConfig",
+		FullMethod: "/cunicu.rpc.Daemon/SetConfig",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).SetConfig(ctx, req.(*SetConfigParams))
@@ -363,7 +363,7 @@ func _Daemon_GetConfig_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.rpc.Daemon/GetConfig",
+		FullMethod: "/cunicu.rpc.Daemon/GetConfig",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DaemonServer).GetConfig(ctx, req.(*GetConfigParams))
@@ -375,7 +375,7 @@ func _Daemon_GetConfig_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Daemon_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wice.rpc.Daemon",
+	ServiceName: "cunicu.rpc.Daemon",
 	HandlerType: (*DaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -1,7 +1,7 @@
 build/
 .vscode/
 dist/
-/wice
+/cunicu
 *.log
 *.out
 *.test

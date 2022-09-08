@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wice.epdisc;
+package cunicu.epdisc;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/epdisc";
 
 import "common.proto";
@@ -16,7 +16,7 @@ enum ConnectionState {
 	DISCONNECTED = 5;     // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
 	CLOSED = 6;           // ConnectionStateClosed ICE agent has finished and is no longer handling requests
 
-	// Extended ICE Connection state from wice/pkg/ice/types.go
+	// Extended ICE Connection state from cunicu/pkg/ice/types.go
 	CREATING = 100;       // ConnectionStateCreating New ICE agent is currently being created
 	IDLE = 101;           // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
 	CONNECTING = 102;     // ConnectionStateConnecting ICE agent is now connecting to the remote

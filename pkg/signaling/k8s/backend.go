@@ -15,8 +15,8 @@ import (
 
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 
-	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
-	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/cunicu/v1"
+	cunicuv1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
 	informers "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -31,7 +31,7 @@ type Backend struct {
 
 	config BackendConfig
 
-	clientSet *wicev1.Clientset
+	clientSet *cunicuv1.Clientset
 	informer  cache.SharedInformer
 
 	stop chan struct{}
@@ -84,7 +84,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	}
 
 	// Create the clientset
-	if b.clientSet, err = wicev1.NewForConfig(config); err != nil {
+	if b.clientSet, err = cunicuv1.NewForConfig(config); err != nil {
 		return nil, fmt.Errorf("failed to create clientset: %w", err)
 	}
 
@@ -92,7 +92,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	factory := informers.NewSharedInformerFactoryWithOptions(b.clientSet, 0, informers.WithNamespace(b.config.Namespace))
 
 	// Get the informer for the right resource, in this case a Pod
-	b.informer = factory.Wice().V1().SignalingEnvelopes().Informer()
+	b.informer = factory.Cunicu().V1().SignalingEnvelopes().Informer()
 
 	b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    b.onEnvelopeAdded,
@@ -140,7 +140,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 		zap.Any("msg", msg),
 	)
 
-	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+	envs := b.clientSet.CunicuV1().SignalingEnvelopes(b.config.Namespace)
 
 	pbEnv, err := msg.Encrypt(kp)
 	if err != nil {
@@ -204,7 +204,7 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 	}
 
 	// Delete envelope
-	// envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+	// envs := b.clientSet.cunicuV1().SignalingEnvelopes(b.config.Namespace)
 	// if err := envs.Delete(context.Background(), env.ObjectMeta.Name, metav1.DeleteOptions{}); err != nil {
 	// 	b.logger.Warn("Failed to delete envelope", zap.Error(err))
 	// } else {
@@ -241,7 +241,7 @@ func (b *Backend) periodicCleanup() {
 
 func (b *Backend) cleanup() {
 	store := b.informer.GetStore()
-	envs := b.clientSet.WiceV1().SignalingEnvelopes(b.config.Namespace)
+	envs := b.clientSet.CunicuV1().SignalingEnvelopes(b.config.Namespace)
 
 	for _, obj := range store.List() {
 		if env, ok := obj.(*v1.SignalingEnvelope); ok {

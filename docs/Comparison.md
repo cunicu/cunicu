@@ -1,6 +1,6 @@
 # Comparison with other P2P VPN solutions
 
-There exist a suite of other peer-to-peer VPN solutions comparable to wice:
+There exist a suite of other peer-to-peer VPN solutions comparable to cunīcu:
 
 | Name                                                  | Commercial    | 
 | :--                                                   |               |

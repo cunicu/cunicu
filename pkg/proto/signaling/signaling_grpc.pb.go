@@ -38,7 +38,7 @@ func NewSignalingClient(cc grpc.ClientConnInterface) SignalingClient {
 
 func (c *signalingClient) GetBuildInfo(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.BuildInfo, error) {
 	out := new(proto.BuildInfo)
-	err := c.cc.Invoke(ctx, "/wice.signaling.Signaling/GetBuildInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.signaling.Signaling/GetBuildInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *signalingClient) GetBuildInfo(ctx context.Context, in *proto.Empty, opt
 }
 
 func (c *signalingClient) Subscribe(ctx context.Context, in *SubscribeParams, opts ...grpc.CallOption) (Signaling_SubscribeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Signaling_ServiceDesc.Streams[0], "/wice.signaling.Signaling/Subscribe", opts...)
+	stream, err := c.cc.NewStream(ctx, &Signaling_ServiceDesc.Streams[0], "/cunicu.signaling.Signaling/Subscribe", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (x *signalingSubscribeClient) Recv() (*Envelope, error) {
 
 func (c *signalingClient) Publish(ctx context.Context, in *Envelope, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, "/wice.signaling.Signaling/Publish", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/cunicu.signaling.Signaling/Publish", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func _Signaling_GetBuildInfo_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.signaling.Signaling/GetBuildInfo",
+		FullMethod: "/cunicu.signaling.Signaling/GetBuildInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SignalingServer).GetBuildInfo(ctx, req.(*proto.Empty))
@@ -171,7 +171,7 @@ func _Signaling_Publish_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wice.signaling.Signaling/Publish",
+		FullMethod: "/cunicu.signaling.Signaling/Publish",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SignalingServer).Publish(ctx, req.(*Envelope))
@@ -183,7 +183,7 @@ func _Signaling_Publish_Handler(srv interface{}, ctx context.Context, dec func(i
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Signaling_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wice.signaling.Signaling",
+	ServiceName: "cunicu.signaling.Signaling",
 	HandlerType: (*SignalingServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

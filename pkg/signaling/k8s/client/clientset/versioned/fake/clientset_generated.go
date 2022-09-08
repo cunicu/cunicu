@@ -19,14 +19,14 @@ limitations under the License.
 package fake
 
 import (
+	clientset "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
+	cunicuv1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/cunicu/v1"
+	fakecunicuv1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/cunicu/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
-	clientset "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
-	wicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1"
-	fakewicev1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned/typed/wice/v1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -79,7 +79,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// WiceV1 retrieves the WiceV1Client
-func (c *Clientset) WiceV1() wicev1.WiceV1Interface {
-	return &fakewicev1.FakeWiceV1{Fake: &c.Fake}
+// CunicuV1 retrieves the CunicuV1Client
+func (c *Clientset) CunicuV1() cunicuv1.CunicuV1Interface {
+	return &fakecunicuv1.FakeCunicuV1{Fake: &c.Fake}
 }

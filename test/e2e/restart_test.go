@@ -22,7 +22,7 @@ import (
  *
  *  - 1x Signaling node    [s1] (GRPC server)
  *  - 1x Switch            [sw1]
- *  - 2x  wice Agent nodes [n?]
+ *  - 2x  cunicu Agent nodes [n?]
  *
  *         Signaling
  *          ┌─────┐
@@ -36,7 +36,7 @@ import (
  *    ┌──┴─┐       ┌─┴──┐
  *    │ n1 │       │ n2 │
  *    └────┘       └────┘
- *         wice Agents
+ *         cunicu Agents
  */
 var _ = Context("restart: Restart ICE agents", func() {
 	var (

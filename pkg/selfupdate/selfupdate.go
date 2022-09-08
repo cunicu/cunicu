@@ -19,7 +19,7 @@ import (
 
 const (
 	githubUser = "stv0g"
-	githubRepo = "wice"
+	githubRepo = "cunicu"
 
 	checksumsFile    = "checksums.txt"
 	checksumsSigFile = checksumsFile + ".asc"

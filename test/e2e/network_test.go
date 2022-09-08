@@ -199,7 +199,7 @@ func (n *Network) ConnectivityTests() {
 func (n *Network) Init() {
 	*n = Network{}
 
-	n.Name = fmt.Sprintf("wice-%d", rand.Uint32())
+	n.Name = fmt.Sprintf("cunicu-%d", rand.Uint32())
 	n.BasePath = filepath.Join(SpecName()...)
 	n.BasePath = filepath.Join("logs", n.BasePath)
 

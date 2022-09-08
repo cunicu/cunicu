@@ -21,9 +21,9 @@ package externalversions
 import (
 	"fmt"
 
+	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/cunicu/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/wice/v1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -49,12 +49,12 @@ func (f *genericInformer) Lister() cache.GenericLister {
 }
 
 // ForResource gives generic access to a shared informer of the matching type
-// TODO: Extend this to unknown resources with a client pool
+// TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=wice.riasc.eu, Version=v1
+	// Group=cunicu.li, Version=v1
 	case v1.SchemeGroupVersion.WithResource("signalingenvelopes"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Wice().V1().SignalingEnvelopes().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Cunicu().V1().SignalingEnvelopes().Informer()}, nil
 
 	}
 

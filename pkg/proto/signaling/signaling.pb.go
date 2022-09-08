@@ -393,30 +393,30 @@ func file_signaling_signaling_proto_rawDescGZIP() []byte {
 var file_signaling_signaling_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_signaling_signaling_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_signaling_signaling_proto_goTypes = []interface{}{
-	(BackendType)(0),                       // 0: wice.signaling.BackendType
-	(*Envelope)(nil),                       // 1: wice.signaling.Envelope
-	(*Message)(nil),                        // 2: wice.signaling.Message
-	(*EncryptedMessage)(nil),               // 3: wice.signaling.EncryptedMessage
-	(*SubscribeParams)(nil),                // 4: wice.signaling.SubscribeParams
-	(*epdisc.Credentials)(nil),             // 5: wice.epdisc.Credentials
-	(*epdisc.Candidate)(nil),               // 6: wice.epdisc.Candidate
-	(*pdisc.PeerDescription)(nil),          // 7: wice.pdisc.PeerDescription
-	(*pske.PresharedKeyEstablishment)(nil), // 8: wice.pske.PresharedKeyEstablishment
-	(*proto.Empty)(nil),                    // 9: wice.Empty
-	(*proto.BuildInfo)(nil),                // 10: wice.BuildInfo
+	(BackendType)(0),                       // 0: cunicu.signaling.BackendType
+	(*Envelope)(nil),                       // 1: cunicu.signaling.Envelope
+	(*Message)(nil),                        // 2: cunicu.signaling.Message
+	(*EncryptedMessage)(nil),               // 3: cunicu.signaling.EncryptedMessage
+	(*SubscribeParams)(nil),                // 4: cunicu.signaling.SubscribeParams
+	(*epdisc.Credentials)(nil),             // 5: cunicu.epdisc.Credentials
+	(*epdisc.Candidate)(nil),               // 6: cunicu.epdisc.Candidate
+	(*pdisc.PeerDescription)(nil),          // 7: cunicu.pdisc.PeerDescription
+	(*pske.PresharedKeyEstablishment)(nil), // 8: cunicu.pske.PresharedKeyEstablishment
+	(*proto.Empty)(nil),                    // 9: cunicu.Empty
+	(*proto.BuildInfo)(nil),                // 10: cunicu.BuildInfo
 }
 var file_signaling_signaling_proto_depIdxs = []int32{
-	3,  // 0: wice.signaling.Envelope.contents:type_name -> wice.signaling.EncryptedMessage
-	5,  // 1: wice.signaling.Message.credentials:type_name -> wice.epdisc.Credentials
-	6,  // 2: wice.signaling.Message.candidate:type_name -> wice.epdisc.Candidate
-	7,  // 3: wice.signaling.Message.peer:type_name -> wice.pdisc.PeerDescription
-	8,  // 4: wice.signaling.Message.pske:type_name -> wice.pske.PresharedKeyEstablishment
-	9,  // 5: wice.signaling.Signaling.GetBuildInfo:input_type -> wice.Empty
-	4,  // 6: wice.signaling.Signaling.Subscribe:input_type -> wice.signaling.SubscribeParams
-	1,  // 7: wice.signaling.Signaling.Publish:input_type -> wice.signaling.Envelope
-	10, // 8: wice.signaling.Signaling.GetBuildInfo:output_type -> wice.BuildInfo
-	1,  // 9: wice.signaling.Signaling.Subscribe:output_type -> wice.signaling.Envelope
-	9,  // 10: wice.signaling.Signaling.Publish:output_type -> wice.Empty
+	3,  // 0: cunicu.signaling.Envelope.contents:type_name -> cunicu.signaling.EncryptedMessage
+	5,  // 1: cunicu.signaling.Message.credentials:type_name -> cunicu.epdisc.Credentials
+	6,  // 2: cunicu.signaling.Message.candidate:type_name -> cunicu.epdisc.Candidate
+	7,  // 3: cunicu.signaling.Message.peer:type_name -> cunicu.pdisc.PeerDescription
+	8,  // 4: cunicu.signaling.Message.pske:type_name -> cunicu.pske.PresharedKeyEstablishment
+	9,  // 5: cunicu.signaling.Signaling.GetBuildInfo:input_type -> cunicu.Empty
+	4,  // 6: cunicu.signaling.Signaling.Subscribe:input_type -> cunicu.signaling.SubscribeParams
+	1,  // 7: cunicu.signaling.Signaling.Publish:input_type -> cunicu.signaling.Envelope
+	10, // 8: cunicu.signaling.Signaling.GetBuildInfo:output_type -> cunicu.BuildInfo
+	1,  // 9: cunicu.signaling.Signaling.Subscribe:output_type -> cunicu.signaling.Envelope
+	9,  // 10: cunicu.signaling.Signaling.Publish:output_type -> cunicu.Empty
 	8,  // [8:11] is the sub-list for method output_type
 	5,  // [5:8] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name

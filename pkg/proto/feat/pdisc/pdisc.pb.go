@@ -76,7 +76,7 @@ type PeerDescription struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Change PeerDescriptionChange `protobuf:"varint,1,opt,name=change,proto3,enum=wice.pdisc.PeerDescriptionChange" json:"change,omitempty"`
+	Change PeerDescriptionChange `protobuf:"varint,1,opt,name=change,proto3,enum=cunicu.pdisc.PeerDescriptionChange" json:"change,omitempty"`
 	// Hostname of the node
 	Hostname string `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
 	// Public WireGuard Curve25519 key
@@ -86,7 +86,7 @@ type PeerDescription struct {
 	PublicKeyNew []byte `protobuf:"bytes,4,opt,name=public_key_new,json=publicKeyNew,proto3" json:"public_key_new,omitempty"`
 	// List of allowed IPs
 	AllowedIps []string `protobuf:"bytes,5,rep,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
-	// wice build information
+	// cunicu build information
 	BuildInfo *proto.BuildInfo `protobuf:"bytes,6,opt,name=build_info,json=buildInfo,proto3" json:"build_info,omitempty"`
 }
 
@@ -211,13 +211,13 @@ func file_feat_pdisc_proto_rawDescGZIP() []byte {
 var file_feat_pdisc_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_feat_pdisc_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_feat_pdisc_proto_goTypes = []interface{}{
-	(PeerDescriptionChange)(0), // 0: wice.pdisc.PeerDescriptionChange
-	(*PeerDescription)(nil),    // 1: wice.pdisc.PeerDescription
-	(*proto.BuildInfo)(nil),    // 2: wice.BuildInfo
+	(PeerDescriptionChange)(0), // 0: cunicu.pdisc.PeerDescriptionChange
+	(*PeerDescription)(nil),    // 1: cunicu.pdisc.PeerDescription
+	(*proto.BuildInfo)(nil),    // 2: cunicu.BuildInfo
 }
 var file_feat_pdisc_proto_depIdxs = []int32{
-	0, // 0: wice.pdisc.PeerDescription.change:type_name -> wice.pdisc.PeerDescriptionChange
-	2, // 1: wice.pdisc.PeerDescription.build_info:type_name -> wice.BuildInfo
+	0, // 0: cunicu.pdisc.PeerDescription.change:type_name -> cunicu.pdisc.PeerDescriptionChange
+	2, // 1: cunicu.pdisc.PeerDescription.build_info:type_name -> cunicu.BuildInfo
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

@@ -110,12 +110,12 @@ func file_rpc_epdisc_proto_rawDescGZIP() []byte {
 
 var file_rpc_epdisc_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_rpc_epdisc_proto_goTypes = []interface{}{
-	(*RestartPeerParams)(nil), // 0: wice.rpc.RestartPeerParams
-	(*proto.Empty)(nil),       // 1: wice.Empty
+	(*RestartPeerParams)(nil), // 0: cunicu.rpc.RestartPeerParams
+	(*proto.Empty)(nil),       // 1: cunicu.Empty
 }
 var file_rpc_epdisc_proto_depIdxs = []int32{
-	0, // 0: wice.rpc.EndpointDiscoverySocket.RestartPeer:input_type -> wice.rpc.RestartPeerParams
-	1, // 1: wice.rpc.EndpointDiscoverySocket.RestartPeer:output_type -> wice.Empty
+	0, // 0: cunicu.rpc.EndpointDiscoverySocket.RestartPeer:input_type -> cunicu.rpc.RestartPeerParams
+	1, // 1: cunicu.rpc.EndpointDiscoverySocket.RestartPeer:output_type -> cunicu.Empty
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

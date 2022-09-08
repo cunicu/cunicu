@@ -205,7 +205,7 @@ func (c *Config) Setup(args []string) error {
 		c.AddConfigPath("/etc")
 		c.AddConfigPath(filepath.Join("$HOME", ".config"))
 		c.AddConfigPath(".")
-		c.SetConfigName("wice")
+		c.SetConfigName("cunicu")
 		c.SetConfigType("yaml")
 
 		if err := c.MergeInConfig(); err == nil {
@@ -215,7 +215,7 @@ func (c *Config) Setup(args []string) error {
 		}
 	}
 
-	c.SetEnvPrefix("wice")
+	c.SetEnvPrefix("cunicu")
 	c.AutomaticEnv()
 	c.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 

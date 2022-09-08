@@ -27,7 +27,7 @@ type WebHookBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type      rpc.EventType   `protobuf:"varint,1,opt,name=type,proto3,enum=wice.rpc.EventType" json:"type,omitempty"`
+	Type      rpc.EventType   `protobuf:"varint,1,opt,name=type,proto3,enum=cunicu.rpc.EventType" json:"type,omitempty"`
 	Interface *core.Interface `protobuf:"bytes,2,opt,name=interface,proto3" json:"interface,omitempty"`
 	Peer      *core.Peer      `protobuf:"bytes,3,opt,name=peer,proto3" json:"peer,omitempty"`
 	Modified  []string        `protobuf:"bytes,4,rep,name=modified,proto3" json:"modified,omitempty"`
@@ -132,15 +132,15 @@ func file_feat_hooks_proto_rawDescGZIP() []byte {
 
 var file_feat_hooks_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_feat_hooks_proto_goTypes = []interface{}{
-	(*WebHookBody)(nil),    // 0: wice.hooks.WebHookBody
-	(rpc.EventType)(0),     // 1: wice.rpc.EventType
-	(*core.Interface)(nil), // 2: wice.core.Interface
-	(*core.Peer)(nil),      // 3: wice.core.Peer
+	(*WebHookBody)(nil),    // 0: cunicu.hooks.WebHookBody
+	(rpc.EventType)(0),     // 1: cunicu.rpc.EventType
+	(*core.Interface)(nil), // 2: cunicu.core.Interface
+	(*core.Peer)(nil),      // 3: cunicu.core.Peer
 }
 var file_feat_hooks_proto_depIdxs = []int32{
-	1, // 0: wice.hooks.WebHookBody.type:type_name -> wice.rpc.EventType
-	2, // 1: wice.hooks.WebHookBody.interface:type_name -> wice.core.Interface
-	3, // 2: wice.hooks.WebHookBody.peer:type_name -> wice.core.Peer
+	1, // 0: cunicu.hooks.WebHookBody.type:type_name -> cunicu.rpc.EventType
+	2, // 1: cunicu.hooks.WebHookBody.interface:type_name -> cunicu.core.Interface
+	3, // 2: cunicu.hooks.WebHookBody.peer:type_name -> cunicu.core.Peer
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

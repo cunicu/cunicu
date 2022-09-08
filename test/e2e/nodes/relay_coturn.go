@@ -43,8 +43,8 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, er
 			"no-stdout-log":  "",
 			"log-file":       logPath,
 			"listening-port": strconv.Itoa(stun.DefaultPort),
-			"realm":          "wice",
-			"cli-password":   "wice",
+			"realm":          "cunicu",
+			"cli-password":   "cunicu",
 		},
 		logger: zap.L().Named("node.relay").With(zap.String("node", name)),
 	}

@@ -25,11 +25,11 @@ GINKGO_OPTS =  --compilers=2 \
 			   --randomize-suites \
 			   $(GINKGO_EXTRA_OPTS)
 
-all: wice
+all: cunicu
 
-wice:
+cunicu:
 	go generate ./...
-	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/wice
+	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/cunicu
 
 tests:
 	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/...
@@ -68,6 +68,6 @@ ci: install-deps vet staticcheck tests
 
 clean:
 	find . -name "*.out" -exec rm {} \;
-	rm -rf wice lcov.info test/logs/
+	rm -rf cunicu lcov.info test/logs/
 
-.PHONY: all wice tests tests-watch coverage clean vet staticcheck install-deps ci
+.PHONY: all cunicu tests tests-watch coverage clean vet staticcheck install-deps ci

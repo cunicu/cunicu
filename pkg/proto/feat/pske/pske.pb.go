@@ -105,7 +105,7 @@ func file_feat_pske_proto_rawDescGZIP() []byte {
 
 var file_feat_pske_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_feat_pske_proto_goTypes = []interface{}{
-	(*PresharedKeyEstablishment)(nil), // 0: wice.pske.PresharedKeyEstablishment
+	(*PresharedKeyEstablishment)(nil), // 0: cunicu.pske.PresharedKeyEstablishment
 }
 var file_feat_pske_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

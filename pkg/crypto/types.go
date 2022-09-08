@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	// A cunicu specific key for siphash to generate unique IPv6 addresses from the
+	// A cunīcu specific key for siphash to generate unique IPv6 addresses from the
 	// interfaces public key
 	addrHashKey = [...]byte{0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97}
 
