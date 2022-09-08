@@ -12,6 +12,7 @@ import (
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
 	"riasc.eu/wice/pkg/config"
+	"riasc.eu/wice/pkg/util/buildinfo"
 
 	icex "riasc.eu/wice/pkg/feat/epdisc/ice"
 )
@@ -30,7 +31,7 @@ var _ = Describe("lookup", func() {
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", cfgPath),
 				ghttp.VerifyHeader(http.Header{
-					"User-agent": []string{"wice"},
+					"User-agent": []string{buildinfo.UserAgent()},
 				}),
 				ghttp.RespondWith(http.StatusOK, "wireguard: { interfaces: [ wg-test ] }",
 					http.Header{

@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"riasc.eu/wice/pkg/util/buildinfo"
+
 	"go.uber.org/zap"
 
 	"github.com/mitchellh/mapstructure"
@@ -262,8 +264,7 @@ func (c *Config) MergeRemoteConfig(url *url.URL) error {
 		Header: http.Header{},
 	}
 
-	// TODO: Add version info
-	req.Header.Set("User-Agent", "wice")
+	req.Header.Set("User-Agent", buildinfo.UserAgent())
 
 	resp, err := client.Do(req)
 	if err != nil {
