@@ -1,8 +1,8 @@
 ---
-title: Hooks
+title: Endpoint Discovery
 ---
 
-# Hooks
+# Endpoint Discovery
 
 :::info
 

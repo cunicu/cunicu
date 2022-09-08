@@ -65,7 +65,7 @@ No round-trip through the kernel stack is required.
 
 ## Flowchart
 
-![](./images/proxy.svg)
+![](/img/proxy.svg)
 
 [nftables]: https://www.netfilter.org/projects/nftables/manpage.html
 

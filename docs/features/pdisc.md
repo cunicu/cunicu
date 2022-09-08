@@ -1,8 +1,8 @@
 ---
-title: Hooks
+title: Peer Discovery
 ---
 
-# Hooks
+# Peer Discovery
 
 :::info
 
