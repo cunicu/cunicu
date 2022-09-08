@@ -70,4 +70,4 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 
 ## Trademark
 
-""WireGuard" and the "WireGuard" logo are [registered trademarks](https://www.wireguard.com/trademark-policy/) of Jason A. Donenfeld.
+"WireGuard" and the "WireGuard" logo are [registered trademarks](https://www.wireguard.com/trademark-policy/) of Jason A. Donenfeld.
