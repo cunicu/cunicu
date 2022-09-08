@@ -1,6 +1,6 @@
 ## wice status
 
-Show current status of the ɯice daemon, its interfaces and peers
+Show current status of the cunicu daemon, its interfaces and peers
 
 ```
 wice status [flags] [intf [peer]]
@@ -26,5 +26,5 @@ wice status [flags] [intf [peer]]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

@@ -13,30 +13,30 @@
 
 <!-- [![DOI](https://zenodo.org/badge/413409974.svg)](https://zenodo.org/badge/latestdoi/413409974) -->
 
-## 🚧 ɯice is currently still in an Alpha state and not usable yet
+## 🚧 cunicu is currently still in an Alpha state and not usable yet
 
-[ɯice][wice] is a user-space daemon managing [WireGuard®][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
+[cunicu][wice] is a user-space daemon managing [WireGuard®][wireguard] interfaces to establish peer-to-peer connections in harsh network environments.
 
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice][pion-ice] package for the interactive connectivity establishment as well as bundles the Go user-space implementation of WireGuard in a single binary for environments in which WireGuard kernel support has not landed yet.
 
 ## Getting started
 
-To use ɯice follow these steps on each host:
+To use cunicu follow these steps on each host:
 
-1.  [Install ɯice](docs/Installation.md)
+1.  [Install cunicu](docs/Installation.md)
 2.  Configure your WireGuard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
-3.  Start the ɯice daemon by running: `sudo wice daemon`
+3.  Start the cunicu daemon by running: `sudo wice daemon`
 
 Make sure that in step 2. you have created WireGuard keys and exchanged them by hand between the hosts.
-ɯice does not (yet) discover available peers. You are responsible to add the peers to the WireGuard interface by yourself.
+cunicu does not (yet) discover available peers. You are responsible to add the peers to the WireGuard interface by yourself.
 
-After the ɯice daemons have been started, they will attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
-These _ICE candidates_ are then exchanged via the signaling server and ɯice will update the endpoint addresses of the WireGuard peers accordingly.
-Once this has been done, the ɯice logs should show a line `state=connected`.
+After the cunicu daemons have been started, they will attempt to discover valid endpoint addresses using the ICE protocol (e.g. contacting STUN servers).
+These _ICE candidates_ are then exchanged via the signaling server and cunicu will update the endpoint addresses of the WireGuard peers accordingly.
+Once this has been done, the cunicu logs should show a line `state=connected`.
 
 ## Documentation
 
-Documentation of ɯice can be found in the [`docs/`](./docs) directory.
+Documentation of cunicu can be found in the [`docs/`](./docs) directory.
 
 ## Authors
 
@@ -48,13 +48,13 @@ Please feel free to [join our Slack channel](https://join.slack.com/t/gophers/sh
 
 ## License
 
-ɯice is licensed under the [Apache 2.0](./LICENSE) license.
+cunicu is licensed under the [Apache 2.0](./LICENSE) license.
 
 Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen University
 
 ## Funding acknowledgement
 
-<img alt="European Flag" src="./docs/images/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of ɯice has been supported by the [ERIGrid 2.0][erigrid] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
+<img alt="European Flag" src="./docs/images/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of cunicu has been supported by the [ERIGrid 2.0][erigrid] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
 
 [wireguard]: https://wireguard.com
 

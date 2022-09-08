@@ -43,7 +43,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 	// Check permissions
 	if !util.HasAdminPrivileges() {
-		return nil, errors.New("insufficient privileges. Please run ɯice as root user or with NET_ADMIN capabilities")
+		return nil, errors.New("insufficient privileges. Please run cunicu as root user or with NET_ADMIN capabilities")
 	}
 
 	d := &Daemon{

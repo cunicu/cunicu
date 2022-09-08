@@ -17,7 +17,7 @@ var (
 
 	statusCmd = &cobra.Command{
 		Use:               "status [flags] [intf [peer]]",
-		Short:             "Show current status of the ɯice daemon, its interfaces and peers",
+		Short:             "Show current status of the cunicu daemon, its interfaces and peers",
 		Aliases:           []string{"show"},
 		Run:               status,
 		Args:              cobra.RangeArgs(0, 2),

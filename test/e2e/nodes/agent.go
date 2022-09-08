@@ -24,7 +24,7 @@ type AgentOption interface {
 	Apply(a *Agent)
 }
 
-// Agent is a host running the ɯice daemon.
+// Agent is a host running the cunicu daemon.
 //
 // Each agent can have one or more WireGuard interfaces configured which are managed
 // by a single daemon.

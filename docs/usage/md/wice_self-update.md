@@ -1,11 +1,11 @@
 ## wice self-update
 
-Update the ɯice binary
+Update the cunicu binary
 
 ### Synopsis
 
 
-The command "self-update" downloads the latest stable release of ɯice from
+The command "self-update" downloads the latest stable release of cunicu from
 GitHub and replaces the currently running binary. After download, the
 authenticity of the binary is verified using the GPG signature on the release
 files.
@@ -32,5 +32,5 @@ wice self-update [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

@@ -1,6 +1,6 @@
 ## wice restart
 
-Restart the ɯice daemon
+Restart the cunicu daemon
 
 ```
 wice restart [flags]
@@ -23,5 +23,5 @@ wice restart [flags]
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 

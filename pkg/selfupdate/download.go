@@ -12,7 +12,7 @@ import (
 )
 
 // DownloadAndVerifyRelease downloads a released version of
-// ɯice and saves it to target. It returns the version string for the newest
+// cunicu and saves it to target. It returns the version string for the newest
 // version. The function printf is used to print progress information.
 func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, logger *zap.Logger) error {
 	fn, sha256sums, err := getGithubDataFile(ctx, rel.Assets, checksumsFile)

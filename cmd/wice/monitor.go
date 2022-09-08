@@ -10,7 +10,7 @@ import (
 
 var monitorCmd = &cobra.Command{
 	Use:   "monitor",
-	Short: "Monitor the ɯice daemon for events",
+	Short: "Monitor the cunicu daemon for events",
 	Run:   monitor,
 	Args:  cobra.NoArgs,
 }

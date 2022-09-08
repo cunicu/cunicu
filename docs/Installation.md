@@ -1,11 +1,11 @@
 # Installation
 
-This guide shows how to install ɯice.
-ɯice can be installed either from source, or from pre-built binary releases.
+This guide shows how to install cunicu.
+cunicu can be installed either from source, or from pre-built binary releases.
 
 ## From the Binary Releases
 
-Every release of ɯice provides binary releases for a variety of OSes.
+Every release of cunicu provides binary releases for a variety of OSes.
 These binary versions can be manually downloaded and installed.
 
 ## By Hand
@@ -16,12 +16,12 @@ These binary versions can be manually downloaded and installed.
 4.  Make it executable: `chmod +x /usr/local/bin/wice`
 5.  From there, you should be able to run the client and add the stable repo: `wice help`.
 
-**Note:** ɯice automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
-Testing of other OSes are the responsibility of the community requesting ɯice for the OS in question.
+**Note:** cunicu automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
+Testing of other OSes are the responsibility of the community requesting cunicu for the OS in question.
 
 ## From Script
 
-ɯice also has an installer script that will automatically grab the latest version of ɯice and install it locally.
+cunicu also has an installer script that will automatically grab the latest version of cunicu and install it locally.
 
 You can fetch that script, and then execute it locally.
 It's well documented so that you can read through it and understand what it is doing before you run it.
@@ -36,7 +36,7 @@ Yes, you can `curl https://raw.githubusercontent.com/stv0g/wice/master/scripts/g
 
 ## Through Package Managers
 
-ɯice provides the ability to install via operating system package managers.
+cunicu provides the ability to install via operating system package managers.
 
 ### From Apt (Debian, Ubuntu)
 
@@ -62,7 +62,7 @@ sudo yum install wice
 
 ## From Source (all)
 
-Building ɯice is fairly easy and allows you to install the latest unreleased version.
+Building cunicu is fairly easy and allows you to install the latest unreleased version.
 
 You must have a working Go environment.
 
@@ -71,11 +71,11 @@ go install github.com/stv0g/cunicu/cmd/wice@latest
 ```
 
 If required, it will fetch the dependencies and cache them, and validate configuration.
-It will then compile ɯice and place it in `${GOPATH}/bin/wice`.
+It will then compile cunicu and place it in `${GOPATH}/bin/wice`.
 
 ## Conclusion
 
-In most cases, installation is as simple as getting a pre-built ɯice binary.
-This document covers additional cases for those who want to do more sophisticated things with ɯice.
+In most cases, installation is as simple as getting a pre-built cunicu binary.
+This document covers additional cases for those who want to do more sophisticated things with cunicu.
 
-Once you have ɯice successfully installed, you can move on to [using ɯice](Usage.md) to setup your mesh VPN network.
+Once you have cunicu successfully installed, you can move on to [using cunicu](Usage.md) to setup your mesh VPN network.

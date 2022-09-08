@@ -18,7 +18,7 @@ WireGuard commands
 
 ### SEE ALSO
 
-* [wice](wice.md)	 - ɯice
+* [wice](wice.md)	 - cunicu
 * [wice wg genkey](wice_wg_genkey.md)	 - Generates a random private key in base64 and prints it to standard output.
 * [wice wg genpsk](wice_wg_genpsk.md)	 - Generates a random preshared key in base64 and prints it to standard output.
 * [wice wg pubkey](wice_wg_pubkey.md)	 - Calculates a public key and prints it in base64 to standard output.

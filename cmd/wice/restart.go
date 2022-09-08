@@ -10,7 +10,7 @@ import (
 
 var restartCmd = &cobra.Command{
 	Use:   "restart",
-	Short: "Restart the ɯice daemon",
+	Short: "Restart the cunicu daemon",
 	RunE:  restart,
 	Args:  cobra.NoArgs,
 }

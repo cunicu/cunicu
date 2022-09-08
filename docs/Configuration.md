@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes the ways of configuring the ɯice daemon (`wice daemon`).
+This page describes the ways of configuring the cunicu daemon (`wice daemon`).
 
 ## Command Line Flags
 
@@ -148,11 +148,11 @@ All the settings from the configuration file can also be passed via environment 
 
 ## DNS Auto-configuration
 
-ɯice als supports retrieving parts of the configuration via DNS lookups.
+cunicu als supports retrieving parts of the configuration via DNS lookups.
 
 When `wice daemon` is started with a `--domain example.com` parameter it will look for the following DNS records to obtain its configuration.
 
-STUN and TURN servers used for ICE are retrieved by SVR lookups and other ɯice settings are retrieved via TXT lookups: 
+STUN and TURN servers used for ICE are retrieved by SVR lookups and other cunicu settings are retrieved via TXT lookups: 
 
 ```text
 _stun._udp.example.com.  3600 IN SRV 10 0 3478 stun.example.com.
@@ -173,7 +173,7 @@ example.com.             3600 IN TXT "wice-config=https://example.com/wice.yaml"
 ## Remote Configuration File
 
 When `wice daemon` can be started with `--config` options pointing to HTTPS URIs.
-ɯice will download all configuration files in the order they are specified on the command line and merge them subsequently.
+cunicu will download all configuration files in the order they are specified on the command line and merge them subsequently.
 
 This feature can be combined with the DNS auto-configuration method by providing a TXT record pointing to the configuration file:
 

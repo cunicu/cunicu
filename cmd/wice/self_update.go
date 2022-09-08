@@ -16,9 +16,9 @@ import (
 
 var selfUpdateCmd = &cobra.Command{
 	Use:   "self-update [flags]",
-	Short: "Update the ɯice binary",
+	Short: "Update the cunicu binary",
 	Long: `
-The command "self-update" downloads the latest stable release of ɯice from
+The command "self-update" downloads the latest stable release of cunicu from
 GitHub and replaces the currently running binary. After download, the
 authenticity of the binary is verified using the GPG signature on the release
 files.
@@ -78,20 +78,20 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 	// We do a lexicographic comparison here to compare the
 	// semver versions.
 	if rel.Version == curVersion {
-		logger.Info("Your ɯice version is up to date. Aborting...")
+		logger.Info("Your cunicu version is up to date. Aborting...")
 		return
 	} else if rel.Version < curVersion {
-		logger.Warn("You are running an unreleased version of ɯice. Aborting...")
+		logger.Warn("You are running an unreleased version of cunicu. Aborting...")
 		return
 	} else {
-		logger.Info("Your ɯice version is out dated. Updating...")
+		logger.Info("Your cunicu version is out dated. Updating...")
 	}
 
 	if err := selfupdate.DownloadAndVerifyRelease(context.Background(), rel, selfUpdateOptions.Output, logger); err != nil {
-		logger.Fatal("Failed to update ɯice", zap.Error(err))
+		logger.Fatal("Failed to update cunicu", zap.Error(err))
 	}
 
-	logger.Info("Successfully updated ɯice",
+	logger.Info("Successfully updated cunicu",
 		zap.String("version", rel.Version),
 		zap.String("filename", selfUpdateOptions.Output),
 	)

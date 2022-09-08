@@ -15,7 +15,7 @@ var (
 
 	docsCmd = &cobra.Command{
 		Use:    "docs",
-		Short:  "Generate documentation for the ɯice commands",
+		Short:  "Generate documentation for the cunicu commands",
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -72,7 +72,7 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 	}
 
 	header := &doc.GenManHeader{
-		Title:   "ɯice",
+		Title:   "cunicu",
 		Section: "3",
 		Source:  "https://github.com/stv0g/wice",
 		Date:    buildinfo.BuiltDate,
