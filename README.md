@@ -1,6 +1,5 @@
 <p align="center" >
-    <img style="width: 50%; margin: 4em 0" src="docs/images/wice_logo.svg" alt="wice logo" />
-    <h1 align="center">WireGuard® Interactive Connectivity Establishment</h1>
+    <img style="width: 40%; margin: 4em 0" src="docs/images/cunicu_logo.svg" alt="cunicu logo" />
 </p>
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/stv0g/wice/build?style=flat-square)](https://github.com/stv0g/wice/actions)
