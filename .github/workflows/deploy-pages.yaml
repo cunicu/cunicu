@@ -4,8 +4,8 @@ name: Deploy website to GitHub Pages
 
 on:
   push:
-    branches:
-    - master
+    tags:
+    - 'v*'
 
 defaults:
   run:
