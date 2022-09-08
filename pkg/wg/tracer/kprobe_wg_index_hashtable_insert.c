@@ -5,8 +5,7 @@
 // @copyright Institute for Automation of Complex Power Systems, RWTH Aachen University
 
 #include "kernel/config.h"
-#include "common.h"
-#include "bpf_tracing.h"
+#include "bpf_helpers.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
