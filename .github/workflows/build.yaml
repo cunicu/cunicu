@@ -82,6 +82,20 @@ jobs:
           host_arch: amd64
           runner: windows-latest
 
+        # - target_os: linux
+        #   target_arch: mips
+        #   host_os: linux
+        #   host_arch: amd64
+        #   mips: softfloat
+        #   runner: ubuntu-latest
+
+        # - target_os: linux
+        #   target_arch: mips
+        #   host_os: linux
+        #   host_arch: amd64
+        #   mips: hardfloat
+        #   runner: ubuntu-latest
+
     env:
       GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
