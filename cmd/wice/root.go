@@ -55,8 +55,8 @@ var (
 		DisableAutoGenTag: true,
 	}
 
-	logLevel           = config.Level{Level: zapcore.InfoLevel}
-	verbosityLevel int = 0
+	logLevel       = config.Level{Level: zapcore.InfoLevel}
+	verbosityLevel int
 	logFile        string
 	colorMode      string
 	color          bool
