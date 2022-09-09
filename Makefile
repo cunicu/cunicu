@@ -70,9 +70,14 @@ install-deps:
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest
 
+website: docs
+	cd website && \
+	yarn build
+
 docs: $(wildcard cmd/cunicu/*.go)
 	rm -rf ./docs/usage/{man,md}
 	go run ./cmd/cunicu/ docs --with-frontmatter
+	find ./docs/usage/md -name "*.md" -exec sed -i 's/</\\</g;s/>/\\>/g;' {} \;
 
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 
@@ -90,4 +95,4 @@ clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf cunicu lcov.info test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean vet staticcheck install-deps ci completions docs prepare generate
+.PHONY: all cunicu tests tests-watch coverage clean vet staticcheck install-deps ci completions docs prepare generate website
