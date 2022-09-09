@@ -19,6 +19,7 @@ var (
 	docsCmd = &cobra.Command{
 		Use:    "docs",
 		Short:  "Generate documentation for the cunīcu commands",
+		Long:   `When used without a sub-command, both the Markdown documentation and Man-pages will be generated.`,
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -74,9 +75,8 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 		parts := strings.Split(filename, "_")
 
 		fm := struct {
-			ID               string   `yaml:"id,omitempty"`
 			Title            string   `yaml:"title"`
-			SidebarLabel     string   `yaml:"sidebar_label"`
+			SidebarLabel     string   `yaml:"sidebar_label,omitempty"`
 			SidebarClassName string   `yaml:"sidebar_class_name"`
 			Slug             string   `yaml:"slug"`
 			HideTitle        bool     `yaml:"hide_title"`
@@ -91,9 +91,6 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 
 		if len(parts) > 1 {
 			fm.SidebarLabel = strings.Join(parts[1:], " ")
-		} else {
-			fm.SidebarLabel = "cunicu"
-			fm.ID = "index"
 		}
 
 		fmYaml, err := yaml.Marshal(fm)
@@ -121,10 +118,9 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 	}
 
 	header := &doc.GenManHeader{
-		Title:   "cunīcu",
-		Section: "1",
-		Source:  "https://github.com/stv0g/cunicu",
-		Date:    buildinfo.Date,
+		Title:  "cunīcu",
+		Source: "https://github.com/stv0g/cunicu",
+		Date:   buildinfo.Date,
 	}
 
 	return doc.GenManTree(rootCmd, header, dir)

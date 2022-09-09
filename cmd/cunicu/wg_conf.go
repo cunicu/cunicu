@@ -11,9 +11,9 @@ import (
 
 var (
 	wgShowConfCmd = &cobra.Command{
-		Use:   "showconf [flags] <interface>",
-		Short: "Shows the current configuration and device information",
-		Long:  "Sets the current configuration of <interface> to the contents of <configuration-filename>, which must be in the wg(8) format.",
+		Use:   "showconf interface-name",
+		Short: "Shows the current configuration and information of the provided WireGuard interface",
+		Long:  "Shows the current configuration of `interface-name` in the wg(8) format.",
 
 		RunE: wgShowConf,
 		Args: cobra.ExactArgs(1),

@@ -1,27 +1,31 @@
 ---
-title: cunicu monitor
-sidebar_label: monitor
+title: cunicu selfupdate
+sidebar_label: selfupdate
 sidebar_class_name: command-name
-slug: /usage/man/monitor
+slug: /usage/man/selfupdate
 hide_title: true
 keywords:
     - manpage
 ---
 
-## cunicu monitor
+## cunicu selfupdate
 
-Monitor the cunīcu daemon for events
+Update the cunīcu binary
+
+### Synopsis
+
+Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
+After download, the authenticity of the binary is verified using the GPG signature on the release files.
 
 ```
-cunicu monitor [flags]
+cunicu selfupdate [flags]
 ```
 
 ### Options
 
 ```
-  -f, --format format       Output format (one of: json, logger, human) (default "human")
-  -h, --help                help for monitor
-  -s, --rpc-socket string   Unix control and monitoring socket (default "/var/run/cunicu.sock")
+  -h, --help              help for selfupdate
+  -o, --output filename   Save the downloaded file as filename (default "cunicu")
 ```
 
 ### Options inherited from parent commands

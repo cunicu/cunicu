@@ -18,7 +18,9 @@ import (
 var (
 	configCmd = &cobra.Command{
 		Use:   "config",
-		Short: "Manage runtime configuration",
+		Short: "Manage configuration of a running cunīcu daemon.",
+		Long: `
+`,
 	}
 
 	setCmd = &cobra.Command{
@@ -30,7 +32,7 @@ var (
 	}
 
 	getCmd = &cobra.Command{
-		Use:               "get key",
+		Use:               "get [key]",
 		Short:             "Get current value of a configuration setting",
 		Run:               get,
 		Args:              cobra.RangeArgs(0, 1),

@@ -1,9 +1,25 @@
+---
+title: cunicu daemon
+sidebar_label: daemon
+sidebar_class_name: command-name
+slug: /usage/man/daemon
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu daemon
 
 Start the daemon
 
 ```
-cunicu daemon [interfaces...] [flags]
+cunicu daemon [interface-names...] [flags]
+```
+
+### Examples
+
+```
+$ cunicu daemon -u -x mysecretpass wg0
 ```
 
 ### Options
@@ -45,5 +61,5 @@ cunicu daemon [interfaces...] [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

@@ -10,7 +10,7 @@ import (
 
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "Shutdown the cunicu daemon",
+	Short: "Shutdown the cunīcu daemon",
 	RunE:  stop,
 	Args:  cobra.NoArgs,
 }

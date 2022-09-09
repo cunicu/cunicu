@@ -1,3 +1,13 @@
+---
+title: cunicu completion fish
+sidebar_label: completion fish
+sidebar_class_name: command-name
+slug: /usage/man/completion/fish
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu completion fish
 
 Generate the autocompletion script for fish

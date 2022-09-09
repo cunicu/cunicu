@@ -1,25 +1,33 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-config-get - Get current value of a configuration setting
+cunicu-signal - Start gRPC signaling server
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu config get key [flags]\fP
+\fBcunicu signal [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Get current value of a configuration setting
+Start gRPC signaling server
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for get
+	help for signal
+
+.PP
+\fB-L\fP, \fB--listen\fP=":8080"
+	listen address
+
+.PP
+\fB-S\fP, \fB--secure\fP[=false]
+	listen with TLS
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -36,14 +44,10 @@ Get current value of a configuration setting
 	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 .PP
-\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
-	Unix control and monitoring socket
-
-.PP
 \fB-v\fP, \fB--verbose\fP=0
 	verbosity level
 
 
 .SH SEE ALSO
 .PP
-\fBcunicu-config(3)\fP
+\fBcunicu(1)\fP

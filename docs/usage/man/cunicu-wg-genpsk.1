@@ -1,29 +1,25 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-sync - Synchronize interfaces
+cunicu-wg-genpsk - Generates a random preshared key in base64 and prints it to standard output.
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu sync [flags]\fP
+\fBcunicu wg genpsk [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Synchronizes the internal daemon state with the state of the WireGuard interfaces
+Generates a random preshared key in base64 and prints it to standard output.
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for sync
-
-.PP
-\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
-	Unix control and monitoring socket
+	help for genpsk
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -46,4 +42,4 @@ Synchronizes the internal daemon state with the state of the WireGuard interface
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu-wg(1)\fP

@@ -1,29 +1,32 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-restart - Restart the cunicu daemon
+cunicu-self-update - Update the cunīcu binary
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu restart [flags]\fP
+\fBcunicu self-update [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Restart the cunicu daemon
+The command "self-update" downloads the latest stable release of cunicu from
+GitHub and replaces the currently running binary. After download, the
+authenticity of the binary is verified using the GPG signature on the release
+files.
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for restart
+	help for self-update
 
 .PP
-\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
-	Unix control and monitoring socket
+\fB-o\fP, \fB--output\fP="cunicu"
+	Save the downloaded file as \fB\fCfilename\fR
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -46,4 +49,4 @@ Restart the cunicu daemon
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu(1)\fP

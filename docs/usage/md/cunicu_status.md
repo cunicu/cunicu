@@ -1,9 +1,19 @@
+---
+title: cunicu status
+sidebar_label: status
+sidebar_class_name: command-name
+slug: /usage/man/status
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu status
 
 Show current status of the cunīcu daemon, its interfaces and peers
 
 ```
-cunicu status [flags] [intf [peer]]
+cunicu status [interface-name [peer-public-key]] [flags]
 ```
 
 ### Options
@@ -26,5 +36,5 @@ cunicu status [flags] [intf [peer]]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

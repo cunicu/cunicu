@@ -1,3 +1,13 @@
+---
+title: cunicu completion zsh
+sidebar_label: completion zsh
+sidebar_class_name: command-name
+slug: /usage/man/completion/zsh
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu completion zsh
 
 Generate the autocompletion script for zsh

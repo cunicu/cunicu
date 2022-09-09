@@ -1,3 +1,13 @@
+---
+title: cunicu wg genpsk
+sidebar_label: wg genpsk
+sidebar_class_name: command-name
+slug: /usage/man/wg/genpsk
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu wg genpsk
 
 Generates a random preshared key in base64 and prints it to standard output.

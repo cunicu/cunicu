@@ -1,25 +1,25 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-stop - Shutdown the cunicu daemon
+cunicu-sync - Synchronize cunīcu daemon state
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu stop [flags]\fP
+\fBcunicu sync [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Shutdown the cunicu daemon
+Synchronizes the internal daemon state with kernel routes, interfaces and addresses
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for stop
+	help for sync
 
 .PP
 \fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
@@ -46,4 +46,4 @@ Shutdown the cunicu daemon
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu(1)\fP

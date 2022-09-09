@@ -1,3 +1,13 @@
+---
+title: cunicu completion bash
+sidebar_label: completion bash
+sidebar_class_name: command-name
+slug: /usage/man/completion/bash
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu completion bash
 
 Generate the autocompletion script for bash

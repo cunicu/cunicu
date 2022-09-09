@@ -16,9 +16,12 @@ import (
 var (
 	versionCmd = &cobra.Command{
 		Use:   "version",
-		Short: "Show current status of the cunīcu daemon, its interfaces and peers",
-		RunE:  version,
-		Args:  cobra.NoArgs,
+		Short: "Show version of the cunīcu binary and optionally also a running daemon",
+		Example: `$ sudo cunicu version
+client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
+daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)`,
+		RunE: version,
+		Args: cobra.NoArgs,
 	}
 
 	short bool

@@ -16,9 +16,13 @@ import (
 var (
 	wgExtractHandshakesCmd = &cobra.Command{
 		Use:   "extract-handshakes",
-		Short: "Extract WireGuard handhshakes from Linux kernel",
-		Long:  "This command extracts ephemeral session secrets from handshakes of local WireGuard interfaces via Linux eBPF and kProbes and logs them to the standard output in the keylog format used by Wireshark",
-		RunE:  wgExtractHandshakes,
+		Short: "Extract WireGuard handshakes from Linux kernel",
+		Long: `This command extracts ephemeral session secrets from handshakes of local WireGuard interfaces via Linux eBPF and kProbes.
+The extracted keys are logged to the standard output in the keylog format used by Wireshark.
+
+See: https://wiki.wireshark.org/WireGuard#key-log-format
+`,
+		RunE: wgExtractHandshakes,
 	}
 )
 

@@ -1,6 +1,16 @@
+---
+title: cunicu stop
+sidebar_label: stop
+sidebar_class_name: command-name
+slug: /usage/man/stop
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu stop
 
-Shutdown the cunicu daemon
+Shutdown the cunīcu daemon
 
 ```
 cunicu stop [flags]
@@ -24,5 +34,5 @@ cunicu stop [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

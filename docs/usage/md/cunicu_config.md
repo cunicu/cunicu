@@ -1,6 +1,21 @@
+---
+title: cunicu config
+sidebar_label: config
+sidebar_class_name: command-name
+slug: /usage/man/config
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu config
 
-Manage runtime configuration
+Manage configuration of a running cunīcu daemon.
+
+### Synopsis
+
+
+
 
 ### Options
 
@@ -20,7 +35,7 @@ Manage runtime configuration
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 * [cunicu config get](cunicu_config_get.md)	 - Get current value of a configuration setting
 * [cunicu config set](cunicu_config_set.md)	 - Update the value of a configuration setting
 

@@ -1,3 +1,13 @@
+---
+title: cunicu wg pubkey
+sidebar_label: wg pubkey
+sidebar_class_name: command-name
+slug: /usage/man/wg/pubkey
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu wg pubkey
 
 Calculates a public key and prints it in base64 to standard output.
@@ -6,13 +16,16 @@ Calculates a public key and prints it in base64 to standard output.
 
 Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.
 
-A private key and a corresponding public key may be generated at once by calling:
-$ umask 077
-$ wg genkey | tee private.key | wg pubkey > public.key
-		
-
 ```
 cunicu wg pubkey [flags]
+```
+
+### Examples
+
+```
+# A private key and a corresponding public key may be generated at once by calling:
+$ umask 077
+$ wg genkey | tee private.key | wg pubkey > public.key
 ```
 
 ### Options

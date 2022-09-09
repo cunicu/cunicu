@@ -27,12 +27,10 @@ var (
 	wgPubKeyCmd = &cobra.Command{
 		Use:   "pubkey",
 		Short: "Calculates a public key and prints it in base64 to standard output.",
-		Long: `Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.
-
-A private key and a corresponding public key may be generated at once by calling:
+		Long:  `Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.`,
+		Example: `# A private key and a corresponding public key may be generated at once by calling:
 $ umask 077
-$ wg genkey | tee private.key | wg pubkey > public.key
-		`,
+$ wg genkey | tee private.key | wg pubkey > public.key`,
 		RunE: wgPubKey,
 		Args: cobra.NoArgs,
 	}

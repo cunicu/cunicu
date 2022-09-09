@@ -1,29 +1,25 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-config - Manage runtime configuration
+cunicu-config-set - Update the value of a configuration setting
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu config [flags]\fP
+\fBcunicu config set key value [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Manage runtime configuration
+Update the value of a configuration setting
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for config
-
-.PP
-\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
-	Unix control and monitoring socket
+	help for set
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -40,10 +36,14 @@ Manage runtime configuration
 	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
 
 .PP
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
+	Unix control and monitoring socket
+
+.PP
 \fB-v\fP, \fB--verbose\fP=0
 	verbosity level
 
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP, \fBcunicu-config-get(3)\fP, \fBcunicu-config-set(3)\fP
+\fBcunicu-config(1)\fP

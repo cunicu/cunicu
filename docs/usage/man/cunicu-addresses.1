@@ -1,0 +1,67 @@
+.nh
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+
+.SH NAME
+.PP
+cunicu-addresses - Calculate link-local IPv4 and IPv6 addresses from a WireGuard X25519 public key
+
+
+.SH SYNOPSIS
+.PP
+\fBcunicu addresses [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+cunīcu auto-configuration feature derives and assigns link-local IPv4 and IPv6 addresses based on the public key of the WireGuard interface.
+This sub-command accepts a WireGuard public key on the standard input and prints out the calculated IP addresses on the standard output.
+
+
+.SH OPTIONS
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for addresses
+
+.PP
+\fB-4\fP, \fB--ipv4\fP[=false]
+	Print IPv4 address only
+
+.PP
+\fB-6\fP, \fB--ipv6\fP[=false]
+	Print IPv6 address only
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
+.PP
+\fB-d\fP, \fB--log-level\fP="info"
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
+
+.PP
+\fB-v\fP, \fB--verbose\fP=0
+	verbosity level
+
+
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+$ wg genkey | wg pubkey | cunicu addresses
+fe80::e3be:9673:5a98:9348/64
+169.254.29.188/16
+
+.fi
+.RE
+
+
+.SH SEE ALSO
+.PP
+\fBcunicu(1)\fP

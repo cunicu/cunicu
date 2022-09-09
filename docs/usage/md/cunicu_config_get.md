@@ -1,9 +1,19 @@
+---
+title: cunicu config get
+sidebar_label: config get
+sidebar_class_name: command-name
+slug: /usage/man/config/get
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu config get
 
 Get current value of a configuration setting
 
 ```
-cunicu config get key [flags]
+cunicu config get [key] [flags]
 ```
 
 ### Options
@@ -24,5 +34,5 @@ cunicu config get key [flags]
 
 ### SEE ALSO
 
-* [cunicu config](cunicu_config.md)	 - Manage runtime configuration
+* [cunicu config](cunicu_config.md)	 - Manage configuration of a running cunīcu daemon.
 

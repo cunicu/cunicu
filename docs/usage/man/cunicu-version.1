@@ -1,9 +1,9 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-version - Show current status of the cunīcu daemon, its interfaces and peers
+cunicu-version - Show version of the cunīcu binary and optionally also a running daemon
 
 
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ cunicu-version - Show current status of the cunīcu daemon, its interfaces and p
 
 .SH DESCRIPTION
 .PP
-Show current status of the cunīcu daemon, its interfaces and peers
+Show version of the cunīcu binary and optionally also a running daemon
 
 
 .SH OPTIONS
@@ -48,6 +48,19 @@ Show current status of the cunīcu daemon, its interfaces and peers
 	verbosity level
 
 
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+$ sudo cunicu version
+client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
+daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
+
+.fi
+.RE
+
+
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu(1)\fP

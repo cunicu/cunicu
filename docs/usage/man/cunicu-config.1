@@ -1,33 +1,22 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-status - Show current status of the cunīcu daemon, its interfaces and peers
+cunicu-config - Manage configuration of a running cunīcu daemon.
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu status [flags] [intf [peer]]\fP
+\fBcunicu config [flags]\fP
 
 
 .SH DESCRIPTION
-.PP
-Show current status of the cunīcu daemon, its interfaces and peers
-
 
 .SH OPTIONS
 .PP
-\fB-f\fP, \fB--format\fP="human"
-	Output \fB\fCformat\fR (one of: human, json)
-
-.PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for status
-
-.PP
-\fB-i\fP, \fB--indent\fP[=true]
-	Format and indent JSON ouput
+	help for config
 
 .PP
 \fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
@@ -54,4 +43,4 @@ Show current status of the cunīcu daemon, its interfaces and peers
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu(1)\fP, \fBcunicu-config-get(1)\fP, \fBcunicu-config-set(1)\fP

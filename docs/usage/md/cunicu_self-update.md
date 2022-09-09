@@ -1,9 +1,18 @@
+---
+title: cunicu self-update
+sidebar_label: self-update
+sidebar_class_name: command-name
+slug: /usage/man/self-update
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu self-update
 
-Update the cunicu binary
+Update the cunīcu binary
 
 ### Synopsis
-
 
 The command "self-update" downloads the latest stable release of cunicu from
 GitHub and replaces the currently running binary. After download, the
@@ -33,5 +42,5 @@ cunicu self-update [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

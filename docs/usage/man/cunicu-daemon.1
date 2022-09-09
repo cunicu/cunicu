@@ -1,5 +1,5 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
@@ -8,7 +8,7 @@ cunicu-daemon - Start the daemon
 
 .SH SYNOPSIS
 .PP
-\fBcunicu daemon [interfaces...] [flags]\fP
+\fBcunicu daemon [interface-names...] [flags]\fP
 
 
 .SH DESCRIPTION
@@ -128,6 +128,17 @@ Start the daemon
 	verbosity level
 
 
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+$ cunicu daemon -u -x mysecretpass wg0
+
+.fi
+.RE
+
+
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu(1)\fP

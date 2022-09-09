@@ -15,14 +15,10 @@ import (
 )
 
 var selfUpdateCmd = &cobra.Command{
-	Use:   "self-update [flags]",
-	Short: "Update the cunicu binary",
-	Long: `
-The command "self-update" downloads the latest stable release of cunicu from
-GitHub and replaces the currently running binary. After download, the
-authenticity of the binary is verified using the GPG signature on the release
-files.
-`,
+	Use:   "selfupdate",
+	Short: "Update the cunīcu binary",
+	Long: `Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
+After download, the authenticity of the binary is verified using the GPG signature on the release files.`,
 	Run: selfUpdate,
 }
 

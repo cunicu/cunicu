@@ -44,7 +44,7 @@ Author:
 Website:
   https://cunicu.li
 
-Code Repository & Issue Tracker
+Code & Issues:
   https://github.com/stv0g/cunicu
 `
 )
@@ -52,8 +52,8 @@ Code Repository & Issue Tracker
 var (
 	rootCmd = &cobra.Command{
 		Use:   "cunicu",
-		Short: "cunicu",
-		Long:  "WireGuard Interactive Connectivity Establishment",
+		Short: "cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.",
+		Long:  `It relies on the awesome pion/ice package for the interactive connectivity establishment as well as bundles the Go user-space implementation of WireGuard in a single binary for environments in which WireGuard kernel support has not landed yet.`,
 
 		DisableAutoGenTag: true,
 	}
