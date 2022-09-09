@@ -20,11 +20,14 @@ var (
 		RunE:  version,
 		Args:  cobra.NoArgs,
 	}
+
+	short bool
 )
 
 func init() {
 	pf := versionCmd.PersistentFlags()
 	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
+	pf.BoolVarP(&short, "short", "s", false, "Only show version and nothing else")
 
 	rootCmd.AddCommand(versionCmd)
 }
@@ -66,7 +69,11 @@ func version(cmd *cobra.Command, args []string) error {
 		}
 
 	case config.OutputFormatHuman:
-		fmt.Print(buildInfos.ToString())
+		if short {
+			fmt.Println(buildInfos.Client.Version)
+		} else {
+			fmt.Print(buildInfos.ToString())
+		}
 	}
 
 	return nil
