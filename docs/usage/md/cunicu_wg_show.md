@@ -1,12 +1,12 @@
 ## cunicu wg show
 
-Shows current WireGuard configuration and runtime information of specified \<interface\>.
+Shows current WireGuard configuration and runtime information of specified <interface>.
 
 ### Synopsis
 
-Shows current WireGuard configuration and runtime information of specified \<interface\>.
+Shows current WireGuard configuration and runtime information of specified <interface>.
 		
-If no \<interface\> is specified, \<interface\> defaults to all.
+If no <interface> is specified, <interface> defaults to all.
 
 If 'interfaces' is specified, prints a list of all WireGuard interaces, one per line, and quits.
 
@@ -19,7 +19,7 @@ If 'dump' is specified, then several lines are printed; the first contains in or
 Subsequent lines are printed for each peer and contain in order separated by tab: public-key, preshared-key, endpoint, allowed-ips, latest-handshake, transfer-rx, transfer-tx, persistent-keepalive.
 
 ```
-cunicu wg show [flags] { \<interface\> | all | interfaces } [public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump]
+cunicu wg show [flags] { <interface> | all | interfaces } [public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump]
 ```
 
 ### Options

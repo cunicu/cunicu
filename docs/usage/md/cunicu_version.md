@@ -1,6 +1,6 @@
 ## cunicu version
 
-Show current status of the cunicu daemon, its interfaces and peers
+Show current status of the cunīcu daemon, its interfaces and peers
 
 ```
 cunicu version [flags]
@@ -11,6 +11,7 @@ cunicu version [flags]
 ```
   -f, --format format   Output format (one of: human, json) (default "human")
   -h, --help            help for version
+  -s, --short           Only show version and nothing else
 ```
 
 ### Options inherited from parent commands

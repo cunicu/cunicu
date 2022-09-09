@@ -19,7 +19,7 @@ cunicu self-update [flags]
 
 ```
   -h, --help              help for self-update
-  -o, --output filename   Save the downloaded file as filename (default "/tmp/go-build3940617673/b001/exe/cunicu")
+  -o, --output filename   Save the downloaded file as filename (default "cunicu")
 ```
 
 ### Options inherited from parent commands

@@ -1,6 +1,6 @@
 ## cunicu status
 
-Show current status of the cunicu daemon, its interfaces and peers
+Show current status of the cunīcu daemon, its interfaces and peers
 
 ```
 cunicu status [flags] [intf [peer]]
