@@ -1,9 +1,10 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 ---
 project_name: cunicu
 
 before:
   hooks:
-  - make prepare-release
+  - make prepare
 
 checksum:
   name_template: "checksums.txt"
@@ -20,6 +21,7 @@ checksum:
 
 builds:
 - id: cunicu
+
   main: ./cmd/cunicu
   binary: cunicu
   
@@ -60,14 +62,25 @@ builds:
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=goreleaser
 
 archives:
-- builds:
+- id: cunicu
+  
+  builds:
   - cunicu
 
-  # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
+  format: tar.gz
+  
   files:
-  - none*
+  - LICENSE
+  - README.md
+  - etc/systemd/*
+  - completions/*
+  - etc/cunicu.yaml
+  - src: docs/usage/man/*
+    dst: man/
 
-  format: binary
+  format_overrides:
+  - goos: windows
+    format: zip
 
 nfpms:
 - vendor: stv0g
@@ -86,11 +99,28 @@ nfpms:
   contents:
   - src: "./etc/systemd/cunicu.service"
     dst: "/usr/lib/systemd/system/cunicu.service"
+
   - src: "./etc/cunicu.yaml"
     dst: "/etc/cunicu.example.yaml"
     type: config
-  - src: "./docs/usage/man/*.3"
-    dst: "/usr/share/man/man3"
+
+  - src: "./docs/usage/man/*.1"
+    dst: "/usr/share/man/man1"
+
+  - src: ./completions/cunicu.bash
+    dst: /usr/share/bash-completion/completions/cunicu
+    file_info:
+      mode: 0644
+
+  - src: ./completions/cunicu.fish
+    dst: /usr/share/fish/completions/cunicu.fish
+    file_info:
+      mode: 0644
+
+  - src: ./completions/cunicu.zsh
+    dst:  /usr/share/zsh/vendor-completions/_cunicu
+    file_info:
+      mode: 0644
 
 dockers:
 - use: buildx
@@ -185,7 +215,10 @@ universal_binaries:
 - replace: true
 
 brews:
-- tap:
+- ids:
+  - cunicu
+
+  tap:
     owner: stv0g
     name: homebrew-cunicu
 
@@ -199,8 +232,22 @@ brews:
   - name: wireguard-tools
     type: optional
 
+  install: |-
+    bin.install "cunicu"
+    etc.install "etc/cunicu.yaml"
+    bash_completion.install "completions/cunicu.bash" => "cunicu"
+    zsh_completion.install "completions/cunicu.zsh" => "_cunicu"
+    fish_completion.install "completions/cunicu.fish"    
+    man1.install Dir["man/*.1"]
+    man5.install Dir["man/*.5"]
+    man7.install Dir["man/*.7"]
+    man8.install Dir["man/*.8"]
+
 aurs:
-- homepage: "https://cunicu.li"
+- ids:
+  - cunicu
+
+  homepage: "https://cunicu.li"
   description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
   license: "Apache-2.0"
   
@@ -217,7 +264,25 @@ aurs:
   - 'wireguard-tools: for controlling WireGuard interfaces'
 
   package: |-
-    install -Dm755 "./cunicu_*" "${pkgdir}/usr/bin/cunicu"
+    # bin
+    install -Dm755 "./cunicu" "${pkgdir}/usr/bin/cunicu"
+    
+    # license
+    install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/cunicu/LICENSE"
+
+    # manpages
+    install -Dm644 man/*.1 "${pkgdir}/usr/share/man/man1"
+    install -Dm644 man/*.5 "${pkgdir}/usr/share/man/man5"
+    install -Dm644 man/*.7 "${pkgdir}/usr/share/man/man7"
+    install -Dm644 man/*.8 "${pkgdir}/usr/share/man/man8"
+    
+    # completions
+    mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+    mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+    mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+    install -Dm644 "./completions/cunicu.bash" "${pkgdir}/usr/share/bash-completion/completions/cunicu"
+    install -Dm644 "./completions/cunicu.zsh" "${pkgdir}/usr/share/zsh/site-functions/_cunicu"
+    install -Dm644 "./completions/cunicu.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/cunicu.fish"
 
 changelog:
   sort: asc
