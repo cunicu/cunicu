@@ -1,14 +1,24 @@
+---
+title: cunicu wg show
+sidebar_label: wg show
+sidebar_class_name: command-name
+slug: /usage/man/wg/show
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu wg show
 
-Shows current WireGuard configuration and runtime information of specified <interface>.
+Shows current WireGuard configuration and runtime information of specified [interface].
 
 ### Synopsis
 
-Shows current WireGuard configuration and runtime information of specified <interface>.
+Shows current WireGuard configuration and runtime information of specified [interface].
 		
-If no <interface> is specified, <interface> defaults to all.
+If no [interface] is specified, [interface] defaults to 'all'.
 
-If 'interfaces' is specified, prints a list of all WireGuard interaces, one per line, and quits.
+If 'interfaces' is specified, prints a list of all WireGuard interfaces, one per line, and quits.
 
 If no options are given after the interface specification, then prints a list of all attributes in a visually pleasing way meant for the terminal.
 Otherwise, prints specified information grouped by newlines and tabs, meant to be used in scripts.
@@ -19,7 +29,7 @@ If 'dump' is specified, then several lines are printed; the first contains in or
 Subsequent lines are printed for each peer and contain in order separated by tab: public-key, preshared-key, endpoint, allowed-ips, latest-handshake, transfer-rx, transfer-tx, persistent-keepalive.
 
 ```
-cunicu wg show [flags] { <interface> | all | interfaces } [public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump]
+cunicu wg show { interface-name | all | interfaces } [{ public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump }] [flags]
 ```
 
 ### Options

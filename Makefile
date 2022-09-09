@@ -77,7 +77,7 @@ website: docs
 docs: $(wildcard cmd/cunicu/*.go)
 	rm -rf ./docs/usage/{man,md}
 	go run ./cmd/cunicu/ docs --with-frontmatter
-	find ./docs/usage/md -name "*.md" -exec sed -i 's/</\\</g;s/>/\\>/g;' {} \;
+	# find ./docs/usage/md -name "*.md" ! -name "cunicu_completion_*.md" -exec sed -i 's/</\\</g;s/>/\\>/g;' {} \;
 
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 

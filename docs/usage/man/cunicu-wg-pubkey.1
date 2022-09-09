@@ -1,5 +1,5 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
@@ -14,11 +14,6 @@ cunicu-wg-pubkey - Calculates a public key and prints it in base64 to standard o
 .SH DESCRIPTION
 .PP
 Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.
-
-.PP
-A private key and a corresponding public key may be generated at once by calling:
-$ umask 077
-$ wg genkey | tee private.key | wg pubkey > public.key
 
 
 .SH OPTIONS
@@ -45,6 +40,19 @@ $ wg genkey | tee private.key | wg pubkey > public.key
 	verbosity level
 
 
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+# A private key and a corresponding public key may be generated at once by calling:
+$ umask 077
+$ wg genkey | tee private.key | wg pubkey > public.key
+
+.fi
+.RE
+
+
 .SH SEE ALSO
 .PP
-\fBcunicu-wg(3)\fP
+\fBcunicu-wg(1)\fP

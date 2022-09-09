@@ -1,13 +1,23 @@
+---
+title: cunicu wg showconf
+sidebar_label: wg showconf
+sidebar_class_name: command-name
+slug: /usage/man/wg/showconf
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu wg showconf
 
-Shows the current configuration and device information
+Shows the current configuration and information of the provided WireGuard interface
 
 ### Synopsis
 
-Sets the current configuration of <interface> to the contents of <configuration-filename>, which must be in the wg(8) format.
+Shows the current configuration of `interface-name` in the wg(8) format.
 
 ```
-cunicu wg showconf [flags] <interface>
+cunicu wg showconf interface-name [flags]
 ```
 
 ### Options

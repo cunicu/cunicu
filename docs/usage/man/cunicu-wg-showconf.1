@@ -1,32 +1,29 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-self-update - Update the cunicu binary
+cunicu-wg-showconf - Shows the current configuration and information of the provided WireGuard interface
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu self-update [flags]\fP
+\fBcunicu wg showconf interface-name [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-The command "self-update" downloads the latest stable release of cunicu from
-GitHub and replaces the currently running binary. After download, the
-authenticity of the binary is verified using the GPG signature on the release
-files.
+Shows the current configuration of \fB\fCinterface-name\fR in the wg(8) format.
 
 
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for self-update
+	help for showconf
 
 .PP
-\fB-o\fP, \fB--output\fP="cunicu"
-	Save the downloaded file as \fB\fCfilename\fR
+\fB-s\fP, \fB--rpc-socket\fP="/var/run/cunicu.sock"
+	Unix control and monitoring socket
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
@@ -49,4 +46,4 @@ files.
 
 .SH SEE ALSO
 .PP
-\fBcunicu(3)\fP
+\fBcunicu-wg(1)\fP

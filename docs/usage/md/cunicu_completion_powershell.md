@@ -1,3 +1,13 @@
+---
+title: cunicu completion powershell
+sidebar_label: completion powershell
+sidebar_class_name: command-name
+slug: /usage/man/completion/powershell
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu completion powershell
 
 Generate the autocompletion script for powershell

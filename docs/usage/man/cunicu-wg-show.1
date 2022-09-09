@@ -1,25 +1,25 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-wg-show - Shows current WireGuard configuration and runtime information of specified \&.
+cunicu-wg-show - Shows current WireGuard configuration and runtime information of specified [interface].
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu wg show [flags] {  | all | interfaces } [public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump]\fP
+\fBcunicu wg show { interface-name | all | interfaces } [{ public-key | private-key | listen-port | fwmark | peers | preshared-keys | endpoints | allowed-ips | latest-handshakes | transfer | persistent-keepalive | dump }] [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Shows current WireGuard configuration and runtime information of specified \&.
+Shows current WireGuard configuration and runtime information of specified [interface].
 
 .PP
-If no  is specified,  defaults to all.
+If no [interface] is specified, [interface] defaults to 'all'.
 
 .PP
-If 'interfaces' is specified, prints a list of all WireGuard interaces, one per line, and quits.
+If 'interfaces' is specified, prints a list of all WireGuard interfaces, one per line, and quits.
 
 .PP
 If no options are given after the interface specification, then prints a list of all attributes in a visually pleasing way meant for the terminal.
@@ -63,4 +63,4 @@ Subsequent lines are printed for each peer and contain in order separated by tab
 
 .SH SEE ALSO
 .PP
-\fBcunicu-wg(3)\fP
+\fBcunicu-wg(1)\fP

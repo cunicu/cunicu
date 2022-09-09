@@ -1,3 +1,13 @@
+---
+title: cunicu config set
+sidebar_label: config set
+sidebar_class_name: command-name
+slug: /usage/man/config/set
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu config set
 
 Update the value of a configuration setting
@@ -24,5 +34,5 @@ cunicu config set key value [flags]
 
 ### SEE ALSO
 
-* [cunicu config](cunicu_config.md)	 - Manage runtime configuration
+* [cunicu config](cunicu_config.md)	 - Manage configuration of a running cunīcu daemon.
 

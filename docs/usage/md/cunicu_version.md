@@ -1,9 +1,27 @@
+---
+title: cunicu version
+sidebar_label: version
+sidebar_class_name: command-name
+slug: /usage/man/version
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu version
 
-Show current status of the cunīcu daemon, its interfaces and peers
+Show version of the cunīcu binary and optionally also a running daemon
 
 ```
 cunicu version [flags]
+```
+
+### Examples
+
+```
+$ sudo cunicu version
+client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
+daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
 ```
 
 ### Options
@@ -25,5 +43,5 @@ cunicu version [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

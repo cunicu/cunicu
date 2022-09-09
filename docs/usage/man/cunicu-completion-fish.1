@@ -1,23 +1,19 @@
 .nh
-.TH "cunicu" "3" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
 
 .SH NAME
 .PP
-cunicu-completion-bash - Generate the autocompletion script for bash
+cunicu-completion-fish - Generate the autocompletion script for fish
 
 
 .SH SYNOPSIS
 .PP
-\fBcunicu completion bash\fP
+\fBcunicu completion fish [flags]\fP
 
 
 .SH DESCRIPTION
 .PP
-Generate the autocompletion script for the bash shell.
-
-.PP
-This script depends on the 'bash-completion' package.
-If it is not installed already, you can install it via your OS's package manager.
+Generate the autocompletion script for the fish shell.
 
 .PP
 To load completions in your current shell session:
@@ -26,7 +22,7 @@ To load completions in your current shell session:
 .RS
 
 .nf
-source <(cunicu completion bash)
+cunicu completion fish | source
 
 .fi
 .RE
@@ -34,22 +30,11 @@ source <(cunicu completion bash)
 .PP
 To load completions for every new session, execute once:
 
-.SS Linux:
 .PP
 .RS
 
 .nf
-cunicu completion bash > /etc/bash_completion.d/cunicu
-
-.fi
-.RE
-
-.SS macOS:
-.PP
-.RS
-
-.nf
-cunicu completion bash > $(brew --prefix)/etc/bash_completion.d/cunicu
+cunicu completion fish > ~/.config/fish/completions/cunicu.fish
 
 .fi
 .RE
@@ -61,7 +46,7 @@ You will need to start a new shell for this setup to take effect.
 .SH OPTIONS
 .PP
 \fB-h\fP, \fB--help\fP[=false]
-	help for bash
+	help for fish
 
 .PP
 \fB--no-descriptions\fP[=false]
@@ -88,4 +73,4 @@ You will need to start a new shell for this setup to take effect.
 
 .SH SEE ALSO
 .PP
-\fBcunicu-completion(3)\fP
+\fBcunicu-completion(1)\fP

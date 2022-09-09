@@ -1,10 +1,20 @@
+---
+title: cunicu sync
+sidebar_label: sync
+sidebar_class_name: command-name
+slug: /usage/man/sync
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu sync
 
-Synchronize interfaces
+Synchronize cunīcu daemon state
 
 ### Synopsis
 
-Synchronizes the internal daemon state with the state of the WireGuard interfaces
+Synchronizes the internal daemon state with kernel routes, interfaces and addresses
 
 ```
 cunicu sync [flags]
@@ -28,5 +38,5 @@ cunicu sync [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

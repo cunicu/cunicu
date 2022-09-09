@@ -12,8 +12,9 @@ import (
 
 var (
 	daemonCmd = &cobra.Command{
-		Use:               "daemon [interfaces...]",
+		Use:               "daemon [interface-names...]",
 		Short:             "Start the daemon",
+		Example:           `$ cunicu daemon -u -x mysecretpass wg0`,
 		Run:               daemon,
 		ValidArgsFunction: cobra.NoFileCompletions,
 	}

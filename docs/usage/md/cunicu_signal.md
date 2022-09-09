@@ -1,3 +1,13 @@
+---
+title: cunicu signal
+sidebar_label: signal
+sidebar_class_name: command-name
+slug: /usage/man/signal
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu signal
 
 Start gRPC signaling server
@@ -25,5 +35,5 @@ cunicu signal [flags]
 
 ### SEE ALSO
 
-* [cunicu](cunicu.md)	 - cunicu
+* [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 

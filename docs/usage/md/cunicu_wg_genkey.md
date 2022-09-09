@@ -1,3 +1,13 @@
+---
+title: cunicu wg genkey
+sidebar_label: wg genkey
+sidebar_class_name: command-name
+slug: /usage/man/wg/genkey
+hide_title: true
+keywords:
+    - manpage
+---
+
 ## cunicu wg genkey
 
 Generates a random private key in base64 and prints it to standard output.

@@ -10,7 +10,7 @@ import (
 
 var restartCmd = &cobra.Command{
 	Use:   "restart",
-	Short: "Restart the cunicu daemon",
+	Short: "Restart the cunīcu daemon",
 	RunE:  restart,
 	Args:  cobra.NoArgs,
 }
@@ -20,7 +20,7 @@ func init() {
 }
 
 func restart(cmd *cobra.Command, args []string) error {
-	if _, err := rpcClient.Restart(context.Background(), &proto.Empty{}); err != nil {
+	if _, err := rpcClient.DaemonClient.Restart(context.Background(), &proto.Empty{}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}
 

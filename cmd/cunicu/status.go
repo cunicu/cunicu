@@ -16,7 +16,7 @@ var (
 	indent bool
 
 	statusCmd = &cobra.Command{
-		Use:               "status [flags] [intf [peer]]",
+		Use:               "status [interface-name [peer-public-key]]",
 		Short:             "Show current status of the cunīcu daemon, its interfaces and peers",
 		Aliases:           []string{"show"},
 		Run:               status,
