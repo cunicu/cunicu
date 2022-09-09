@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"gopkg.in/yaml.v3"
 )
 
 var (
-	outputDir string
+	outputDir       string
+	withFrontMatter bool
 
 	docsCmd = &cobra.Command{
 		Use:    "docs",
@@ -50,6 +53,7 @@ func init() {
 
 	pf := docsCmd.PersistentFlags()
 	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documentation")
+	pf.BoolVar(&withFrontMatter, "with-frontmatter", false, "Prepend a frontmatter to the generated Markdown files as used by our static website generator")
 }
 
 func docsMarkdown(cmd *cobra.Command, args []string) error {
@@ -60,7 +64,52 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	return doc.GenMarkdownTree(rootCmd, dir)
+	filePrepender := func(path string) string {
+		if !withFrontMatter {
+			return ""
+		}
+
+		filename := filepath.Base(path)
+		filename = strings.TrimSuffix(filename, ".md")
+		parts := strings.Split(filename, "_")
+
+		fm := struct {
+			ID               string   `yaml:"id,omitempty"`
+			Title            string   `yaml:"title"`
+			SidebarLabel     string   `yaml:"sidebar_label"`
+			SidebarClassName string   `yaml:"sidebar_class_name"`
+			Slug             string   `yaml:"slug"`
+			HideTitle        bool     `yaml:"hide_title"`
+			Keywords         []string `yaml:"keywords"`
+		}{
+			Title:            strings.Join(parts, " "),
+			SidebarClassName: "command-name",
+			Slug:             fmt.Sprintf("/usage/man/%s", strings.Join(parts[1:], "/")),
+			HideTitle:        true,
+			Keywords:         []string{"manpage"},
+		}
+
+		if len(parts) > 1 {
+			fm.SidebarLabel = strings.Join(parts[1:], " ")
+		} else {
+			fm.SidebarLabel = "cunicu"
+			fm.ID = "index"
+		}
+
+		fmYaml, err := yaml.Marshal(fm)
+		if err != nil {
+			return ""
+		}
+
+		return fmt.Sprintf("---\n%s---\n\n", fmYaml)
+	}
+
+	// The linkHandler can be used to customize the rendered internal links to the commands, given a filename:
+	linkHandler := func(name string) string {
+		return name
+	}
+
+	return doc.GenMarkdownTreeCustom(rootCmd, dir, filePrepender, linkHandler)
 }
 
 func docsManpage(cmd *cobra.Command, args []string) error {
@@ -72,8 +121,8 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 	}
 
 	header := &doc.GenManHeader{
-		Title:   "cunicu",
-		Section: "3",
+		Title:   "cunīcu",
+		Section: "1",
 		Source:  "https://github.com/stv0g/cunicu",
 		Date:    buildinfo.Date,
 	}
