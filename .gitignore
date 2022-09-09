@@ -1,4 +1,5 @@
 build/
+completions/
 .vscode/
 dist/
 /cunicu
