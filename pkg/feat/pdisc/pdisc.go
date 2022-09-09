@@ -104,11 +104,14 @@ func (pd *PeerDiscovery) OnInterfaceModified(i *core.Interface, old *wg.Device, 
 	// Only send an update if the private key changed.
 	// There are currently no other attributes which would need to be re-announced
 	if m.Is(core.InterfaceModifiedPrivateKey) {
+		var pkOld *crypto.Key
 		if skOld := crypto.Key(old.PrivateKey); skOld.IsSet() {
-			pkOld := skOld.PublicKey()
-			if err := pd.sendPeerDescription(i, pdiscproto.PeerDescriptionChange_PEER_UPDATE, &pkOld); err != nil {
-				pd.logger.Error("Failed to send peer description", zap.Error(err))
-			}
+			pk := skOld.PublicKey()
+			pkOld = &pk
+		}
+
+		if err := pd.sendPeerDescription(i, pdiscproto.PeerDescriptionChange_PEER_UPDATE, pkOld); err != nil {
+			pd.logger.Error("Failed to send peer description", zap.Error(err))
 		}
 	}
 }
