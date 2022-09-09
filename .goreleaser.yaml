@@ -52,10 +52,10 @@ builds:
   - -s -w
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version={{.Version}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit={{.Commit}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Date={{.Date}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.DateStr={{.Date}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag={{.Tag}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch={{.Branch}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=GoReleaser
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=goreleaser
 
 archives:
 - builds:

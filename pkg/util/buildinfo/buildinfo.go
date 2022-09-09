@@ -13,23 +13,23 @@ import (
 
 var (
 	// set via ldflags -X / goreleaser or from debug.ReadBuildInfo()
-	Version      = "dev"
-	Commit       = "none"
-	Tag          = "unknown"
-	Branch       = "unknown"
-	BuiltBy      = "unknown"
-	BuiltDateStr = "unknown"
-	BuiltDate    *time.Time
-	Dirty        bool
+	Version = "dev"
+	Commit  = "none"
+	Tag     = ""
+	Branch  = ""
+	BuiltBy = "manual"
+	DateStr = ""
+	Date    *time.Time
+	Dirty   bool
 )
 
 func init() {
 	if Version == "dev" {
-		_, Commit, Dirty, BuiltDate = ReadVCSInfos()
+		_, Commit, Dirty, Date = ReadVCSInfos()
 	} else {
 		Dirty = strings.Contains(Version, "-dirty")
-		if bd, err := time.Parse(time.RFC3339, BuiltDateStr); err == nil && !bd.IsZero() {
-			BuiltDate = &bd
+		if bd, err := time.Parse(time.RFC3339, DateStr); err == nil && !bd.IsZero() {
+			Date = &bd
 		}
 	}
 }
@@ -46,8 +46,8 @@ func BuildInfo() *proto.BuildInfo {
 		Dirty:   Dirty,
 	}
 
-	if BuiltDate != nil {
-		bi.Date = proto.Time(*BuiltDate)
+	if Date != nil {
+		bi.Date = proto.Time(*Date)
 	}
 
 	return bi
@@ -59,14 +59,14 @@ func UserAgent() string {
 
 func ReadVCSInfos() (bool, string, bool, *time.Time) {
 	if info, ok := debug.ReadBuildInfo(); ok {
-		rev := "unknown"
+		commit := ""
 		dirty := false
 		var btime *time.Time
 
 		for _, v := range info.Settings {
 			switch v.Key {
 			case "vcs.revision":
-				rev = v.Value
+				commit = v.Value
 			case "vcs.modified":
 				dirty = v.Value == "true"
 			case "vcs.time":
@@ -77,10 +77,10 @@ func ReadVCSInfos() (bool, string, bool, *time.Time) {
 		}
 
 		if dirty {
-			rev += "-dirty"
+			commit += "-dirty"
 		}
 
-		return true, rev, dirty, btime
+		return true, commit, dirty, btime
 	}
 
 	return false, "", false, nil

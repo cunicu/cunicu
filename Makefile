@@ -6,8 +6,8 @@ LDFLAGS = -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version=$(shell git desc
 		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag=$(shell git describe --tags) \
           -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit=$(shell git rev-parse HEAD) \
 		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
-		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.Date=$(shell date -Iseconds) \
-		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=Makefile \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.DateStr=$(shell date -Iseconds) \
+		  -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=makefile \
 
 PKGS ?= ./cmd/... ./pkg/... ./test
 ifeq ($(GOOS),linux)

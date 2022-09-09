@@ -75,7 +75,7 @@ func docsManpage(cmd *cobra.Command, args []string) error {
 		Title:   "cunicu",
 		Section: "3",
 		Source:  "https://github.com/stv0g/cunicu",
-		Date:    buildinfo.BuiltDate,
+		Date:    buildinfo.Date,
 	}
 
 	return doc.GenManTree(rootCmd, header, dir)
