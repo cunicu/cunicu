@@ -49,6 +49,12 @@ tests-watch:
 	( while inotifywait -qqe close_write --include "\.out$$" .; do $(MAKE) -sB coverage; done & )
 	ginkgo watch $(GINKGO_OPTS)
 
+tidy:
+	go mod tidy
+
+generate:
+	go generate ./...
+
 vet:
 	go vet --copylocks=false $(PKGS)
 
@@ -64,10 +70,24 @@ install-deps:
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest
 
+docs: $(wildcard cmd/cunicu/*.go)
+	rm -rf ./docs/usage/{man,md}
+	go run ./cmd/cunicu/ docs
+
+completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
+
+completions-dir:
+	mkdir completions
+
+completions/cunicu.%: completions-dir
+	go run ./cmd/cunicu/ completion $* > $@
+
+prepare: clean tidy generate vet staticcheck docs completions
+
 ci: install-deps vet staticcheck tests
 
 clean:
 	find . -name "*.out" -exec rm {} \;
-	rm -rf cunicu lcov.info test/logs/
+	rm -rf cunicu lcov.info test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean vet staticcheck install-deps ci
+.PHONY: all cunicu tests tests-watch coverage clean vet staticcheck install-deps ci completions docs prepare generate

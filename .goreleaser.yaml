@@ -3,8 +3,7 @@ project_name: cunicu
 
 before:
   hooks:
-  - go mod tidy
-  - go generate ./...
+  - make prepare-release
 
 checksum:
   name_template: "checksums.txt"
