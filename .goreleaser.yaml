@@ -89,7 +89,7 @@ nfpms:
   - src: "./etc/systemd/cunicu.service"
     dst: "/usr/lib/systemd/system/cunicu.service"
   - src: "./etc/cunicu.yaml"
-    dst: "/etc/cunicu.yaml"
+    dst: "/etc/cunicu.example.yaml"
     type: config
   - src: "./docs/usage/man/*.3"
     dst: "/usr/share/man/man3"
