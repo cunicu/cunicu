@@ -64,10 +64,8 @@ func version(cmd *cobra.Command, args []string) error {
 			logger.Fatal("Failed to marshal", zap.Error(err))
 		}
 
-		if _, err = stdout.Write(buf); err != nil {
-			logger.Fatal("Failed to write to stdout", zap.Error(err))
-		}
-
+		fmt.Print(string(buf))
+		fmt.Println()
 	case config.OutputFormatHuman:
 		if short {
 			fmt.Println(buildInfos.Client.Version)
