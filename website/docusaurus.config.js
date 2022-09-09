@@ -17,7 +17,7 @@ async function createConfig() {
     baseUrl: '/',
     onBrokenLinks: 'throw',
     onBrokenMarkdownLinks: 'warn',
-    favicon: 'img/favicon.ico',
+    favicon: 'img/favicon.png',
     trailingSlash: false,
 
     stylesheets: [
