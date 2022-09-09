@@ -72,7 +72,7 @@ install-deps:
 
 docs: $(wildcard cmd/cunicu/*.go)
 	rm -rf ./docs/usage/{man,md}
-	go run ./cmd/cunicu/ docs
+	go run ./cmd/cunicu/ docs --with-frontmatter
 
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 
