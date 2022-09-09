@@ -38,10 +38,13 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 
-Credits:
+Author:
   Steffen Vogel <post@steffenvogel.de>
 
 Website:
+  https://cunicu.li
+
+Code Repository & Issue Tracker
   https://github.com/stv0g/cunicu
 `
 )
