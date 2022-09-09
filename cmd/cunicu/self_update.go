@@ -41,6 +41,10 @@ func init() {
 		panic(err)
 	}
 
+	if strings.Contains(file, "go-build") {
+		file = "cunicu"
+	}
+
 	flags := selfUpdateCmd.Flags()
 	flags.StringVarP(&selfUpdateOptions.Output, "output", "o", file, "Save the downloaded file as `filename`")
 }

@@ -23,6 +23,6 @@ WireGuard commands
 * [cunicu wg genkey](cunicu_wg_genkey.md)	 - Generates a random private key in base64 and prints it to standard output.
 * [cunicu wg genpsk](cunicu_wg_genpsk.md)	 - Generates a random preshared key in base64 and prints it to standard output.
 * [cunicu wg pubkey](cunicu_wg_pubkey.md)	 - Calculates a public key and prints it in base64 to standard output.
-* [cunicu wg show](cunicu_wg_show.md)	 - Shows current WireGuard configuration and runtime information of specified \<interface\>.
+* [cunicu wg show](cunicu_wg_show.md)	 - Shows current WireGuard configuration and runtime information of specified <interface>.
 * [cunicu wg showconf](cunicu_wg_showconf.md)	 - Shows the current configuration and device information
 
