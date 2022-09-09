@@ -64,6 +64,13 @@ EOF
 sudo yum install cunīcu
 ```
 
+### From Homebrew (macOS)
+
+```bash
+brew tap stv0g/cunicu
+brew install cunicu
+```
+
 ## From Source (all)
 
 Building cunīcu is fairly easy and allows you to install the latest unreleased version.
