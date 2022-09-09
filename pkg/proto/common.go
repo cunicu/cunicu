@@ -2,6 +2,7 @@ package proto
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -21,17 +22,28 @@ func (t *Timestamp) Time() time.Time {
 }
 
 func (bi *BuildInfo) ToString() string {
-	commit := bi.Commit
-	if len(commit) > 8 {
-		commit = commit[:8]
+	attrs := []string{
+		fmt.Sprintf("os=%s", bi.Os),
+		fmt.Sprintf("arch=%s", bi.Arch),
 	}
 
-	date := "unknown"
+	if bi.Commit != "" {
+		attrs = append(attrs, fmt.Sprintf("commit=%s", bi.Commit[:8]))
+	}
+
+	if bi.Branch != "" {
+		attrs = append(attrs, fmt.Sprintf("branch=%s", bi.Branch))
+	}
+
 	if bi.Date != nil {
-		date = bi.Date.Time().Format(time.RFC3339)
+		attrs = append(attrs, fmt.Sprintf("built-at=%s", bi.Date.Time().Format(time.RFC3339)))
 	}
 
-	return fmt.Sprintf("%s (%s, %s/%s, %s)", bi.Version, commit, bi.Os, bi.Arch, date)
+	if bi.BuiltBy != "" {
+		attrs = append(attrs, fmt.Sprintf("built-by=%s", bi.BuiltBy))
+	}
+
+	return fmt.Sprintf("%s (%s)", bi.Version, strings.Join(attrs, ", "))
 }
 
 func (bi *BuildInfos) ToString() string {
