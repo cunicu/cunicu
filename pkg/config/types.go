@@ -98,7 +98,9 @@ func (f *OutputFormat) UnmarshalText(text []byte) error {
 
 	switch *f {
 	case OutputFormatJSON:
+		fallthrough
 	case OutputFormatLogger:
+		fallthrough
 	case OutputFormatHuman:
 		return nil
 	}
