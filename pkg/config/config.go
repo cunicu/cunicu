@@ -205,7 +205,7 @@ func (c *Config) Setup(args []string) error {
 		c.AddConfigPath("/etc")
 		c.AddConfigPath(filepath.Join("$HOME", ".config"))
 		c.AddConfigPath(".")
-		c.SetConfigName("cunicu")
+		c.SetConfigName("cunicu.yaml")
 		c.SetConfigType("yaml")
 
 		if err := c.MergeInConfig(); err == nil {
