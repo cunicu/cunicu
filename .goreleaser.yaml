@@ -190,10 +190,6 @@ brews:
     owner: stv0g
     name: homebrew-cunicu
 
-  commit_author:
-    name: goreleaserbot
-    email: bot@goreleaser.com
-
   homepage: "https://cunicu.li"
   description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
   license: "Apache-2.0"
@@ -203,6 +199,26 @@ brews:
     type: optional
   - name: wireguard-tools
     type: optional
+
+aurs:
+- homepage: "https://cunicu.li"
+  description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
+  license: "Apache-2.0"
+  
+  maintainers:
+  - 'Steffen Vogel <post@steffenvogel.de>'
+
+  private_key: '{{ .Env.AUR_KEY }}'
+  git_url: 'ssh://aur@aur.archlinux.org/cunicu-bin.git'
+  
+  skip_upload: auto
+
+  optdepends:
+  - 'bash-completion: for shell completions'
+  - 'wireguard-tools: for controlling WireGuard interfaces'
+
+  package: |-
+    install -Dm755 "./cunicu_*" "${pkgdir}/usr/bin/cunicu"
 
 changelog:
   sort: asc
