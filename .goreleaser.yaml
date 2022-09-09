@@ -23,8 +23,10 @@ builds:
 - id: cunicu
   main: ./cmd/cunicu
   binary: cunicu
+  
   env:
   - CGO_ENABLED=0
+
   goos:
   - linux
   - darwin
@@ -49,11 +51,12 @@ builds:
     goarch: arm
 
   ldflags:
-  - -s -w
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version={{.Version}}
+  - -s
+  - -w
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version=v{{.Version}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit={{.Commit}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.DateStr={{.Date}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag=v{{.Tag}}
+  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag={{.Tag}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch={{.Branch}}
   - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=goreleaser
 
@@ -65,11 +68,7 @@ archives:
   files:
   - none*
 
-  format: gz
-
-  format_overrides:
-  - goos: windows
-    format: zip
+  format: binary
 
 nfpms:
 - vendor: stv0g
@@ -182,6 +181,28 @@ publishers:
   env:
   - GEMFURY_TOKEN={{ .Env.GEMFURY_TOKEN }}
   - ARTIFACT_PATH={{ .ArtifactPath }}
+
+universal_binaries:
+- replace: true
+
+brews:
+- tap:
+    owner: stv0g
+    name: homebrew-cunicu
+
+  commit_author:
+    name: goreleaserbot
+    email: bot@goreleaser.com
+
+  homepage: "https://cunicu.li"
+  description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
+  license: "Apache-2.0"
+
+  dependencies:
+  - name: bash-completion
+    type: optional
+  - name: wireguard-tools
+    type: optional
 
 changelog:
   sort: asc
