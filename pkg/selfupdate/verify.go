@@ -10,10 +10,10 @@ import (
 	"path"
 
 	//lint:ignore SA1019 We still need to find an alternative
-
-	"github.com/stv0g/cunicu/pkg/proto"
 	pgp "golang.org/x/crypto/openpgp"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	"github.com/stv0g/cunicu/pkg/proto"
 )
 
 //go:embed keys/*.gpg
