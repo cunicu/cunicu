@@ -14,20 +14,17 @@ import (
 	"go.uber.org/zap"
 )
 
-var selfUpdateCmd = &cobra.Command{
-	Use:   "selfupdate",
-	Short: "Update the cunīcu binary",
-	Long: `Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
+var (
+	output string
+
+	selfUpdateCmd = &cobra.Command{
+		Use:   "selfupdate",
+		Short: "Update the cunīcu binary",
+		Long: `Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
 After download, the authenticity of the binary is verified using the GPG signature on the release files.`,
-	Run: selfUpdate,
-}
-
-// SelfUpdateOptions collects all options for the self-update command.
-type SelfUpdateOptions struct {
-	Output string
-}
-
-var selfUpdateOptions SelfUpdateOptions
+		Run: selfUpdate,
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(selfUpdateCmd)
@@ -42,15 +39,15 @@ func init() {
 	}
 
 	flags := selfUpdateCmd.Flags()
-	flags.StringVarP(&selfUpdateOptions.Output, "output", "o", file, "Save the downloaded file as `filename`")
+	flags.StringVarP(&output, "output", "o", file, "Save the downloaded file as `filename`")
 }
 
 func selfUpdate(cmd *cobra.Command, args []string) {
 	logger := logger.Named("self-update")
 
-	fi, err := os.Lstat(selfUpdateOptions.Output)
+	fi, err := os.Lstat(output)
 	if err != nil {
-		dirname := filepath.Dir(selfUpdateOptions.Output)
+		dirname := filepath.Dir(output)
 		di, err := os.Lstat(dirname)
 		if err != nil {
 			logger.Fatal("Failed to stat", zap.Error(err))
@@ -60,7 +57,7 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		if !fi.Mode().IsRegular() {
-			logger.Fatal("Output path is not a normal file, use --output to specify a different file path", zap.String("path", selfUpdateOptions.Output))
+			logger.Fatal("Output path is not a normal file, use --output to specify a different file path", zap.String("path", output))
 		}
 	}
 
@@ -75,24 +72,23 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 
 	logger.Info("Latest version", zap.String("version", rel.Version))
 
-	// We do a lexicographic comparison here to compare the
-	// semver versions.
+	// We do a lexicographic comparison here to compare the semver versions.
 	if rel.Version == curVersion {
-		logger.Info("Your cunicu version is up to date. Aborting...")
+		logger.Info("Your cunicu version is up to date. Nothing to update.")
 		return
 	} else if rel.Version < curVersion {
-		logger.Warn("You are running an unreleased version of cunicu. Aborting...")
+		logger.Warn("You are running an unreleased version of cunicu. Nothing to update.")
 		return
 	} else {
-		logger.Info("Your cunicu version is out dated. Updating...")
+		logger.Info("Your cunicu version is outdated. Updating now!")
 	}
 
-	if err := selfupdate.DownloadAndVerifyRelease(context.Background(), rel, selfUpdateOptions.Output, logger); err != nil {
+	if err := selfupdate.DownloadAndVerifyRelease(context.Background(), rel, output, logger); err != nil {
 		logger.Fatal("Failed to update cunicu", zap.Error(err))
 	}
 
 	logger.Info("Successfully updated cunicu",
 		zap.String("version", rel.Version),
-		zap.String("filename", selfUpdateOptions.Output),
+		zap.String("filename", output),
 	)
 }

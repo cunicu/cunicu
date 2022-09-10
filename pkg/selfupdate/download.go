@@ -37,7 +37,7 @@ func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, 
 
 	logger.Info("GPG signature verification succeeded")
 
-	ext := "gz"
+	ext := "tar.gz"
 	if runtime.GOOS == "windows" {
 		ext = "zip"
 	}

@@ -4,6 +4,7 @@ package selfupdate
 // derived from http://github.com/restic/restic
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bufio"
 	"bytes"
@@ -18,9 +19,9 @@ import (
 )
 
 const (
-	githubUser = "stv0g"
-	githubRepo = "cunicu"
-
+	githubUser       = "stv0g"
+	githubRepo       = "cunicu"
+	binaryFile       = "cunicu"
 	checksumsFile    = "checksums.txt"
 	checksumsSigFile = checksumsFile + ".asc"
 )
@@ -55,13 +56,38 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		mode = fi.Mode()
 	}
 
+	ext := filepath.Ext(filename)
+
 	var rd io.Reader = bytes.NewReader(buf)
-	switch filepath.Ext(filename) {
+	switch ext {
 	case ".bz2":
 		rd = bzip2.NewReader(rd)
 	case ".gz":
 		if rd, err = gzip.NewReader(rd); err != nil {
 			return -1, err
+		}
+	}
+
+	// Check if there is an archive
+	ext = filepath.Ext(filename[0 : len(filename)-len(ext)])
+	switch ext {
+	case ".tar":
+		trd := tar.NewReader(rd)
+		rd = nil
+		for {
+			if hdr, err := trd.Next(); err != nil {
+				if err == io.EOF {
+					break
+				}
+
+				return -1, fmt.Errorf("failed to open tar archive: %w", err)
+			} else if hdr.Name == binaryFile {
+				rd = trd
+				break
+			}
+		}
+		if rd == nil {
+			return -1, fmt.Errorf("no such file '%s'", binaryFile)
 		}
 	case ".zip":
 		zrd, err := zip.NewReader(bytes.NewReader(buf), int64(len(buf)))
@@ -85,6 +111,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		rd = file
 	}
 
+	// Delete old file
 	if err := os.Remove(target); err != nil && !os.IsNotExist(err) {
 		return -1, fmt.Errorf("failed to remove target file: %v", err)
 	}
