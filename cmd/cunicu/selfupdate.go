@@ -87,6 +87,10 @@ func selfUpdate(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to update cunicu", zap.Error(err))
 	}
 
+	if err := selfupdate.VersionVerify(output, rel.Version); err != nil {
+		logger.Fatal("Failed to update cunicu", zap.Error(err))
+	}
+
 	logger.Info("Successfully updated cunicu",
 		zap.String("version", rel.Version),
 		zap.String("filename", output),

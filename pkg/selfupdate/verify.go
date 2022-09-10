@@ -6,11 +6,14 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"os/exec"
 	"path"
 
 	//lint:ignore SA1019 We still need to find an alternative
 
+	"github.com/stv0g/cunicu/pkg/proto"
 	pgp "golang.org/x/crypto/openpgp"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 //go:embed keys/*.gpg
@@ -58,4 +61,29 @@ func GPGVerify(data, sig []byte) (ok bool, err error) {
 	}
 
 	return true, nil
+}
+
+func VersionVerify(binaryFile, expectedVersion string) error {
+	cmd := exec.Command(binaryFile, "version", "--format=json")
+
+	out, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	bi := &proto.BuildInfos{}
+	mo := protojson.UnmarshalOptions{
+		AllowPartial:   true,
+		DiscardUnknown: true,
+	}
+
+	if err := mo.Unmarshal(out, bi); err != nil {
+		return err
+	}
+
+	if "v"+expectedVersion != bi.Client.Version {
+		return fmt.Errorf("version mismatch: dowloaded %s != expected v%s", bi.Client.Version, expectedVersion)
+	}
+
+	return nil
 }
