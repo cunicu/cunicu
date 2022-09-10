@@ -6,7 +6,7 @@
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cunicu.li/blog"/>
     <subtitle>cunīcu Blog</subtitle>
-    <icon>https://cunicu.li/img/favicon.ico</icon>
+    <icon>https://cunicu.li/img/favicon.png</icon>
     <entry>
         <title type="html"><![CDATA[Welcome]]></title>
         <id>welcome</id>
