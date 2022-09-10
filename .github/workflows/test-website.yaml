@@ -13,8 +13,8 @@ defaults:
     working-directory: website
 
 jobs:
-  test-deploy:
-    name: Test deployment
+  test-website:
+    name: Test build of website
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
