@@ -14,19 +14,17 @@ import (
 )
 
 const (
-	runesAlpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
 	lenUFrag = 16
 	lenPwd   = 32
 )
 
 func NewCredentials() Credentials {
-	ufrag, err := randutil.GenerateCryptoRandomString(lenUFrag, runesAlpha)
+	ufrag, err := randutil.GenerateCryptoRandomString(lenUFrag, util.RunesAlpha)
 	if err != nil {
 		panic(err)
 	}
 
-	pwd, err := randutil.GenerateCryptoRandomString(lenPwd, runesAlpha)
+	pwd, err := randutil.GenerateCryptoRandomString(lenPwd, util.RunesAlpha)
 	if err != nil {
 		panic(err)
 	}

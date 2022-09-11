@@ -15,6 +15,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const (
+	RunesAlpha        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	RunesAlphaNumeric = RunesAlpha + "0123456789"
+)
+
 func CmpEndpoint(a, b *net.UDPAddr) int {
 	if a == nil && b == nil {
 		return 0
