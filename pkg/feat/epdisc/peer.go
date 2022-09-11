@@ -31,7 +31,6 @@ type Peer struct {
 	Interface *Interface
 
 	config          *config.Config
-	agentConfig     *ice.AgentConfig
 	agent           *ice.Agent
 	backend         signaling.Backend
 	proxy           proxy.Proxy
@@ -75,22 +74,6 @@ func NewPeer(cp *core.Peer, i *Interface) (*Peer, error) {
 		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
 	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
-
-	// Prepare ICE agent configuration
-	p.agentConfig, err = p.config.AgentConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate ICE agent configuration: %w", err)
-	}
-
-	// Do not use WireGuard interfaces for ICE
-	origFilter := p.agentConfig.InterfaceFilter
-	p.agentConfig.InterfaceFilter = func(name string) bool {
-		return origFilter(name) && i.Discovery.watcher.InterfaceByName(name) == nil
-	}
-
-	p.agentConfig.UDPMux = i.udpMux
-	p.agentConfig.UDPMuxSrflx = i.udpMuxSrflx
-	p.agentConfig.LoggerFactory = log.NewPionLoggerFactory(p.logger)
 
 	// Setup proxy
 	if dev, ok := i.KernelDevice.(*device.UserDevice); ok {
@@ -230,13 +213,29 @@ func (p *Peer) createAgent() error {
 
 	p.logger.Info("Creating new agent")
 
+	// Prepare ICE agent configuration
+	acfg, err := p.config.AgentConfig()
+	if err != nil {
+		return fmt.Errorf("failed to generate ICE agent configuration: %w", err)
+	}
+
+	// Do not use WireGuard interfaces for ICE
+	origFilter := acfg.InterfaceFilter
+	acfg.InterfaceFilter = func(name string) bool {
+		return origFilter(name) && p.Interface.Discovery.watcher.InterfaceByName(name) == nil
+	}
+
+	acfg.UDPMux = p.Interface.udpMux
+	acfg.UDPMuxSrflx = p.Interface.udpMuxSrflx
+	acfg.LoggerFactory = log.NewPionLoggerFactory(p.logger)
+
 	p.credentials = protoepdisc.NewCredentials()
 
-	p.agentConfig.LocalUfrag = p.credentials.Ufrag
-	p.agentConfig.LocalPwd = p.credentials.Pwd
+	acfg.LocalUfrag = p.credentials.Ufrag
+	acfg.LocalPwd = p.credentials.Pwd
 
 	// Setup new ICE Agent
-	if p.agent, err = ice.NewAgent(p.agentConfig); err != nil {
+	if p.agent, err = ice.NewAgent(acfg); err != nil {
 		return fmt.Errorf("failed to create ICE agent: %w", err)
 	}
 
