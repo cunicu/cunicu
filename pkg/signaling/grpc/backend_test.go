@@ -31,7 +31,7 @@ var _ = Describe("gRPC backend", func() {
 		Expect(err).To(Succeed(), "Failed to listen: %s", err)
 
 		// Start local dummy gRPC server
-		svr = grpc.NewServer()
+		svr = grpc.NewSignalingServer(nil)
 		go svr.Serve(l)
 
 		u = url.URL{

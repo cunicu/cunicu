@@ -2,17 +2,17 @@ package config
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/pion/ice/v2"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 )
 
 func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*ice.URL, error) {
@@ -23,29 +23,16 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 	for _, u := range c.EndpointDisc.ICE.URLs {
 		switch u.Scheme {
 		case "stun", "stuns", "turn", "turns":
-
 			// Extract credentials from URL
 			// Warning: This is not standardized in RFCs 7064/7065
-			var creds string
-			if parts := strings.Split(u.Opaque, "@"); len(parts) > 1 {
-				creds = parts[0]
-				u.Opaque = parts[1]
-			}
-
-			iu, err := ice.ParseURL(u.String())
+			iu, user, pass, _, err := icex.ParseURL(u.String())
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse STUN/TURN URL '%s': %w", u.String(), err)
 			}
 
-			if creds != "" {
-				parts := strings.Split(creds, ":")
-
-				if len(parts) != 2 {
-					return nil, errors.New("invalid user / password")
-				}
-
-				iu.Username = parts[0]
-				iu.Password = parts[1]
+			if user != "" && pass != "" {
+				iu.Username = user
+				iu.Password = pass
 			} else {
 				iu.Username = c.EndpointDisc.ICE.Username
 				iu.Password = c.EndpointDisc.ICE.Password
@@ -55,25 +42,31 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 
 		case "grpc":
 			g.Go(func() error {
-				conn, err := grpc.DialContext(ctx, u.String())
+				name, opts, err := grpcx.ParseURL(u.String())
+				if err != nil {
+					return err
+				}
+
+				conn, err := grpc.DialContext(ctx, name, opts...)
 				if err != nil {
 					return fmt.Errorf("failed to connect to gRPC server: %w", err)
 				}
+
 				defer conn.Close()
 
-				client := signalingproto.NewTurnServerRegistryClient(conn)
+				client := signalingproto.NewRelayRegistryClient(conn)
 
-				resp, err := client.GetTurnServers(ctx, &signalingproto.GetTurnServersParams{
+				resp, err := client.GetRelays(ctx, &signalingproto.GetRelaysParams{
 					PublicKey: pk.Bytes(),
 				})
 				if err != nil {
 					return fmt.Errorf("received error from gRPC server: %w", err)
 				}
 
-				for _, svr := range resp.Servers {
-					u, err := ice.ParseURL(u.String())
+				for _, svr := range resp.Relays {
+					u, err := ice.ParseURL(svr.Url)
 					if err != nil {
-						return fmt.Errorf("failed to parse STUN/TURN URL: %w", err)
+						return fmt.Errorf("failed to parse STUN/TURN URL '%s': %w", u, err)
 					}
 
 					u.Username = svr.Username

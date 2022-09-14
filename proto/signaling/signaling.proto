@@ -43,6 +43,7 @@ message SubscribeParams {
 
 service Signaling {
     rpc GetBuildInfo(Empty) returns (BuildInfo) {}
+
     rpc Subscribe(SubscribeParams) returns (stream Envelope) {}
     rpc Publish(Envelope) returns (Empty) {}
 }

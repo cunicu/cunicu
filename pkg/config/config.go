@@ -202,8 +202,6 @@ func (c *Config) Load() error {
 				c.Files = append(c.Files, fn)
 			}
 		}
-
-		c.logger.Debug("Search paths", zap.Strings("files", searchPaths))
 	}
 
 	// Load config files
@@ -266,8 +264,6 @@ func (c *Config) Load() error {
 	if err := c.Koanf.Load(confmap.Provider(intfs, "."), nil); err != nil {
 		return fmt.Errorf("failed to load: %w", err)
 	}
-
-	c.logger.Debug("Interface order", zap.Strings("order", c.InterfaceOrder))
 
 	return c.Unmarshal()
 }

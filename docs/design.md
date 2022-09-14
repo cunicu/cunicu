@@ -68,6 +68,8 @@ sidebar_position: 20
 -   [RFC8489][rfc8489] Session Traversal Utilities for NAT (STUN)
 -   [RFC8866][rfc8866] SDP: Session Description Protocol
 -   [RFC3264][rfc3264] An Offer/Answer Model with the Session Description Protocol (SDP)
+-   [RFC7064][rfc7064] URI Scheme for the Session Traversal Utilities for NAT (STUN) Protocol
+-   [RFC7065][rfc7065] Traversal Using Relays around NAT (TURN) Uniform Resource Identifiers
 
 [wireguard-go]: https://git.zx2c4.com/wireguard-go
 
@@ -102,3 +104,8 @@ sidebar_position: 20
 [rfc8866]: https://datatracker.ietf.org/doc/html/rfc8866
 
 [rfc3264]: https://datatracker.ietf.org/doc/html/rfc3264
+
+[rfc7064]: https://datatracker.ietf.org/doc/html/rfc7064
+
+[rfc7065]: https://datatracker.ietf.org/doc/html/rfc7065
+
