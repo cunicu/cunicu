@@ -7,16 +7,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type hookBase struct {
-	Type string `yaml:"type"`
-}
-
 func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 	if f.Kind() != reflect.Map || t.Name() != "HookSetting" {
 		return data, nil
 	}
 
-	var base hookBase
+	var base BaseHookSetting
 	if err := mapstructure.Decode(data, &base); err != nil {
 		return nil, err
 	}
@@ -35,5 +31,10 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 		return nil, fmt.Errorf("unknown hook type: %s", base.Type)
 	}
 
-	return hook, decode(data, hook)
+	decoder, err := mapstructure.NewDecoder(decoderConfig(hook))
+	if err != nil {
+		return nil, err
+	}
+
+	return hook, decoder.Decode(data)
 }

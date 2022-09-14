@@ -61,7 +61,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Create watcher
-	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, cfg.WireGuard.InterfaceFilter.Regexp.MatchString); err != nil {
+	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, cfg.InterfaceFilter); err != nil {
 		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
 	}
 
@@ -80,8 +80,9 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Check if WireGuard interface can be created by the kernel
-	if !cfg.WireGuard.Userspace {
-		cfg.WireGuard.Userspace = !wg.KernelModuleExists()
+	if !cfg.DefaultInterfaceSettings.WireGuard.UserSpace && !wg.KernelModuleExists() {
+		d.logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
+		cfg.DefaultInterfaceSettings.WireGuard.UserSpace = true
 	}
 
 	d.Features, d.EndpointDiscovery = feat.NewFeatures(d.Watcher, d.Config, d.Client, d.Backend)
@@ -201,22 +202,21 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
-	for _, devName := range d.Config.WireGuard.Interfaces {
-		if !d.Config.WireGuard.InterfaceFilter.MatchString(devName) {
-			return fmt.Errorf("device '%s' is not matched by WireGuard interface filter '%s'",
-				devName, d.Config.WireGuard.InterfaceFilter.String())
-		}
+	for _, intf := range d.Config.Interfaces {
+		if intf.Name != "" {
+			if wgdev := devs.GetByName(intf.Name); wgdev != nil {
+				return fmt.Errorf("device '%s' already exists", intf.Name)
+			}
 
-		if wgdev := devs.GetByName(devName); wgdev != nil {
-			return fmt.Errorf("device '%s' already exists", devName)
-		}
+			intfCfg := d.Config.InterfaceSettings(intf.Name)
 
-		dev, err := device.NewDevice(devName, d.Config.WireGuard.Userspace)
-		if err != nil {
-			return fmt.Errorf("failed to create WireGuard device: %w", err)
-		}
+			dev, err := device.NewDevice(intf.Name, intfCfg.WireGuard.UserSpace)
+			if err != nil {
+				return fmt.Errorf("failed to create WireGuard device: %w", err)
+			}
 
-		d.devices = append(d.devices, dev)
+			d.devices = append(d.devices, dev)
+		}
 	}
 
 	return nil

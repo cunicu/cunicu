@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 
-	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -30,7 +29,7 @@ type PeerDiscovery struct {
 	logger *zap.Logger
 }
 
-func New(w *watcher.Watcher, c *wgctrl.Client, b signaling.Backend, community string, whitelist []config.Key) *PeerDiscovery {
+func New(w *watcher.Watcher, c *wgctrl.Client, b signaling.Backend, community string, whitelist []crypto.Key) *PeerDiscovery {
 	pd := &PeerDiscovery{
 		backend:   b,
 		watcher:   w,

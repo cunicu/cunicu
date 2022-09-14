@@ -160,7 +160,12 @@ func (a *AutoConfig) fixupInterface(i *core.Interface) error {
 	if i.ListenPort == 0 {
 		logger.Warn("Device has no listen port. Setting a random one.")
 
-		port, err := util.FindNextPortToListen("udp", a.config.WireGuard.Port.Min, a.config.WireGuard.Port.Max)
+		icfg := a.config.InterfaceSettings(i.Name())
+
+		port, err := util.FindNextPortToListen("udp",
+			icfg.WireGuard.ListenPortRange.Min,
+			icfg.WireGuard.ListenPortRange.Max,
+		)
 		if err != nil {
 			return fmt.Errorf("failed set listen port: %w", err)
 		}

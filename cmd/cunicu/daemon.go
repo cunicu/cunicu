@@ -6,6 +6,7 @@ import (
 	cunicu "github.com/stv0g/cunicu/pkg"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/rpc"
+	"github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
 )
@@ -28,7 +29,7 @@ func init() {
 
 	pf := daemonCmd.PersistentFlags()
 
-	cfg = config.NewConfig(pf)
+	cfg = config.New(pf)
 
 	daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp))
 	daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp))
@@ -43,19 +44,17 @@ func init() {
 }
 
 func daemon(cmd *cobra.Command, args []string) {
-	if err := cfg.Setup(args); err != nil {
+	if err := cfg.Load(); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
 
 	if logger.Core().Enabled(zap.DebugLevel) {
 		logger.Debug("Loaded configuration:")
-		wr := &zapio.Writer{
+		wr := terminal.NewIndenter(&zapio.Writer{
 			Log:   logger,
 			Level: zap.DebugLevel,
-		}
-		if err := cfg.Dump(wr); err != nil {
-			logger.Fatal("Failed to dump configuration", zap.Error(err))
-		}
+		}, "   ")
+		cfg.Marshal(wr)
 	}
 
 	// Create daemon

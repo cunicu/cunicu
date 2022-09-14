@@ -237,7 +237,7 @@ func (i *Interface) SyncConfig(cfgFilename string) error {
 
 func (i *Interface) Configure(cfg *wg.Config) error {
 	if err := i.client.ConfigureDevice(i.Name(), cfg.Config); err != nil {
-		return fmt.Errorf("failed to sync interface config: %s", err)
+		return fmt.Errorf("failed to synchronize interface configuration: %s", err)
 	}
 
 	// TODO: remove old addresses?

@@ -214,7 +214,9 @@ func (p *Peer) createAgent() error {
 	p.logger.Info("Creating new agent")
 
 	// Prepare ICE agent configuration
-	acfg, err := p.config.AgentConfig()
+	icfg := p.config.InterfaceSettings(p.Interface.Name())
+	pk := p.Interface.PublicKey()
+	acfg, err := icfg.AgentConfig(context.Background(), &pk)
 	if err != nil {
 		return fmt.Errorf("failed to generate ICE agent configuration: %w", err)
 	}

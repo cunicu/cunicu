@@ -28,29 +28,29 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	var ep *epdisc.EndpointDiscovery
 	var feats = []Feature{}
 
-	if cfg.AutoConfig.Enabled {
+	if cfg.DefaultInterfaceSettings.AutoConfig.Enabled {
 		feats = append(feats, autocfg.New(w, cfg, c))
 	}
 
-	if cfg.ConfigSync.Enabled {
-		feats = append(feats, cfgsync.New(w, c, cfg.ConfigSync.Path, cfg.ConfigSync.Watch, cfg.WireGuard.Userspace, cfg.WireGuard.InterfaceFilter.MatchString))
+	if cfg.DefaultInterfaceSettings.ConfigSync.Enabled {
+		feats = append(feats, cfgsync.New(w, c, cfg.DefaultInterfaceSettings.ConfigSync.Path, cfg.DefaultInterfaceSettings.ConfigSync.Watch, cfg.DefaultInterfaceSettings.WireGuard.UserSpace, cfg.InterfaceFilter))
 	}
 
-	if cfg.RouteSync.Enabled {
-		feats = append(feats, rtsync.New(w, cfg.RouteSync.Table, cfg.RouteSync.Watch))
+	if cfg.DefaultInterfaceSettings.RouteSync.Enabled {
+		feats = append(feats, rtsync.New(w, cfg.DefaultInterfaceSettings.RouteSync.Table, cfg.DefaultInterfaceSettings.RouteSync.Watch))
 	}
 
-	if cfg.HostSync.Enabled {
+	if cfg.DefaultInterfaceSettings.HostSync.Enabled {
 		feats = append(feats, hsync.New(w))
 	}
 
-	if cfg.EndpointDisc.Enabled {
+	if cfg.DefaultInterfaceSettings.EndpointDisc.Enabled {
 		ep = epdisc.New(w, cfg, c, b)
 		feats = append(feats, ep)
 	}
 
-	if cfg.PeerDisc.Enabled && cfg.PeerDisc.Community != "" {
-		feats = append(feats, pdisc.New(w, c, b, cfg.PeerDisc.Community, cfg.PeerDisc.Whitelist))
+	if cfg.DefaultInterfaceSettings.PeerDisc.Enabled && cfg.DefaultInterfaceSettings.PeerDisc.Community != "" {
+		feats = append(feats, pdisc.New(w, c, b, cfg.DefaultInterfaceSettings.PeerDisc.Community, cfg.DefaultInterfaceSettings.PeerDisc.Whitelist))
 	}
 
 	if len(cfg.Hooks) > 0 {

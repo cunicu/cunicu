@@ -16,11 +16,59 @@ A full overview is available in its [manpage](./usage/md/cunicu_daemon.md).
 Alternatively a configuration file can be used for a persistent configuration:
 
 ```yaml title="cunicu.yaml"
+# An interval at which cunicu will periodically check for added, removed or modified WireGuard interfaces.
 watch_interval: 1s
+
 
 backends:
 - grpc://localhost:8080?insecure=true&skip_verify=true
 - k8s:///path/to/your/kubeconfig.yaml?namespace=default
+
+
+# RPC control socket settings
+rpc:
+  socket: /var/run/cunicu.sock
+
+  # Start of cunicu daemon will block until its unblocked via the control socket
+  # Mostly useful for testing automation
+  wait: false
+
+
+## Hook callbacks
+#
+# Hook callback can be used to invoke subprocesses or web-hooks on certain events within cunicu.
+hooks:
+- type: exec
+  command: ../../scripts/hook.sh
+
+  # Prepend additional arguments
+  args: []
+
+  # Pass JSON object via Stdin to command
+  stdin: true
+
+  # Set environment variables for invocation
+  env:
+    COLOR: "1"
+
+- type: web
+
+  # URL of the webhook endpoint
+  url: https://my-webhook-endpoint.com/api/v1/webhook
+  
+  # HTTP method of request
+  method: POST
+
+  # Pass additional HTTP headers.
+  headers:
+    User-Agent: ahoi
+    Authorization: Bearer XXXXXX
+
+
+#### Interface settings start here
+# The following settings can be overwritten for each interface
+# using the 'interfaces' settings (see below).
+# The following settings will be used as default.
 
 # WireGuard settings
 wireguard:  
@@ -28,29 +76,17 @@ wireguard:
   # This will be the default if there is no WireGuard kernel module present.
   userspace: false
 
-  # Ignore WireGuard interface which do not match this regular expression
-  interface_filter: .*
-
-  # A list of WireGuard interfaces which should be configured
-  interfaces:
-  - wg-vpn
-
   # Port range for ListenPort setting of newly created WireGuard interfaces
-  # cunīcu will select the first available port in this range.
-  port:
+  # cunicu will select the first available port in this range.
+  listen_port_range:
     min: 52820
     max: 65535
 
-# Control socket settings
-socket:
-  path: /var/run/cunicu.sock
 
-  # Start of cunīcu daemon will block until its unblocked via the control socket
-  # Mostly useful for testing automation
-  wait: false
-
-# Synchronize WireGuard interface configurations with wg(8) config-files.
-config_sync:
+## Config file synchronization
+#
+# Synchronize local WireGuard interface configuration with wg(8) config-files.
+cfgsync:
   enabled: false
   
   # Directory where Wireguard configuration files are located.
@@ -58,20 +94,43 @@ config_sync:
   # Filenames must match the interface name with a '.conf' suffix.
   path: /etc/wireguard
 
-  # Watch the configuration files for changes and apply them accordingly.
+  # Watch the configuration files via inotify(7) for changes and apply them accordingly.
   watch: false
-  
-# Synchronize WireGuard AllowedIPs with Kernel routing table
-route_sync:
+
+
+## Route Synchronization
+#
+# Synchronize the kernel routing table with WireGuard's AllowedIPs setting
+# 
+# It checks for routes in the kernel routing table which have a peers link-local address
+# as next-hop and adds those routes to the AllowedIPs setting of the respective peer.
+#
+# In reverse, also networks listed in a peers AllowedIPs setting will be installed as a
+# kernel route with the peers link-local address as the routes next-hop. 
+rtsync:
   enabled: true
 
-  table: main
+  table: 254 # See /etc/iproute2/rt_tables for table ids
 
-# Discovery of other WireGuard peers
-peer_disc:
+  # Keep watching the for changes in the kernel routing table via netlink multicast group.
+  watch: true
+
+
+## /etc/hosts synchronization
+#
+# Synchronizes the local /etc/hosts file with host names and link-local IP addresses of connected peers. 
+hsync:
+  enabled: true
+
+
+## Peer discovery
+#
+# Peer discovery finds new peers within the same community and adds them to the respective interface
+pdisc:
   enabled: true
 
   # A list of WireGuard public keys which are accepted peers
+  # If not configured, all peers will be accepted.
   whitelist:
   - coNsGPwVPdpahc8U+dbbWGzTAdCd6+1BvPIYg10wDCI=
   - AOZzBaNsoV7P8vo0D5UmuIJUQ7AjMbHbGt2EA8eAuEc=
@@ -79,34 +138,54 @@ peer_disc:
   # A passphrase shared among all peers of the same community
   community: "some-common-password"
 
-# Discovery of WireGuard endpoint addressesendpoint_disc:
+
+## Endpoint discovery
+#
+# Endpoint discovery uses Interactive Connectivity Establishment (ICE) as used by WebRTC to
+# gather a list of candidate endpoints and performs connectivity checks to find a suitable
+# endpoint address which can be used by WireGuard
+epdisc:
   enabled: true
 
-  # Interactive Connectivity Establishment parameters
+  # Interactive Connectivity Establishment (ICE) parameters
   ice:
-    # A list of STUN and TURN servers used by ICE
+    # A list of STUN and TURN servers used by ICE.
     urls:
-    - stun:stun.l.google.com:19302
+    # Community provided STUN/TURN servers
+    - grpc://relay.cunicu.li
 
-    # Credentials for STUN/TURN servers configured above
+    # Public STUN servers
+    - stun:stun3.l.google.com:19302
+    - stun:relay.webwormhole.io
+    - stun:stun.sipgate.net
+    - stun:stun.ekiga.net
+    - stun:stun.services.mozilla.com
+
+    # Caution: OpenRelay servers are located in Ontario, Canada.
+    # Beware of the latency!
+    # See also: https://www.metered.ca/tools/openrelay/
+    # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:80
+    # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:443
+    # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:443?transport=tcp
+
+    # Credentials for STUN/TURN servers configured above.
     username: ""
     password: ""
 
-    # Allow connections to STUNS/TURNS servers for which
-    # we cant validate their TLS certificates
+    # Allow connections to STUNS/TURNS servers for which we can not validate TLS certificates.
     insecure_skip_verify: false
 
-    # Limit available network and candidate types
-    network_types: [udp4, udp6, tcp4, tcp6]
-    candidate_types: [host, srflx, prflx ,relay]
+    # Limit available network and candidate types.
+    # network_types: [udp4, udp6, tcp4, tcp6]
+    # candidate_types: [host, srflx, prflx, relay]
 
-    # Regular expression whitelist of interfaces which are used to gather ICE candidates.
-    interface_filter: .*
+    # A glob(7) pattern to match interfaces against which are used to gather ICE candidates (e.g. \"eth[0-9]\").
+    interface_filter: "*"
 
     # Lite agents do not perform connectivity check and only provide host candidates.
     lite: false
 
-    # Attempt to find candidates via mDNS discovery
+    # Enable local Multicast DNS discovery.
     mdns: false
 
     # Sets the max amount of binding requests the agent will send over a candidate pair for validation or nomination.
@@ -116,26 +195,93 @@ peer_disc:
     # SetNAT1To1IPs sets a list of external IP addresses of 1:1 (D)NAT and a candidate type for which the external IP address is used.
     # This is useful when you are host a server using Pion on an AWS EC2 instance which has a private address, behind a 1:1 DNAT with a public IP (e.g. Elastic IP).
     # In this case, you can give the public IP address so that Pion will use the public IP address in its candidate instead of the private IP address.
-    nat_1to1_ips: []
+    # nat_1to1_ips:
+    # - 10.10.2.3
 
     # Limit the port range used by ICE
-    port:
+    port_range:
+        # Minimum port for allocation policy for ICE sockets (range: 0-65535)
         min: 49152
+
+        # Maximum port for allocation policy for ICE sockets (range: 0-65535)
         max: 65535
 
-    # The check interval controls how often our task loop runs when in the connecting state.
+    # Interval at which the agent performs candidate checks in the connecting phase
     check_interval: 200ms
     
+    # Time until an Agent transitions disconnected.
     # If the duration is 0, the ICE Agent will never go to disconnected
     disconnected_timeout: 5s
 
+    # Time until an Agent transitions to failed after disconnected
     # If the duration is 0, we will never go to failed.
     failed_timeout: 5s
+
+    # Time to wait before ICE restart
     restart_timeout: 5s
 
-    # Determines how often should we send ICE keepalives (should be less then connection timeout above).
-    # A keepalive interval of 0 means we never send keepalive packets
+    # Interval between STUN keepalives (should be less then connection timeout above).
+    # Af the interval is 0, we never send keepalive packets
     keepalive_interval: 2s
+
+
+## Interface specific settings / overwrites.
+#
+# Most of the top-level settings of this configuration file can be overwritten
+# with settings specific to a single or a group of interfaces.
+# This includes the following settings (see below):
+# - wireguard
+# - cfgsync
+# - rtsync
+# - hsync
+# - pdisc
+# - epdisc
+# 
+# The keys of this mapping are glob(7) patterns which are matched against the
+# interface names.
+# Settings are overlayed in the order in which the keys are provided in the
+# interface map.
+#
+# Keys which are not a glob(8) pattern, will be created as new interfaces if
+# they do not exist already in the system.
+interfaces:
+  # 
+  \*:
+    cfgsync:
+      path: /some/special/wireguard/config-dir/
+
+  # A simple interface specific setting
+  # cunicu will set the private key of interface 'wg0' to the provided value.
+  wg0:
+    private_key: kODOmlTNhYbF9htW3uYiE1qKuvBnJKd7MFvaookGd14=
+
+  # No settings are overwritten. But since this is not a glob pattern,
+  # A new interface named 'wg1' will be created if it does not exist yet.
+  # The same applies to the previous interface 'wg0'
+  wg1: {}
+
+  # Create a new interface using the wireguard-go user-space implementation.
+  wg2:
+    wireguard:
+      userspace: true
+
+  # This pattern configuration will be applied to all interfaces which match the pattern.
+  # This rule will not create any new interfaces.
+  wg-work-*:
+    pdisc:
+      community: "mysecret-pass" 
+    
+    epdisc:
+      ice:
+        urls:
+        - turn:mysecret.turn-server.com
+
+  # Multiple patterns are supported and evaluated in the order they a defined in the configuration file.
+  # 
+  wg-work-external-*:
+    epdisc:
+      ice:
+        network_types: [ udp6 ]
 ```
 
 ## Environment Variables
@@ -146,9 +292,13 @@ All the settings from the configuration file can also be passed via environment 
 -   Prefixing the setting name with `CUNICU_`
 -   Nested settings are separated by underscores
 
-**Example:** The setting `endpoint_disc.ice.max_binding_requests` can be set by the environment variable `CUNICU_ENDPOINT_DISC_ICE_MAX_BINDING_REQUESTS`
+**Example:** The setting `epdisc.ice.max_binding_requests` can be set by the environment variable `CUNICU_ENDPOINT_DISC_ICE_MAX_BINDING_REQUESTS`
 
-**Note:** Setting lists such as `endpoint_disc.ice.urls` or `backends` can currently not be set via environment variables.
+## At Runtime
+
+cunīcu's configuration can also be updated at runtime, elevating the need to restart the daemon to avoid interruption of connectivity.
+
+Please have a look at the [`cunicu config`](./usage/md/cunicu_config.md) commands.
 
 ## DNS Auto-configuration
 

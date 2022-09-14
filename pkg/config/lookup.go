@@ -1,35 +1,72 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
-	"net/url"
 	"regexp"
 	"sync"
 
+	"github.com/knadh/koanf/maps"
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
-func (c *Config) Lookup(name string) error {
-	g := errgroup.Group{}
+type lookupProvider struct {
+	Domain string
 
-	g.Go(func() error { return c.lookupTXT(name) })
-	g.Go(func() error { return c.lookupSRV(name) })
+	Files    []string
+	settings map[string]any
 
-	return g.Wait()
+	mu     sync.Mutex
+	logger *zap.Logger
 }
 
-func (c *Config) lookupTXT(name string) error {
-	rr, err := net.LookupTXT(name)
+func LookupProvider(domain string) *lookupProvider {
+	logger := zap.L().Named("lookup")
+
+	return &lookupProvider{
+		Domain: domain,
+
+		settings: map[string]any{},
+		logger:   logger,
+	}
+}
+
+func (p *lookupProvider) set(key string, value any) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.settings[key] = value
+}
+
+func (p *lookupProvider) ReadBytes() ([]byte, error) {
+	return nil, errors.New("this provider requires no parser")
+}
+
+func (p *lookupProvider) Read() (map[string]any, error) {
+	g := errgroup.Group{}
+
+	g.Go(func() error { return p.lookupTXT() })
+	g.Go(func() error { return p.lookupSRV() })
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return maps.Unflatten(p.settings, "."), nil
+}
+
+func (p *lookupProvider) lookupTXT() error {
+	rr, err := net.LookupTXT(p.Domain)
 	if err != nil {
 		return err
 	}
 
 	var re = regexp.MustCompile(`^(?m)cunicu-(.+?)=(.*)$`)
 
-	c.logger.Debug("TXT records found", zap.Any("records", rr))
+	p.logger.Debug("TXT records found", zap.Any("records", rr))
 
 	rrs := map[string][]string{}
 	for _, r := range rr {
@@ -46,42 +83,33 @@ func (c *Config) lookupTXT(name string) error {
 	}
 
 	txtSettingMap := map[string]string{
-		"community":    "peer_disc.community",
-		"ice-username": "endpoint_disc.ice.username",
-		"ice-password": "endpoint_disc.ice.password",
+		"community":    "pdisc.community",
+		"ice-username": "epdisc.ice.username",
+		"ice-password": "epdisc.ice.password",
 	}
 
 	for txtName, settingName := range txtSettingMap {
 		if values, ok := rrs[txtName]; ok {
 			if len(values) > 1 {
-				c.logger.Warn(fmt.Sprintf("Ignoring TXT record 'cunicu-%s' as there are more than one records with this prefix", txtName))
+				p.logger.Warn(fmt.Sprintf("Ignoring TXT record 'cunicu-%s' as there are more than one records with this prefix", txtName))
 			} else {
-				// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
-				c.SetDefault(settingName, values[0])
+				p.set(settingName, values[0])
 			}
 		}
 	}
 
 	if backends, ok := rrs["backend"]; ok {
-		c.Set("backends", backends)
+		p.set("backends", backends)
 	}
 
-	if configFiles, ok := rrs["config"]; ok {
-		for _, configFile := range configFiles {
-			if u, err := url.Parse(configFile); err == nil {
-				if err := c.MergeRemoteConfig(u); err != nil {
-					return fmt.Errorf("failed to fetch config file from URL in cunicu-config TXT record: %s", err)
-				}
-			} else {
-				return fmt.Errorf("failed to parse URL of config-file in cunicu-config TXT record: %s", err)
-			}
-		}
+	if files, ok := rrs["config"]; ok {
+		p.Files = append(p.Files, files...)
 	}
 
 	return nil
 }
 
-func (c *Config) lookupSRV(name string) error {
+func (p *lookupProvider) lookupSRV() error {
 	svcs := map[string][]string{
 		"stun":  {"udp"},
 		"stuns": {"tcp"},
@@ -99,9 +127,9 @@ func (c *Config) lookupSRV(name string) error {
 		for _, proto := range protos {
 			reqs++
 			s := svc
-			p := proto
+			q := proto
 			g.Go(func() error {
-				us, err := lookupICEUrlSRV(name, s, p)
+				us, err := lookupICEUrlSRV(p.Domain, s, q)
 				if err != nil {
 					return err
 				}
@@ -121,7 +149,7 @@ func (c *Config) lookupSRV(name string) error {
 	}
 
 	// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
-	c.SetDefault("endpoint_disc.ice.urls", urls)
+	p.set("epdisc.ice.urls", urls)
 
 	return nil
 }
