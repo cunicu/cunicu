@@ -2,85 +2,115 @@
 package config
 
 import (
-	"errors"
 	"fmt"
-	"mime"
-	"net"
-	"net/http"
+	"io"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-
-	"go.uber.org/zap"
-
+	"github.com/imdario/mergo"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/posflag"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pion/ice/v2"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"go.uber.org/zap"
+)
+
+var (
+	envPrefix = "CUNICU_"
+
+	// Map flags from the flags to to Koanf settings
+	flagMap = map[string]string{
+		// Config sync
+		"cfgsync":       "cfgsync.enabled",
+		"cfgsync-path":  "cfgsync.path",
+		"cfgsync-watch": "cfgsync.watch",
+
+		// Host sync
+		"hsync": "hsync.enabled",
+
+		// Route sync
+		"rtsync":       "rtsync.enabled",
+		"rtsync-table": "rtsync.table",
+
+		"backend":        "backends",
+		"watch-interval": "watch_interval",
+
+		// Socket
+		"rpc-socket": "rpc.socket",
+		"rpc-wait":   "rpc.wait",
+
+		// WireGuard
+		"wg-userspace": "wireguard.userspace",
+
+		// Endpoint discovery
+		"epdisc":             "epdisc.enabled",
+		"url":                "epdisc.ice.urls",
+		"username":           "epdisc.ice.username",
+		"password":           "epdisc.ice.password",
+		"ice-candidate-type": "epdisc.ice.candidate_types",
+		"ice-network-type":   "epdisc.ice.network_types",
+
+		// Peer discovery
+		"pdisc":     "pdisc.enabled",
+		"community": "pdisc.community",
+	}
 )
 
 type Config struct {
 	Settings
-	*viper.Viper
 
-	ConfigFiles []string
-	Domain      string
+	*Meta
+	*koanf.Koanf
+
+	Runtime *koanf.Koanf
+
+	// Settings which are not configurable via configuration file
+	Files                  []string
+	Domains                []string
+	DefaultInterfaceFilter string
+	InterfaceOrder         []string
 
 	mu     sync.Mutex
 	flags  *pflag.FlagSet
 	logger *zap.Logger
 }
 
-func init() {
-	mtm := map[string][]string{
-		"text/yaml":              {".yaml", ".yml"},
-		"text/x-yaml":            {".yaml", ".yml"},
-		"application/toml":       {".toml"},
-		"text/x-ini":             {".env", ".ini"},
-		"text/x-java-properties": {".props"},
-	}
-
-	for typ, exts := range mtm {
-		for _, ext := range exts {
-			if err := mime.AddExtensionType(ext, typ); err != nil {
-				panic(err)
-			}
-		}
-	}
-}
-
+// ParseArgs creates a new configuration instance and loads all configuration
+//
+// Only used for testing.
 func ParseArgs(args ...string) (*Config, error) {
-	c := NewConfig(nil)
+	c := New(nil)
 
 	if err := c.flags.Parse(args); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse command line flags: %w", err)
 	}
 
-	if err := c.Setup(c.flags.Args()); err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return c, c.Load()
 }
 
-func NewConfig(flags *pflag.FlagSet) *Config {
+// New creates a new configuration instance.
+func New(flags *pflag.FlagSet) *Config {
 	if flags == nil {
 		flags = pflag.NewFlagSet("", pflag.ContinueOnError)
 	}
 
 	c := &Config{
-		Viper: viper.New(),
+		Koanf: koanf.NewWithConf(koanf.Conf{
+			Delim: ".",
+		}),
+		Runtime: koanf.NewWithConf(koanf.Conf{
+			Delim: ".",
+		}),
+		Meta:  Metadata(),
 		flags: flags,
-
-		ConfigFiles: []string{},
 	}
-
-	// Defaults
-	c.SetDefaults()
 
 	// Feature flags
 	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
@@ -90,8 +120,8 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.BoolP("auto-config", "A", true, "Enable setup of link-local addresses and missing interface options")
 
 	// Config flags
-	flags.StringVarP(&c.Domain, "domain", "D", "", "A DNS `domain` name used for DNS auto-configuration")
-	flags.StringSliceVarP(&c.ConfigFiles, "config", "c", []string{}, "One or more `filename`s of configuration files")
+	flags.StringSliceVarP(&c.Domains, "domain", "D", []string{}, "A DNS `domain` name used for DNS auto-configuration")
+	flags.StringSliceVarP(&c.Files, "config", "c", []string{}, "One or more `filename`s of configuration files")
 
 	// Daemon flags
 	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
@@ -102,15 +132,15 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	flags.Bool("rpc-wait", false, "Wait until first client connected to control socket before continuing start")
 
 	// WireGuard
-	flags.StringP("wg-interface-filter", "f", ".*", "A `regex` for filtering WireGuard interfaces (e.g. \"wg-.*\")")
-	flags.BoolP("wg-userspace", "u", false, "Create new interfaces with userspace WireGuard implementation")
+	flags.StringVarP(&c.DefaultInterfaceFilter, "interface-filter", "f", "*", "A glob(7) `pattern` for filtering WireGuard interfaces which this daemon will manage (e.g. \"wg*\")")
+	flags.BoolP("wg-userspace", "u", false, "Use user-space WireGuard implementation for newly created interfaces")
 
 	// Config sync
 	flags.StringP("config-path", "w", "", "The `directory` of WireGuard wg/wg-quick configuration files")
 	flags.BoolP("config-watch", "W", false, "Watch and synchronize changes to the WireGuard configuration files")
 
 	// Route sync
-	flags.StringP("route-table", "T", "main", "Kernel routing table to use")
+	flags.IntP("route-table", "T", DefaultRouteTable, "Kernel routing table to use")
 
 	// Endpoint discovery
 	flags.StringSliceP("url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
@@ -123,113 +153,130 @@ func NewConfig(flags *pflag.FlagSet) *Config {
 	// Peer discovery
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 
-	flagMap := map[string]string{
-		// Config sync
-		"config-sync":  "config_sync.enabled",
-		"config-path":  "config_sync.path",
-		"config-watch": "config_sync.watch",
-
-		// Host sync
-		"host-sync": "host_sync.enabled",
-
-		// Route sync
-		"route-sync":  "route_sync.enabled",
-		"route-table": "route_sync.table",
-
-		"backend":        "backends",
-		"watch-interval": "watch_interval",
-
-		// Socket
-		"rpc-socket": "rpc.socket",
-		"rpc-wait":   "rpc.wait",
-
-		// WireGuard
-		"wg-userspace":        "wireguard.userspace",
-		"wg-interface-filter": "wireguard.interface_filter",
-
-		// Endpoint discovery
-		"endpoint-disc":      "endpoint_disc.enabled",
-		"url":                "endpoint_disc.ice.urls",
-		"username":           "endpoint_disc.ice.username",
-		"password":           "endpoint_disc.ice.password",
-		"ice-candidate-type": "endpoint_disc.ice.candidate_types",
-		"ice-network-type":   "endpoint_disc.ice.network_types",
-
-		// Peer discovery
-		"peer-disc": "peer_disc.enabled",
-		"community": "peer_disc.community",
-	}
-
-	flags.VisitAll(func(flag *pflag.Flag) {
-		if newName, ok := flagMap[flag.Name]; ok {
-			if err := c.BindPFlag(newName, flag); err != nil {
-				panic(err)
-			}
-		}
-	})
-
 	return c
 }
 
-func (c *Config) Setup(args []string) error {
+// Load loads configuration settings from various sources
+//
+// Settings are loaded in the following order where the later overwrite the previous settings:
+// - defaults
+// - dns lookups
+// - configuration files
+// - environment variables
+// - command line flags
+func (c *Config) Load() error {
 	// We cant to this in NewConfig since its called by init()
 	// at which time the logging system is not initialized yet.
 	c.logger = zap.L().Named("config")
 
-	// First lookup settings via DNS
-	if c.Domain != "" {
-		if err := c.Lookup(c.Domain); err != nil {
+	// Load default settings
+	if err := c.Koanf.Load(ConfMapProvider(&DefaultSettings), nil); err != nil {
+		return fmt.Errorf("failed to load default settings: %w", err)
+	}
+
+	c.InterfaceOrder = []string{c.DefaultInterfaceFilter}
+
+	// Load settings from DNS lookups
+	for _, domain := range c.Domains {
+		p := LookupProvider(domain)
+		if err := c.Koanf.Load(p, nil); err != nil {
 			return fmt.Errorf("DNS auto-configuration failed: %w", err)
 		}
+
+		c.Files = append(c.Files, p.Files...)
 	}
 
-	if len(c.ConfigFiles) > 0 {
-		// Merge config files from the flags.
-		for _, file := range c.ConfigFiles {
-			if u, err := url.Parse(file); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
-				if err := c.MergeRemoteConfig(u); err != nil {
-					return fmt.Errorf("failed to load remote config: %w", err)
-				}
+	// Search for config files
+	if len(c.Files) == 0 {
+		searchPaths := []string{"/etc", "/etc/cunicu"}
+		if homeDir := os.Getenv("HOME"); homeDir != "" {
+			searchPaths = append(searchPaths,
+				filepath.Join(homeDir, ".config"),
+				filepath.Join(homeDir, ".config", "cunicu"),
+			)
+		}
 
-				c.logger.Debug("Using remote configuration file", zap.Any("url", u))
-			} else {
-				c.SetConfigFile(file)
-				if err := c.MergeInConfig(); err != nil {
-					return fmt.Errorf("failed to merge configurations: %w", err)
-				}
-
-				c.logger.Debug("Using configuration file", zap.String("file", c.ConfigFileUsed()))
+		for _, path := range append(searchPaths, ".") {
+			fn := filepath.Join(path, "cunicu.yaml")
+			if fi, err := os.Stat(fn); err == nil && !fi.IsDir() {
+				c.Files = append(c.Files, fn)
 			}
 		}
-	} else {
-		c.AddConfigPath("/etc")
-		c.AddConfigPath(filepath.Join("$HOME", ".config"))
-		c.AddConfigPath(".")
-		c.SetConfigName("cunicu.yaml")
-		c.SetConfigType("yaml")
 
-		if err := c.MergeInConfig(); err == nil {
-			c.logger.Debug("Using configuration file", zap.String("file", c.ConfigFileUsed()))
-		} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return fmt.Errorf("failed to merge configurations: %w", err)
+		c.logger.Debug("Search paths", zap.Strings("files", searchPaths))
+	}
+
+	// Load config files
+	for _, f := range c.Files {
+		u, err := url.Parse(f)
+		if err != nil {
+			return fmt.Errorf("failed to load config file: invalid URL: %w", err)
 		}
+
+		p := YAMLFileProvider(u)
+		if err := c.Koanf.Load(p, nil); err != nil {
+			return fmt.Errorf("failed to load config file: %w", err)
+		}
+		c.InterfaceOrder = append(c.InterfaceOrder, p.InterfaceOrder...)
 	}
 
-	c.SetEnvPrefix("cunicu")
-	c.AutomaticEnv()
-	c.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
-	if len(args) > 0 {
-		c.Set("wireguard.interfaces", args)
+	// Load environment variables
+	envKeyMap := map[string]string{}
+	for _, k := range c.Meta.Keys() {
+		m := strings.ToUpper(k)
+		e := envPrefix + strings.ReplaceAll(m, ".", "_")
+		envKeyMap[e] = k
 	}
 
-	return c.Load()
+	c.Koanf.Load(env.ProviderWithValue(envPrefix, ".", func(e, v string) (string, any) {
+		k := envKeyMap[e]
+
+		if p := strings.Split(v, ","); len(p) > 1 {
+			return k, p
+		}
+
+		return k, v
+
+	}), nil)
+
+	c.Koanf.Load(posflag.ProviderWithFlag(c.flags, ".", c.Koanf, func(f *pflag.Flag) (string, any) {
+		setting, ok := flagMap[f.Name]
+		if !ok {
+			return "", nil
+		}
+
+		return setting, posflag.FlagVal(c.flags, f)
+	}), nil)
+
+	intfs := map[string]any{}
+
+	// Default settings
+	if c.DefaultInterfaceFilter != "" && (len(c.flags.Args()) == 0 || c.DefaultInterfaceFilter != "*") {
+		k := fmt.Sprintf("interfaces.%s", c.DefaultInterfaceFilter)
+		intfs[k] = Map(DefaultInterfaceSettings)
+	}
+
+	// Add interfaces from command line
+	for _, i := range c.flags.Args() {
+		k := fmt.Sprintf("interfaces.%s", i)
+		intfs[k] = map[string]any{}
+	}
+
+	// Load interfaces
+	if err := c.Koanf.Load(confmap.Provider(intfs, "."), nil); err != nil {
+		return fmt.Errorf("failed to load: %w", err)
+	}
+
+	c.logger.Debug("Interface order", zap.Strings("order", c.InterfaceOrder))
+
+	return c.Unmarshal()
 }
 
+// Check performs plausibility checks on the provided configuration.
 func (c *Config) Check() error {
-	if len(c.EndpointDisc.ICE.URLs) > 0 && len(c.EndpointDisc.ICE.CandidateTypes) > 0 {
+	if len(c.DefaultInterfaceSettings.EndpointDisc.ICE.URLs) > 0 && len(c.DefaultInterfaceSettings.EndpointDisc.ICE.CandidateTypes) > 0 {
 		needsURL := false
-		for _, ct := range c.EndpointDisc.ICE.CandidateTypes {
+		for _, ct := range c.DefaultInterfaceSettings.EndpointDisc.ICE.CandidateTypes {
 			if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
 				needsURL = true
 			}
@@ -237,132 +284,155 @@ func (c *Config) Check() error {
 
 		if !needsURL {
 			c.logger.Warn("Ignoring supplied ICE URLs as there are no selected candidate types which would use them")
-			c.EndpointDisc.ICE.URLs = nil
+			c.DefaultInterfaceSettings.EndpointDisc.ICE.URLs = nil
 		}
+	}
+
+	if c.DefaultInterfaceSettings.WireGuard.ListenPortRange.Min > c.DefaultInterfaceSettings.WireGuard.ListenPortRange.Max {
+		return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
+			c.DefaultInterfaceSettings.WireGuard.ListenPortRange.Min,
+			c.DefaultInterfaceSettings.WireGuard.ListenPortRange.Max,
+		)
 	}
 
 	return nil
 }
 
-func (c *Config) MergeRemoteConfig(url *url.URL) error {
-	if url.Scheme != "https" {
-		host, _, err := net.SplitHostPort(url.Host)
-		if err != nil {
-			return fmt.Errorf("failed to split host:port: %w", err)
-		} else if host != "localhost" && host != "127.0.0.1" && host != "::1" && host != "[::1]" {
-			return errors.New("remote configuration must be provided via HTTPS")
-		}
-	}
-
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
-	req := &http.Request{
-		Method: "GET",
-		URL:    url,
-		Header: http.Header{},
-	}
-
-	req.Header.Set("User-Agent", buildinfo.UserAgent())
-
-	resp, err := client.Do(req)
+// Update sets multiple settings in the provided map.
+// See also Set().
+func (c *Config) Update(sets map[string]any) error {
+	err := c.Runtime.Load(confmap.Provider(sets, "."), nil)
 	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", url, err)
-	} else if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to fetch: %s: %s", url, resp.Status)
-	}
-
-	contentType := resp.Header.Get("Content-type")
-	fileExtension := filepath.Ext(url.Path)
-
-	if contentType != "" {
-		if types, err := mime.ExtensionsByType(contentType); err == nil && types != nil && len(types) > 0 {
-			fileExtension = types[0][1:] // strip leading dot
-		}
-	}
-
-	if fileExtension == "" {
-		return fmt.Errorf("failed to load remote configuration file: failed to determine file-type by mime-type or filename suffix")
-	}
-
-	c.SetConfigType(fileExtension)
-
-	return c.MergeConfig(resp.Body)
-}
-
-func decodeOption(cfg *mapstructure.DecoderConfig) {
-	cfg.DecodeHook = mapstructure.ComposeDecodeHookFunc(
-		mapstructure.StringToTimeDurationHookFunc(),
-		mapstructure.StringToSliceHookFunc(","),
-		mapstructure.TextUnmarshallerHookFunc(),
-		hookDecodeHook,
-	)
-	cfg.ZeroFields = false
-	cfg.TagName = "yaml"
-}
-
-func (c *Config) Load() error {
-	if err := c.UnmarshalExact(&c.Settings, decodeOption); err != nil {
 		return fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	c.mu.Lock()
+	err = c.Koanf.Merge(c.Runtime)
+	c.mu.Unlock()
+
+	if err != nil {
+		return fmt.Errorf("failed to merge config: %w", err)
+	}
+
+	if err := c.Unmarshal(); err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	return nil
+}
+
+// Set sets a single setting to the provided value
+// The key should provided in its dot-delimited form.
+func (c *Config) Set(key string, value any) error {
+	return c.Update(map[string]any{key: value})
+}
+
+// MarshalRuntime writes the runtime configuration in YAML format to the provided writer.
+func (c *Config) MarshalRuntime(wr io.Writer) error {
+	out, err := c.Runtime.Marshal(yaml.Parser())
+	if err != nil {
+		return fmt.Errorf("failed to encode config: %w", err)
+	}
+
+	if _, err := wr.Write(out); err != nil {
+		return fmt.Errorf("failed to write: %w", err)
+	}
+
+	return nil
+}
+
+// Marshal writes the configuration in YAML format to the provided writer.
+func (c *Config) Marshal(wr io.Writer) error {
+	out, err := c.Koanf.Marshal(yaml.Parser())
+	if err != nil {
+		return err
+	}
+
+	_, err = wr.Write(out)
+
+	return err
+}
+
+// Unmarshal populates the settings struct from the Koanf settings
+func (c *Config) Unmarshal() error {
+	if err := c.UnmarshalWithConf("", nil, koanf.UnmarshalConf{
+		DecoderConfig: decoderConfig(&c.Settings),
+	}); err != nil {
+		return fmt.Errorf("failed unmarshal settings: %w", err)
+	}
+
+	isGlobPattern := func(str string) bool {
+		return strings.ContainsAny(str, "*?[]^")
+	}
+
+	for k, v := range c.Interfaces {
+		if isGlobPattern(k) {
+			v.Pattern = k
+		} else {
+			v.Name = k
+		}
+		c.Interfaces[k] = v
 	}
 
 	return c.Check()
 }
 
-// decode takes an input structure and uses reflection to translate it to
-// the output structure. output must be a pointer to a map or struct.
-func decode(input any, output any) error {
-	cfg := &mapstructure.DecoderConfig{
-		Metadata: nil,
-		Result:   output,
-	}
-	decodeOption(cfg)
-
-	decoder, err := mapstructure.NewDecoder(cfg)
-	if err != nil {
-		return err
-	}
-
-	return decoder.Decode(input)
-}
-
-func (c *Config) Update(new map[string]any) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	prev := map[string]any{}
-
-	for key, value := range new {
-		prev[key] = c.Viper.Get(key)
-		c.Viper.Set(key, value)
-	}
-
-	if err := c.Load(); err != nil {
-		// Restore previous values if failed
-		for key, value := range prev {
-			c.Viper.Set(key, value)
+// InterfaceSettings returns interface specific settings
+// These settings are constructed by merging the settings of
+// each interface section which matches the name.
+// This behavior is quite similar to the OpenSSH client configuration file.
+func (c *Config) InterfaceSettings(name string) (cfg *InterfaceSettings) {
+	for _, i := range c.InterfaceOrder {
+		icfg := c.Interfaces[i]
+		if !icfg.Matches(name) {
+			continue
 		}
 
-		return err
+		if cfg == nil {
+			copy := icfg
+			cfg = &copy
+		} else {
+			mergo.Merge(cfg, icfg,
+				mergo.WithOverride,
+				mergo.WithSliceDeepCopy)
+		}
 	}
 
-	return nil
+	if cfg != nil {
+		cfg.Name = name
+		cfg.Pattern = ""
+	}
+
+	return cfg
 }
 
-func (c *Config) Set(key string, new any) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	prev := c.Viper.Get(key)
-	c.Viper.Set(key, new)
-
-	if err := c.Load(); err != nil {
-		// Restore previous value if failed
-		c.Viper.Set(key, prev)
-
-		return err
+// InterfaceFilter checks if the provided interface name is matched by any configuration.
+func (c *Config) InterfaceFilter(name string) bool {
+	for _, icfg := range c.Interfaces {
+		if icfg.Matches(name) {
+			return true
+		}
 	}
 
-	return nil
+	return false
+}
+
+// decoderConfig returns the mapstructure DecoderConfig which is used by cunicu
+func decoderConfig(result any) *mapstructure.DecoderConfig {
+	return &mapstructure.DecoderConfig{
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeDurationHookFunc(),
+			mapstructure.StringToSliceHookFunc(","),
+			mapstructure.StringToIPHookFunc(),
+			mapstructure.StringToIPNetHookFunc(),
+			mapstructure.TextUnmarshallerHookFunc(),
+			hookDecodeHook,
+		),
+		IgnoreUntaggedFields: true,
+		WeaklyTypedInput:     true,
+		ErrorUnused:          true,
+		ZeroFields:           false,
+		Result:               result,
+		TagName:              "koanf",
+	}
 }

@@ -1,10 +1,16 @@
 package config
 
-import "github.com/stv0g/cunicu/pkg/wg"
+import (
+	"net/url"
+	"time"
+
+	"github.com/pion/ice/v2"
+	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	"github.com/stv0g/cunicu/pkg/wg"
+)
 
 const (
 	DefaultSocketPath = "/var/run/cunicu.sock"
-	DefaultURL        = "stun:stun.l.google.com:19302"
 
 	// Ephemeral Port Range (RFC6056 Sect. 2.1)
 	EphemeralPortMin = (1 << 15) + (1 << 14)
@@ -12,36 +18,94 @@ const (
 )
 
 var (
-	DefaultBackends = []string{"grpc://signal.cunicu.li:443"}
-)
+	DefaultBackends = []BackendURL{
+		{
+			URL: url.URL{
+				Scheme: "grpc",
+				Host:   "signal.cunicu.li",
+			},
+		},
+	}
 
-func (c *Config) SetDefaults() {
-	c.SetDefault("hooks", []HookSetting{})
-	c.SetDefault("auto_config.enabled", true)
-	c.SetDefault("backends", DefaultBackends)
-	c.SetDefault("config_sync.enabled", true)
-	c.SetDefault("peer_disc.enabled", true)
-	c.SetDefault("config_sync.path", wg.ConfigPath)
-	c.SetDefault("config_sync.watch", false)
-	c.SetDefault("endpoint_disc.enabled", true)
-	c.SetDefault("endpoint_disc.ice.check_interval", "200ms")
-	c.SetDefault("endpoint_disc.ice.disconnected_timeout", "5s")
-	c.SetDefault("endpoint_disc.ice.failed_timeout", "5s")
-	c.SetDefault("endpoint_disc.ice.keepalive_interval", "2s")
-	c.SetDefault("endpoint_disc.ice.max_binding_requests", 7)
-	c.SetDefault("endpoint_disc.ice.port.max", EphemeralPortMax)
-	c.SetDefault("endpoint_disc.ice.port.min", EphemeralPortMin)
-	c.SetDefault("endpoint_disc.ice.restart_timeout", "5s")
-	c.SetDefault("endpoint_disc.ice.urls", []string{DefaultURL})
-	c.SetDefault("endpoint_disc.ice.interface_filter", ".*")
-	c.SetDefault("host_sync.enabled", true)
-	c.SetDefault("route_sync.enabled", true)
-	c.SetDefault("route_sync.watch", true)
-	c.SetDefault("route_sync.table", DefaultRouteTable)
-	c.SetDefault("rpc.socket", DefaultSocketPath)
-	c.SetDefault("rpc.wait", false)
-	c.SetDefault("watch_interval", "1s")
-	c.SetDefault("wireguard.port.max", EphemeralPortMax)
-	c.SetDefault("wireguard.port.min", wg.DefaultPort)
-	c.SetDefault("wireguard.interface_filter", ".*")
-}
+	DefaultICEURLs = []URL{
+		{url.URL{
+			Scheme: "stun",
+			Opaque: "stun.cunicu.li:3478",
+		}},
+		// TODO: Use relay API
+		// {url.URL{
+		// 	Scheme: "grpc",
+		// 	Host:   "relay.cunicu.li:",
+		// }},
+	}
+
+	DefaultSettings = Settings{
+		Backends: DefaultBackends,
+		RPC: RPCSettings{
+			Socket: DefaultSocketPath,
+			Wait:   false,
+		},
+		WatchInterval:            1 * time.Second,
+		DefaultInterfaceSettings: DefaultInterfaceSettings,
+	}
+
+	DefaultInterfaceSettings = InterfaceSettings{
+		AutoConfig: AutoConfigSettings{
+			Enabled: true,
+		},
+		ConfigSync: ConfigSyncSettings{
+			Enabled: true,
+
+			Path:  wg.ConfigPath,
+			Watch: false,
+		},
+		PeerDisc: PeerDiscoverySettings{
+			Enabled: true,
+		},
+		EndpointDisc: EndpointDiscoverySettings{
+			Enabled: true,
+
+			ICE: ICESettings{
+				URLs:                DefaultICEURLs,
+				CheckInterval:       200 * time.Millisecond,
+				DisconnectedTimeout: 5 * time.Second,
+				FailedTimeout:       5 * time.Second,
+				RestartTimeout:      5 * time.Second,
+				InterfaceFilter:     "*",
+				KeepaliveInterval:   2 * time.Second, // TODO: increase
+				MaxBindingRequests:  7,
+				PortRange: PortRangeSettings{
+					Min: EphemeralPortMin,
+					Max: EphemeralPortMax,
+				},
+				CandidateTypes: []icex.CandidateType{
+					{CandidateType: ice.CandidateTypeHost},
+					{CandidateType: ice.CandidateTypeServerReflexive},
+					{CandidateType: ice.CandidateTypePeerReflexive},
+					{CandidateType: ice.CandidateTypeRelay},
+				},
+				NetworkTypes: []icex.NetworkType{
+					{NetworkType: ice.NetworkTypeUDP4},
+					{NetworkType: ice.NetworkTypeUDP6},
+					{NetworkType: ice.NetworkTypeTCP4},
+					{NetworkType: ice.NetworkTypeTCP6},
+				},
+			},
+		},
+		HostSync: HostSyncSettings{
+			Enabled: true,
+		},
+		RouteSync: RouteSyncSettings{
+			Enabled: true,
+
+			Watch: true,
+			Table: DefaultRouteTable,
+		},
+		WireGuard: WireGuardSettings{
+			ListenPortRange: &PortRangeSettings{
+				Min: wg.DefaultPort,
+				Max: EphemeralPortMax,
+			},
+		},
+	}
+)

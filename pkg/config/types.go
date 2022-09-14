@@ -3,31 +3,10 @@ package config
 import (
 	"fmt"
 	"net/url"
-	"regexp"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap/zapcore"
 )
-
-type Regexp struct {
-	regexp.Regexp
-}
-
-func (r *Regexp) UnmarshalText(text []byte) error {
-	re, err := regexp.Compile(string(text))
-	if err != nil {
-		return err
-	}
-
-	r.Regexp = *re
-
-	return nil
-}
-
-func (r *Regexp) MarshalText() ([]byte, error) {
-	return []byte(r.String()), nil
-}
 
 type BackendURL struct {
 	url.URL
@@ -74,7 +53,8 @@ func (u *URL) UnmarshalText(text []byte) error {
 }
 
 func (u URL) MarshalText() ([]byte, error) {
-	return []byte(u.String()), nil
+	s := u.String()
+	return []byte(s), nil
 }
 
 type OutputFormat string
@@ -130,21 +110,4 @@ type Level struct {
 
 func (l *Level) Type() string {
 	return "string"
-}
-
-type Key crypto.Key
-
-func (k *Key) UnmarshalText(text []byte) error {
-	l, err := crypto.ParseKey(string(text))
-	if err != nil {
-		return err
-	}
-
-	*k = Key(l)
-
-	return nil
-}
-
-func (k Key) MarshalText() ([]byte, error) {
-	return []byte(crypto.Key(k).String()), nil
 }

@@ -2,42 +2,44 @@ package config_test
 
 import (
 	"net/url"
-	"regexp"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
 	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/crypto"
 )
 
 var _ = Context("types", func() {
-	Context("regex", func() {
-		const re1Str = "[a-z]"
-		const re2Str = "[a-z"
-		var re1 = regexp.MustCompile(re1Str)
+	Context("url", func() {
+		t := []TableEntry{
+			Entry("example", "https://example.com", url.URL{
+				Scheme: "https",
+				Host:   "example.com",
+			}),
+			Entry("file", "file:///log.txt", url.URL{
+				Scheme: "file",
+				Path:   "/log.txt",
+			}),
+		}
 
-		It("unmarshal", func() {
-			var re config.Regexp
-			err := re.UnmarshalText([]byte(re1Str))
+		DescribeTable("unmarshal", func(urlStr string, url url.URL) {
+			var u config.BackendURL
+			err := u.UnmarshalText([]byte(urlStr))
 
 			Expect(err).To(Succeed())
+			Expect(u.URL).To(Equal(url))
+		}, t)
 
-			Expect(re.MatchString("1")).NotTo(BeTrue())
-			Expect(re.MatchString("a")).To(BeTrue())
-		})
-
-		It("marshal", func() {
-			re := config.Regexp{*re1}
-
-			reStr, err := re.MarshalText()
+		DescribeTable("marshal", func(urlStr string, url url.URL) {
+			u := config.URL{url}
+			m, err := u.MarshalText()
 			Expect(err).To(Succeed())
-			Expect(string(reStr)).To(Equal(re1Str), "MarshalText: %s != %s", string(reStr), re1Str)
-		})
+			Expect(string(m)).To(BeEquivalentTo(urlStr))
+		}, t)
 
-		It("fails on invalid regex", func() {
-			var re config.Regexp
-			err := re.UnmarshalText([]byte(re2Str))
+		It("fails for invalid urls", func() {
+			var u config.BackendURL
+			err := u.UnmarshalText([]byte("-"))
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -99,43 +101,5 @@ var _ = Context("types", func() {
 				Expect(h).To(BeEquivalentTo(f.String()))
 			})
 		}
-	})
-
-	Context("key", func() {
-		var key crypto.Key
-		var keyStr, brokenKeyStr string
-
-		BeforeEach(func() {
-			var err error
-
-			key, err = crypto.GenerateKey()
-			Expect(err).To(Succeed())
-
-			keyStr = key.String()
-			brokenKeyStr = keyStr[:len(keyStr)-2]
-		})
-
-		It("unmarshal", func() {
-			var keyCfg config.Key
-
-			err := keyCfg.UnmarshalText([]byte(keyStr))
-			Expect(err).To(Succeed())
-
-			Expect(keyCfg).To(BeEquivalentTo(key))
-		})
-
-		It("marshal", func() {
-			keyCfg := config.Key(key)
-
-			keyCfgStr, err := keyCfg.MarshalText()
-			Expect(err).To(Succeed())
-			Expect(string(keyCfgStr)).To(Equal(keyStr))
-		})
-
-		It("fails on invalid key", func() {
-			var k config.Key
-			err := k.UnmarshalText([]byte(brokenKeyStr))
-			Expect(err).To(HaveOccurred())
-		})
 	})
 })

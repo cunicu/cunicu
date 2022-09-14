@@ -217,9 +217,9 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 		settings["log.severity"] = log.Severity.String()
 	}
 
-	for _, key := range s.Config.Viper.AllKeys() {
+	for key, value := range s.Config.All() {
 		if match(key) {
-			settings[key] = fmt.Sprintf("%v", s.Config.Get(key))
+			settings[key] = fmt.Sprintf("%v", value)
 		}
 	}
 
