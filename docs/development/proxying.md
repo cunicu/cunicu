@@ -61,7 +61,9 @@ cunīcu implements wireguard-go's `conn.Bind` interface to handle WireGuard's ne
 WireGuard traffic is passed directly between `conn.Bind` and Pion's `ice.Conn`.
 No round-trip through the kernel stack is required.
 
-**Note:** This variant only works for the compiled-in version of wireguard-go in cunīcu.
+:::note
+This variant only works for the compiled-in version of wireguard-go in cunīcu.
+:::
 
 ## Flowchart
 
