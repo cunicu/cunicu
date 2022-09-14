@@ -227,15 +227,11 @@ epdisc:
 # Keys which are not a glob(8) pattern, will be created as new interfaces if
 # they do not exist already in the system.
 interfaces:
-  # 
-  \*:
-    cfgsync:
-      path: /some/special/wireguard/config-dir/
-
   # A simple interface specific setting
   # cunicu will set the private key of interface 'wg0' to the provided value.
   wg0:
-    private_key: kODOmlTNhYbF9htW3uYiE1qKuvBnJKd7MFvaookGd14=
+    epdisc:
+      enabled: false
 
   # No settings are overwritten. But since this is not a glob pattern,
   # A new interface named 'wg1' will be created if it does not exist yet.

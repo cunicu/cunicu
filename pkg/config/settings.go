@@ -112,8 +112,6 @@ type InterfaceSettings struct {
 	Name    string
 	Pattern string
 
-	PrivateKey crypto.Key `koanf:"private_key,omitempty"`
-
 	WireGuard    WireGuardSettings         `koanf:"wireguard,omitempty"`
 	AutoConfig   AutoConfigSettings        `koanf:"autocfg,omitempty"`
 	ConfigSync   ConfigSyncSettings        `koanf:"cfgsync,omitempty"`
