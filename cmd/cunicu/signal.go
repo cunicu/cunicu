@@ -4,11 +4,12 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/util"
 )
 
 var (
@@ -43,7 +44,7 @@ func signal(cmd *cobra.Command, args []string) {
 		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
 	}
 
-	svr := grpcx.NewServer(opts...)
+	svr := grpcx.NewSignalingServer(opts...)
 
 	go func() {
 		for sig := range util.SetupSignals() {

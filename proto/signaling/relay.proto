@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package cunicu.signaling;
+option go_package = "github.com/stv0g/cunicu/pkg/proto/signaling";
+
+import "common.proto";
+
+message RelayInfo {
+    string url = 1;
+    string username = 2;
+    string password = 3;
+    Timestamp expires = 4;
+}
+
+message GetRelaysParams {
+    // Public key of peer which requestes the credentials
+    bytes public_key = 1;
+}
+
+message GetRelaysResp {
+    repeated RelayInfo relays = 1;
+}
+
+service RelayRegistry {
+    rpc GetRelays(GetRelaysParams) returns (GetRelaysResp) {}
+}
