@@ -294,6 +294,10 @@ All the settings from the configuration file can also be passed via environment 
 
 **Example:** The setting `epdisc.ice.max_binding_requests` can be set by the environment variable `CUNICU_ENDPOINT_DISC_ICE_MAX_BINDING_REQUESTS`
 
+:::note
+Setting lists such as `epdisc.ice.urls` or `backends` can currently not be set via environment variables.
+:::
+
 ## At Runtime
 
 cunīcu's configuration can also be updated at runtime, elevating the need to restart the daemon to avoid interruption of connectivity.
@@ -322,7 +326,9 @@ example.com.             3600 IN TXT "cunicu-endpoint-disc-ice-password=pass1"
 example.com.             3600 IN TXT "cunicu-config=https://example.com/cunicu.yaml"
 ```
 
-**Note:** The `cunicu-backend` and `cunicu-config` TXT records can be provided multiple times. Others not.
+:::note
+The `cunicu-backend` and `cunicu-config` TXT records can be provided multiple times. Others not.
+:::
 
 ## Remote Configuration File
 
@@ -335,4 +341,6 @@ This feature can be combined with the DNS auto-configuration method by providing
 example.com.             3600 IN TXT "cunicu-config=https://example.com/cunicu.yaml"
 ```
 
-**Note:** Remote configuration files must be fetched via HTTPS if they are not hosted locally and required a trusted server certificate.
+:::note
+Remote configuration files must be fetched via HTTPS if they are not hosted locally and required a trusted server certificate.
+:::

@@ -20,8 +20,10 @@ These binary versions can be manually downloaded and installed.
 4.  Make it executable: `chmod +x /usr/local/bin/cunicu`
 5.  From there, you should be able to run the client and add the stable repo: `cunicu help`.
 
-**Note:** cunīcu automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
+:::note
+cunīcu automated tests are performed for Linux, macOS and Windows on x86_64, ARMv6, ARMv8 amd ARM64 architectures.
 Testing of other OSes are the responsibility of the community requesting cunīcu for the OS in question.
+:::
 
 ## From Script
 
