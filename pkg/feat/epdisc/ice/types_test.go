@@ -53,27 +53,51 @@ var _ = Describe("Marshaling of ICE types", func() {
 		}, t)
 	})
 
-	Context("ICE URL", func() {
+	Context("URL", func() {
 		t := []TableEntry{
-			Entry(nil, "stun:example.com", "stun:example.com:3478", ice.URL{Scheme: ice.SchemeTypeSTUN, Host: "example.com", Port: 3478, Username: "", Password: "", Proto: ice.ProtoTypeUDP}),
-			Entry(nil, "stuns:example.com", "stuns:example.com:5349", ice.URL{Scheme: ice.SchemeTypeSTUNS, Host: "example.com", Port: 5349, Username: "", Password: "", Proto: ice.ProtoTypeTCP}),
-			Entry(nil, "stun:example.com:1234", "stun:example.com:1234", ice.URL{Scheme: ice.SchemeTypeSTUN, Host: "example.com", Port: 1234, Username: "", Password: "", Proto: ice.ProtoTypeUDP}),
-			Entry(nil, "stuns:example.com:1234", "stuns:example.com:1234", ice.URL{Scheme: ice.SchemeTypeSTUNS, Host: "example.com", Port: 1234, Username: "", Password: "", Proto: ice.ProtoTypeTCP}),
-			Entry(nil, "turn:example.com?transport=tcp", "turn:example.com:3478?transport=tcp", ice.URL{Scheme: ice.SchemeTypeTURN, Host: "example.com", Port: 3478, Username: "", Password: "", Proto: ice.ProtoTypeTCP}),
-			Entry(nil, "turns:example.com", "turns:example.com:5349?transport=tcp", ice.URL{Scheme: ice.SchemeTypeTURNS, Host: "example.com", Port: 5349, Username: "", Password: "", Proto: ice.ProtoTypeTCP}),
+			Entry("stun", "stun:cunicu.0l.de:1234", ice.URL{
+				Scheme: ice.SchemeTypeSTUN,
+				Host:   "cunicu.0l.de",
+				Port:   1234,
+				Proto:  ice.ProtoTypeUDP,
+			}),
+			Entry("stuns", "stuns:cunicu.0l.de:1234", ice.URL{
+				Scheme: ice.SchemeTypeSTUNS,
+				Host:   "cunicu.0l.de",
+				Port:   1234,
+				Proto:  ice.ProtoTypeTCP,
+			}),
+			Entry("turn-udp", "turn:cunicu.0l.de:1234?transport=udp", ice.URL{
+				Scheme: ice.SchemeTypeTURN,
+				Host:   "cunicu.0l.de",
+				Port:   1234,
+				Proto:  ice.ProtoTypeUDP,
+			}),
+			Entry("turn-tcp", "turn:cunicu.0l.de:1234?transport=tcp", ice.URL{
+				Scheme: ice.SchemeTypeTURN,
+				Host:   "cunicu.0l.de",
+				Port:   1234,
+				Proto:  ice.ProtoTypeTCP,
+			}),
+			Entry("turns", "turns:cunicu.0l.de:1234?transport=tcp", ice.URL{
+				Scheme: ice.SchemeTypeTURNS,
+				Host:   "cunicu.0l.de",
+				Port:   1234,
+				Proto:  ice.ProtoTypeTCP,
+			}),
 		}
 
-		DescribeTable("Unmarshal", func(u, _ string, e ice.URL) {
-			var up icex.URL
-			Expect(up.UnmarshalText([]byte(u))).To(Succeed())
-			Expect(up.URL).To(Equal(e))
+		DescribeTable("Unmarshal", func(urlStr string, url ice.URL) {
+			var u icex.URL
+			Expect(u.UnmarshalText([]byte(urlStr))).To(Succeed())
+			Expect(u.URL).To(Equal(url))
 		}, t)
 
-		DescribeTable("Marshal", func(_, u string, e ice.URL) {
-			var up = icex.URL{e}
-			m, err := up.MarshalText()
+		DescribeTable("Marshal", func(urlStr string, url ice.URL) {
+			var u = icex.URL{url}
+			m, err := u.MarshalText()
 			Expect(err).To(Succeed())
-			Expect(string(m)).To(Equal(u))
+			Expect(string(m)).To(BeEquivalentTo(urlStr))
 		}, t)
 	})
 })
