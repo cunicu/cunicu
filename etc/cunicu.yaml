@@ -104,6 +104,9 @@ rtsync:
 hsync:
   enabled: true
 
+  # The domain name which is appended to each of the peer host names
+  domain: wg-local
+
 
 ## Peer discovery
 #

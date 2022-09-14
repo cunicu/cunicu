@@ -41,7 +41,7 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	}
 
 	if cfg.DefaultInterfaceSettings.HostSync.Enabled {
-		feats = append(feats, hsync.New(w))
+		feats = append(feats, hsync.New(w, cfg.DefaultInterfaceSettings.HostSync.Domain))
 	}
 
 	if cfg.DefaultInterfaceSettings.EndpointDisc.Enabled {

@@ -20,12 +20,19 @@ const (
 )
 
 type HostsSync struct {
+	domain string
+
 	watcher *watcher.Watcher
 	logger  *zap.Logger
 }
 
-func New(w *watcher.Watcher) *HostsSync {
+func New(w *watcher.Watcher, d string) *HostsSync {
+	if d != "" && !strings.HasPrefix(d, ".") {
+		d = "." + d
+	}
+
 	hs := &HostsSync{
+		domain:  d,
 		watcher: w,
 		logger:  zap.L().Named("hsync"),
 	}
@@ -53,8 +60,10 @@ func (hs *HostsSync) Hosts() []Host {
 		pkName := p.PublicKey().String()[:8]
 
 		h := Host{
-			IP:    p.PublicKey().IPv6Address().IP,
-			Names: []string{pkName},
+			IP: p.PublicKey().IPv6Address().IP,
+			Names: []string{
+				pkName + hs.domain,
+			},
 			Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
 				p.Interface.KernelDevice.Name(),
 				p.Interface.KernelDevice.Index(),
@@ -62,7 +71,7 @@ func (hs *HostsSync) Hosts() []Host {
 		}
 
 		if p.Name != "" {
-			h.Names = append(h.Names, p.Name)
+			h.Names = append(h.Names, p.Name+hs.domain)
 		}
 
 		hosts = append(hosts, h)
