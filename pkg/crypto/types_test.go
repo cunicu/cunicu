@@ -1,7 +1,6 @@
 package crypto_test
 
 import (
-	"encoding/json"
 	"net"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -170,22 +169,42 @@ var _ = Describe("Key to byte slice conversions", Ordered, func() {
 	})
 })
 
-var _ = It("can marshal a Key to a string via the encoding.TextMarshaler interface", func() {
-	var err error
-	var obj1, obj2 struct {
-		Key crypto.Key
-	}
+var _ = Describe("key marshaling", func() {
+	var key crypto.Key
+	var keyStr, brokenKeyStr string
 
-	obj1.Key, err = crypto.GeneratePrivateKey()
-	Expect(err).To(Succeed())
+	BeforeEach(func() {
+		var err error
 
-	objJSON, err := json.Marshal(&obj1)
-	Expect(err).To(Succeed())
+		key, err = crypto.GenerateKey()
+		Expect(err).To(Succeed())
 
-	err = json.Unmarshal(objJSON, &obj2)
-	Expect(err).To(Succeed())
+		keyStr = key.String()
+		brokenKeyStr = keyStr[:len(keyStr)-2]
+	})
 
-	Expect(obj1).To(Equal(obj2))
+	It("unmarshal", func() {
+		var keyCfg crypto.Key
+
+		err := keyCfg.UnmarshalText([]byte(keyStr))
+		Expect(err).To(Succeed())
+
+		Expect(keyCfg).To(BeEquivalentTo(key))
+	})
+
+	It("marshal", func() {
+		keyCfg := crypto.Key(key)
+
+		keyCfgStr, err := keyCfg.MarshalText()
+		Expect(err).To(Succeed())
+		Expect(string(keyCfgStr)).To(Equal(keyStr))
+	})
+
+	It("fails on invalid key", func() {
+		var k crypto.Key
+		err := k.UnmarshalText([]byte(brokenKeyStr))
+		Expect(err).To(HaveOccurred())
+	})
 })
 
 var _ = It("can derive a public from a private key", func() {
