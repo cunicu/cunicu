@@ -338,7 +338,7 @@ var _ = Context("config", func() {
 		cfg, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
 		Expect(err).To(Succeed())
 
-		Expect(cfg.Interfaces["wg0"].PrivateKey.String()).To(Equal("kODOmlTNhYbF9htW3uYiE1qKuvBnJKd7MFvaookGd14="))
+		Expect(cfg.InterfaceSettings("wg-work-laptop").PeerDisc.Community).To(Equal("mysecret-pass"))
 	})
 
 	It("throws an error on an invalid config file path", func() {
