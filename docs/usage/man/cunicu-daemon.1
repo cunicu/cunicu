@@ -46,7 +46,7 @@ Start the daemon
 	Watch and synchronize changes to the WireGuard configuration files
 
 .PP
-\fB-D\fP, \fB--domain\fP=""
+\fB-D\fP, \fB--domain\fP=[]
 	A DNS \fB\fCdomain\fR name used for DNS auto-configuration
 
 .PP
@@ -66,6 +66,10 @@ Start the daemon
 	Usable \fB\fCnetwork-type\fRs (one of udp4, udp6, tcp4, tcp6)
 
 .PP
+\fB-f\fP, \fB--interface-filter\fP="\fI"
+	A glob(7) \fB\fCpattern\fR for filtering WireGuard interfaces which this daemon will manage (e.g. "wg\fP")
+
+.PP
 \fB-P\fP, \fB--password\fP=""
 	The \fB\fCpassword\fR for STUN/TURN credentials
 
@@ -74,7 +78,7 @@ Start the daemon
 	Enable synchronization of AllowedIPs and Kernel routing table
 
 .PP
-\fB-T\fP, \fB--route-table\fP="main"
+\fB-T\fP, \fB--route-table\fP=254
 	Kernel routing table to use
 
 .PP
@@ -98,12 +102,8 @@ Start the daemon
 	An interval at which we are periodically polling the kernel for updates on WireGuard interfaces
 
 .PP
-\fB-f\fP, \fB--wg-interface-filter\fP=".\fI"
-	A \fB\fCregex\fR for filtering WireGuard interfaces (e.g. "wg-.\fP")
-
-.PP
 \fB-u\fP, \fB--wg-userspace\fP[=false]
-	Create new interfaces with userspace WireGuard implementation
+	Use user-space WireGuard implementation for newly created interfaces
 
 .PP
 \fB-h\fP, \fB--help\fP[=false]

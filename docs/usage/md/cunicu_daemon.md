@@ -37,16 +37,16 @@ $ cunicu daemon -u -x mysecretpass wg0
   -H, --host-sync                           Enable synchronization of /etc/hosts file (default true)
       --ice-candidate-type candidate-type   Usable candidate-types (one of host, srflx, prflx, relay)
       --ice-network-type network-type       Usable network-types (one of udp4, udp6, tcp4, tcp6)
+  -f, --interface-filter pattern            A glob(7) pattern for filtering WireGuard interfaces which this daemon will manage (e.g. "wg*") (default "*")
   -P, --password password                   The password for STUN/TURN credentials
   -R, --route-sync                          Enable synchronization of AllowedIPs and Kernel routing table (default true)
-  -T, --route-table string                  Kernel routing table to use (default "main")
+  -T, --route-table int                     Kernel routing table to use (default 254)
   -s, --rpc-socket path                     The path of the unix socket used by other cunicu commands
       --rpc-wait                            Wait until first client connected to control socket before continuing start
   -a, --url URL                             One or more URLs of STUN and/or TURN servers
   -U, --username username                   The username for STUN/TURN credentials
   -i, --watch-interval duration             An interval at which we are periodically polling the kernel for updates on WireGuard interfaces
-  -f, --wg-interface-filter regex           A regex for filtering WireGuard interfaces (e.g. "wg-.*") (default ".*")
-  -u, --wg-userspace                        Create new interfaces with userspace WireGuard implementation
+  -u, --wg-userspace                        Use user-space WireGuard implementation for newly created interfaces
   -h, --help                                help for daemon
 ```
 
