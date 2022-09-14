@@ -1,0 +1,102 @@
+.nh
+.TH "cunīcu" "1" "Sep 2022" "https://github.com/stv0g/cunicu" ""
+
+.SH NAME
+.PP
+cunicu-relay - Start relay API server
+
+
+.SH SYNOPSIS
+.PP
+\fBcunicu relay URL... [flags]\fP
+
+
+.SH DESCRIPTION
+.PP
+This command starts a gRPC server providing cunicu agents with a list of available STUN and TURN servers.
+
+.PP
+\fBNote:\fP Currently this command does not run a TURN server itself. But relies on an external server like Coturn.
+
+.PP
+With this feature you can distribute a list of available STUN/TURN servers easily to a fleet of agents.
+It also allows to issue short-lived HMAC-SHA1 credentials based the proposed TURN REST API and thereby static long term credentials.
+
+.PP
+The command expects a list of STUN or TURN URLs according to RFC7065/RFC7064 with a few extensions:
+
+.RS
+.IP \(bu 2
+A secret for the TURN REST API can be provided by the 'secret' query parameter
+.RS
+.IP \(bu 2
+Example: turn:server.com?secret=rest-api-secret
+
+.RE
+
+.IP \(bu 2
+A time-to-live to the TURN REST API secrets can be provided by the 'ttl' query parameter
+.RS
+.IP \(bu 2
+Example: turn:server.com?ttl=1h
+
+.RE
+
+.IP \(bu 2
+Static TURN credentials can be provided by the URIs user info
+.RS
+.IP \(bu 2
+Example: turn:user1:pass1@server.com
+
+.RE
+
+
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB-h\fP, \fB--help\fP[=false]
+	help for relay
+
+.PP
+\fB-L\fP, \fB--listen\fP=":8080"
+	listen address
+
+.PP
+\fB-S\fP, \fB--secure\fP[=false]
+	listen with TLS
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB-C\fP, \fB--color\fP="auto"
+	Enable colorization of output (one of: auto, always, never)
+
+.PP
+\fB-l\fP, \fB--log-file\fP=""
+	path of a file to write logs to
+
+.PP
+\fB-d\fP, \fB--log-level\fP="info"
+	log level (one of: debug, info, warn, error, dpanic, panic, and fatal)
+
+.PP
+\fB-v\fP, \fB--verbose\fP=0
+	verbosity level
+
+
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+relay turn:server.com?secret=rest-api-secret&ttl=1h
+
+.fi
+.RE
+
+
+.SH SEE ALSO
+.PP
+\fBcunicu(1)\fP

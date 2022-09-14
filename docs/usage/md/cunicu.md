@@ -32,6 +32,7 @@ It relies on the awesome pion/ice package for the interactive connectivity estab
 * [cunicu config](cunicu_config.md)	 - Manage configuration of a running cunīcu daemon.
 * [cunicu daemon](cunicu_daemon.md)	 - Start the daemon
 * [cunicu monitor](cunicu_monitor.md)	 - Monitor the cunīcu daemon for events
+* [cunicu relay](cunicu_relay.md)	 - Start relay API server
 * [cunicu restart](cunicu_restart.md)	 - Restart the cunīcu daemon
 * [cunicu selfupdate](cunicu_selfupdate.md)	 - Update the cunīcu binary
 * [cunicu signal](cunicu_signal.md)	 - Start gRPC signaling server
