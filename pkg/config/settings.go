@@ -72,6 +72,8 @@ type AutoConfigSettings struct {
 
 type HostSyncSettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
+
+	Domain string `koanf:"domain,omitempty"`
 }
 
 type PeerDiscoverySettings struct {
