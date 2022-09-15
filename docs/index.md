@@ -31,7 +31,7 @@ In situations where ICE fails, or direct UDP connectivity is not available, cun�
 It relies on the [awesome](https://github.com/pion/awesome-pion) [pion/ice](pion-ice) package for ICE as well as bundles the a Go user-space implementation of WireGuard in a single binary for systems in which WireGuard kernel support has not landed yet.
 
 With these features, cun카cu can be used to quickly build multi-agent systems or connect field devices such as power grid monitoring infrastructure into a fully connected mesh.
-Within the ERIGrid 2.0 project, cun카cu is used to interconnect smart grid laboratories for geographically distributed simulation of energy systems.
+Within the [ERIGrid 2.0 project][erigrid], cun카cu is used to interconnect smart grid laboratories for geographically distributed simulation of energy systems.
 
 The project is currently actively developed by Steffen Vogel at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de)
 
@@ -75,7 +75,7 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 
 The project is currently actively developed by Steffen Vogel at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de)
 
-<img alt="European Flag" style={{height: '4em', marginRight: '10px'}} src="/img/flag_of_europe.svg" align="left" /> The development of cun카cu has been supported by the [ERIGrid 2.0][erigrid] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
+<img alt="European Flag" style={{height: '4em', marginRight: '10px'}} src="/img/flag_of_europe.svg" align="left" /> The development of cun카cu has been supported by the <a href="https://erigrid2.eu">ERIGrid 2.0</a> project of the H2020 Programme under <a href="https://cordis.europa.eu/project/id/870620">Grant Agreement No. 870620</a>
 
 ## Trademark
 
