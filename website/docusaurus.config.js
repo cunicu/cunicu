@@ -79,10 +79,8 @@ async function createConfig() {
         ({
           docs: {
             sidebarPath: require.resolve('./sidebars.js'),
-            // Please change this to your repo.
-            // Remove this to remove the "edit this page" links.
             editUrl:
-              'https://github.com/stv0g/cunicu/tree/master/website/',
+              'https://github.com/stv0g/cunicu/edit/master/',
             remarkPlugins: [
               mdxMermaid.default,
               math
