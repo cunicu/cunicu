@@ -106,6 +106,9 @@ async function createConfig() {
     themeConfig:
       /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
       ({
+        colorMode: {
+          disableSwitch: true
+        },
         navbar: {
           title: 'cunīcu',
           logo: {
