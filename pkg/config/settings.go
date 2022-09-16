@@ -79,6 +79,7 @@ type HostSyncSettings struct {
 type PeerDiscoverySettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
 
+	Hostname  string       `koanf:"hostname,omitempty"`
 	Community string       `koanf:"community,omitempty"`
 	Whitelist []crypto.Key `koanf:"whitelist,omitempty"`
 }
