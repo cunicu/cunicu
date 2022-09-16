@@ -95,10 +95,10 @@ var _ = Describe("device", func() {
 			})
 
 			Describe("can manage addresses", Ordered, func() {
-				var addr *net.IPNet
+				var addr net.IPNet
 
 				BeforeAll(func() {
-					addr = &net.IPNet{
+					addr = net.IPNet{
 						IP:   net.IPv4(10, 0, 0, 1),
 						Mask: net.IPv4Mask(0xff, 0xff, 0xff, 0xff),
 					}
@@ -123,12 +123,12 @@ var _ = Describe("device", func() {
 
 			Describe("can manage routes", Ordered, func() {
 				var ip net.IP
-				var route *net.IPNet
+				var route net.IPNet
 
 				BeforeAll(func() {
 					ip = net.IPv4(10, 0, 0, 1)
 
-					route = &net.IPNet{
+					route = net.IPNet{
 						IP:   net.IPv4(10, 0, 0, 1),
 						Mask: net.IPv4Mask(0xff, 0xff, 0xff, 0xff),
 					}

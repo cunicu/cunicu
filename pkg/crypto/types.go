@@ -103,7 +103,7 @@ func (k Key) Bytes() []byte {
 }
 
 // IPv6Address derives an IPv6 link local address from they key
-func (k Key) IPv6Address() *net.IPNet {
+func (k Key) IPv6Address() net.IPNet {
 	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
 
 	hash := siphash.New(addrHashKey[:])
@@ -120,14 +120,14 @@ func (k Key) IPv6Address() *net.IPNet {
 		panic("invalid IP length")
 	}
 
-	return &net.IPNet{
+	return net.IPNet{
 		IP:   ip,
 		Mask: net.CIDRMask(64, 128),
 	}
 }
 
 // IPv4Address derives an IPv4 link local address from they key
-func (k Key) IPv4Address() *net.IPNet {
+func (k Key) IPv4Address() net.IPNet {
 	hash := siphash.New(addrHashKey[:])
 	if _, err := hash.Write(k[:]); err != nil {
 		panic(err)
@@ -152,7 +152,7 @@ func (k Key) IPv4Address() *net.IPNet {
 		c--
 	}
 
-	return &net.IPNet{
+	return net.IPNet{
 		IP:   net.IPv4(169, 254, c, d),
 		Mask: net.CIDRMask(16, 32),
 	}

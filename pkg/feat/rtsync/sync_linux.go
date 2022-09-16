@@ -41,7 +41,7 @@ func (s *RouteSync) removeKernel(p *core.Peer) error {
 		}
 
 		if gwV4.Compare(gw) == 0 || gwV6.Compare(gw) == 0 {
-			if err := p.Interface.KernelDevice.DeleteRoute(route.Dst, s.table); err != nil && !errors.Is(err, syscall.ESRCH) {
+			if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, s.table); err != nil && !errors.Is(err, syscall.ESRCH) {
 				s.logger.Error("Failed to delete route", zap.Error(err))
 				continue
 			}
@@ -156,7 +156,7 @@ func (s *RouteSync) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	switch ru.Type {
 	case unix.RTM_NEWROUTE:
-		if err := p.AddAllowedIP(ru.Dst); err != nil {
+		if err := p.AddAllowedIP(*ru.Dst); err != nil {
 			return fmt.Errorf("failed to add allowed IP: %w", err)
 		}
 

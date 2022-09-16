@@ -244,7 +244,7 @@ func (i *Interface) Configure(cfg *wg.Config) error {
 
 	for _, addr := range cfg.Address {
 		addr := addr
-		if err := i.KernelDevice.AddAddress(&addr); err != nil {
+		if err := i.KernelDevice.AddAddress(addr); err != nil {
 			return err
 		}
 	}

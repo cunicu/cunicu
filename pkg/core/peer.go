@@ -173,13 +173,13 @@ func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 }
 
 // AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
-func (p *Peer) AddAllowedIP(a *net.IPNet) error {
+func (p *Peer) AddAllowedIP(a net.IPNet) error {
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				UpdateOnly: true,
 				PublicKey:  wgtypes.Key(p.PublicKey()),
-				AllowedIPs: []net.IPNet{*a},
+				AllowedIPs: []net.IPNet{a},
 			},
 		},
 	}

@@ -91,11 +91,11 @@ func (i *LinuxKernelDevice) SetDown() error {
 	return netlink.LinkSetDown(i.link)
 }
 
-func (i *LinuxKernelDevice) AddAddress(ip *net.IPNet) error {
+func (i *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
 	i.logger.Debug("Add address", zap.Any("addr", ip))
 
 	addr := &netlink.Addr{
-		IPNet: ip,
+		IPNet: &ip,
 		Flags: unix.IFA_F_PERMANENT,
 	}
 
@@ -106,22 +106,22 @@ func (i *LinuxKernelDevice) AddAddress(ip *net.IPNet) error {
 	return netlink.AddrAdd(i.link, addr)
 }
 
-func (i *LinuxKernelDevice) DeleteAddress(ip *net.IPNet) error {
+func (i *LinuxKernelDevice) DeleteAddress(ip net.IPNet) error {
 	i.logger.Debug("Delete address", zap.Any("addr", ip))
 
 	addr := &netlink.Addr{
-		IPNet: ip,
+		IPNet: &ip,
 	}
 
 	return netlink.AddrDel(i.link, addr)
 }
 
-func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet, table int) error {
+func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, table int) error {
 	i.logger.Debug("Add route", zap.Any("dst", dst))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
-		Dst:       dst,
+		Dst:       &dst,
 		Protocol:  RouteProtocol,
 		Table:     table,
 	}
@@ -133,12 +133,12 @@ func (i *LinuxKernelDevice) AddRoute(dst *net.IPNet, table int) error {
 	return nil
 }
 
-func (i *LinuxKernelDevice) DeleteRoute(dst *net.IPNet, table int) error {
+func (i *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	i.logger.Debug("Delete route", zap.Any("dst", dst))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
-		Dst:       dst,
+		Dst:       &dst,
 		Table:     table,
 	}
 

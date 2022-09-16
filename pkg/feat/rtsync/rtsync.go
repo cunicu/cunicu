@@ -89,7 +89,7 @@ func (rs *RouteSync) OnPeerRemoved(p *core.Peer) {
 
 func (rs *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	for _, dst := range ipsAdded {
-		if err := p.Interface.KernelDevice.AddRoute(&dst, rs.table); err != nil {
+		if err := p.Interface.KernelDevice.AddRoute(dst, rs.table); err != nil {
 			rs.logger.Error("Failed to add route", zap.Error(err))
 			continue
 		}
@@ -101,7 +101,7 @@ func (rs *RouteSync) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.Peer
 	}
 
 	for _, dst := range ipsRemoved {
-		if err := p.Interface.KernelDevice.DeleteRoute(&dst, rs.table); err != nil && !errors.Is(err, syscall.ESRCH) {
+		if err := p.Interface.KernelDevice.DeleteRoute(dst, rs.table); err != nil && !errors.Is(err, syscall.ESRCH) {
 			rs.logger.Error("Failed to delete route", zap.Error(err))
 			continue
 		}

@@ -54,11 +54,11 @@ func (d *BSDKernelDevice) Close() error {
 	return exec.Command("ifconfig", d.Name(), "destroy").Run()
 }
 
-func (d *BSDKernelDevice) AddAddress(ip *net.IPNet) error {
+func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
 	return exec.Command("ifconfig", d.Name(), ip.String(), "alias").Run()
 }
 
-func (d *BSDKernelDevice) DeleteAddress(ip *net.IPNet) error {
+func (d *BSDKernelDevice) DeleteAddress(ip net.IPNet) error {
 	return exec.Command("ifconfig", d.Name(), ip.String(), "-alias").Run()
 }
 
