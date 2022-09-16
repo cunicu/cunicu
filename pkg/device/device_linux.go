@@ -3,6 +3,7 @@ package device
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net"
 	"os"
 
@@ -143,4 +144,49 @@ func (i *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	}
 
 	return netlink.RouteDel(route)
+}
+
+func DetectMTU(ip net.IP) (int, error) {
+	// TODO: How do we use the correct fwmark here?
+	rts, err := netlink.RouteGet(ip)
+	if err != nil {
+		return -1, fmt.Errorf("failed to get route: %w", err)
+	}
+
+	if len(rts) == 0 {
+		return -1, errors.New("no route to destination")
+	}
+
+	mtu := math.MaxInt
+	for _, rt := range rts {
+		if rt.MTU < mtu {
+			mtu = rt.MTU
+		}
+	}
+
+	return mtu, nil
+}
+
+func DetectDefaultMTU() (int, error) {
+	// TODO: How do we use the correct fwmark here?
+	rts, err := netlink.RouteListFiltered(unix.AF_INET, &netlink.Route{
+		Dst: nil,
+	}, netlink.RT_FILTER_DST)
+
+	if err != nil {
+		return -1, fmt.Errorf("failed to get route: %w", err)
+	}
+
+	if len(rts) == 0 {
+		return -1, errors.New("no route to destination")
+	}
+
+	mtu := math.MaxInt
+	for _, rt := range rts {
+		if rt.MTU < mtu {
+			mtu = rt.MTU
+		}
+	}
+
+	return mtu, nil
 }

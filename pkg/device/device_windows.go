@@ -50,3 +50,11 @@ func (d *WindowsKernelDevice) SetDown() error {
 func (d *WindowsKernelDevice) Close() error {
 	return nil
 }
+
+func DetectMTU(ip net.IP) (int, error) {
+	return -1, errors.ErrNotSupported
+}
+
+func DetectDefaultMTU() (int, error) {
+	return -1, errors.ErrNotSupported
+}

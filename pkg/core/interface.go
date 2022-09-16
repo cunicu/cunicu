@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"time"
 
@@ -311,6 +312,28 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	)
 
 	return i, nil
+}
+
+func (i *Interface) DetectMTU() (mtu int, err error) {
+	if len(i.Device.Peers) == 0 {
+		mtu, err = device.DetectDefaultMTU()
+		if err != nil {
+			return -1, err
+		}
+	} else {
+		mtu = math.MaxInt
+		for _, p := range i.Device.Peers {
+			if p.Endpoint != nil {
+				if pmtu, err := device.DetectMTU(p.Endpoint.IP); err != nil {
+					return -1, fmt.Errorf("failed to detect MTU: %w", err)
+				} else if pmtu < mtu {
+					mtu = pmtu
+				}
+			}
+		}
+	}
+
+	return mtu - wg.TunnelOverhead, nil
 }
 
 func (i *Interface) Marshal() *coreproto.Interface {
