@@ -15,8 +15,8 @@ These binary versions can be manually downloaded and installed.
 ## By Hand
 
 1.  [Download your desired version](https://github.com/stv0g/cunicu/releases)
-2.  Unzip it: `gunzip cunicu_0.0.1_linux_amd64.gz`
-3.  Move the unzipped binary to its desired destination: `mv cunicu_0.0.1_linux_amd64 /usr/local/bin/cunicu`
+2.  Unzip it: `gunzip cunicu_0.0.1_linux_amd64.tar.gz`
+3.  Move the unzipped binary to its desired destination: `mv cunicu /usr/local/bin/cunicu`
 4.  Make it executable: `chmod +x /usr/local/bin/cunicu`
 5.  From there, you should be able to run the client and add the stable repo: `cunicu help`.
 
@@ -33,12 +33,12 @@ You can fetch that script, and then execute it locally.
 It's well documented so that you can read through it and understand what it is doing before you run it.
 
 ```bash
-curl -fsSL -o get_cunicu.sh https://raw.githubusercontent.com/stv0g/cunicu/master/scripts/get_cunicu.sh
+curl -fsSL -o get_cunicu.sh get.cunicu.li
 chmod 700 get_cunicu.sh
 ./get_cunicu.sh
 ```
 
-Yes, you can `curl https://raw.githubusercontent.com/stv0g/cunicu/master/scripts/get_cunicu.sh | bash` if you want to live on the edge.
+Yes, you can `curl -fsSL get.cunicu.li | bash` if you want to live on the edge.
 
 ## Through Package Managers
 
@@ -48,7 +48,7 @@ cunīcu provides the ability to install via operating system package managers.
 
 ```bash
 sudo apt-get install apt-transport-https --yes
-echo "deb [arch=$(dpkg --print-architecture) trusted=yes] https://packages.riasc.eu/apt/ /" | sudo tee /etc/apt/sources.list.d/riasc.list
+echo "deb [arch=$(dpkg --print-architecture) trusted=yes] https://packages.cunicu.li/apt/ /" | sudo tee /etc/apt/sources.list.d/cunicu.list
 sudo apt-get update
 sudo apt-get install cunicu
 ```
@@ -56,21 +56,36 @@ sudo apt-get install cunicu
 ### From Yum (Redhat, Fedora, RockyLinux)
 
 ```bash
-sudo cat > /etc/yum.repos.d/riasc.repo <<EOF
-[riasc]
+sudo cat > /etc/yum.repos.d/cunicu.repo <<EOF
+[cunicu]
 name=RIasC
-baseurl=https://packages.riasc.eu/yum/
+baseurl=https://packages.cunicu.li/yum/
 enabled=1
 gpgcheck=0
 EOF
-sudo yum install cunīcu
+sudo yum install cunicu
 ```
 
 ### From Homebrew (macOS)
 
+A formulae for cunīcu is available in our Homebrew Tap: https://github.com/stv0g/homebrew-cunicu.
+
 ```bash
 brew tap stv0g/cunicu
 brew install cunicu
+```
+
+### From Archlinux User Repository (AUR)
+
+cunīcu is available in the Archlinux User Repository: https://aur.archlinux.org/packages/cunicu-bin.
+
+```bash
+# via Yaourt
+yaourt -S cunicu-bin
+# or via Packer
+packer -S cunicu-bin
+# or via yay
+yay cunicu-bin
 ```
 
 ## From Source (all)
