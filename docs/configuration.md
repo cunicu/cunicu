@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # Configuration
 
-This page describes the ways of configuring the cunicu daemon (`cunicu daemon`).
+This page describes the ways of configuring the cunīcu daemon (`cunicu daemon`).
 
 ## Command Line Flags
 
@@ -16,7 +16,7 @@ A full overview is available in its [manpage](./usage/md/cunicu_daemon.md).
 Alternatively a configuration file can be used for a persistent configuration:
 
 ```yaml title="cunicu.yaml"
-# An interval at which cunicu will periodically check for added,
+# An interval at which cunīcu will periodically check for added,
 # removed or modified WireGuard interfaces.
 watch_interval: 1s
 
@@ -37,7 +37,7 @@ rpc:
   # and monitoring of the cunicu daemon.
   socket: /var/run/cunicu.sock
 
-  # Start of cunicu daemon will block until
+  # Start of cunīcu daemon will block until
   # its unblocked via the control socket.
   # Mostly useful for testing automation
   wait: false
@@ -46,7 +46,7 @@ rpc:
 ## Hook callbacks
 #
 # Hook callback can be used to invoke subprocesses
-# or web-hooks on certain events within cunicu.
+# or web-hooks on certain events within cunīcu.
 hooks:
 
 # An 'exec' hook spawn a subprocess for each event.
@@ -99,7 +99,7 @@ wireguard:
 
   # A range constraint for an automatically assigned
   # selected listen port.
-  # If the interface has no listen port specified, cunicu
+  # If the interface has no listen port specified, cunīcu
   # will use the first available port from this range.
   listen_port_range:
     min: 52820
@@ -130,6 +130,10 @@ wireguard:
     # cryptography to be mixed into the already existing
     # public-key cryptography, for post-quantum resistance.
     preshared_key: zu86NBVsWOU3cx4UKOQ6MgNj3gv8GXsV9ATzSemdqlI=
+
+    # A preshared passphrase which is used to derive a preshared key.
+    # cunīcu is using Argon2id as the key derivation function.
+    preshared_key_passphrase:
 
     # An endpoint IP or hostname, followed by a colon,
     # and then a port number. This endpoint will be updated
