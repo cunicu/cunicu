@@ -1,10 +1,13 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"math"
+	"net"
 	"os"
+	"os/exec"
 	"time"
 
 	"go.uber.org/zap"
@@ -334,6 +337,25 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	return mtu - wg.TunnelOverhead, nil
+}
+
+func (i *Interface) SetDNS(svrs []net.IP) error {
+	cmd := exec.Command("resolveconf", "-a", i.Name(), "-m", "0", "-x")
+
+	stdin := &bytes.Buffer{}
+	for _, svr := range svrs {
+		fmt.Fprintf(stdin, "nameserver %s\n", svr)
+	}
+
+	cmd.Stdin = stdin
+
+	return cmd.Run()
+}
+
+func (i *Interface) UnsetDNS() error {
+	cmd := exec.Command("resolveconf", "-d", i.Name())
+
+	return cmd.Run()
 }
 
 func (i *Interface) Marshal() *coreproto.Interface {

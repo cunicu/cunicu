@@ -75,6 +75,7 @@ type WireGuardSettings struct {
 	ListenPort      *int                    `koanf:"listen_port,omitempty"`
 	ListenPortRange *PortRangeSettings      `koanf:"listen_port_range,omitempty"`
 	FirewallMark    int                     `koanf:"fwmark,omitempty"`
+	DNS             []net.IP                `koanf:"dns,omitempty"`
 	Peers           []WireGuardPeerSettings `koanf:"peers,omitempty"`
 }
 
