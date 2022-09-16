@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/pion/ice/v2"
@@ -109,3 +111,10 @@ var (
 		},
 	}
 )
+
+func init() {
+	var err error
+	if DefaultInterfaceSettings.PeerDisc.Hostname, err = os.Hostname(); err != nil {
+		panic(fmt.Errorf("failed to get hostname: %w", err))
+	}
+}
