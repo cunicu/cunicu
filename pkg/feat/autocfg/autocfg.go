@@ -15,6 +15,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/watcher"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -26,28 +27,20 @@ type AutoConfig struct {
 	logger *zap.Logger
 }
 
-func addLinkLocalAddresses(dev device.Device, pk crypto.Key) error {
-	if pk.IsSet() {
-		if err := dev.AddAddress(pk.IPv4Address()); err != nil && !errors.Is(err, syscall.EEXIST) {
-			return fmt.Errorf("failed to assign IPv4 link-local address: %w", err)
-		}
-
-		if err := dev.AddAddress(pk.IPv6Address()); err != nil && !errors.Is(err, syscall.EEXIST) {
-			return fmt.Errorf("failed to assign IPv6 link-local address: %w", err)
+func addAddresses(dev device.Device, addrs ...net.IPNet) error {
+	for _, addr := range addrs {
+		if err := dev.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
+			return fmt.Errorf("failed to assign address: %w", err)
 		}
 	}
 
 	return nil
 }
 
-func deleteLinkLocalAddresses(dev device.Device, pk crypto.Key) error {
-	if pk.IsSet() {
-		if err := dev.DeleteAddress(pk.IPv4Address()); err != nil {
+func deleteAddresses(dev device.Device, addrs ...net.IPNet) error {
+	for _, addr := range addrs {
+		if err := dev.DeleteAddress(addr); err != nil {
 			return fmt.Errorf("failed to assign IPv4 link-local address: %w", err)
-		}
-
-		if err := dev.DeleteAddress(pk.IPv6Address()); err != nil {
-			return fmt.Errorf("failed to assign IPv6 link-local address: %w", err)
 		}
 	}
 
@@ -79,13 +72,34 @@ func (a *AutoConfig) Close() error {
 func (a *AutoConfig) OnInterfaceAdded(i *core.Interface) {
 	logger := a.logger.With(zap.String("intf", i.Name()))
 
-	if err := a.fixupInterface(i); err != nil {
-		logger.Error("Failed to fix interface", zap.Error(err))
+	icfg := a.config.InterfaceSettings(i.Name())
+
+	if err := a.configureWireGuardInterface(i, &icfg.WireGuard); err != nil {
+		logger.Error("Failed to configure WireGuard interface", zap.Error(err))
 	}
 
-	// Add link local addresses
-	if err := addLinkLocalAddresses(i.KernelDevice, i.PublicKey()); err != nil {
-		a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+	// Assign addresses
+	addrs := slices.Clone(icfg.AutoConfig.Addresses)
+	if icfg.AutoConfig.LinkLocalAddresses && i.PublicKey().IsSet() {
+		pk := i.PublicKey()
+		addrs = append(addrs, pk.IPv4Address(), pk.IPv6Address())
+	}
+
+	if err := addAddresses(i.KernelDevice, addrs...); err != nil {
+		logger.Error("Failed to assign addresses", zap.Error(err), zap.Any("addrs", addrs))
+	}
+
+	// Autodetect MTU
+	// TODO: Update MTU when peers are added or their endpoints change
+	if mtu := icfg.AutoConfig.MTU; mtu == 0 {
+		var err error
+		if mtu, err = i.DetectMTU(); err != nil {
+			logger.Error("Failed to detect MTU", zap.Error(err))
+		} else {
+			if err := i.KernelDevice.SetMTU(mtu); err != nil {
+				logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", icfg.AutoConfig.MTU))
+			}
+		}
 	}
 
 	// Set link up
@@ -103,12 +117,22 @@ func (a *AutoConfig) OnInterfaceModified(i *core.Interface, old *wg.Device, mod 
 		oldPk := crypto.Key(old.PublicKey)
 		newPk := i.PublicKey()
 
-		if err := deleteLinkLocalAddresses(i.KernelDevice, oldPk); err != nil {
-			a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+		if oldPk.IsSet() {
+			if err := deleteAddresses(i.KernelDevice,
+				oldPk.IPv4Address(),
+				oldPk.IPv6Address(),
+			); err != nil {
+				a.logger.Error("Failed to delete link-local addresses", zap.Error(err))
+			}
 		}
 
-		if err := addLinkLocalAddresses(i.KernelDevice, newPk); err != nil {
-			a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+		if newPk.IsSet() {
+			if err := addAddresses(i.KernelDevice,
+				newPk.IPv4Address(),
+				newPk.IPv6Address(),
+			); err != nil {
+				a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+			}
 		}
 	}
 }
@@ -139,41 +163,52 @@ func (a *AutoConfig) OnPeerRemoved(p *core.Peer) {}
 func (a *AutoConfig) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 }
 
-// fixupInterface fixes the WireGuard device configuration by applying missing settings
-func (a *AutoConfig) fixupInterface(i *core.Interface) error {
+// configureInterface configures the WireGuard device using the configuration provided by the user
+// Missing settings such as a private key or listen port are automatically generated/allocated.
+func (a *AutoConfig) configureWireGuardInterface(i *core.Interface, icfg *config.WireGuardSettings) error {
+	var err error
+
 	cfg := wgtypes.Config{}
+	configure := false
+
 	logger := a.logger.With(zap.String("intf", i.Name()))
 
-	if !i.PrivateKey().IsSet() {
-		if i.Type != wgtypes.Userspace {
-			logger.Warn("Device has no private key. Generating one..")
+	// Private key
+	if !i.PrivateKey().IsSet() || i.PrivateKey() != icfg.PrivateKey {
+		sk := icfg.PrivateKey
+		if !sk.IsSet() {
+			sk, err = crypto.GeneratePrivateKey()
+			if err != nil {
+				return fmt.Errorf("failed to generate private key: %w", err)
+			}
 		}
 
-		key, err := wgtypes.GeneratePrivateKey()
-		if err != nil {
-			return fmt.Errorf("failed to generate private key: %w", err)
-		}
-
-		cfg.PrivateKey = &key
+		cfg.PrivateKey = (*wgtypes.Key)(&sk)
+		configure = true
 	}
 
-	if i.ListenPort == 0 {
-		logger.Warn("Device has no listen port. Setting a random one.")
+	// Listen port
+	if i.ListenPort == 0 || i.ListenPort != *icfg.ListenPort {
+		if icfg.ListenPort != nil {
+			cfg.ListenPort = icfg.ListenPort
+		} else {
+			logger.Warn("Device has no listen port. Setting a random one.")
 
-		icfg := a.config.InterfaceSettings(i.Name())
+			port, err := util.FindNextPortToListen("udp",
+				icfg.ListenPortRange.Min,
+				icfg.ListenPortRange.Max,
+			)
+			if err != nil {
+				return fmt.Errorf("failed set listen port: %w", err)
+			}
 
-		port, err := util.FindNextPortToListen("udp",
-			icfg.WireGuard.ListenPortRange.Min,
-			icfg.WireGuard.ListenPortRange.Max,
-		)
-		if err != nil {
-			return fmt.Errorf("failed set listen port: %w", err)
+			cfg.ListenPort = &port
 		}
 
-		cfg.ListenPort = &port
+		configure = true
 	}
 
-	if cfg.ListenPort != nil || cfg.PrivateKey != nil {
+	if configure {
 		if err := a.client.ConfigureDevice(i.Name(), cfg); err != nil {
 			return fmt.Errorf("failed to configure device: %w", err)
 		}
