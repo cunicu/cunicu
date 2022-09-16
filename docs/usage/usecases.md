@@ -10,6 +10,4 @@
 
 ## Peer discovery
 
-**Note:** Not implemented yet
-
-**Invocation:** `cunicu --community my-community-passphrase --backend p2p`
+**Invocation:** `cunicu --community my-community-passphrase`
