@@ -61,11 +61,12 @@ type RouteSyncSettings struct {
 }
 
 type WireGuardPeerSettings struct {
-	PublicKey                   crypto.Key    `koanf:"public_key,omitempty"`
-	PresharedKey                crypto.Key    `koanf:"preshared_key,omitempty"`
-	Endpoint                    string        `koanf:"endpoint,omitempty"`
-	PersistentKeepaliveInterval time.Duration `koanf:"persistent_keepalive,omitempty"`
-	AllowedIPs                  []net.IPNet   `koanf:"allowed_ips,omitempty"`
+	PublicKey                   crypto.Key           `koanf:"public_key,omitempty"`
+	PresharedKey                crypto.Key           `koanf:"preshared_key,omitempty"`
+	PresharedKeyPassphrase      crypto.KeyPassphrase `koanf:"preshared_key_passphrase,omitempty"`
+	Endpoint                    string               `koanf:"endpoint,omitempty"`
+	PersistentKeepaliveInterval time.Duration        `koanf:"persistent_keepalive,omitempty"`
+	AllowedIPs                  []net.IPNet          `koanf:"allowed_ips,omitempty"`
 }
 
 type WireGuardSettings struct {
@@ -94,10 +95,10 @@ type HostSyncSettings struct {
 type PeerDiscoverySettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
 
-	Hostname  string       `koanf:"hostname,omitempty"`
-	Community string       `koanf:"community,omitempty"`
-	Whitelist []crypto.Key `koanf:"whitelist,omitempty"`
-	Networks  []net.IPNet  `koanf:"networks,omitempty"`
+	Hostname  string               `koanf:"hostname,omitempty"`
+	Community crypto.KeyPassphrase `koanf:"community,omitempty"`
+	Whitelist []crypto.Key         `koanf:"whitelist,omitempty"`
+	Networks  []net.IPNet          `koanf:"networks,omitempty"`
 }
 
 type EndpointDiscoverySettings struct {
