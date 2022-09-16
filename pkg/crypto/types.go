@@ -160,6 +160,14 @@ func (k Key) IsSet() bool {
 	return k != Key{}
 }
 
+// A key which uses GenerateKeyFromPassword() for UnmarshalText()
+type KeyPassphrase Key
+
+func (k *KeyPassphrase) UnmarshalText(text []byte) error {
+	*k = KeyPassphrase(GenerateKeyFromPassword(string(text)))
+	return nil
+}
+
 type KeyPair struct {
 	Ours   Key `json:"ours"`
 	Theirs Key `json:"theirs"`
