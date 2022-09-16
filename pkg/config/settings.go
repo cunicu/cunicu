@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net"
 	"path/filepath"
 	"time"
 
@@ -59,15 +60,29 @@ type RouteSyncSettings struct {
 	Watch   bool `koanf:"watch,omitempty"`
 }
 
-type WireGuardSettings struct {
-	UserSpace bool `koanf:"userspace,omitempty"`
+type WireGuardPeerSettings struct {
+	PublicKey                   crypto.Key    `koanf:"public_key,omitempty"`
+	PresharedKey                crypto.Key    `koanf:"preshared_key,omitempty"`
+	Endpoint                    string        `koanf:"endpoint,omitempty"`
+	PersistentKeepaliveInterval time.Duration `koanf:"persistent_keepalive,omitempty"`
+	AllowedIPs                  []net.IPNet   `koanf:"allowed_ips,omitempty"`
+}
 
-	ListenPort      *int               `koanf:"listen_port,omitempty"`
-	ListenPortRange *PortRangeSettings `koanf:"listen_port_range,omitempty"`
+type WireGuardSettings struct {
+	UserSpace       bool                    `koanf:"userspace,omitempty"`
+	PrivateKey      crypto.Key              `koanf:"private_key,omitempty"`
+	ListenPort      *int                    `koanf:"listen_port,omitempty"`
+	ListenPortRange *PortRangeSettings      `koanf:"listen_port_range,omitempty"`
+	FirewallMark    int                     `koanf:"fwmark,omitempty"`
+	Peers           []WireGuardPeerSettings `koanf:"peers,omitempty"`
 }
 
 type AutoConfigSettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
+
+	MTU                int         `koanf:"mtu,omitempty"`
+	Addresses          []net.IPNet `koanf:"addresses,omitempty"`
+	LinkLocalAddresses bool        `koanf:"link_local,omitempty"`
 }
 
 type HostSyncSettings struct {
@@ -82,6 +97,7 @@ type PeerDiscoverySettings struct {
 	Hostname  string       `koanf:"hostname,omitempty"`
 	Community string       `koanf:"community,omitempty"`
 	Whitelist []crypto.Key `koanf:"whitelist,omitempty"`
+	Networks  []net.IPNet  `koanf:"networks,omitempty"`
 }
 
 type EndpointDiscoverySettings struct {

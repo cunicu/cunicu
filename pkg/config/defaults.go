@@ -54,6 +54,8 @@ var (
 	DefaultInterfaceSettings = InterfaceSettings{
 		AutoConfig: AutoConfigSettings{
 			Enabled: true,
+
+			LinkLocalAddresses: true,
 		},
 		ConfigSync: ConfigSyncSettings{
 			Enabled: true,
