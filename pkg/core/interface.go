@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"time"
 
@@ -14,12 +13,10 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"github.com/stv0g/cunicu/pkg/wg"
 
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
-	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feat/pdisc"
 )
 
 type Interface struct {
@@ -354,43 +351,4 @@ func (i *Interface) MarshalWithPeers(cb func(p *Peer) *coreproto.Peer) *coreprot
 	}
 
 	return q
-}
-
-func (i *Interface) MarshalDescription(chg pdiscproto.PeerDescriptionChange, pkOld *crypto.Key) (*pdiscproto.PeerDescription, error) {
-	allowedIPs := []*net.IPNet{
-		i.PublicKey().IPv6Address(),
-		i.PublicKey().IPv4Address(),
-	}
-
-	// Only allow a single IP from the network
-	for _, allowedIP := range allowedIPs {
-		for i := range allowedIP.Mask {
-			allowedIP.Mask[i] = 0xff
-		}
-	}
-
-	hn, err := os.Hostname()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get hostname: %w", err)
-	}
-
-	pd := &pdiscproto.PeerDescription{
-		Change:     chg,
-		Hostname:   hn,
-		AllowedIps: util.StringSlice(allowedIPs),
-		BuildInfo:  buildinfo.BuildInfo(),
-	}
-
-	if pkOld != nil {
-		if pd.Change != pdiscproto.PeerDescriptionChange_PEER_UPDATE {
-			return nil, fmt.Errorf("can not change public key in non-update message")
-		}
-
-		pd.PublicKeyNew = i.PublicKey().Bytes()
-		pd.PublicKey = pkOld.Bytes()
-	} else {
-		pd.PublicKey = i.PublicKey().Bytes()
-	}
-
-	return pd, nil
 }

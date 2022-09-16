@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("PBKDF2 Key derivation", func() {
+var _ = Describe("Argon2id key derivation", func() {
 	var key1, key2 crypto.Key
 
 	BeforeEach(func() {
@@ -19,7 +19,7 @@ var _ = Describe("PBKDF2 Key derivation", func() {
 	})
 
 	It("matches well known key", func() {
-		Expect(crypto.ParseKey("SAyMLIWTO+DSnTx/JDak+lRR5huci8m4JsEabkkIxFY=")).To(Equal(key1))
+		Expect(crypto.ParseKey("KJJj36cAiOLIaAImbnZtzvk6KmIpx87LLC4sCnriuUw=")).To(Equal(key1))
 	})
 
 	It("does not create equal keys", func() {
