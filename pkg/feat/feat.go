@@ -3,6 +3,7 @@ package feat
 
 import (
 	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/feat/autocfg"
 	"github.com/stv0g/cunicu/pkg/feat/cfgsync"
 	"github.com/stv0g/cunicu/pkg/feat/epdisc"
@@ -49,7 +50,7 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 		feats = append(feats, ep)
 	}
 
-	if cfg.DefaultInterfaceSettings.PeerDisc.Enabled && cfg.DefaultInterfaceSettings.PeerDisc.Community != "" {
+	if cfg.DefaultInterfaceSettings.PeerDisc.Enabled && crypto.Key(cfg.DefaultInterfaceSettings.PeerDisc.Community).IsSet() {
 		feats = append(feats, pdisc.New(w, c, b, cfg))
 	}
 

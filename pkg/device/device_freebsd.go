@@ -13,3 +13,11 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, table int) error {
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	return exec.Command("setfib", fmt.Sprint(table), "route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
 }
+
+func DetectMTU(ip net.IP) (int, error) {
+	return -1, errors.ErrNotSupported
+}
+
+func DetectDefaultMTU() (int, error) {
+	return -1, errors.ErrNotSupported
+}

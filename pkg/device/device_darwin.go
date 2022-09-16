@@ -22,3 +22,11 @@ func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 
 	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
 }
+
+func DetectMTU(ip net.IP) (int, error) {
+	return -1, errors.ErrNotSupported
+}
+
+func DetectDefaultMTU() (int, error) {
+	return -1, errors.ErrNotSupported
+}

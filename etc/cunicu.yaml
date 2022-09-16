@@ -144,6 +144,11 @@ wireguard:
 #
 autocfg:
   # The Maximum Transfer Unit of the WireGuard interface.
+  # If not specified, the MTU is automatically determined from
+  # the endpoint addresses or the system default route,
+  # which is usually a sane choice.
+  # However, to manually specify an MTU to override this
+  # automatic discovery, this value may be specified explicitly.
   mtu: 1420
 
   # IPv4 / IPv6 addresses for the WireGuard interface.
