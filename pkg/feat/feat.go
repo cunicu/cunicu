@@ -50,7 +50,7 @@ func NewFeatures(w *watcher.Watcher, cfg *config.Config, c *wgctrl.Client, b sig
 	}
 
 	if cfg.DefaultInterfaceSettings.PeerDisc.Enabled && cfg.DefaultInterfaceSettings.PeerDisc.Community != "" {
-		feats = append(feats, pdisc.New(w, c, b, cfg.DefaultInterfaceSettings.PeerDisc.Community, cfg.DefaultInterfaceSettings.PeerDisc.Whitelist))
+		feats = append(feats, pdisc.New(w, c, b, cfg))
 	}
 
 	if len(cfg.Hooks) > 0 {
