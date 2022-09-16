@@ -202,15 +202,15 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
-	for _, intf := range d.Config.Interfaces {
-		if intf.Name != "" {
-			if wgdev := devs.GetByName(intf.Name); wgdev != nil {
-				return fmt.Errorf("device '%s' already exists", intf.Name)
+	for _, i := range d.Config.Interfaces {
+		if i.Name != "" {
+			if wgdev := devs.GetByName(i.Name); wgdev != nil {
+				return fmt.Errorf("device '%s' already exists", i.Name)
 			}
 
-			intfCfg := d.Config.InterfaceSettings(intf.Name)
+			icfg := d.Config.InterfaceSettings(i.Name)
 
-			dev, err := device.NewDevice(intf.Name, intfCfg.WireGuard.UserSpace)
+			dev, err := device.NewDevice(i.Name, icfg.WireGuard.UserSpace)
 			if err != nil {
 				return fmt.Errorf("failed to create WireGuard device: %w", err)
 			}
