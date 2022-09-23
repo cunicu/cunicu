@@ -27,6 +27,7 @@
 HAS_WGET="$(type "wget" &> /dev/null && echo true || echo false)"
 HAS_SHA256SUM="$(type "sha256sum" &> /dev/null && echo true || echo false)"
 HAS_GPG="$(type "gpg" &> /dev/null && echo true || echo false)"
+HAS_TAR="$(type "tar" &> /dev/null && echo true || echo false)"
 
 # Settings
 GITHUB_URL="https://github.com/stv0g/cunicu"
@@ -86,6 +87,11 @@ function verifySupported() {
     exit 1
   fi
 
+  if [[ "${HAS_TAR}" != "true" ]]; then
+    echo -e "tar is required"
+    exit 1
+  fi
+
   if [[ "${VERIFY_CHECKSUM}" == "true" && "${HAS_SHA256SUM}" != "true" ]]; then
     echo -e "In order to verify checksum, sha256sum must first be installed."
     echo -e "Please install sha256sum or set VERIFY_CHECKSUM=false in your environment."
@@ -138,24 +144,23 @@ function checkInstalledVersion() {
   fi
 }
 
-# downloadBinary downloads the latest binary package and also the checksum
+# downloadArchive downloads the latest binary package and also the checksum
 # for that binary.
-function downloadBinary() {
-  local suffix="gz"
+function downloadArchive() {
+  local suffix="tar.gz"
   if [[ ${OS} == "windows" ]]; then
     suffix="zip"
   fi
 
-  TMP_ROOT="$(mktemp -dt cunicu-installer-XXXXXX)"  
   DIST_FILE="cunicu_${VERSION}_${OS}_${ARCH}.${suffix}"
 
   downloadFile "${DIST_FILE}"
 }
 
-# verifyBinary verifies the SHA256 checksum of the binary package
+# verifyArchive verifies the SHA256 checksum of the binary package
 # and the GPG signatures for both the package and checksum file
 # (depending on settings in environment).
-function verifyBinary() {
+function verifyArchive() {
   if [[ "${VERIFY_CHECKSUM}" == "true" ]]; then
     verifyChecksum
   fi
@@ -168,7 +173,7 @@ function verifyBinary() {
 
 # installBinary installs the cunicu binary.
 function installBinary() {
-  gunzip -c "${TMP_ROOT}/${DIST_FILE}" > "${TMP_ROOT}/${BINARY_NAME}"
+  tar -xzf "${TMP_ROOT}/${DIST_FILE}" -C "${TMP_ROOT}"
 
   runAsRoot cp "${TMP_ROOT}/${BINARY_NAME}" "${INSTALL_DIR}"
 
@@ -320,14 +325,16 @@ done
 
 set +u
 
+TMP_ROOT="$(mktemp -dt cunicu-installer-XXXXXX)"  
+
 detectArch
 detectOS
 verifySupported
 checkDesiredVersion
 
 if ! checkInstalledVersion; then
-  downloadBinary
-  verifyBinary
+  downloadArchive
+  verifyArchive
   installBinary
   testVersion
 fi
