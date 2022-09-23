@@ -76,8 +76,12 @@ func PrettyBytes(b int64) string {
 	var f float32
 	var i int
 
-	for i, f = 0, float32(b); i < len(suffices) && f > 1024; i, f = i+1, f/1024 {
+	for i, f = 0, float32(b); i < len(suffices) && f >= 1024; i, f = i+1, f/1024 {
 	}
 
-	return fmt.Sprintf("%.2f "+t.Color("%ciB", t.FgCyan), f, suffices[i-1])
+	if i == 0 {
+		return fmt.Sprintf("%.0f "+t.Color("B", t.FgCyan), f)
+	} else {
+		return fmt.Sprintf("%.2f "+t.Color("%ciB", t.FgCyan), f, suffices[i-1])
+	}
 }
