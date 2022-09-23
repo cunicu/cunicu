@@ -33,7 +33,7 @@ func CmpEndpoint(a, b *net.UDPAddr) int {
 	return 0
 }
 
-func CmpNet(a, b *net.IPNet) int {
+func CmpNet(a, b net.IPNet) int {
 	cmp := bytes.Compare(a.Mask, b.Mask)
 	if cmp != 0 {
 		return cmp
