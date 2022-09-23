@@ -62,7 +62,7 @@ var _ = Describe("utils", func() {
 			_, a, err := net.ParseCIDR("1.1.1.1/0")
 			Expect(err).To(Succeed())
 
-			Expect(util.CmpNet(a, a)).To(BeZero())
+			Expect(util.CmpNet(*a, *a)).To(BeZero())
 		})
 
 		It("compare unequal networks", func() {
@@ -72,7 +72,7 @@ var _ = Describe("utils", func() {
 			_, b, err := net.ParseCIDR("1.1.1.1/1")
 			Expect(err).To(Succeed())
 
-			Expect(util.CmpNet(a, b)).NotTo(BeZero())
+			Expect(util.CmpNet(*a, *b)).NotTo(BeZero())
 		})
 	})
 
