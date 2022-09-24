@@ -227,3 +227,11 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 		Settings: settings,
 	}, nil
 }
+
+func (s *DaemonServer) ReloadConfig(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+	if err := s.Config.Reload(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to reload configuration: %s", err)
+	}
+
+	return &proto.Empty{}, nil
+}
