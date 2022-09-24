@@ -38,4 +38,5 @@ service Daemon {
     rpc GetStatus(StatusParams) returns (StatusResp) {}
     rpc SetConfig(SetConfigParams) returns (Empty) {}
     rpc GetConfig(GetConfigParams) returns (GetConfigResp) {}
+    rpc ReloadConfig(Empty) returns (Empty) {}
 }
