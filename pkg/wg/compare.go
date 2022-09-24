@@ -6,15 +6,15 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func CmpDevices(a, b *wgtypes.Device) int {
+func CmpDevices(a, b wgtypes.Device) int {
 	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
 }
 
-func CmpPeers(a, b *wgtypes.Peer) int {
+func CmpPeers(a, b wgtypes.Peer) int {
 	return bytes.Compare(a.PublicKey[:], b.PublicKey[:])
 }
 
-func CmpPeerHandshakeTime(a, b *wgtypes.Peer) int {
+func CmpPeerHandshakeTime(a, b wgtypes.Peer) int {
 	if a.LastHandshakeTime.UnixMilli() == 0 && b.LastHandshakeTime.UnixMilli() != 0 {
 		return 1
 	}
