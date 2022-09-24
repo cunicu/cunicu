@@ -1,7 +1,10 @@
 package util_test
 
 import (
+	"math/rand"
 	"net"
+	"os"
+	"path/filepath"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -17,65 +20,65 @@ func TestSuite(t *testing.T) {
 
 var _ = test.SetupLogging()
 
-var _ = Describe("utils", func() {
-	Context("endpoint comparisons", func() {
-		It("to be equal", func() {
-			a := net.UDPAddr{
-				IP:   net.ParseIP("1.1.1.1"),
-				Port: 1,
-			}
+var _ = Context("endpoint comparisons", func() {
+	It("to be equal", func() {
+		a := net.UDPAddr{
+			IP:   net.ParseIP("1.1.1.1"),
+			Port: 1,
+		}
 
-			Expect(util.CmpEndpoint(&a, &a)).To(BeZero())
-		})
-
-		It("to be unequal", func() {
-			a := net.UDPAddr{
-				IP:   net.ParseIP("1.1.1.1"),
-				Port: 1,
-			}
-
-			b := net.UDPAddr{
-				IP:   net.ParseIP("2.2.2.2"),
-				Port: 1,
-			}
-
-			Expect(util.CmpEndpoint(&a, &b)).NotTo(BeZero())
-		})
-
-		It("nil to be equal", func() {
-			Expect(util.CmpEndpoint(nil, nil)).To(BeZero())
-		})
-
-		It("mixed nil to be unequal", func() {
-			a := net.UDPAddr{
-				IP:   net.ParseIP("1.1.1.1"),
-				Port: 1,
-			}
-
-			Expect(util.CmpEndpoint(&a, nil)).NotTo(BeZero())
-			Expect(util.CmpEndpoint(nil, &a)).NotTo(BeZero())
-		})
+		Expect(util.CmpEndpoint(&a, &a)).To(BeZero())
 	})
 
-	Context("network comparisons", func() {
-		It("compare equal networks", func() {
-			_, a, err := net.ParseCIDR("1.1.1.1/0")
-			Expect(err).To(Succeed())
+	It("to be unequal", func() {
+		a := net.UDPAddr{
+			IP:   net.ParseIP("1.1.1.1"),
+			Port: 1,
+		}
 
-			Expect(util.CmpNet(*a, *a)).To(BeZero())
-		})
+		b := net.UDPAddr{
+			IP:   net.ParseIP("2.2.2.2"),
+			Port: 1,
+		}
 
-		It("compare unequal networks", func() {
-			_, a, err := net.ParseCIDR("1.1.1.1/0")
-			Expect(err).To(Succeed())
-
-			_, b, err := net.ParseCIDR("1.1.1.1/1")
-			Expect(err).To(Succeed())
-
-			Expect(util.CmpNet(*a, *b)).NotTo(BeZero())
-		})
+		Expect(util.CmpEndpoint(&a, &b)).NotTo(BeZero())
 	})
 
+	It("nil to be equal", func() {
+		Expect(util.CmpEndpoint(nil, nil)).To(BeZero())
+	})
+
+	It("mixed nil to be unequal", func() {
+		a := net.UDPAddr{
+			IP:   net.ParseIP("1.1.1.1"),
+			Port: 1,
+		}
+
+		Expect(util.CmpEndpoint(&a, nil)).NotTo(BeZero())
+		Expect(util.CmpEndpoint(nil, &a)).NotTo(BeZero())
+	})
+})
+
+var _ = Context("network comparisons", func() {
+	It("compare equal networks", func() {
+		_, a, err := net.ParseCIDR("1.1.1.1/0")
+		Expect(err).To(Succeed())
+
+		Expect(util.CmpNet(*a, *a)).To(BeZero())
+	})
+
+	It("compare unequal networks", func() {
+		_, a, err := net.ParseCIDR("1.1.1.1/0")
+		Expect(err).To(Succeed())
+
+		_, b, err := net.ParseCIDR("1.1.1.1/1")
+		Expect(err).To(Succeed())
+
+		Expect(util.CmpNet(*a, *b)).NotTo(BeZero())
+	})
+})
+
+var _ = Context("contains net", func() {
 	_, net1, _ := net.ParseCIDR("1.1.1.1/24")
 	_, net2, _ := net.ParseCIDR("1.1.0.2/16")
 	_, net3, _ := net.ParseCIDR("1.1.1.3/25")
@@ -94,4 +97,55 @@ var _ = Describe("utils", func() {
 		Entry("net4 contains net1 = false", net4, net1, false),
 		Entry("net1 contains net1 = true", net1, net1, true),
 	)
+})
+
+var _ = Context("tty", func() {
+	It("is true", func() {
+		Expect(util.IsATTY(os.Stdout)).To(BeTrue())
+	})
+
+	It("is false", func() {
+		fn := filepath.Join(GinkgoT().TempDir(), "file")
+		f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0600)
+		Expect(err).To(Succeed())
+
+		Expect(util.IsATTY(f)).To(BeFalse())
+	})
+})
+
+var _ = It("rand", func() {
+	a := rand.Float32()
+
+	util.SetupRand()
+	b := rand.Float32()
+
+	util.SetupRand()
+	c := rand.Float32()
+
+	Expect(a).NotTo(Equal(b))
+	Expect(a).NotTo(Equal(c))
+	Expect(b).NotTo(Equal(c))
+})
+
+var _ = Context("offset ip", func() {
+	It("ipv4", func() {
+		ip1 := net.ParseIP("1.2.3.4")
+		Expect(ip1).NotTo(BeNil())
+
+		ip2 := net.ParseIP("1.2.3.14")
+		Expect(ip2).NotTo(BeNil())
+
+		Expect(util.OffsetIP(ip1, 10)).To(Equal(ip2))
+
+	})
+
+	It("ipv6", func() {
+		ip1 := net.ParseIP("fc::1:2:3:4")
+		Expect(ip1).NotTo(BeNil())
+
+		ip2 := net.ParseIP("fc::1:2:3:e")
+		Expect(ip2).NotTo(BeNil())
+
+		Expect(util.OffsetIP(ip1, 10)).To(Equal(ip2))
+	})
 })
