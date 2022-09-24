@@ -13,6 +13,8 @@ import (
 type Config struct {
 	wgtypes.Config
 
+	PeerEndpoints []*string
+
 	Address    []net.IPNet
 	DNS        []net.IPAddr
 	MTU        *int
@@ -168,13 +170,13 @@ func (cfg *Config) Dump(wr io.Writer) error {
 	return err
 }
 
-func ParseConfig(rd io.Reader, name string) (*Config, error) {
+func ParseConfig(data []byte) (*Config, error) {
 	var err error
 
 	iniFile, err := ini.LoadSources(ini.LoadOptions{
 		AllowNonUniqueSections: true,
 		AllowShadows:           true,
-	}, rd)
+	}, data)
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +247,7 @@ func (c *config) Config() (*Config, error) {
 		}
 
 		cfg.Peers = append(cfg.Peers, *peerCfg)
+		cfg.PeerEndpoints = append(cfg.PeerEndpoints, pSection.Endpoint)
 	}
 
 	return cfg, nil

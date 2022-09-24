@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/util"
 	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"golang.org/x/exp/slices"
@@ -14,9 +15,9 @@ import (
 
 type Device wgtypes.Device
 
-type Devices []*wgtypes.Device
+type DeviceList []*wgtypes.Device
 
-func (devs *Devices) GetByName(name string) *wgtypes.Device {
+func (devs *DeviceList) GetByName(name string) *wgtypes.Device {
 	for _, dev := range *devs {
 		if dev.Name == name {
 			return dev
@@ -59,35 +60,45 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 	wri := t.NewIndenter(wr, "  ")
 
-	if _, err := fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name); err != nil {
-		return err
+	fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name)
+
+	if crypto.Key(d.PrivateKey).IsSet() {
+		t.FprintKV(wri, "public key", d.PublicKey)
+
+		if hideKeys {
+			t.FprintKV(wri, "private key", "(hidden)")
+		} else {
+			t.FprintKV(wri, "private key", d.PrivateKey)
+		}
 	}
 
-	t.FprintKV(wri, "public key", d.PublicKey)
-	t.FprintKV(wri, "private key", "(hidden)")
 	t.FprintKV(wri, "listening port", d.ListenPort)
 
-	if !hideKeys {
-		t.FprintKV(wri, "private key", d.PrivateKey)
-	}
-
 	if d.FirewallMark > 0 {
-		t.FprintKV(wri, "fwmark", fmt.Sprintf("%#x", d.FirewallMark))
+		t.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark))
 	}
 
 	// Sort peers by last handshake time
-	slices.SortFunc(d.Peers, func(a, b wgtypes.Peer) bool { return CmpPeerHandshakeTime(&a, &b) < 0 })
+	slices.SortFunc(d.Peers, func(a, b wgtypes.Peer) bool {
+		return CmpPeerHandshakeTime(a, b) < 0
+	})
 
 	for _, p := range d.Peers {
-		if _, err := fmt.Fprintf(wr, " \n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey); err != nil {
-			return err
+		fmt.Fprintf(wr, "\n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey)
+
+		if crypto.Key(p.PresharedKey).IsSet() {
+			if hideKeys {
+				t.FprintKV(wri, "preshared key", "(hidden)")
+			} else {
+				t.FprintKV(wri, "preshared key", p.PresharedKey)
+			}
 		}
 
 		if p.Endpoint != nil {
 			t.FprintKV(wri, "endpoint", p.Endpoint)
 		}
 
-		if p.LastHandshakeTime.Second() > 0 {
+		if !p.LastHandshakeTime.IsZero() {
 			t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTime))
 		}
 
@@ -117,11 +128,9 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 }
 
 func (d *Device) Config() *Config {
-	zero := wgtypes.Key{}
-
 	cfg := &Config{}
 
-	if d.PrivateKey != zero {
+	if crypto.Key(d.PrivateKey).IsSet() {
 		cfg.PrivateKey = &d.PrivateKey
 	}
 
@@ -134,13 +143,15 @@ func (d *Device) Config() *Config {
 	}
 
 	for _, p := range d.Peers {
+		p := p
+
 		pcfg := wgtypes.PeerConfig{
 			PublicKey:  p.PublicKey,
 			Endpoint:   p.Endpoint,
 			AllowedIPs: p.AllowedIPs,
 		}
 
-		if p.PresharedKey != zero {
+		if crypto.Key(p.PresharedKey).IsSet() {
 			pcfg.PresharedKey = &p.PresharedKey
 		}
 
