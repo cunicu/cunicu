@@ -10,12 +10,17 @@ import (
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
+	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"go.uber.org/zap"
 )
 
 const (
@@ -25,6 +30,56 @@ const (
 	checksumsFile    = "checksums.txt"
 	checksumsSigFile = checksumsFile + ".asc"
 )
+
+func SelfUpdate(output string, logger *zap.Logger) (*Release, error) {
+	fi, err := os.Lstat(output)
+	if err != nil {
+		dirname := filepath.Dir(output)
+		di, err := os.Lstat(dirname)
+		if err != nil {
+			return nil, fmt.Errorf("failed to stat: %w", err)
+		}
+		if !di.Mode().IsDir() {
+			return nil, errors.New("output parent path is not a directory")
+		}
+	} else {
+		if !fi.Mode().IsRegular() {
+			return nil, errors.New("output path is not a normal file")
+		}
+	}
+
+	curVersion := strings.TrimPrefix(buildinfo.Version, "v")
+
+	logger.Info("Current version", zap.String("version", curVersion))
+
+	rel, err := GitHubLatestRelease(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get latest release from GitHub: %w", err)
+	}
+
+	logger.Info("Latest version", zap.String("version", rel.Version))
+
+	// We do a lexicographic comparison here to compare the semver versions.
+	if rel.Version == curVersion {
+		logger.Info("Your cunicu version is up to date. Nothing to update.")
+		return rel, nil
+	} else if rel.Version < curVersion {
+		logger.Warn("You are running an unreleased version of cunicu. Nothing to update.")
+		return rel, nil
+	} else {
+		logger.Info("Your cunicu version is outdated. Updating now!")
+	}
+
+	if err := DownloadAndVerifyRelease(context.Background(), rel, output, logger); err != nil {
+		return rel, fmt.Errorf("failed to update cunicu: %w", err)
+	}
+
+	if err := VersionVerify(output, rel.Version); err != nil {
+		return rel, fmt.Errorf("failed to update cunicu: %w", err)
+	}
+
+	return rel, nil
+}
 
 func findHash(buf []byte, filename string) (hash []byte, err error) {
 	sc := bufio.NewScanner(bytes.NewReader(buf))
