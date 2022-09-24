@@ -4,16 +4,29 @@ import (
 	"fmt"
 	"math/rand"
 
+	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
 )
 
-func DiffSliceFunc[T any](old, new []T, cmp func(a, b *T) int) (added, removed, kept []T) {
+func DiffSlice[T constraints.Ordered](old, new []T) (added, removed, kept []T) {
+	return DiffSliceFunc(old, new, func(a, b T) int {
+		if a == b {
+			return 0
+		} else if a < b {
+			return -1
+		} else {
+			return 1
+		}
+	})
+}
+
+func DiffSliceFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, kept []T) {
 	added = []T{}
 	removed = []T{}
 	kept = []T{}
 
 	less := func(a, b T) bool {
-		return cmp(&a, &b) < 0
+		return cmp(a, b) < 0
 	}
 
 	slices.SortFunc(new, less)
@@ -21,7 +34,7 @@ func DiffSliceFunc[T any](old, new []T, cmp func(a, b *T) int) (added, removed, 
 
 	i, j := 0, 0
 	for i < len(old) && j < len(new) {
-		c := cmp(&old[i], &new[j])
+		c := cmp(old[i], new[j])
 		switch {
 		case c < 0: // removed
 			removed = append(removed, old[i])
@@ -67,6 +80,16 @@ func FilterSlice[T any](s []T, cmp func(T) bool) []T {
 	}
 
 	return t
+}
+
+func ContainsSlice[T any](s []T, cmp func(T) bool) bool {
+	for _, i := range s {
+		if cmp(i) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func MapSlice[T any](s []T, cb func(T) T) []T {

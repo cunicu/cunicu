@@ -7,8 +7,32 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var _ = Context("Slice", func() {
-	Describe("Shuffle", func() {
+var _ = Context("slice", func() {
+	var s []int
+
+	BeforeEach(func() {
+		s = []int{23, 54, 22, 8, 112, 234, 123}
+	})
+
+	It("map", func() {
+		Expect(util.MapSlice(s, func(i int) int { return i + 100 })).To(Equal([]int{123, 154, 122, 108, 212, 334, 223}))
+	})
+
+	It("string", func() {
+		Expect(util.StringSlice(s)).To(Equal([]string{"23", "54", "22", "8", "112", "234", "123"}))
+	})
+
+	It("filter", func() {
+		Expect(util.FilterSlice(s, func(i int) bool { return i != 22 && i != 123 })).To(Equal([]int{23, 54, 8, 112, 234}))
+		Expect(util.FilterSlice(s, func(i int) bool { return true })).To(Equal(s))
+	})
+
+	It("contains", func() {
+		Expect(util.ContainsSlice(s, func(i int) bool { return i == 8 })).To(BeTrue())
+		Expect(util.ContainsSlice(s, func(i int) bool { return i == 9 })).To(BeFalse())
+	})
+
+	Describe("shuffle", func() {
 		var a []int
 
 		BeforeEach(func() {
@@ -29,12 +53,9 @@ var _ = Context("Slice", func() {
 		})
 	})
 
-	Describe("Diff", func() {
-		cmp := func(a, b *int) int {
-			return *a - *b
-		}
-
+	Context("diff", func() {
 		var a, b, c, d, bc, cd []int
+		var f func(old, new []int) (added, removed, kept []int)
 
 		BeforeEach(func() {
 			a = []int{}
@@ -52,52 +73,74 @@ var _ = Context("Slice", func() {
 			util.ShuffleSlice(cd)
 		})
 
-		It("finds added elements", func() {
-			added, removed, kept := util.DiffSliceFunc(a, b, cmp)
+		Test := func() {
+			It("finds added elements", func() {
+				added, removed, kept := f(a, b)
 
-			Expect(added).To(ConsistOf(b))
-			Expect(removed).To(BeEmpty())
-			Expect(kept).To(BeEmpty())
+				Expect(added).To(ConsistOf(b))
+				Expect(removed).To(BeEmpty())
+				Expect(kept).To(BeEmpty())
+			})
+
+			It("finds removed elements", func() {
+				added, removed, kept := f(b, a)
+
+				Expect(added).To(BeEmpty())
+				Expect(removed).To(ConsistOf(b))
+				Expect(kept).To(BeEmpty())
+			})
+
+			It("finds kept elements", func() {
+				added, removed, kept := f(a, a)
+
+				Expect(added).To(BeEmpty())
+				Expect(removed).To(BeEmpty())
+				Expect(kept).To(ConsistOf(a))
+			})
+
+			It("finds no changes on empty slices", func() {
+				added, removed, kept := f(a, a)
+
+				Expect(added).To(BeEmpty())
+				Expect(removed).To(BeEmpty())
+				Expect(kept).To(BeEmpty())
+			})
+
+			It("finds added and removed elements", func() {
+				added, removed, kept := f(b, c)
+
+				Expect(added).To(ConsistOf(c))
+				Expect(removed).To(ConsistOf(b))
+				Expect(kept).To(BeEmpty())
+			})
+
+			It("finds all changes at once", func() {
+				added, removed, kept := f(bc, cd)
+
+				Expect(added).To(ConsistOf(d))
+				Expect(removed).To(ConsistOf(b))
+				Expect(kept).To(ConsistOf(c))
+			})
+		}
+
+		Describe("func", func() {
+			BeforeEach(func() {
+				f = func(old, new []int) (added, removed, kept []int) {
+					return util.DiffSliceFunc(old, new, func(a, b int) int {
+						return a - b
+					})
+				}
+			})
+
+			Test()
 		})
 
-		It("finds removed elements", func() {
-			added, removed, kept := util.DiffSliceFunc(b, a, cmp)
+		Describe("no func", func() {
+			BeforeEach(func() {
+				f = util.DiffSlice[int]
+			})
 
-			Expect(added).To(BeEmpty())
-			Expect(removed).To(ConsistOf(b))
-			Expect(kept).To(BeEmpty())
-		})
-
-		It("finds kept elements", func() {
-			added, removed, kept := util.DiffSliceFunc(a, a, cmp)
-
-			Expect(added).To(BeEmpty())
-			Expect(removed).To(BeEmpty())
-			Expect(kept).To(ConsistOf(a))
-		})
-
-		It("finds no changes on empty slices", func() {
-			added, removed, kept := util.DiffSliceFunc(a, a, cmp)
-
-			Expect(added).To(BeEmpty())
-			Expect(removed).To(BeEmpty())
-			Expect(kept).To(BeEmpty())
-		})
-
-		It("finds added and removed elements", func() {
-			added, removed, kept := util.DiffSliceFunc(b, c, cmp)
-
-			Expect(added).To(ConsistOf(c))
-			Expect(removed).To(ConsistOf(b))
-			Expect(kept).To(BeEmpty())
-		})
-
-		It("finds all changes at once", func() {
-			added, removed, kept := util.DiffSliceFunc(bc, cd, cmp)
-
-			Expect(added).To(ConsistOf(d))
-			Expect(removed).To(ConsistOf(b))
-			Expect(kept).To(ConsistOf(c))
+			Test()
 		})
 	})
 })
