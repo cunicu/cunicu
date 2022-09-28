@@ -7,13 +7,13 @@ import "core/interface.proto";
 import "common.proto";
 import "rpc/event.proto";
 
-message StatusResp {
-    repeated core.Interface interfaces = 1;
+message GetStatusParams {
+    string interface = 1;
+    bytes peer = 2;
 }
 
-message StatusParams {
-    string intf = 1;
-    bytes peer = 2;
+message GetStatusResp {
+    repeated core.Interface interfaces = 1;
 }
 
 message SetConfigParams {
@@ -35,7 +35,8 @@ service Daemon {
     rpc Stop(Empty) returns (Empty) {}
     rpc Restart(Empty) returns (Empty) {}
     rpc Sync(Empty) returns (Empty) {}
-    rpc GetStatus(StatusParams) returns (StatusResp) {}
+    rpc GetStatus(GetStatusParams) returns (GetStatusResp) {}
+    
     rpc SetConfig(SetConfigParams) returns (Empty) {}
     rpc GetConfig(GetConfigParams) returns (GetConfigResp) {}
     rpc ReloadConfig(Empty) returns (Empty) {}

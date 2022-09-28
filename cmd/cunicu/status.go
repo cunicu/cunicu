@@ -40,10 +40,10 @@ func statusValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]st
 	rpcConnect(cmd, args)
 	defer rpcDisconnect(cmd, args)
 
-	p := &rpcproto.StatusParams{}
+	p := &rpcproto.GetStatusParams{}
 
 	if len(args) > 0 {
-		p.Intf = args[0]
+		p.Interface = args[0]
 	}
 
 	sts, err := rpcClient.GetStatus(context.Background(), p)
@@ -68,10 +68,10 @@ func statusValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]st
 }
 
 func status(cmd *cobra.Command, args []string) {
-	p := &rpcproto.StatusParams{}
+	p := &rpcproto.GetStatusParams{}
 
 	if len(args) > 0 {
-		p.Intf = args[0]
+		p.Interface = args[0]
 		if len(args) > 1 {
 			pk, err := crypto.ParseKey(args[1])
 			if err != nil {
