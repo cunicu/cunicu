@@ -3,8 +3,6 @@ package util_test
 import (
 	"math/rand"
 	"net"
-	"os"
-	"path/filepath"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -97,20 +95,6 @@ var _ = Context("contains net", func() {
 		Entry("net4 contains net1 = false", net4, net1, false),
 		Entry("net1 contains net1 = true", net1, net1, true),
 	)
-})
-
-var _ = Context("tty", func() {
-	It("is true", func() {
-		Expect(util.IsATTY(os.Stdout)).To(BeTrue())
-	})
-
-	It("is false", func() {
-		fn := filepath.Join(GinkgoT().TempDir(), "file")
-		f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0600)
-		Expect(err).To(Succeed())
-
-		Expect(util.IsATTY(f)).To(BeFalse())
-	})
 })
 
 var _ = It("rand", func() {

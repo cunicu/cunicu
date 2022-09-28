@@ -4,7 +4,6 @@ package util
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	mrand "math/rand"
 	"net"
 	"os"
@@ -46,15 +45,6 @@ func ContainsNet(outer, inner *net.IPNet) bool {
 	outerOnes, _ := outer.Mask.Size()
 	innerOnes, _ := inner.Mask.Size()
 	return outerOnes <= innerOnes && outer.Contains(inner.IP)
-}
-
-func IsATTY(f *os.File) bool {
-	fi, err := f.Stat()
-	if err != nil {
-		panic(fmt.Errorf("failed to stat stdout: %w", err))
-	}
-
-	return (fi.Mode() & os.ModeCharDevice) != 0
 }
 
 func SetupRand() {
