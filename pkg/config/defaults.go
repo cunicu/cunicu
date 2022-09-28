@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
-	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/wg"
 )
 

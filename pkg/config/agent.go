@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 )

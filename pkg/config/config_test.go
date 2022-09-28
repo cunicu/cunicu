@@ -18,7 +18,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/test"
 
-	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
 func TestSuite(t *testing.T) {

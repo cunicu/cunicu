@@ -5,7 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+
+	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
 var _ = Describe("Marshaling of ICE types", func() {

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/feat/epdisc/ice"
+	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
 type PortRangeSettings struct {
