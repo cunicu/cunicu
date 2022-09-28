@@ -299,7 +299,7 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 		onModified: []InterfaceHandler{},
 		onPeer:     []PeerHandler{},
 
-		logger: zap.L().Named("interface").With(
+		logger: zap.L().Named("intf").With(
 			zap.String("intf", wgDev.Name),
 		),
 	}

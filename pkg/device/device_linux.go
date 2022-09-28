@@ -30,7 +30,7 @@ func NewKernelDevice(name string) (*LinuxKernelDevice, error) {
 
 	return &LinuxKernelDevice{
 		link: link,
-		logger: zap.L().Named("device").With(
+		logger: zap.L().Named("dev").With(
 			zap.String("dev", name),
 			zap.String("type", "kernel")),
 	}, nil
@@ -44,7 +44,7 @@ func FindKernelDevice(name string) (Device, error) {
 
 	return &LinuxKernelDevice{
 		link:   link,
-		logger: zap.L().Named("device").With(zap.String("dev", name)),
+		logger: zap.L().Named("dev").With(zap.String("dev", name)),
 	}, nil
 }
 
