@@ -35,7 +35,7 @@ func FindKernelDevice(name string) (*BSDKernelDevice, error) {
 	return &BSDKernelDevice{
 		created: false,
 		index:   i.Index,
-		logger: zap.L().Named("device").With(
+		logger: zap.L().Named("dev").With(
 			zap.String("dev", name),
 			zap.String("type", "kernel")),
 	}, nil

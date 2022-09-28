@@ -31,7 +31,7 @@ type UserDevice struct {
 func NewUserDevice(name string) (*UserDevice, error) {
 	var err error
 
-	logger := zap.L().Named("device").With(
+	logger := zap.L().Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "user"),
 	)
