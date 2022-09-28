@@ -3,6 +3,7 @@ package terminal
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -46,4 +47,13 @@ func FprintKV(wr io.Writer, k string, v ...any) (int, error) {
 	} else {
 		return 0, nil
 	}
+}
+
+func IsATTY(f *os.File) bool {
+	fi, err := f.Stat()
+	if err != nil {
+		panic(fmt.Errorf("failed to stat stdout: %w", err))
+	}
+
+	return (fi.Mode() & os.ModeCharDevice) != 0
 }

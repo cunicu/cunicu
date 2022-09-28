@@ -97,7 +97,7 @@ func onInitialize() {
 	// Handle color output
 	switch colorMode {
 	case "auto":
-		color = util.IsATTY(os.Stdout)
+		color = terminal.IsATTY(os.Stdout)
 	case "always":
 		color = true
 	case "never":
