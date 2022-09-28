@@ -13,7 +13,19 @@ cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer
 
 ### Synopsis
 
-It relies on the awesome pion/ice package for the interactive connectivity establishment as well as bundles the Go user-space implementation of WireGuard in a single binary for environments in which WireGuard kernel support has not landed yet.
+
+       (\(\       ▟▀▀▙ █  █ █▀▀▙ ▀▀▀ ▟▀▀▙ █  ▙     
+       (-,-)      █    █  █ █  █ ▀█  █    █  █     (\_/)
+     o_(")(")     ▜▄▄▛ ▜▄▄▛ █  █ ▄█▄ ▜▄▄▛ ▜▄▄▛     (•_•)
+                  zero-conf • p2p • mesh • vpn     /> ❤️  WireGuard™
+
+cunīcu is a user-space daemon managing WireGuard® interfaces to
+establish peer-to-peer connections in harsh network environments.
+
+It relies on the awesome pion/ice package for the interactive
+connectivity establishment as well as bundles the Go user-space
+implementation of WireGuard in a single binary for environments
+in which WireGuard kernel support has not landed yet.
 
 ### Options
 
