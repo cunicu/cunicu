@@ -44,6 +44,8 @@ func init() {
 }
 
 func daemon(cmd *cobra.Command, args []string) {
+	io.WriteString(os.Stdout, Banner(color))
+
 	if err := cfg.Load(); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
