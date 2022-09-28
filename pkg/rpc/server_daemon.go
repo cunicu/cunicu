@@ -108,7 +108,7 @@ func (s *DaemonServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Em
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams) (*rpcproto.StatusResp, error) {
+func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) {
 	var err error
 	var pk crypto.Key
 
@@ -140,13 +140,13 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.StatusParams) 
 	})
 
 	// Check if filters matched anything
-	if p.Intf != "" && len(qis) == 0 {
-		return nil, status.Errorf(codes.NotFound, "no such interface '%s'", p.Intf)
+	if p.Interface != "" && len(qis) == 0 {
+		return nil, status.Errorf(codes.NotFound, "no such interface '%s'", p.Interface)
 	} else if pk.IsSet() && len(qis[0].Peers) == 0 {
-		return nil, status.Errorf(codes.NotFound, "no such peer '%s' for interface '%s'", pk, p.Intf)
+		return nil, status.Errorf(codes.NotFound, "no such peer '%s' for interface '%s'", pk, p.Interface)
 	}
 
-	return &rpcproto.StatusResp{
+	return &rpcproto.GetStatusResp{
 		Interfaces: qis,
 	}, nil
 }

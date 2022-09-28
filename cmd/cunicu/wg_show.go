@@ -50,7 +50,7 @@ func wgShowValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]st
 		rpcConnect(cmd, args)
 		defer rpcDisconnect(cmd, args)
 
-		sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{})
+		sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.GetStatusParams{})
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveError
 		}
@@ -106,8 +106,8 @@ func wgShow(cmd *cobra.Command, args []string) error {
 		field = "all"
 	}
 
-	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{
-		Intf: intf,
+	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.GetStatusParams{
+		Interface: intf,
 	})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)

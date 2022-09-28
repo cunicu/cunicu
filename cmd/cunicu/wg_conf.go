@@ -27,8 +27,8 @@ func init() {
 func wgShowConf(cmd *cobra.Command, args []string) error {
 	intfName := args[0]
 
-	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.StatusParams{
-		Intf: intfName,
+	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.GetStatusParams{
+		Interface: intfName,
 	})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
