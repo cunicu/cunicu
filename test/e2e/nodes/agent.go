@@ -136,6 +136,10 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
 
+	if err := a.Client.UnWait(); err != nil {
+		return fmt.Errorf("failed to unwait agent: %w", err)
+	}
+
 	return nil
 }
 

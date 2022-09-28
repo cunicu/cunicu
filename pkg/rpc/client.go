@@ -71,25 +71,18 @@ func Connect(path string) (*Client, error) {
 		return nil, err
 	}
 
-	logger := zap.L().Named("rpc.client").With(zap.String("path", path))
-
 	client := &Client{
 		EndpointDiscoverySocketClient: rpcproto.NewEndpointDiscoverySocketClient(conn),
 		SignalingClient:               rpcproto.NewSignalingClient(conn),
 		DaemonClient:                  rpcproto.NewDaemonClient(conn),
 
 		conn:             conn,
-		logger:           logger,
+		logger:           zap.L().Named("rpc.client").With(zap.String("path", path)),
 		connectionStates: make(map[crypto.Key]icex.ConnectionState),
 	}
 	client.connectionStatesCond = sync.NewCond(&client.connectionStatesLock)
 
 	go client.streamEvents()
-
-	_, err = client.UnWait(context.Background(), &proto.Empty{})
-	if sts := status.Convert(err); sts != nil && sts.Code() != codes.AlreadyExists {
-		return nil, fmt.Errorf("failed RPC request: %w", err)
-	}
 
 	return client, nil
 }
@@ -222,4 +215,13 @@ func (c *Client) RestartPeer(ctx context.Context, intf string, pk *crypto.Key) e
 	})
 
 	return err
+}
+
+func (c *Client) Unwait() error {
+	_, err := c.DaemonClient.UnWait(context.Background(), &proto.Empty{})
+	if sts := status.Convert(err); sts != nil && sts.Code() != codes.AlreadyExists {
+		return fmt.Errorf("failed RPC request: %w", err)
+	}
+
+	return nil
 }
