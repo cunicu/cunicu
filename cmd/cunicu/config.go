@@ -12,6 +12,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
@@ -38,12 +39,20 @@ var (
 		Args:              cobra.RangeArgs(0, 1),
 		ValidArgsFunction: validConfigSettings,
 	}
+
+	reloadCmd = &cobra.Command{
+		Use:   "reload",
+		Short: "Reload the configuration of the cunīcu daemon",
+		RunE:  reload,
+		Args:  cobra.NoArgs,
+	}
 )
 
 func init() {
 	addClientCommand(rootCmd, configCmd)
 	configCmd.AddCommand(setCmd)
 	configCmd.AddCommand(getCmd)
+	configCmd.AddCommand(reloadCmd)
 }
 
 func getCompletions(typ reflect.Type, haveCompleted, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -125,4 +134,12 @@ func get(cmd *cobra.Command, args []string) {
 	for _, key := range keys {
 		fmt.Printf("%s\t%s\n", key, resp.Settings[key])
 	}
+}
+
+func reload(cmd *cobra.Command, args []string) error {
+	if _, err := rpcClient.ReloadConfig(context.Background(), &proto.Empty{}); err != nil {
+		return fmt.Errorf("failed RPC request: %w", err)
+	}
+
+	return nil
 }
