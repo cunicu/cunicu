@@ -79,12 +79,15 @@ brew install cunicu
 
 cunīcu is available in the Archlinux User Repository: https://aur.archlinux.org/packages/cunicu-bin.
 
-```bash
-# via Yaourt
+```bash title="via Yaourt"
 yaourt -S cunicu-bin
-# or via Packer
+```
+
+```bash title="or via Packer"
 packer -S cunicu-bin
-# or via yay
+```
+
+```bash title="or via yay"
 yay cunicu-bin
 ```
 

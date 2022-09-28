@@ -4,6 +4,10 @@ sidebar_position: 20
 
 # Design
 
+## Architecture
+
+![](/img/architecture.svg)
+
 ## Objectives
 
 -   Encrypt all signaling messages
@@ -51,10 +55,6 @@ sidebar_position: 20
 -   Monitoring for new WireGuard interfaces and peers
     -   Inotify for new UAPI sockets in /var/run/wireguard
     -   Netlink subscription for link updates (patch is pending)
-
-## Architecture
-
-![](/img/architecture.svg)
 
 ## Related RFCs
 
