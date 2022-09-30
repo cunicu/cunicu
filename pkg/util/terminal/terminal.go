@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/mdp/qrterminal/v3"
 )
 
 const (
@@ -56,4 +58,16 @@ func IsATTY(f *os.File) bool {
 	}
 
 	return (fi.Mode() & os.ModeCharDevice) != 0
+}
+
+func QRCode(buf string) {
+	wr := NewIndenter(os.Stdout, "  ")
+
+	fmt.Println()
+	fmt.Fprint(wr, Color(15))
+
+	qrterminal.GenerateHalfBlock(buf, qrterminal.M, wr)
+
+	fmt.Fprint(wr, Reset)
+	fmt.Println()
 }
