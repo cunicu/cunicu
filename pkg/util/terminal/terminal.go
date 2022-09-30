@@ -35,17 +35,21 @@ const (
 	Reset       = "\x1b[0m"
 )
 
-func Color(str string, mods ...string) string {
+func Color(b byte) string {
+	return fmt.Sprintf("\x1b[38;5;%dm", b)
+}
+
+func Mods(str string, mods ...string) string {
 	return strings.Join(mods, "") + str + Reset
 }
 
 func FprintKV(wr io.Writer, k string, v ...any) (int, error) {
 	if len(v) == 0 {
-		return fmt.Fprintf(wr, Color("%s", Bold)+":\n", k)
+		return fmt.Fprintf(wr, Mods("%s", Bold)+":\n", k)
 	} else if len(v) == 1 {
-		return fmt.Fprintf(wr, Color("%s", Bold)+": %v\n", k, v[0])
+		return fmt.Fprintf(wr, Mods("%s", Bold)+": %v\n", k, v[0])
 	} else if len(v) > 1 {
-		return fmt.Fprintf(wr, Color("%s", Bold)+": %v\n", k, v)
+		return fmt.Fprintf(wr, Mods("%s", Bold)+": %v\n", k, v)
 	} else {
 		return 0, nil
 	}

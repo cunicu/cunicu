@@ -39,7 +39,7 @@ func PrettyDuration(left time.Duration) string {
 				unit += "s" // plural s
 			}
 
-			out = append(out, fmt.Sprintf("%d "+t.Color("%s", t.FgCyan), num, unit))
+			out = append(out, fmt.Sprintf("%d "+t.Mods("%s", t.FgCyan), num, unit))
 
 		}
 	}
@@ -69,7 +69,7 @@ func Every(d time.Duration) string {
 // See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L184
 func PrettyBytes(b int64) string {
 	if b < 1024 {
-		return fmt.Sprintf("%d "+t.Color("B", t.FgCyan), b)
+		return fmt.Sprintf("%d "+t.Mods("B", t.FgCyan), b)
 	}
 
 	var suffices = []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
@@ -80,8 +80,8 @@ func PrettyBytes(b int64) string {
 	}
 
 	if i == 0 {
-		return fmt.Sprintf("%.0f "+t.Color("B", t.FgCyan), f)
+		return fmt.Sprintf("%.0f "+t.Mods("B", t.FgCyan), f)
 	} else {
-		return fmt.Sprintf("%.2f "+t.Color("%ciB", t.FgCyan), f, suffices[i-1])
+		return fmt.Sprintf("%.2f "+t.Mods("%ciB", t.FgCyan), f, suffices[i-1])
 	}
 }
