@@ -8,6 +8,9 @@ import (
 
 var _ = Context("default", func() {
 	It("has a default hostname", func() {
+		err := config.InitDefaults()
+		Expect(err).To(Succeed())
+
 		Expect(config.DefaultInterfaceSettings.PeerDisc.Hostname).NotTo(BeEmpty())
 	})
 })

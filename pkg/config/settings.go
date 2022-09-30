@@ -1,13 +1,19 @@
 package config
 
 import (
+	"fmt"
 	"net"
-	"path/filepath"
 	"time"
 
+	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"golang.org/x/exp/maps"
 )
+
+type ConfigSettings struct {
+	Watch bool `koanf:"watch,omitempty"`
+}
 
 type PortRangeSettings struct {
 	Min int `koanf:"min,omitempty"`
@@ -49,9 +55,7 @@ type RPCSettings struct {
 }
 
 type ConfigSyncSettings struct {
-	Enabled bool   `koanf:"enabled,omitempty"`
-	Path    string `koanf:"path,omitempty"`
-	Watch   bool   `koanf:"watch,omitempty"`
+	Enabled bool `koanf:"enabled,omitempty"`
 }
 
 type RouteSyncSettings struct {
@@ -70,21 +74,21 @@ type WireGuardPeerSettings struct {
 }
 
 type WireGuardSettings struct {
-	UserSpace       bool                    `koanf:"userspace,omitempty"`
-	PrivateKey      crypto.Key              `koanf:"private_key,omitempty"`
-	ListenPort      *int                    `koanf:"listen_port,omitempty"`
-	ListenPortRange *PortRangeSettings      `koanf:"listen_port_range,omitempty"`
-	FirewallMark    int                     `koanf:"fwmark,omitempty"`
-	DNS             []net.IP                `koanf:"dns,omitempty"`
-	Peers           []WireGuardPeerSettings `koanf:"peers,omitempty"`
+	UserSpace       bool                             `koanf:"userspace,omitempty"`
+	PrivateKey      crypto.Key                       `koanf:"private_key,omitempty"`
+	ListenPort      *int                             `koanf:"listen_port,omitempty"`
+	ListenPortRange *PortRangeSettings               `koanf:"listen_port_range,omitempty"`
+	FirewallMark    int                              `koanf:"fwmark,omitempty"`
+	Peers           map[string]WireGuardPeerSettings `koanf:"peers,omitempty"`
 }
 
 type AutoConfigSettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
 
-	MTU                int         `koanf:"mtu,omitempty"`
-	Addresses          []net.IPNet `koanf:"addresses,omitempty"`
-	LinkLocalAddresses bool        `koanf:"link_local,omitempty"`
+	DNS                []net.IPAddr `koanf:"dns,omitempty"`
+	MTU                int          `koanf:"mtu,omitempty"`
+	Addresses          []net.IPNet  `koanf:"addresses,omitempty"`
+	LinkLocalAddresses bool         `koanf:"link_local,omitempty"`
 }
 
 type HostSyncSettings struct {
@@ -98,8 +102,9 @@ type PeerDiscoverySettings struct {
 
 	Hostname  string               `koanf:"hostname,omitempty"`
 	Community crypto.KeyPassphrase `koanf:"community,omitempty"`
-	Whitelist []crypto.Key         `koanf:"whitelist,omitempty"`
 	Networks  []net.IPNet          `koanf:"networks,omitempty"`
+	Whitelist []crypto.Key         `koanf:"whitelist,omitempty"`
+	Blacklist []crypto.Key         `koanf:"blacklist,omitempty"`
 }
 
 type EndpointDiscoverySettings struct {
@@ -130,38 +135,53 @@ type ExecHookSetting struct {
 }
 
 type InterfaceSettings struct {
-	Name    string
-	Pattern string
-
-	WireGuard    WireGuardSettings         `koanf:"wireguard,omitempty"`
 	AutoConfig   AutoConfigSettings        `koanf:"autocfg,omitempty"`
 	ConfigSync   ConfigSyncSettings        `koanf:"cfgsync,omitempty"`
-	RouteSync    RouteSyncSettings         `koanf:"rtsync,omitempty"`
-	HostSync     HostSyncSettings          `koanf:"hsync,omitempty"`
 	EndpointDisc EndpointDiscoverySettings `koanf:"epdisc,omitempty"`
+	Hooks        []HookSetting             `koanf:"hooks,omitempty"`
+	HostSync     HostSyncSettings          `koanf:"hsync,omitempty"`
 	PeerDisc     PeerDiscoverySettings     `koanf:"pdisc,omitempty"`
-}
-
-func (i *InterfaceSettings) Matches(name string) bool {
-	if i.Pattern != "" {
-		if ok, err := filepath.Match(i.Pattern, name); err == nil {
-			return ok
-		}
-	} else if i.Name != "" {
-		return name == i.Name
-	}
-
-	return false
+	RouteSync    RouteSyncSettings         `koanf:"rtsync,omitempty"`
+	WireGuard    WireGuardSettings         `koanf:"wireguard,omitempty"`
 }
 
 type Settings struct {
 	WatchInterval time.Duration `koanf:"watch_interval,omitempty"`
-	RPC           RPCSettings   `koanf:"rpc,omitempty"`
 	Backends      []BackendURL  `koanf:"backends,omitempty"`
 
-	// Hooks are a global setting and not currently not customizable per interface.
-	Hooks []HookSetting `koanf:"hooks,omitempty"`
+	RPC    RPCSettings    `koanf:"rpc,omitempty"`
+	Config ConfigSettings `koanf:"config,omitempty"`
 
 	DefaultInterfaceSettings InterfaceSettings            `koanf:",squash"`
 	Interfaces               map[string]InterfaceSettings `koanf:"interfaces"`
+}
+
+// Check performs plausibility checks on the provided configuration.
+func (c *Settings) Check() error {
+	icfgs := []InterfaceSettings{c.DefaultInterfaceSettings}
+	icfgs = append(icfgs, maps.Values(c.Interfaces)...)
+
+	for _, icfg := range icfgs {
+		if len(icfg.EndpointDisc.ICE.URLs) > 0 && len(icfg.EndpointDisc.ICE.CandidateTypes) > 0 {
+			needsURL := false
+			for _, ct := range icfg.EndpointDisc.ICE.CandidateTypes {
+				if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
+					needsURL = true
+				}
+			}
+
+			if !needsURL {
+				icfg.EndpointDisc.ICE.URLs = nil
+			}
+		}
+
+		if icfg.WireGuard.ListenPortRange != nil && icfg.WireGuard.ListenPortRange.Min > icfg.WireGuard.ListenPortRange.Max {
+			return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
+				icfg.WireGuard.ListenPortRange.Min,
+				icfg.WireGuard.ListenPortRange.Max,
+			)
+		}
+	}
+
+	return nil
 }

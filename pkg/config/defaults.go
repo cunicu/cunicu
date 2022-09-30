@@ -9,6 +9,7 @@ import (
 	"github.com/pion/ice/v2"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/wg"
+	"go.uber.org/zap"
 )
 
 const (
@@ -24,7 +25,7 @@ var (
 		{
 			URL: url.URL{
 				Scheme: "grpc",
-				Host:   "signal.cunicu.li",
+				Host:   "signal.cunicu.li:443",
 			},
 		},
 	}
@@ -59,9 +60,6 @@ var (
 		},
 		ConfigSync: ConfigSyncSettings{
 			Enabled: true,
-
-			Path:  wg.ConfigPath,
-			Watch: false,
 		},
 		PeerDisc: PeerDiscoverySettings{
 			Enabled: true,
@@ -114,9 +112,23 @@ var (
 	}
 )
 
-func init() {
+func InitDefaults() error {
 	var err error
-	if DefaultInterfaceSettings.PeerDisc.Hostname, err = os.Hostname(); err != nil {
-		panic(fmt.Errorf("failed to get hostname: %w", err))
+
+	logger := zap.L().Named("config")
+
+	// Check if WireGuard interface can be created by the kernel
+	if !DefaultInterfaceSettings.WireGuard.UserSpace && !wg.KernelModuleExists() {
+		logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
+		DefaultInterfaceSettings.WireGuard.UserSpace = true
 	}
+
+	// Set default hostname
+	if DefaultInterfaceSettings.PeerDisc.Hostname == "" {
+		if DefaultInterfaceSettings.PeerDisc.Hostname, err = os.Hostname(); err != nil {
+			return fmt.Errorf("failed to get hostname: %w", err)
+		}
+	}
+
+	return nil
 }

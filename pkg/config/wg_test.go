@@ -36,8 +36,8 @@ Table = 123
 MTU = 1380
 FwMark = 0x1000
 PrivateKey = oK56DE9Ue9zK76rAc8pBl6opph+1v36lm7cXXsQKrQM=
-		
-[Peer]
+
+[Peer] # peer-1
 PublicKey = GtL7fZc/bLnqZldpVofMCD6hDjrK28SsdLxevJ+qtKU=
 PresharedKey = /UwcSPg38hW/D9Y3tcS1FOV0K1wuURMbS0sesJEP5ak=
 AllowedIPs = 0.0.0.0/0
@@ -68,10 +68,10 @@ PrivateKey = mBVQEpzmRVRRkba82CorTcbE2Zab4KhAtlNhDm4DYXo=
 		Expect(icfg1.AutoConfig.DNS).To(HaveLen(1))
 		Expect(icfg1.AutoConfig.DNS[0].String()).To(Equal("10.200.100.1"))
 
-		Expect(icfg1.WireGuard.Peers).To(HaveLen(1))
-		Expect(icfg1.WireGuard.Peers[0].PublicKey.String()).To(Equal("GtL7fZc/bLnqZldpVofMCD6hDjrK28SsdLxevJ+qtKU="))
-		Expect(icfg1.WireGuard.Peers[0].Endpoint).To(Equal("localhost:51820"))
-		Expect(icfg1.WireGuard.Peers[0].PersistentKeepaliveInterval).To(Equal(25 * time.Second))
+		Expect(icfg1.WireGuard.Peers).To(HaveKey("peer-1"))
+		Expect(icfg1.WireGuard.Peers["peer-1"].PublicKey.String()).To(Equal("GtL7fZc/bLnqZldpVofMCD6hDjrK28SsdLxevJ+qtKU="))
+		Expect(icfg1.WireGuard.Peers["peer-1"].Endpoint).To(Equal("localhost:51820"))
+		Expect(icfg1.WireGuard.Peers["peer-1"].PersistentKeepaliveInterval).To(Equal(25 * time.Second))
 
 		icfg2 := cfg.InterfaceSettings("wg1")
 		Expect(icfg2).NotTo(BeNil())

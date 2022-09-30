@@ -7,76 +7,30 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
+	"github.com/knadh/koanf/providers/file"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-	"gopkg.in/yaml.v3"
-
-	kyaml "github.com/knadh/koanf/parsers/yaml"
 )
 
-type fileProvider struct {
-	InterfaceOrder []string
-
-	url *url.URL
+type remoteFileProvider struct {
+	url          *url.URL
+	etag         string
+	lastModified time.Time
+	order        []string
 }
 
-func YAMLFileProvider(u *url.URL) *fileProvider {
-	return &fileProvider{
+func RemoteFileProvider(u *url.URL) *remoteFileProvider {
+	return &remoteFileProvider{
 		url: u,
 	}
 }
 
-func (p *fileProvider) ReadBytes() ([]byte, error) {
-	return nil, errors.New("this provider requires no parser")
+func (p *remoteFileProvider) Read() (map[string]interface{}, error) {
+	return nil, errors.New("this provider does not support parsers")
 }
 
-func (p *fileProvider) readBytes() ([]byte, error) {
-	var err error
-	var out []byte
-
-	switch p.url.Scheme {
-	case "http", "https":
-		out, err = p.readBytesRemote()
-	case "":
-		out, err = p.readBytesLocal()
-	default:
-		err = fmt.Errorf("unsupported URL scheme: %s", p.url.Scheme)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	p.InterfaceOrder, err = ExtractInterfaceOrder(out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func (p *fileProvider) Read() (map[string]interface{}, error) {
-	buf, err := p.readBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	return kyaml.Parser().Unmarshal(buf)
-}
-
-func (p *fileProvider) readBytesLocal() ([]byte, error) {
-	f, err := os.Open(p.url.Path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file '%s': %w", p.url.Path, err)
-	}
-
-	defer f.Close()
-
-	return io.ReadAll(f)
-}
-
-func (p *fileProvider) readBytesRemote() ([]byte, error) {
+func (p *remoteFileProvider) ReadBytes() ([]byte, error) {
 	if p.url.Scheme != "https" {
 		host, _, err := net.SplitHostPort(p.url.Host)
 		if err != nil {
@@ -105,34 +59,97 @@ func (p *fileProvider) readBytesRemote() ([]byte, error) {
 		return nil, fmt.Errorf("failed to fetch: %s: %s", p.url, resp.Status)
 	}
 
-	return io.ReadAll(resp.Body)
-}
-
-type stringMapSlice []string
-
-func (keys *stringMapSlice) UnmarshalYAML(v *yaml.Node) error {
-	if v.Kind != yaml.MappingNode {
-		return fmt.Errorf("pipeline must contain YAML mapping, has %v", v.Kind)
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	*keys = make([]string, len(v.Content)/2)
-	for i := 0; i < len(v.Content); i += 2 {
-		if err := v.Content[i].Decode(&(*keys)[i/2]); err != nil {
-			return err
+	p.order, err = ExtractInterfaceOrder(buf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get interface order: %w", err)
+	}
+
+	p.etag = resp.Header.Get("Etag")
+
+	if lm := resp.Header.Get("Last-modified"); lm != "" {
+		p.lastModified, err = time.Parse(http.TimeFormat, lm)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Last-Modified header: %w", err)
 		}
+	}
+
+	return buf, nil
+}
+
+func (p *remoteFileProvider) Order() []string {
+	return p.order
+}
+
+func (p *remoteFileProvider) Version() any {
+	if p.etag != "" {
+		return p.etag
+	}
+
+	if !p.lastModified.IsZero() {
+		return p.lastModified.Unix()
 	}
 
 	return nil
 }
 
-func ExtractInterfaceOrder(buf []byte) ([]string, error) {
-	var s struct {
-		Interfaces stringMapSlice `yaml:"interfaces,omitempty"`
+func (p *remoteFileProvider) hasChanged() (bool, error) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
 	}
 
-	if err := yaml.Unmarshal(buf, &s); err != nil {
-		return nil, err
+	req := &http.Request{
+		Method: "HEAD",
+		URL:    p.url,
+		Header: http.Header{},
 	}
 
-	return s.Interfaces, nil
+	req.Header.Set("User-Agent", buildinfo.UserAgent())
+
+	if p.etag != "" {
+		req.Header.Set("If-None-Match", fmt.Sprintf("\"%s\"", p.etag))
+	}
+
+	if !p.lastModified.IsZero() {
+		req.Header.Set("If-Modified-Since", p.lastModified.Format(http.TimeFormat))
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, fmt.Errorf("failed to fetch %s: %w", p.url, err)
+	} else if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("failed to fetch: %s: %s", p.url, resp.Status)
+	}
+
+	return resp.StatusCode == 200, nil
+}
+
+type localFileProvider struct {
+	*file.File
+
+	order []string
+}
+
+func LocalFileProvider(u *url.URL) *localFileProvider {
+	return &localFileProvider{
+		File: file.Provider(u.Path),
+	}
+}
+
+func (p *localFileProvider) ReadBytes() ([]byte, error) {
+	buf, err := p.File.ReadBytes()
+
+	if err == nil {
+		p.order, err = ExtractInterfaceOrder(buf)
+	}
+
+	return buf, err
+}
+
+func (p *localFileProvider) Order() []string {
+	return p.order
 }

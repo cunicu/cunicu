@@ -101,5 +101,15 @@ var _ = Context("types", func() {
 				Expect(h).To(BeEquivalentTo(f.String()))
 			})
 		}
+
+		It("fails on invalid format", func() {
+			var g config.OutputFormat
+
+			flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
+			flags.Var(&g, "format", "Output format")
+
+			err := flags.Parse([]string{"--format", "blub"})
+			Expect(err).To(MatchError("invalid argument \"blub\" for \"--format\" flag: unknown output format: blub"))
+		})
 	})
 })

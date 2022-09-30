@@ -1,7 +1,8 @@
 package config
 
 import (
-	"github.com/knadh/koanf"
+	"reflect"
+
 	"github.com/stv0g/cunicu/pkg/util"
 	"golang.org/x/exp/maps"
 )
@@ -11,15 +12,15 @@ type Change struct {
 	New any
 }
 
-func DiffConfig(old, new *koanf.Koanf) map[string]Change {
-	oldMap := old.Raw()
-	newMap := new.Raw()
+func DiffSettings(old, new *Settings) map[string]Change {
+	oldMap := Map(old, "koanf")
+	newMap := Map(new, "koanf")
 
 	return diff(oldMap, newMap)
 }
 
 func diff(old, new map[string]any) map[string]Change {
-	added, removed, kept := util.DiffSlice(
+	added, removed, kept := util.SliceDiff(
 		maps.Keys(old),
 		maps.Keys(new),
 	)
@@ -51,7 +52,7 @@ func diff(old, new map[string]any) map[string]Change {
 				changes[key+"."+skey] = chg
 			}
 		} else {
-			if old[key] != new[key] {
+			if !reflect.DeepEqual(old[key], new[key]) {
 				changes[key] = Change{
 					Old: old[key],
 					New: new[key],

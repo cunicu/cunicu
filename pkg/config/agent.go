@@ -141,18 +141,9 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 		}
 	}
 
-	if len(c.EndpointDisc.ICE.NetworkTypes) > 0 {
-		cfg.NetworkTypes = []ice.NetworkType{}
-		for _, t := range c.EndpointDisc.ICE.NetworkTypes {
-			cfg.NetworkTypes = append(cfg.NetworkTypes, t.NetworkType)
-		}
-	} else {
-		cfg.NetworkTypes = []ice.NetworkType{
-			ice.NetworkTypeTCP4,
-			ice.NetworkTypeUDP4,
-			ice.NetworkTypeTCP6,
-			ice.NetworkTypeUDP6,
-		}
+	cfg.NetworkTypes = []ice.NetworkType{}
+	for _, t := range c.EndpointDisc.ICE.NetworkTypes {
+		cfg.NetworkTypes = append(cfg.NetworkTypes, t.NetworkType)
 	}
 
 	return cfg, nil
