@@ -61,4 +61,12 @@ func DetectDefaultMTU() (int, error) {
 	// TODO: Thats just a guess
 	return 1500, nil
 }
+
+func Table(str string) (int, error) {
+	i, err := strconv.Atoi(str)
+	if err != nil {
+		return -1, err
+	}
+
+	return i, nil
 }

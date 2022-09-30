@@ -108,3 +108,12 @@ func (d *BSDKernelDevice) SetDown() error {
 
 	return exec.Command("ifconfig", "down", i.Name).Run()
 }
+
+func Table(str string) (int, error) {
+	i, err := strconv.Atoi(str)
+	if err != nil {
+		return -1, err
+	}
+
+	return i, nil
+}
