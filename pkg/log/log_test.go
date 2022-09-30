@@ -36,7 +36,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		tmpDir := GinkgoT().TempDir()
 
 		logPath = filepath.Join(tmpDir, "std.log")
-		msg = fmt.Sprintf("Test message %s", t.Color("something red", t.FgRed))
+		msg = fmt.Sprintf("Test message %s", t.Mods("something red", t.FgRed))
 
 		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", lvl.String())
@@ -100,7 +100,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		}
 
 		regex := fmt.Sprintf(`\d{2}:\d{2}:\d{2}.\d{3}\t%s\t%s%s`,
-			regexp.QuoteMeta(t.Color(lvl.String(), t.FgBlue)), scope,
+			regexp.QuoteMeta(t.Mods(lvl.String(), t.FgBlue)), scope,
 			regexp.QuoteMeta(msg))
 
 		Expect(logContents).To(MatchRegexp(regex), "Log output '%s' does not match regex '%s'", logContents, regex)
