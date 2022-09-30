@@ -1,23 +1,28 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 	"sync"
+	"time"
 
+	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/maps"
+	"github.com/miekg/dns"
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
 type lookupProvider struct {
-	Domain string
-
-	Files    []string
-	settings map[string]any
+	domain     string
+	lastSerial int
+	files      []string
+	settings   map[string]any
 
 	mu     sync.Mutex
 	logger *zap.Logger
@@ -27,18 +32,11 @@ func LookupProvider(domain string) *lookupProvider {
 	logger := zap.L().Named("lookup")
 
 	return &lookupProvider{
-		Domain: domain,
+		domain: domain,
 
 		settings: map[string]any{},
 		logger:   logger,
 	}
-}
-
-func (p *lookupProvider) set(key string, value any) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.settings[key] = value
 }
 
 func (p *lookupProvider) ReadBytes() ([]byte, error) {
@@ -48,8 +46,8 @@ func (p *lookupProvider) ReadBytes() ([]byte, error) {
 func (p *lookupProvider) Read() (map[string]any, error) {
 	g := errgroup.Group{}
 
-	g.Go(func() error { return p.lookupTXT() })
-	g.Go(func() error { return p.lookupSRV() })
+	g.Go(func() error { return p.lookupTXT(context.Background()) })
+	g.Go(func() error { return p.lookupSRV(context.Background()) })
 
 	if err := g.Wait(); err != nil {
 		return nil, err
@@ -58,8 +56,116 @@ func (p *lookupProvider) Read() (map[string]any, error) {
 	return maps.Unflatten(p.settings, "."), nil
 }
 
-func (p *lookupProvider) lookupTXT() error {
-	rr, err := net.LookupTXT(p.Domain)
+func (p *lookupProvider) Watch(cb func(event interface{}, err error)) error {
+	go func() {
+		t := time.NewTicker(5 * time.Minute)
+		for range t.C {
+			serial, err := p.lookupSerial(context.Background())
+			if err != nil {
+				p.logger.Error("Failed to lookup zones SOA serial", zap.Error(err))
+				continue
+			}
+
+			if serial != p.lastSerial {
+				p.lastSerial = serial
+				cb(nil, nil)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (p *lookupProvider) Version() any {
+	var err error
+
+	if p.lastSerial, err = p.lookupSerial(context.Background()); err != nil {
+		return nil
+	}
+
+	return p.lastSerial
+}
+
+func (p *lookupProvider) SubProviders() []koanf.Provider {
+	ps := []koanf.Provider{}
+
+	for _, f := range p.files {
+		u, err := url.Parse(f)
+		if err != nil {
+			p.logger.Warn("failed to parse URL for configuration file", zap.Error(err))
+		} else {
+			ps = append(ps, RemoteFileProvider(u))
+		}
+	}
+
+	return ps
+}
+
+func (p *lookupProvider) set(key string, value any) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.settings[key] = value
+}
+
+func (p *lookupProvider) lookupSerial(ctx context.Context) (int, error) {
+	var err error
+	var conn *dns.Conn
+
+	cfg, err := dns.ClientConfigFromFile("/etc/resolv.conf")
+	if err != nil {
+		return -1, fmt.Errorf("failed to load resolver configuration: %w", err)
+	}
+
+	addr := net.JoinHostPort(cfg.Servers[0], cfg.Port)
+
+	if res := net.DefaultResolver; res.PreferGo {
+		dial := res.Dial
+		if dial == nil {
+			var d net.Dialer
+			dial = d.DialContext
+		}
+
+		connNet, err := dial(ctx, "udp", addr)
+		if err != nil {
+			return -1, fmt.Errorf("failed to connect to %s: %w", addr, err)
+		}
+
+		conn = &dns.Conn{
+			Conn: connNet,
+		}
+	} else {
+		client := dns.Client{}
+		conn, err = client.DialContext(ctx, addr)
+		if err != nil {
+			return -1, fmt.Errorf("failed to connect to %s: %w", addr, err)
+		}
+	}
+
+	msg := new(dns.Msg)
+	msg.SetQuestion(dns.Fqdn(p.domain), dns.TypeSOA)
+
+	conn.WriteMsg(msg)
+	resp, err := conn.ReadMsg()
+	if err != nil {
+		return -1, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if err := conn.Close(); err != nil {
+		return -1, fmt.Errorf("failed to close connection: %w", err)
+	}
+
+	for _, ans := range resp.Answer {
+		if s, ok := ans.(*dns.SOA); ok {
+			return int(s.Serial), nil
+		}
+	}
+
+	return -1, errors.New("failed to find SOA record")
+}
+
+func (p *lookupProvider) lookupTXT(ctx context.Context) error {
+	rr, err := net.LookupTXT(p.domain)
 	if err != nil {
 		return err
 	}
@@ -102,14 +208,14 @@ func (p *lookupProvider) lookupTXT() error {
 		p.set("backends", backends)
 	}
 
-	if files, ok := rrs["config"]; ok {
-		p.Files = append(p.Files, files...)
+	if fs, ok := rrs["config"]; ok {
+		p.files = append(p.files, fs...)
 	}
 
 	return nil
 }
 
-func (p *lookupProvider) lookupSRV() error {
+func (p *lookupProvider) lookupSRV(ctx context.Context) error {
 	svcs := map[string][]string{
 		"stun":  {"udp"},
 		"stuns": {"tcp"},
@@ -129,7 +235,7 @@ func (p *lookupProvider) lookupSRV() error {
 			s := svc
 			q := proto
 			g.Go(func() error {
-				us, err := lookupICEUrlSRV(p.Domain, s, q)
+				us, err := lookupICEUrlSRV(p.domain, s, q)
 				if err != nil {
 					return err
 				}

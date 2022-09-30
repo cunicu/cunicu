@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
@@ -43,6 +44,8 @@ func (p *wgProvider) Read() (map[string]interface{}, error) {
 	}
 
 	m := map[string]any{}
+
+	p.order = []string{}
 
 	for _, de := range des {
 		cfg := filepath.Join(p.path, de.Name())
@@ -80,6 +83,8 @@ func (p *wgProvider) ReadBytes() ([]byte, error) {
 }
 
 func (p *wgProvider) Order() []string {
+	slices.Sort(p.order)
+
 	return p.order
 }
 
@@ -97,7 +102,7 @@ func (p *wgParser) Unmarshal(data []byte) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	return Map(s), nil
+	return Map(s, "koanf"), nil
 }
 
 func (p *wgParser) Marshal(map[string]interface{}) ([]byte, error) {
@@ -108,6 +113,7 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 	s := &InterfaceSettings{
 		WireGuard: WireGuardSettings{
 			ListenPort: c.ListenPort,
+			Peers:      map[string]WireGuardPeerSettings{},
 		},
 		AutoConfig: AutoConfigSettings{
 			Addresses: c.Address,
@@ -148,15 +154,20 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 			wgps.PresharedKey = crypto.Key(*p.PresharedKey)
 		}
 
-		if c.PeerEndpoints[i] != nil {
-			wgps.Endpoint = *c.PeerEndpoints[i]
+		if c.PeerEndpoints[i] != "" {
+			wgps.Endpoint = c.PeerEndpoints[i]
 		}
 
 		if p.PersistentKeepaliveInterval != nil {
 			wgps.PersistentKeepaliveInterval = *p.PersistentKeepaliveInterval
 		}
 
-		s.WireGuard.Peers = append(s.WireGuard.Peers, wgps)
+		name := c.PeerNames[i]
+		if name == "" {
+			name = p.PublicKey.String()[:8]
+		}
+
+		s.WireGuard.Peers[name] = wgps
 	}
 
 	return s, nil

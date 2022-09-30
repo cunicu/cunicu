@@ -3,20 +3,18 @@ package config
 import (
 	"reflect"
 	"strings"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 const delim = "."
 
-type ConfigChangedHandler interface {
-	OnConfigChanged(path string, old, new any)
-}
-
 type Meta struct {
 	Fields map[string]*Meta
+	Parent *Meta
+	Type   reflect.Type
 
-	Type reflect.Type
-
-	OnChangedHandlers []ConfigChangedHandler
+	onChanged []ChangedHandler
 }
 
 func Metadata() *Meta {
@@ -41,6 +39,7 @@ func metadata(typ reflect.Type) *Meta {
 				name := strings.Split(tag, ",")[0]
 				n := metadata(field.Type)
 				if name != "" {
+					n.Parent = m
 					m.Fields[name] = n
 				} else {
 					for k, v := range n.Fields {
@@ -70,21 +69,50 @@ func (m *Meta) Keys() []string {
 	return keys
 }
 
-func (m *Meta) Lookup(path string) *Meta {
-	parts := strings.Split(path, delim)
+func (m *Meta) Lookup(key string) *Meta {
+	parts := strings.Split(key, delim)
 	return m.lookup(parts)
 }
 
-func (m *Meta) lookup(path []string) *Meta {
-	if len(path) == 0 {
+func (m *Meta) lookup(key []string) *Meta {
+	if len(key) == 0 {
 		return m
 	} else {
 		if m.Fields != nil {
-			if n, ok := m.Fields[path[0]]; ok {
-				return n.lookup(path[1:])
+			if n, ok := m.Fields[key[0]]; ok {
+				return n.lookup(key[1:])
 			}
 		}
 	}
 
 	return nil
+}
+
+func (m *Meta) OnChanged(key string, h ChangedHandler) {
+	if n := m.Lookup(key); n != nil {
+		n.onChanged = append(n.onChanged, h)
+	}
+}
+
+func (m *Meta) InvokeHandlers(key string, change Change) {
+	for n := m.Lookup(key); n != nil; n = n.Parent {
+		for _, h := range n.onChanged {
+			h.OnConfigChanged(key, change.Old, change.New)
+		}
+	}
+}
+
+func (m *Meta) Parse(str string) (any, error) {
+	out := reflect.New(m.Type)
+
+	dec, err := mapstructure.NewDecoder(DecoderConfig(out.Interface()))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := dec.Decode(str); err != nil {
+		return nil, err
+	}
+
+	return out.Elem().Interface(), nil
 }

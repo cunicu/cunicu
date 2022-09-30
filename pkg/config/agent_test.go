@@ -21,12 +21,8 @@ import (
 
 var _ = Describe("Agent config", func() {
 	DescribeTable("can parse ICE urls with credentials",
-		func(urlStr string, exp any) {
-			cfg, err := config.ParseArgs(
-				"--url", urlStr,
-				"--username", "user1",
-				"--password", "pass1",
-			)
+		func(args []string, exp any) {
+			cfg, err := config.ParseArgs(args...)
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
@@ -38,10 +34,11 @@ var _ = Describe("Agent config", func() {
 				Expect(err).To(MatchError(exp))
 			case *ice.URL:
 				Expect(err).To(Succeed())
+				Expect(aCfg.Urls).To(HaveLen(1))
 				Expect(aCfg.Urls).To(ContainElements(exp))
 			}
 		},
-		Entry("url1", "stun:server1", &ice.URL{
+		Entry("url1", []string{"--url", "stun:server1", "--username", "user1", "--password", "pass1"}, &ice.URL{
 			Scheme:   ice.SchemeTypeSTUN,
 			Host:     "server1",
 			Port:     3478,
@@ -49,7 +46,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url2", "turn:server2:1234?transport=tcp", &ice.URL{
+		Entry("url2", []string{"--url", "turn:server2:1234?transport=tcp", "--username", "user1", "--password", "pass1"}, &ice.URL{
 			Scheme:   ice.SchemeTypeTURN,
 			Host:     "server2",
 			Port:     1234,
@@ -57,7 +54,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url3", "turn:user3:pass3@server3:1234?transport=tcp", &ice.URL{
+		Entry("url3", []string{"--url", "turn:user3:pass3@server3:1234?transport=tcp", "--password", "pass3"}, &ice.URL{
 			Scheme:   ice.SchemeTypeTURN,
 			Host:     "server3",
 			Port:     1234,
@@ -65,8 +62,8 @@ var _ = Describe("Agent config", func() {
 			Username: "user3",
 			Password: "pass3",
 		}),
-		Entry("url3", "http://bla.0l.de", "failed to gather ICE URLs: invalid ICE URL scheme: http"),
-		Entry("url4", "stun:stun.cunicu.li?transport=tcp", "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
+		Entry("url3", []string{"--password", "pass1", "--url", "http://bla.0l.de"}, "failed to gather ICE URLs: invalid ICE URL scheme: http"),
+		Entry("url4", []string{"--url", "stun:stun.cunicu.li?transport=tcp"}, "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
 	)
 
 	Context("can getch ICE urls from relay API", func() {

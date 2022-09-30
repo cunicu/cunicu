@@ -11,16 +11,17 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 )
 
 var _ = Describe("lookup", func() {
-	It("should not load anything from domains without cunicu auto-configuration", func() {
+	It("should not load anything from domains without auto-configuration", func() {
 		_, err := config.ParseArgs("-D", "google.com")
 
 		Expect(err).To(
 			And(
-				MatchError(ContainSubstring("DNS auto-configuration failed")),
+				MatchError(ContainSubstring("failed to load config")),
 				Or(
 					MatchError(ContainSubstring("no such host")),
 					MatchError(ContainSubstring("i/o timeout")),
@@ -141,13 +142,25 @@ var _ = Describe("lookup", func() {
 			Expect(addr.IP.String()).To(Equal("1.2.3.4"))
 		})
 
+		It("can get SOA serial", func() {
+			p := config.LookupProvider("example.com")
+
+			v := p.Version()
+			Expect(v).NotTo(BeNil())
+
+			s, ok := v.(int)
+			Expect(ok).To(BeTrue())
+
+			Expect(s).To(Equal(1))
+		})
+
 		It("can do DNS auto configuration", func() {
 			cfg, err := config.ParseArgs("--domain", "example.com")
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			Expect(icfg.PeerDisc.Community).To(Equal("my-community-password"))
+			Expect(icfg.PeerDisc.Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("my-community-password")))
 			Expect(icfg.EndpointDisc.ICE.Username).To(Equal("user1"))
 			Expect(icfg.EndpointDisc.ICE.Password).To(Equal("pass1"))
 			Expect(cfg.Backends).To(ConsistOf(

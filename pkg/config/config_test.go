@@ -16,6 +16,7 @@ import (
 	"github.com/pion/ice/v2"
 
 	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/test"
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
@@ -45,13 +46,11 @@ var _ = Context("config", func() {
 	}
 
 	Describe("parse command line arguments", func() {
-		It("can parse a boolean argument like wg-userspace", func() {
+		It("can parse a boolean argument like --wg-userspace", func() {
 			cfg, err := config.ParseArgs("--wg-userspace")
 			Expect(err).To(Succeed())
 
-			icfg := cfg.DefaultInterfaceSettings
-
-			Expect(icfg.WireGuard.UserSpace).To(BeTrue())
+			Expect(cfg.DefaultInterfaceSettings.WireGuard.UserSpace).To(BeTrue())
 		})
 
 		It("can parse multiple backends", func() {
@@ -72,17 +71,15 @@ var _ = Context("config", func() {
 			Expect(cfg.InterfaceFilter("wg2")).To(BeFalse())
 		})
 
-		It("parse an interface list with custom filter", func() {
-			cfg, err := config.ParseArgs("--interface-filter", "wg2", "--", "wg0", "wg1")
+		It("parse an interface list with patterns", func() {
+			cfg, err := config.ParseArgs("wg0", "wg1", "wg-work-*")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
 			Expect(cfg.InterfaceFilter("wg1")).To(BeTrue())
-			Expect(cfg.InterfaceFilter("wg2")).To(BeTrue())
-			Expect(cfg.InterfaceFilter("wg2")).To(BeTrue())
-			Expect(cfg.InterfaceFilter("wg3")).To(BeFalse())
-			Expect(cfg.InterfaceSettings("wg3")).To(BeNil())
-
+			Expect(cfg.InterfaceFilter("wg-work-0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg2")).To(BeFalse())
+			Expect(cfg.InterfaceSettings("wg2")).To(BeNil())
 		})
 
 		It("fails on invalid arguments", func() {
@@ -94,10 +91,7 @@ var _ = Context("config", func() {
 		It("fails on invalid arguments values", func() {
 			_, err := config.ParseArgs("--url", ":_")
 
-			Expect(err).To(MatchError(And(
-				HavePrefix("failed unmarshal settings"),
-				HaveSuffix("missing protocol scheme"),
-			)))
+			Expect(err).To(MatchError(HaveSuffix("missing protocol scheme")))
 		})
 
 		Describe("parse configuration files", func() {
@@ -200,27 +194,16 @@ var _ = Context("config", func() {
 				It("fails on loading an non-existent local file", func() {
 					_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
 
-					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError("failed to load config: open /does-not-exist.yaml: no such file or directory"))
 				})
 
 				It("fails on loading an non-existent remote file", func() {
-					_, err := config.ParseArgs("--config", "http://example.com/doesnotexist.yaml")
+					_, err := config.ParseArgs("--config", "https://domain.invalid/config.yaml")
 
-					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(MatchRegexp(`^failed to load config: failed to fetch https://domain\.invalid/config\.yaml`)))
 				})
 			})
 		})
-	})
-
-	It("can parse an interface filter", func() {
-		cfg, err := config.ParseArgs("--interface-filter", "wg[0-9]")
-		Expect(err).To(Succeed())
-
-		cfg.Marshal(GinkgoWriter)
-
-		Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
-		Expect(cfg.InterfaceFilter("wg1")).To(BeTrue())
-		Expect(cfg.InterfaceFilter("et0")).To(BeFalse())
 	})
 
 	Describe("use environment variables", func() {
@@ -233,7 +216,9 @@ var _ = Context("config", func() {
 			icfg := cfg.DefaultInterfaceSettings
 
 			Expect(icfg.EndpointDisc.ICE.CandidateTypes).To(ConsistOf(
-				icex.CandidateType{CandidateType: ice.CandidateTypeServerReflexive},
+				icex.CandidateType{
+					CandidateType: ice.CandidateTypeServerReflexive,
+				},
 			))
 		})
 
@@ -252,6 +237,8 @@ var _ = Context("config", func() {
 		})
 
 		It("environment variables are overwritten by command line arguments", func() {
+			os.Setenv("CUNICU_EPDISC_ICE_CANDIDATE_TYPES", "srflx,relay")
+
 			cfg, err := config.ParseArgs("--ice-candidate-type", "host")
 			Expect(err).To(Succeed())
 
@@ -278,11 +265,7 @@ var _ = Context("config", func() {
 
 		It("should use the standard cunicu signaling backend", func() {
 			Expect(cfg.Backends).To(HaveLen(1))
-			Expect(cfg.Backends[0].String()).To(Equal("grpc://signal.cunicu.li"))
-		})
-
-		It("should accept all interfaces", func() {
-			Expect(cfg.InterfaceFilter("wg12345")).To(BeTrue())
+			Expect(cfg.Backends[0].String()).To(Equal("grpc://signal.cunicu.li:443"))
 		})
 
 		It("should have a default STUN URL", func() {
@@ -313,12 +296,11 @@ var _ = Context("config", func() {
 			err = cfg2.Koanf.Load(rawbytes.Provider(buf.Bytes()), yaml.Parser())
 			Expect(err).To(Succeed())
 
-			err = cfg2.Load()
+			err = cfg2.Init()
 			Expect(err).To(Succeed())
 
 			icfg1 = &cfg1.DefaultInterfaceSettings
 			icfg2 = &cfg2.DefaultInterfaceSettings
-
 		})
 
 		It("have equal WireGuard interface lists", func() {
@@ -338,49 +320,44 @@ var _ = Context("config", func() {
 		cfg, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
 		Expect(err).To(Succeed())
 
-		Expect(cfg.InterfaceSettings("wg-work-laptop").PeerDisc.Community).To(Equal("mysecret-pass"))
+		Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.yaml"}))
+		Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0", "wg1", "wg2", "wg-work-*", "wg-work-external-*"}))
+		Expect(cfg.InterfaceSettings("wg-work-laptop").PeerDisc.Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
+		Expect(cfg.DefaultInterfaceSettings.Hooks).To(HaveLen(2))
+
+		h := cfg.DefaultInterfaceSettings.Hooks[0]
+		hh, ok := h.(*config.ExecHookSetting)
+		Expect(ok).To(BeTrue(), "Found invalid hook %+#v", hh)
 	})
 
 	It("throws an error on an invalid config file path", func() {
 		_, err := config.ParseArgs("--config", "_:")
-		Expect(err).To(MatchError(HavePrefix("failed to load config file: invalid URL")))
+		Expect(err).To(MatchError(HavePrefix("ignoring config file with invalid name")))
+	})
+
+	It("throws an error on an non-existing config file path", func() {
+		_, err := config.ParseArgs("--config", "/this/file/does/not/exist.yaml")
+		Expect(err).To(MatchError(HaveSuffix("no such file or directory")))
 	})
 
 	It("throws an error on an invalid config file URL schema", func() {
 		_, err := config.ParseArgs("--config", "smb://is-not-supported")
-		Expect(err).To(MatchError(And(
-			HavePrefix("failed to load config file"),
-			HaveSuffix("unsupported URL scheme: smb"),
-		)))
-	})
-
-	Describe("matching interface configs", func() {
-		// TODO
+		Expect(err).To(MatchError("unsupported scheme 'smb' for config file"))
 	})
 
 	Describe("runtime", func() {
-		It("can set a single setting", func() {
-			cfg, err := config.ParseArgs()
-			Expect(err).To(Succeed())
-
-			Expect(cfg.Get("watch_interval")).To(BeNumerically("==", 1*time.Second))
-			Expect(cfg.WatchInterval).To(Equal(1 * time.Second))
-
-			Expect(cfg.Set("watch_interval", "100s")).To(Succeed())
-
-			Expect(cfg.Get("watch_interval")).To(Equal("100s"))
-			Expect(cfg.WatchInterval).To(Equal(100 * time.Second))
-		})
-
 		It("can update multiple settings", func() {
 			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
 
-			Expect(cfg.Update(map[string]any{
+			_, err = cfg.Update(map[string]any{
+				"watch_interval":                  100 * time.Second,
 				"wireguard.listen_port_range.min": 100,
 				"wireguard.listen_port_range.max": 200,
-			})).To(Succeed())
+			})
+			Expect(err).To(Succeed())
 
+			Expect(cfg.WatchInterval).To(Equal(100 * time.Second))
 			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange.Min).To(Equal(100))
 			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange.Max).To(Equal(200))
 		})
@@ -391,11 +368,12 @@ var _ = Context("config", func() {
 
 			orig := cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange
 
-			Expect(cfg.Update(map[string]any{
+			_, err = cfg.Update(map[string]any{
 				"wireguard.listen_port_range.min": 200,
 				"wireguard.listen_port_range.max": 100,
-			})).To(MatchError(
-				MatchRegexp(`failed to load config: invalid settings: WireGuard minimal listen port \(\d+\) must be smaller or equal than maximal port \(\d+\)`),
+			})
+			Expect(err).To(MatchError(
+				MatchRegexp(`invalid settings: WireGuard minimal listen port \(\d+\) must be smaller or equal than maximal port \(\d+\)`),
 			))
 
 			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange).To(Equal(orig), "Failed update has changed settings")
@@ -405,21 +383,71 @@ var _ = Context("config", func() {
 			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
 
-			Expect(cfg.Set("watch_interval", "100s")).To(Succeed())
+			_, err = cfg.Update(map[string]any{
+				"watch_interval": "100s",
+			})
+			Expect(err).To(Succeed())
 
 			buf := &bytes.Buffer{}
 			Expect(cfg.MarshalRuntime(buf)).To(Succeed())
 			Expect(buf.Bytes()).To(MatchYAML("watch_interval: 100s"))
 		})
+	})
 
-		It("can register handler for changed settings", Pending, func() {
-			// TODO
-		})
+	Describe("reload", func() {
+
 	})
 
 	Describe("interface overwrites", func() {
+		It("should accept all interfaces", func() {
+			cfg, err := config.ParseArgs()
+			Expect(err).To(Succeed())
+
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"*"}))
+
+			icfg := cfg.InterfaceSettings("wg12345")
+			Expect(icfg).NotTo(BeNil())
+
+			Expect(*icfg).To(Equal(cfg.DefaultInterfaceSettings))
+		})
+
+		It("single interface as argument", func() {
+			cfg, err := config.ParseArgs("wg0")
+			Expect(err).To(Succeed())
+
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0"}))
+
+			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg1")).To(BeFalse())
+
+			icfg := cfg.InterfaceSettings("wg0")
+			Expect(icfg).NotTo(BeNil())
+
+			Expect(*icfg).To(Equal(cfg.DefaultInterfaceSettings))
+		})
+
+		It("single interface pattern as argument", func() {
+			cfg, err := config.ParseArgs("wg*")
+			Expect(err).To(Succeed())
+
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg*"}))
+
+			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("eth0")).To(BeFalse())
+
+			icfg := cfg.InterfaceSettings("wg0")
+			Expect(icfg).NotTo(BeNil())
+
+			Expect(*icfg).To(Equal(cfg.DefaultInterfaceSettings))
+		})
+
 		It("single interface", func() {
 			cfgFile := mkTempFile(`---
+epdisc:
+  ice:
+    restart_timeout: 5s
+    disconnected_timeout: 22s
+
 interfaces:
   wg0:
     epdisc:
@@ -430,17 +458,26 @@ interfaces:
 			cfg, err := config.ParseArgs("--config", cfgFile.Name())
 			Expect(err).To(Succeed())
 
+			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg1")).To(BeFalse())
+
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0"}))
+
 			icfg := cfg.InterfaceSettings("wg0")
 			Expect(icfg).NotTo(BeNil())
 
-			Expect(cfg.DefaultInterfaceSettings.EndpointDisc.ICE.RestartTimeout).To(Equal(5 * time.Second))
 			Expect(icfg.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
-			Expect(icfg.Name).To(Equal("wg0"))
-			Expect(icfg.Pattern).To(BeEmpty())
+			Expect(icfg.EndpointDisc.ICE.DisconnectedTimeout).To(Equal(22 * time.Second))
+
+			Expect(cfg.DefaultInterfaceSettings.EndpointDisc.ICE.RestartTimeout).To(Equal(5 * time.Second))
 		})
 
-		It("single interface and pattern overwrites", func() {
+		It("two interface names and two patterns", func() {
 			cfgFile := mkTempFile(`---
+epdisc:
+  ice:
+    keepalive_interval: 7s
+
 interfaces:
   wg0:
     epdisc:
@@ -459,27 +496,39 @@ interfaces:
         restart_timeout: 30s
 `)
 
-			cfg, err := config.ParseArgs("--config", cfgFile.Name())
+			cfg, err := config.ParseArgs("--config", cfgFile.Name(), "wg1")
 			Expect(err).To(Succeed())
 
-			Expect(cfg.InterfaceOrder).To(Equal([]string{"*", "wg0", "wg-work-*", "wg-*"}))
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg1", "wg0", "wg-work-*", "wg-*"}))
+
+			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg1")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg-work-0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("wg-0")).To(BeTrue())
+			Expect(cfg.InterfaceFilter("eth0")).To(BeFalse())
 
 			icfg1 := cfg.InterfaceSettings("wg-work-seattle")
 			Expect(icfg1).NotTo(BeNil())
 
+			Expect(icfg1.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
+			Expect(icfg1.EndpointDisc.ICE.KeepaliveInterval).To(Equal(123 * time.Second))
+
 			icfg2 := cfg.InterfaceSettings("wg-mobile")
 			Expect(icfg2).NotTo(BeNil())
+
+			Expect(icfg2.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
+			Expect(icfg2.EndpointDisc.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
 
 			icfg3 := cfg.InterfaceSettings("wg0")
 			Expect(icfg3).NotTo(BeNil())
 
-			Expect(icfg1.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
-			Expect(icfg1.EndpointDisc.ICE.KeepaliveInterval).To(Equal(123 * time.Second))
-
-			Expect(icfg2.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
-			Expect(icfg2.EndpointDisc.ICE.KeepaliveInterval).To(Equal(cfg.DefaultInterfaceSettings.EndpointDisc.ICE.KeepaliveInterval))
-
 			Expect(icfg3.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
+			Expect(icfg3.EndpointDisc.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
+
+			icfg4 := cfg.InterfaceSettings("wg1")
+			Expect(icfg4).NotTo(BeNil())
+
+			Expect(*icfg4).To(Equal(cfg.DefaultInterfaceSettings))
 		})
 	})
 })
