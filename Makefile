@@ -69,6 +69,7 @@ install-deps:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest
+	go install github.com/goreleaser/goreleaser@latest
 
 website: docs
 	cd website && \
