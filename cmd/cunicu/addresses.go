@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"net"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,7 +12,7 @@ import (
 )
 
 var (
-	v4, v6 bool
+	v4, v6, mask bool
 
 	addressesCmd = &cobra.Command{
 		Use:   "addresses",
@@ -30,6 +31,7 @@ func init() {
 	pf := addressesCmd.PersistentFlags()
 	pf.BoolVarP(&v4, "ipv4", "4", false, "Print IPv4 address only")
 	pf.BoolVarP(&v6, "ipv6", "6", false, "Print IPv6 address only")
+	pf.BoolVarP(&mask, "mask", "m", false, "Print CIDR mask")
 
 	rootCmd.AddCommand(addressesCmd)
 }
@@ -49,11 +51,21 @@ func addresses(cmd *cobra.Command, args []string) {
 			zap.String("key", string(keyB64)))
 	}
 
-	if v6 || (!v4 && !v6) {
-		fmt.Printf("%s\n", key.IPv6Address())
+	both := !v4 && !v6
+
+	as := []net.IPNet{}
+	if v6 || both {
+		as = append(as, key.IPv6Address())
+	}
+	if v4 || both {
+		as = append(as, key.IPv4Address())
 	}
 
-	if v4 || (!v4 && !v6) {
-		fmt.Printf("%s\n", key.IPv4Address())
+	for _, a := range as {
+		if mask {
+			fmt.Printf("%s\n", a.String())
+		} else {
+			fmt.Printf("%s\n", a.IP.String())
+		}
 	}
 }
