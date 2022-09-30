@@ -1,6 +1,7 @@
 package device
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"math"
@@ -12,6 +13,10 @@ import (
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
+)
+
+const (
+	ipr2TablesFile = "/etc/iproute2/rt_tables"
 )
 
 type LinuxKernelDevice struct {
@@ -217,26 +222,29 @@ func mtuFromRoutes(rts []netlink.Route) (int, error) {
 	return mtu, nil
 }
 
-func DetectDefaultMTU() (int, error) {
-	// TODO: How do we use the correct fwmark here?
-	rts, err := netlink.RouteListFiltered(unix.AF_INET, &netlink.Route{
-		Dst: nil,
-	}, netlink.RT_FILTER_DST)
+func Table(str string) (int, error) {
+	if f, err := os.OpenFile(ipr2TablesFile, os.O_RDONLY, 0644); err == nil {
+		sc := bufio.NewScanner(f)
+		for sc.Scan() {
+			line := sc.Text()
+			line = strings.Split(line, "#")[0]
+			fields := strings.Fields(line)
 
-	if err != nil {
-		return -1, fmt.Errorf("failed to get route: %w", err)
-	}
+			if len(fields) < 2 {
+				continue
+			}
 
-	if len(rts) == 0 {
-		return -1, errors.New("no route to destination")
-	}
-
-	mtu := math.MaxInt
-	for _, rt := range rts {
-		if rt.MTU < mtu {
-			mtu = rt.MTU
+			if fields[1] == str {
+				str = fields[0]
+				break
+			}
 		}
 	}
 
-	return mtu, nil
+	i, err := strconv.Atoi(str)
+	if err != nil {
+		return -1, err
+	}
+
+	return i, nil
 }
