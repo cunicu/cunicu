@@ -6,6 +6,8 @@ import (
 	"math"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
@@ -147,20 +149,68 @@ func (i *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 }
 
 func DetectMTU(ip net.IP) (int, error) {
-	// TODO: How do we use the correct fwmark here?
+	// TODO: How do we use the correct table/fwmark here?
 	rts, err := netlink.RouteGet(ip)
 	if err != nil {
 		return -1, fmt.Errorf("failed to get route: %w", err)
 	}
 
+	return mtuFromRoutes(rts)
+}
+
+func DetectDefaultMTU() (int, error) {
+	// TODO: How do we use the correct table/fwmark here?
+	flt := &netlink.Route{
+		Dst: nil,
+	}
+
+	rts, err := netlink.RouteListFiltered(unix.AF_INET, flt, netlink.RT_FILTER_DST)
+	if err != nil {
+		return -1, fmt.Errorf("failed to get route: %w", err)
+	}
+
+	return mtuFromRoutes(rts)
+}
+
+// mtuFromRoutes calculates the smallest MTU of from a set of routes
+// by looking first at the per-route MTU attributes and secondly at
+// the default MTU of the link which is used by the route as next hop.
+func mtuFromRoutes(rts []netlink.Route) (int, error) {
 	if len(rts) == 0 {
 		return -1, errors.New("no route to destination")
 	}
 
-	mtu := math.MaxInt
+	var err error
+	var mtu int
+	var links = map[int]netlink.Link{}
+	var linkMTU = math.MaxInt
+	var routeMTU = math.MaxInt
+
 	for _, rt := range rts {
-		if rt.MTU < mtu {
-			mtu = rt.MTU
+		if rt.MTU != 0 && rt.MTU < routeMTU {
+			routeMTU = rt.MTU
+		}
+
+		if rt.LinkIndex >= 0 {
+			link, ok := links[rt.LinkIndex]
+			if !ok {
+				link, err = netlink.LinkByIndex(rt.LinkIndex)
+				if err != nil {
+					return -1, fmt.Errorf("failed to get interface with index %d: %w", rt.LinkIndex, err)
+				}
+
+				links[rt.LinkIndex] = link
+			}
+
+			if link.Attrs().MTU != 0 && link.Attrs().MTU < linkMTU {
+				linkMTU = link.Attrs().MTU
+			}
+		}
+	}
+
+	if mtu = routeMTU; mtu == math.MaxInt {
+		if mtu = linkMTU; mtu == math.MaxInt {
+			return -1, fmt.Errorf("no routes or interfaces found")
 		}
 	}
 

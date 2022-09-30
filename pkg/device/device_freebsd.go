@@ -15,9 +15,11 @@ func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 }
 
 func DetectMTU(ip net.IP) (int, error) {
-	return -1, errors.ErrNotSupported
+	// TODO: Thats just a guess
+	return 1500, nil
 }
 
 func DetectDefaultMTU() (int, error) {
-	return -1, errors.ErrNotSupported
+	// TODO: Thats just a guess
+	return 1500, nil
 }
