@@ -8,8 +8,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func DiffSlice[T constraints.Ordered](old, new []T) (added, removed, kept []T) {
-	return DiffSliceFunc(old, new, func(a, b T) int {
+func SliceDiff[T constraints.Ordered](old, new []T) (added, removed, kept []T) {
+	return SliceDiffFunc(old, new, func(a, b T) int {
 		if a == b {
 			return 0
 		} else if a < b {
@@ -20,7 +20,7 @@ func DiffSlice[T constraints.Ordered](old, new []T) (added, removed, kept []T) {
 	})
 }
 
-func DiffSliceFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, kept []T) {
+func SliceDiffFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, kept []T) {
 	added = []T{}
 	removed = []T{}
 	kept = []T{}
@@ -64,13 +64,13 @@ func DiffSliceFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, k
 	return
 }
 
-func ShuffleSlice[T any](s []T) {
+func SliceShuffle[T any](s []T) {
 	rand.Shuffle(len(s), func(i, j int) {
 		s[i], s[j] = s[j], s[i]
 	})
 }
 
-func FilterSlice[T any](s []T, cmp func(T) bool) []T {
+func SliceFilter[T any](s []T, cmp func(T) bool) []T {
 	t := []T{}
 
 	for _, i := range s {
@@ -82,7 +82,7 @@ func FilterSlice[T any](s []T, cmp func(T) bool) []T {
 	return t
 }
 
-func ContainsSlice[T any](s []T, cmp func(T) bool) bool {
+func SliceContains[T any](s []T, cmp func(T) bool) bool {
 	for _, i := range s {
 		if cmp(i) {
 			return true
@@ -92,7 +92,7 @@ func ContainsSlice[T any](s []T, cmp func(T) bool) bool {
 	return false
 }
 
-func MapSlice[T any](s []T, cb func(T) T) []T {
+func SliceMap[T any](s []T, cb func(T) T) []T {
 	n := []T{}
 
 	for _, t := range s {
@@ -102,7 +102,7 @@ func MapSlice[T any](s []T, cb func(T) T) []T {
 	return n
 }
 
-func StringSlice[T any](s []T) []string {
+func SliceString[T any](s []T) []string {
 	n := []string{}
 
 	for _, t := range s {

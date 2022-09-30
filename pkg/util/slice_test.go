@@ -15,21 +15,21 @@ var _ = Context("slice", func() {
 	})
 
 	It("map", func() {
-		Expect(util.MapSlice(s, func(i int) int { return i + 100 })).To(Equal([]int{123, 154, 122, 108, 212, 334, 223}))
+		Expect(util.SliceMap(s, func(i int) int { return i + 100 })).To(Equal([]int{123, 154, 122, 108, 212, 334, 223}))
 	})
 
 	It("string", func() {
-		Expect(util.StringSlice(s)).To(Equal([]string{"23", "54", "22", "8", "112", "234", "123"}))
+		Expect(util.SliceString(s)).To(Equal([]string{"23", "54", "22", "8", "112", "234", "123"}))
 	})
 
 	It("filter", func() {
-		Expect(util.FilterSlice(s, func(i int) bool { return i != 22 && i != 123 })).To(Equal([]int{23, 54, 8, 112, 234}))
-		Expect(util.FilterSlice(s, func(i int) bool { return true })).To(Equal(s))
+		Expect(util.SliceFilter(s, func(i int) bool { return i != 22 && i != 123 })).To(Equal([]int{23, 54, 8, 112, 234}))
+		Expect(util.SliceFilter(s, func(i int) bool { return true })).To(Equal(s))
 	})
 
 	It("contains", func() {
-		Expect(util.ContainsSlice(s, func(i int) bool { return i == 8 })).To(BeTrue())
-		Expect(util.ContainsSlice(s, func(i int) bool { return i == 9 })).To(BeFalse())
+		Expect(util.SliceContains(s, func(i int) bool { return i == 8 })).To(BeTrue())
+		Expect(util.SliceContains(s, func(i int) bool { return i == 9 })).To(BeFalse())
 	})
 
 	Describe("shuffle", func() {
@@ -46,7 +46,7 @@ var _ = Context("slice", func() {
 			Expect(slices.IsSorted(a)).To(BeTrue())
 			Expect(a).To(HaveLen(100))
 
-			util.ShuffleSlice(a)
+			util.SliceShuffle(a)
 
 			Expect(slices.IsSorted(a)).NotTo(BeTrue())
 			Expect(a).To(HaveLen(100))
@@ -66,11 +66,11 @@ var _ = Context("slice", func() {
 			bc = append(b, c...)
 			cd = append(c, d...)
 
-			util.ShuffleSlice(b)
-			util.ShuffleSlice(c)
-			util.ShuffleSlice(d)
-			util.ShuffleSlice(bc)
-			util.ShuffleSlice(cd)
+			util.SliceShuffle(b)
+			util.SliceShuffle(c)
+			util.SliceShuffle(d)
+			util.SliceShuffle(bc)
+			util.SliceShuffle(cd)
 		})
 
 		Test := func() {
@@ -126,7 +126,7 @@ var _ = Context("slice", func() {
 		Describe("func", func() {
 			BeforeEach(func() {
 				f = func(old, new []int) (added, removed, kept []int) {
-					return util.DiffSliceFunc(old, new, func(a, b int) int {
+					return util.SliceDiffFunc(old, new, func(a, b int) int {
 						return a - b
 					})
 				}
@@ -137,7 +137,7 @@ var _ = Context("slice", func() {
 
 		Describe("no func", func() {
 			BeforeEach(func() {
-				f = util.DiffSlice[int]
+				f = util.SliceDiff[int]
 			})
 
 			Test()
