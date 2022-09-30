@@ -1,14 +1,18 @@
 package main
 
 import (
+	"io"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	cunicu "github.com/stv0g/cunicu/pkg"
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/rpc"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
+
+	"github.com/stv0g/cunicu/pkg/config"
+	daem "github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/rpc"
+	"github.com/stv0g/cunicu/pkg/util/terminal"
 )
 
 var (
@@ -36,7 +40,7 @@ func init() {
 
 	pf.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
-			daemonCmd.RegisterFlagCompletionFunc(f.Name, config.BooleanCompletions)
+			daemonCmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions)
 		}
 	})
 
@@ -46,7 +50,7 @@ func init() {
 func daemon(cmd *cobra.Command, args []string) {
 	io.WriteString(os.Stdout, Banner(color))
 
-	if err := cfg.Load(); err != nil {
+	if err := cfg.Init(); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
 
@@ -60,13 +64,13 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create daemon
-	daemon, err := cunicu.NewDaemon(cfg)
+	d, err := daem.New(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create daemon", zap.Error(err))
 	}
 
 	// Create control socket server to manage daemon
-	svr, err := rpc.NewServer(daemon, cfg.RPC.Socket)
+	svr, err := rpc.NewServer(d, cfg.RPC.Socket)
 	if err != nil {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}
@@ -77,7 +81,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Blocks until stopped
-	if err := daemon.Run(); err != nil {
+	if err := d.Run(); err != nil {
 		logger.Fatal("Failed start daemon", zap.Error(err))
 	}
 
@@ -85,7 +89,7 @@ func daemon(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to close server", zap.Error(err))
 	}
 
-	if err := daemon.Close(); err != nil {
+	if err := d.Close(); err != nil {
 		logger.Fatal("Failed to stop daemon", zap.Error(err))
 	}
 }

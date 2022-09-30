@@ -42,17 +42,7 @@ func (h *peerHandler) OnInterfaceAdded(i *core.Interface) {
 	i.OnPeer(h)
 }
 
-func (h *peerHandler) OnInterfaceRemoved(i *core.Interface) {
-}
-
-func (h *peerHandler) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
-}
-
-func (h *peerHandler) OnPeerAdded(p *core.Peer) {
-	p.OnModified(h)
-
-	h.PeerHandler.OnPeerAdded(p)
-}
+func (h *peerHandler) OnInterfaceRemoved(i *core.Interface) {}
 
 // OnAll adds a new handler to all the events observed by the watcher.
 func (w *Watcher) OnAll(h core.AllHandler) {

@@ -37,5 +37,6 @@ Manage configuration of a running cunīcu daemon.
 
 * [cunicu](cunicu.md)	 - cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.
 * [cunicu config get](cunicu_config_get.md)	 - Get current value of a configuration setting
+* [cunicu config reload](cunicu_config_reload.md)	 - Reload the configuration of the cunīcu daemon
 * [cunicu config set](cunicu_config_set.md)	 - Update the value of a configuration setting
 

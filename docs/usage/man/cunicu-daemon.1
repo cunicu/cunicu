@@ -34,23 +34,15 @@ Start the daemon
 	One or more \fB\fCfilename\fRs of configuration files
 
 .PP
-\fB-w\fP, \fB--config-path\fP=""
-	The \fB\fCdirectory\fR of WireGuard wg/wg-quick configuration files
-
-.PP
 \fB-S\fP, \fB--config-sync\fP[=true]
 	Enable synchronization of WireGuard configuration files
-
-.PP
-\fB-W\fP, \fB--config-watch\fP[=false]
-	Watch and synchronize changes to the WireGuard configuration files
 
 .PP
 \fB-D\fP, \fB--domain\fP=[]
 	A DNS \fB\fCdomain\fR name used for DNS auto-configuration
 
 .PP
-\fB-I\fP, \fB--endpoint-disc\fP[=true]
+\fB-E\fP, \fB--endpoint-disc\fP[=true]
 	Enable ICE endpoint discovery
 
 .PP
@@ -66,12 +58,12 @@ Start the daemon
 	Usable \fB\fCnetwork-type\fRs (one of udp4, udp6, tcp4, tcp6)
 
 .PP
-\fB-f\fP, \fB--interface-filter\fP="\fI"
-	A glob(7) \fB\fCpattern\fR for filtering WireGuard interfaces which this daemon will manage (e.g. "wg\fP")
+\fB-p\fP, \fB--password\fP=""
+	The \fB\fCpassword\fR for STUN/TURN credentials
 
 .PP
-\fB-P\fP, \fB--password\fP=""
-	The \fB\fCpassword\fR for STUN/TURN credentials
+\fB-P\fP, \fB--peer-sync\fP[=true]
+	Enable peer discovery
 
 .PP
 \fB-R\fP, \fB--route-sync\fP[=true]
@@ -94,15 +86,19 @@ Start the daemon
 	One or more \fB\fCURL\fRs of STUN and/or TURN servers
 
 .PP
-\fB-U\fP, \fB--username\fP=""
+\fB-u\fP, \fB--username\fP=""
 	The \fB\fCusername\fR for STUN/TURN credentials
+
+.PP
+\fB-w\fP, \fB--watch\fP[=false]
+	Watch configuration files for changes and apply changes at runtime.
 
 .PP
 \fB-i\fP, \fB--watch-interval\fP=0s
 	An interval at which we are periodically polling the kernel for updates on WireGuard interfaces
 
 .PP
-\fB-u\fP, \fB--wg-userspace\fP[=false]
+\fB-U\fP, \fB--wg-userspace\fP[=false]
 	Use user-space WireGuard implementation for newly created interfaces
 
 .PP

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -13,7 +14,8 @@ import (
 type Config struct {
 	wgtypes.Config
 
-	PeerEndpoints []*string
+	PeerEndpoints []string
+	PeerNames     []string
 
 	Address    []net.IPNet
 	DNS        []net.IPAddr
@@ -126,7 +128,7 @@ func (cfg *Config) Dump(wr io.Writer) error {
 		}
 	}
 
-	for _, peer := range cfg.Peers {
+	for i, peer := range cfg.Peers {
 		iniPeer := peerConfig{
 			PublicKey: peer.PublicKey.String(),
 		}
@@ -136,7 +138,9 @@ func (cfg *Config) Dump(wr io.Writer) error {
 			iniPeer.PresharedKey = &psk
 		}
 
-		if peer.Endpoint != nil {
+		if cfg.PeerEndpoints[i] != "" {
+			iniPeer.Endpoint = &cfg.PeerEndpoints[i]
+		} else if peer.Endpoint != nil {
 			ep := peer.Endpoint.String()
 			iniPeer.Endpoint = &ep
 		}
@@ -197,7 +201,24 @@ func ParseConfig(data []byte) (*Config, error) {
 		iniCfg.Peers = nil
 	}
 
-	return iniCfg.Config()
+	peerSects, err := iniFile.SectionsByName("Peer")
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := iniCfg.Config()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, peerSect := range peerSects {
+		peerName := strings.TrimPrefix(peerSect.Comment, "#")
+		peerName = strings.TrimSpace(peerName)
+
+		cfg.PeerNames = append(cfg.PeerNames, peerName)
+	}
+
+	return cfg, nil
 }
 
 func (c *config) Config() (*Config, error) {
@@ -247,7 +268,12 @@ func (c *config) Config() (*Config, error) {
 		}
 
 		cfg.Peers = append(cfg.Peers, *peerCfg)
-		cfg.PeerEndpoints = append(cfg.PeerEndpoints, pSection.Endpoint)
+
+		if pSection.Endpoint != nil {
+			cfg.PeerEndpoints = append(cfg.PeerEndpoints, *pSection.Endpoint)
+		} else {
+			cfg.PeerEndpoints = append(cfg.PeerEndpoints, "")
+		}
 	}
 
 	return cfg, nil

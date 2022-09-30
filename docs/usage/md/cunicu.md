@@ -45,7 +45,6 @@ in which WireGuard kernel support has not landed yet.
 * [cunicu daemon](cunicu_daemon.md)	 - Start the daemon
 * [cunicu monitor](cunicu_monitor.md)	 - Monitor the cunīcu daemon for events
 * [cunicu relay](cunicu_relay.md)	 - Start relay API server
-* [cunicu reload](cunicu_reload.md)	 - Reload the configuration of the cunīcu daemon
 * [cunicu restart](cunicu_restart.md)	 - Restart the cunīcu daemon
 * [cunicu selfupdate](cunicu_selfupdate.md)	 - Update the cunīcu binary
 * [cunicu signal](cunicu_signal.md)	 - Start gRPC signaling server

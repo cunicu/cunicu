@@ -5,7 +5,7 @@ option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
 
 import "common.proto";
 import "core/peer.proto";
-import "feat/epdisc.proto";
+import "feature/epdisc.proto";
 
 // Type of the WireGuard interface impelementation
 enum InterfaceType {

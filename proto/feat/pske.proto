@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package cunicu.pske;
-option go_package = "github.com/stv0g/cunicu/pkg/proto/feat/pske";
-
-message PresharedKeyEstablishment {
-    bytes public_key = 1;
-    bytes cipher_text = 2;
-}

@@ -6,6 +6,7 @@ option go_package = "github.com/stv0g/cunicu/pkg/proto/rpc";
 import "core/interface.proto";
 import "common.proto";
 import "rpc/event.proto";
+import "rpc/invitation.proto";
 
 message GetStatusParams {
     string interface = 1;
@@ -28,6 +29,17 @@ message GetConfigResp {
     map<string, string> settings = 1;
 }
 
+message AddPeerParams {
+    string interface = 1;
+    bytes public_key = 2;
+    string name = 3;
+}
+
+message AddPeerResp {
+    Invitation invitation = 1;
+    core.Interface interface = 2;
+}
+
 service Daemon {
     rpc GetBuildInfo(Empty) returns (BuildInfo) {}
     rpc StreamEvents(Empty) returns (stream Event) {}
@@ -40,4 +52,6 @@ service Daemon {
     rpc SetConfig(SetConfigParams) returns (Empty) {}
     rpc GetConfig(GetConfigParams) returns (GetConfigResp) {}
     rpc ReloadConfig(Empty) returns (Empty) {}
+    
+    rpc AddPeer(AddPeerParams) returns (AddPeerResp) {}
 }

@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -9,9 +10,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/util"
 
-	cunicu "github.com/stv0g/cunicu/pkg"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
@@ -30,7 +31,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func NewServer(d *cunicu.Daemon, socket string) (*Server, error) {
+func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 	s := &Server{
 		events: util.NewFanOut[*rpcproto.Event](1),
 		logger: zap.L().Named("rpc.server"),
@@ -38,15 +39,12 @@ func NewServer(d *cunicu.Daemon, socket string) (*Server, error) {
 
 	s.waitGroup.Add(1)
 
-	s.grpc = grpc.NewServer()
+	s.grpc = grpc.NewServer(grpc.UnaryInterceptor(s.unaryInterceptor))
 
 	// Register services
 	s.daemon = NewDaemonServer(s, d)
 	s.signaling = NewSignalingServer(s, d.Backend)
-
-	if d.EndpointDiscovery != nil {
-		s.epdisc = NewEndpointDiscoveryServer(s, d.EndpointDiscovery)
-	}
+	s.epdisc = NewEndpointDiscoveryServer(s)
 
 	// Remove old unix sockets
 	if err := os.RemoveAll(socket); err != nil {
@@ -76,4 +74,23 @@ func (s *Server) Close() error {
 	s.grpc.GracefulStop()
 
 	return nil
+}
+
+func (s *Server) unaryInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	resp, err = handler(ctx, req)
+	if err != nil {
+		s.logger.Error("Failed to handle RPC request",
+			zap.Error(err),
+			zap.String("method", info.FullMethod),
+			zap.Any("request", req),
+		)
+	} else {
+		s.logger.Debug("Handling RPC request",
+			zap.String("method", info.FullMethod),
+			zap.Any("request", req),
+			zap.Any("response", resp),
+		)
+	}
+
+	return
 }
