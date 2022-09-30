@@ -163,7 +163,7 @@ func (s *Subscription) RemoveOnMessages(pk *crypto.Key, h MessageHandler) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.onMessages[*pk] = util.FilterSlice(s.onMessages[*pk], func(j MessageHandler) bool {
+	s.onMessages[*pk] = util.SliceFilter(s.onMessages[*pk], func(j MessageHandler) bool {
 		return h != j
 	})
 }

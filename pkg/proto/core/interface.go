@@ -33,7 +33,7 @@ func (i *Interface) Device() *wg.Device {
 func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	wri := t.NewIndenter(wr, "  ")
 
-	if _, err := fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", i.Name); err != nil {
+	if _, err := fmt.Fprintf(wr, t.Mods("interface", t.Bold, t.FgGreen)+": "+t.Mods("%s", t.FgGreen)+"\n", i.Name); err != nil {
 		return err
 	}
 

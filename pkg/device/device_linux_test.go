@@ -27,14 +27,14 @@ var _ = Describe("device", func() {
 	var nlh *nl.Handle
 	var l nl.Link
 
-	getAddrs := func() []*net.IPNet {
+	getAddrs := func() []net.IPNet {
 		addrs, err := nlh.AddrList(l, unix.AF_INET)
 		Expect(err).To(Succeed())
 
-		ips := []*net.IPNet{}
+		ips := []net.IPNet{}
 		for _, addr := range addrs {
 			addr.IP = addr.IP.To16()
-			ips = append(ips, addr.IPNet)
+			ips = append(ips, *addr.IPNet)
 		}
 
 		return ips

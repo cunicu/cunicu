@@ -36,7 +36,7 @@ type Interface struct {
 
 	client *wgctrl.Client
 
-	onModified []InterfaceHandler
+	onModified []InterfaceModifiedHandler
 	onPeer     []PeerHandler
 
 	logger *zap.Logger
@@ -46,7 +46,7 @@ func (i *Interface) String() string {
 	return i.Device.Name
 }
 
-func (i *Interface) OnModified(h InterfaceHandler) {
+func (i *Interface) OnModified(h InterfaceModifiedHandler) {
 	i.onModified = append(i.onModified, h)
 }
 
@@ -141,7 +141,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 		mod |= InterfaceModifiedListenPort
 	}
 
-	peersAdded, peersRemoved, peersKept := util.DiffSliceFunc(old.Peers, new.Peers, wg.CmpPeers)
+	peersAdded, peersRemoved, peersKept := util.SliceDiffFunc(old.Peers, new.Peers, wg.CmpPeers)
 	if len(peersAdded) > 0 || len(peersRemoved) > 0 {
 		mod |= InterfaceModifiedPeers
 	}
@@ -222,7 +222,12 @@ func (i *Interface) SyncConfig(cfgFilename string) error {
 		return fmt.Errorf("failed to open config file %s: %w", cfgFilename, err)
 	}
 
-	cfg, err := wg.ParseConfig(cfgFile, i.Name())
+	cfgContents, err := io.ReadAll(cfgFile)
+	if err != nil {
+		return fmt.Errorf("failed to read config file %s: %w", cfgFilename, err)
+	}
+
+	cfg, err := wg.ParseConfig(cfgContents)
 	if err != nil {
 		return fmt.Errorf("failed to parse configuration: %s", err)
 	}
@@ -296,7 +301,7 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 		client: client,
 		Peers:  map[crypto.Key]*Peer{},
 
-		onModified: []InterfaceHandler{},
+		onModified: []InterfaceModifiedHandler{},
 		onPeer:     []PeerHandler{},
 
 		logger: zap.L().Named("intf").With(
@@ -317,23 +322,31 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	return i, nil
 }
 
+// DetectMTU find a suitable MTU for the tunnel interface.
+// The algorithm is the same as used by wg-quick:
+//
+//	The MTU is automatically determined from the endpoint addresses
+//	or the system default route, which is usually a sane choice.
 func (i *Interface) DetectMTU() (mtu int, err error) {
-	if len(i.Device.Peers) == 0 {
-		mtu, err = device.DetectDefaultMTU()
-		if err != nil {
-			return -1, err
-		}
-	} else {
-		mtu = math.MaxInt
-		for _, p := range i.Device.Peers {
-			if p.Endpoint != nil {
-				if pmtu, err := device.DetectMTU(p.Endpoint.IP); err != nil {
-					return -1, fmt.Errorf("failed to detect MTU: %w", err)
-				} else if pmtu < mtu {
-					mtu = pmtu
-				}
+	mtu = math.MaxInt
+	for _, p := range i.Peers {
+		if p.Endpoint != nil {
+			if pmtu, err := device.DetectMTU(p.Endpoint.IP); err != nil {
+				return -1, err
+			} else if pmtu < mtu {
+				mtu = pmtu
 			}
 		}
+	}
+
+	if mtu == math.MaxInt {
+		if mtu, err = device.DetectDefaultMTU(); err != nil {
+			return -1, err
+		}
+	}
+
+	if mtu-wg.TunnelOverhead < wg.MinimalMTU {
+		return -1, fmt.Errorf("MTU too small: %d", mtu)
 	}
 
 	return mtu - wg.TunnelOverhead, nil

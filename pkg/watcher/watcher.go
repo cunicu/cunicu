@@ -9,6 +9,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -111,20 +112,22 @@ func (w *Watcher) Watch() {
 		defer ticker.Stop()
 	}
 
+	logger := w.logger.WithOptions(log.WithVerbose(10))
+
 out:
 	for {
 		select {
 		// We still a need periodic sync we can not (yet) monitor WireGuard interfaces
 		// for changes via a netlink socket (patch is pending)
 		case <-ticker.C:
-			w.logger.Debug("Started periodic interface synchronization")
+			logger.Debug("Started periodic interface synchronization")
 			if err := w.Sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}
-			w.logger.Debug("Completed periodic interface synchronization")
+			logger.Debug("Completed periodic interface synchronization")
 
 		case event := <-w.events:
-			w.logger.Debug("Received interface event", zap.Any("event", event))
+			logger.Debug("Received interface event", zap.Any("event", event))
 			if err := w.Sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}
@@ -151,12 +154,12 @@ func (w *Watcher) Sync() error {
 	}
 
 	// Ignore devices which do not match the filter
-	new = util.FilterSlice(new, func(d *wgtypes.Device) bool {
+	new = util.SliceFilter(new, func(d *wgtypes.Device) bool {
 		return w.filter == nil || w.filter(d.Name)
 	})
 
-	added, removed, kept := util.DiffSliceFunc(old, new, func(a, b **wgtypes.Device) int {
-		return strings.Compare((*a).Name, (*b).Name)
+	added, removed, kept := util.SliceDiffFunc(old, new, func(a, b *wgtypes.Device) int {
+		return strings.Compare(a.Name, b.Name)
 	})
 
 	w.mu.Unlock()

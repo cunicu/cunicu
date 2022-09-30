@@ -4,7 +4,7 @@ package cunicu.core;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
 
 import "common.proto";
-import "feat/epdisc.proto";
+import "feature/epdisc.proto";
 
 message Peer {
     // Public WireGuard X25519 key

@@ -86,6 +86,8 @@ func (p *remoteFileProvider) Order() []string {
 }
 
 func (p *remoteFileProvider) Version() any {
+	p.hasChanged()
+
 	if p.etag != "" {
 		return p.etag
 	}

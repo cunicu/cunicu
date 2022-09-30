@@ -38,7 +38,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	case "auto":
 		fallthrough
 	default:
-		color = util.IsATTY(os.Stdout)
+		color = t.IsATTY(os.Stdout)
 	}
 
 	if !color {
@@ -60,7 +60,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 	wri := t.NewIndenter(wr, "  ")
 
-	fmt.Fprintf(wr, t.Color("interface", t.Bold, t.FgGreen)+": "+t.Color("%s", t.FgGreen)+"\n", d.Name)
+	fmt.Fprintf(wr, t.Mods("interface", t.Bold, t.FgGreen)+": "+t.Mods("%s", t.FgGreen)+"\n", d.Name)
 
 	if crypto.Key(d.PrivateKey).IsSet() {
 		t.FprintKV(wri, "public key", d.PublicKey)
@@ -84,7 +84,7 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 	})
 
 	for _, p := range d.Peers {
-		fmt.Fprintf(wr, "\n"+t.Color("peer", t.Bold, t.FgYellow)+": "+t.Color("%s", t.FgYellow)+"\n", p.PublicKey)
+		fmt.Fprintf(wr, "\n"+t.Mods("peer", t.Bold, t.FgYellow)+": "+t.Mods("%s", t.FgYellow)+"\n", p.PublicKey)
 
 		if crypto.Key(p.PresharedKey).IsSet() {
 			if hideKeys {

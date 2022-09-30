@@ -4,6 +4,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -26,17 +27,18 @@ After download, the authenticity of the binary is verified using the GPG signatu
 func init() {
 	rootCmd.AddCommand(selfUpdateCmd)
 
-	file, err := os.Executable()
+	selfPath, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
 
-	if strings.Contains(file, "go-build") {
-		file = "cunicu"
+	self := filepath.Base(selfPath)
+	if strings.Contains(selfPath, "go-build") {
+		self = "cunicu"
 	}
 
 	flags := selfUpdateCmd.Flags()
-	flags.StringVarP(&output, "output", "o", file, "Save the downloaded file as `filename`")
+	flags.StringVarP(&output, "output", "o", self, "Save the downloaded file as `filename`")
 }
 
 func selfUpdate(cmd *cobra.Command, args []string) {

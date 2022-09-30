@@ -4,10 +4,10 @@ package cunicu.signaling;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/signaling";
 
 import "common.proto";
-import "feat/pdisc.proto";
-import "feat/pske.proto";
-import "feat/epdisc.proto";
-import "feat/epdisc_candidate.proto";
+import "feature/pdisc.proto";
+import "feature/pske.proto";
+import "feature/epdisc.proto";
+import "feature/epdisc_candidate.proto";
 
 enum BackendType {
     MULTI = 0;

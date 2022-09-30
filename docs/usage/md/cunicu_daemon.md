@@ -29,24 +29,23 @@ $ cunicu daemon -u -x mysecretpass wg0
   -b, --backend URL                         One or more URLs to signaling backends
   -x, --community passphrase                A passphrase shared with other peers in the same community
   -c, --config filename                     One or more filenames of configuration files
-  -w, --config-path directory               The directory of WireGuard wg/wg-quick configuration files
   -S, --config-sync                         Enable synchronization of WireGuard configuration files (default true)
-  -W, --config-watch                        Watch and synchronize changes to the WireGuard configuration files
   -D, --domain domain                       A DNS domain name used for DNS auto-configuration
-  -I, --endpoint-disc                       Enable ICE endpoint discovery (default true)
+  -E, --endpoint-disc                       Enable ICE endpoint discovery (default true)
   -H, --host-sync                           Enable synchronization of /etc/hosts file (default true)
       --ice-candidate-type candidate-type   Usable candidate-types (one of host, srflx, prflx, relay)
       --ice-network-type network-type       Usable network-types (one of udp4, udp6, tcp4, tcp6)
-  -f, --interface-filter pattern            A glob(7) pattern for filtering WireGuard interfaces which this daemon will manage (e.g. "wg*") (default "*")
-  -P, --password password                   The password for STUN/TURN credentials
+  -p, --password password                   The password for STUN/TURN credentials
+  -P, --peer-sync                           Enable peer discovery (default true)
   -R, --route-sync                          Enable synchronization of AllowedIPs and Kernel routing table (default true)
   -T, --route-table int                     Kernel routing table to use (default 254)
   -s, --rpc-socket path                     The path of the unix socket used by other cunicu commands
       --rpc-wait                            Wait until first client connected to control socket before continuing start
   -a, --url URL                             One or more URLs of STUN and/or TURN servers
-  -U, --username username                   The username for STUN/TURN credentials
+  -u, --username username                   The username for STUN/TURN credentials
+  -w, --watch                               Watch configuration files for changes and apply changes at runtime.
   -i, --watch-interval duration             An interval at which we are periodically polling the kernel for updates on WireGuard interfaces
-  -u, --wg-userspace                        Use user-space WireGuard implementation for newly created interfaces
+  -U, --wg-userspace                        Use user-space WireGuard implementation for newly created interfaces
   -h, --help                                help for daemon
 ```
 

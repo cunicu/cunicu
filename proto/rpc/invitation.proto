@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package cunicu.rpc;
+option go_package = "github.com/stv0g/cunicu/pkg/proto/rpc";
+
+import "common.proto";
+
+message Invitation {
+    bytes community = 1;
+    string endpoint = 2;
+}

@@ -29,7 +29,7 @@ type Peer struct {
 	LastReceiveTime  time.Time
 	LastTransmitTime time.Time
 
-	onModified []PeerHandler
+	onModified []PeerModifiedHandler
 
 	client *wgctrl.Client
 
@@ -42,7 +42,7 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 		Interface: i,
 		Peer:      wgp,
 
-		onModified: []PeerHandler{},
+		onModified: []PeerModifiedHandler{},
 
 		client: i.client,
 		logger: zap.L().Named("peer").With(
@@ -124,7 +124,7 @@ func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 }
 
 // OnModified registers a new handler which is called whenever the peer has been modified
-func (p *Peer) OnModified(h PeerHandler) {
+func (p *Peer) OnModified(h PeerModifiedHandler) {
 	p.onModified = append(p.onModified, h)
 }
 
@@ -174,6 +174,13 @@ func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 
 // AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
 func (p *Peer) AddAllowedIP(a net.IPNet) error {
+	if util.SliceContains(p.AllowedIPs, func(n net.IPNet) bool {
+		return util.CmpNet(n, a) == 0
+	}) {
+		p.logger.Warn("Not adding already existing allowed IP", zap.Any("ip", a))
+		return nil
+	}
+
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
@@ -190,10 +197,12 @@ func (p *Peer) AddAllowedIP(a net.IPNet) error {
 }
 
 // RemoveAllowedIP removes a new IP network from the allowed ip list of the WireGuard peer
-func (p *Peer) RemoveAllowedIP(a *net.IPNet) error {
-	ips := util.FilterSlice(p.Peer.AllowedIPs, func(b net.IPNet) bool {
-		return util.CmpNet(a, &b) != 0
+func (p *Peer) RemoveAllowedIP(a net.IPNet) error {
+	ips := util.SliceFilter(p.Peer.AllowedIPs, func(b net.IPNet) bool {
+		return util.CmpNet(a, b) != 0
 	})
+
+	// TODO: Check is net is in AllowedIPs before attempting removing it
 
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
@@ -243,7 +252,7 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	}
 
 	// Find changes in AllowedIP list
-	ipsAdded, ipsRemoved, _ := util.DiffSliceFunc(old.AllowedIPs, new.AllowedIPs, util.CmpNet)
+	ipsAdded, ipsRemoved, _ := util.SliceDiffFunc(old.AllowedIPs, new.AllowedIPs, util.CmpNet)
 	if len(ipsAdded) > 0 || len(ipsRemoved) > 0 {
 		mod |= PeerModifiedAllowedIPs
 	}

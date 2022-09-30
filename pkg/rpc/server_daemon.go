@@ -2,23 +2,31 @@ package rpc
 
 import (
 	"context"
+	"encoding"
+	"errors"
 	"fmt"
 	"io"
+	"net"
+	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/proto"
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
-	cunicu "github.com/stv0g/cunicu/pkg"
-	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
@@ -27,10 +35,10 @@ type DaemonServer struct {
 	rpcproto.UnimplementedDaemonServer
 
 	*Server
-	*cunicu.Daemon
+	*daemon.Daemon
 }
 
-func NewDaemonServer(s *Server, d *cunicu.Daemon) *DaemonServer {
+func NewDaemonServer(s *Server, d *daemon.Daemon) *DaemonServer {
 	ds := &DaemonServer{
 		Server: s,
 		Daemon: d,
@@ -102,7 +110,7 @@ func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto
 
 func (s *DaemonServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
 	if err := s.Daemon.Sync(); err != nil {
-		return &proto.Empty{}, status.Errorf(codes.Unknown, "failed to sync: %s", err)
+		return nil, status.Errorf(codes.Unknown, "failed to sync: %s", err)
 	}
 
 	return &proto.Empty{}, nil
@@ -119,21 +127,31 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 	}
 
 	qis := []*coreproto.Interface{}
-	s.daemon.ForEachInterface(func(ci *core.Interface) error {
-		if p.Intf == "" || ci.Name() == p.Intf {
-			qis = append(qis, ci.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
+	s.daemon.ForEachInterface(func(i *daemon.Interface) error {
+		epi := s.epdisc.InterfaceByCore(i.Interface)
+
+		if p.Interface == "" || i.Name() == p.Interface {
+			qi := i.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
 				if pk.IsSet() && pk != cp.PublicKey() {
 					return nil
 				}
 
 				qp := cp.Marshal()
 
-				if s.epdisc != nil {
-					qp.Ice = s.epdisc.PeerStatus(cp)
+				if epi != nil {
+					if epp, ok := epi.Peers[cp]; ok {
+						qp.Ice = epp.Marshal()
+					}
 				}
 
 				return qp
-			}))
+			})
+
+			if epi != nil {
+				qi.Ice = epi.Marshal()
+			}
+
+			qis = append(qis, qi)
 		}
 
 		return nil
@@ -182,12 +200,19 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 			log.Severity.SetLevel(level)
 
 		default:
-			settings[key] = value
+			if value == "" { // Unset value
+				settings[key] = nil
+			} else {
+				settings[key] = value
+			}
 		}
 	}
 
-	if err := s.Config.Update(settings); err != nil {
+	changes, err := s.Config.Update(settings)
+	if err != nil {
 		errs = append(errs, err)
+	} else if len(changes) == 0 {
+		errs = append(errs, errors.New("no setting was changed"))
 	}
 
 	if len(errs) > 0 {
@@ -197,6 +222,10 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 		}
 
 		return nil, status.Error(codes.InvalidArgument, strings.Join(errstrs, ", "))
+	}
+
+	if err := s.Config.SaveRuntime(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Failed to save runtime configuration: %s", err)
 	}
 
 	return &proto.Empty{}, nil
@@ -219,7 +248,11 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 
 	for key, value := range s.Config.All() {
 		if match(key) {
-			settings[key] = fmt.Sprintf("%v", value)
+			if str, err := settingToString(value); err != nil {
+				return nil, status.Errorf(codes.Internal, "Failed to marshal: %s", err)
+			} else {
+				settings[key] = str
+			}
 		}
 	}
 
@@ -229,9 +262,93 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 }
 
 func (s *DaemonServer) ReloadConfig(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
-	if err := s.Config.Reload(); err != nil {
+	if _, err := s.Config.Reload(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to reload configuration: %s", err)
 	}
 
 	return &proto.Empty{}, nil
+}
+
+func (s *DaemonServer) AddPeer(ctx context.Context, params *rpcproto.AddPeerParams) (*rpcproto.AddPeerResp, error) {
+	i := s.InterfaceByName(params.Interface)
+	if i == nil {
+		return nil, status.Errorf(codes.NotFound, "Interface %s does not exist", params.Interface)
+	}
+
+	// Add peer to running daemon
+	pk, err := crypto.ParseKeyBytes(params.PublicKey)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Invalid public key")
+	}
+
+	if err := i.AddPeer(&wgtypes.PeerConfig{
+		PublicKey: wgtypes.Key(pk),
+	}); err != nil {
+		return nil, status.Errorf(codes.Internal, "Failed to add peer: %s", err)
+	}
+
+	// TODO: Persist new peer in runtime config
+
+	// Create response
+	resp := &rpcproto.AddPeerResp{
+		Invitation: &rpcproto.Invitation{},
+		Interface:  i.Marshal(),
+	}
+
+	if community := crypto.Key(i.Settings.PeerDisc.Community); community.IsSet() {
+		resp.Invitation.Community = community.Bytes()
+	}
+
+	// Detect our own endpoint
+	if f, ok := i.Features["epdisc"]; ok {
+		epi := f.(*epdisc.Interface)
+
+		if ep, err := epi.Endpoint(); err != nil {
+			s.logger.Warn("Failed to determine our own endpoint address", zap.Error(err))
+		} else if ep != nil {
+			resp.Invitation.Endpoint = ep.String()
+
+			// Perform reverse lookup of our own endpoint
+			if names, err := net.LookupAddr(resp.Invitation.Endpoint); err == nil && len(names) >= 1 {
+				epName := names[0]
+
+				// Do not use auto-generated IPv4 rDNS names
+				if match, _ := regexp.MatchString(`\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}`, epName); !match {
+					resp.Invitation.Endpoint = fmt.Sprintf("%s:%d", epName, ep.Port)
+				}
+			}
+		}
+	}
+
+	return resp, nil
+}
+
+func settingToString(value any) (string, error) {
+	v := reflect.ValueOf(value)
+	switch {
+	case v.Kind() == reflect.Slice:
+		s := []string{}
+		for i := 0; i < v.Len(); i++ {
+			e := v.Index(i)
+			in := e.Interface()
+
+			if tm, ok := in.(encoding.TextMarshaler); ok {
+				if b, err := tm.MarshalText(); err != nil {
+					return "", err
+				} else {
+					s = append(s, string(b))
+				}
+			} else {
+				s = append(s, fmt.Sprint(in))
+			}
+		}
+
+		return strings.Join(s, ","), nil
+
+	case value == nil:
+		return "", nil
+
+	default:
+		return fmt.Sprintf("%v", value), nil
+	}
 }
