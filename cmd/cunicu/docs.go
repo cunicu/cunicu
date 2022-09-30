@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,12 +23,14 @@ var (
 		Long:   `When used without a sub-command, both the Markdown documentation and Man-pages will be generated.`,
 		Hidden: true,
 		Args:   cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			if err := docsMarkdown(cmd, args); err != nil {
-				return err
+				logger.Fatal("Failed to generate markdown docs", zap.Error(err))
 			}
 
-			return docsManpage(cmd, args)
+			if err := docsManpage(cmd, args); err != nil {
+				logger.Fatal("Failed to generate Manpage docs", zap.Error(err))
+			}
 		},
 	}
 
