@@ -28,8 +28,7 @@ func init() {
 type Interface struct {
 	*daemon.Interface
 
-	whitelistMap map[crypto.Key]any
-	blacklistMap map[crypto.Key]any
+	peerMap map[crypto.Key]bool
 
 	logger *zap.Logger
 }
@@ -40,18 +39,17 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	pd := &Interface{
-		Interface:    i,
-		whitelistMap: map[crypto.Key]any{},
-		blacklistMap: map[crypto.Key]any{},
-		logger:       zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
+		Interface: i,
+		peerMap:   map[crypto.Key]bool{},
+		logger:    zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
 	}
 
 	for _, k := range pd.Settings.PeerDisc.Whitelist {
-		pd.whitelistMap[crypto.Key(k)] = nil
+		pd.peerMap[crypto.Key(k)] = true
 	}
 
 	for _, k := range pd.Settings.PeerDisc.Blacklist {
-		pd.blacklistMap[crypto.Key(k)] = nil
+		pd.peerMap[crypto.Key(k)] = false
 	}
 
 	if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
@@ -67,8 +65,6 @@ func (pd *Interface) Start() error {
 	pd.logger.Info("Started peer discovery")
 
 	// Subscribe to peer updates
-	// TODO: Support per-interface communities
-
 	kp := &crypto.KeyPair{
 		Ours:   crypto.Key(pd.Settings.PeerDisc.Community),
 		Theirs: signaling.AnyKey,
@@ -147,16 +143,8 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 }
 
 func (pd *Interface) isAccepted(pk crypto.Key) bool {
-	if pd.whitelistMap != nil {
-		if _, ok := pd.whitelistMap[pk]; !ok {
-			return false
-		}
-	}
-
-	if pd.blacklistMap != nil {
-		if _, ok := pd.whitelistMap[pk]; ok {
-			return false
-		}
+	if verdict, ok := pd.peerMap[pk]; ok {
+		return verdict
 	}
 
 	return true
