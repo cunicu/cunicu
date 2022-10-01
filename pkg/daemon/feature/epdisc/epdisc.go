@@ -33,8 +33,6 @@ func init() {
 type Interface struct {
 	*daemon.Interface
 
-	Discovery *Interface
-
 	nat *proxy.NAT
 
 	natRule      *proxy.NATRule
@@ -97,6 +95,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	i.OnModified(e)
+	i.OnPeer(e)
 
 	return e, nil
 }
@@ -155,7 +154,7 @@ func (e *Interface) UpdateRedirects() error {
 		return nil
 	}
 
-	// Delete old rules if presetn
+	// Delete old rules if present
 	if e.natRule != nil {
 		if err := e.natRule.Delete(); err != nil {
 			return fmt.Errorf("failed to delete rule: %w", err)
