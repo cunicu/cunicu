@@ -194,7 +194,7 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 		return strings.ContainsAny(s, "*?[]\\")
 	}
 
-	for name := range d.Config.Interfaces {
+	for _, name := range d.Config.InterfaceOrder {
 		if isPattern(name) {
 			continue
 		}

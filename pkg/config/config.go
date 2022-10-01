@@ -29,8 +29,9 @@ type Config struct {
 	Domains []string
 	Watch   bool
 
-	Providers      []Provider
-	InterfaceOrder []string
+	Providers         []Provider
+	InterfaceOrder    []string
+	InterfaceOrderCLI []string
 
 	onInterfaceChanged map[string]*Meta
 
@@ -48,7 +49,7 @@ func ParseArgs(args ...string) (*Config, error) {
 		return nil, fmt.Errorf("failed to parse command line flags: %w", err)
 	}
 
-	return c, c.Init()
+	return c, c.Init(c.flags.Args())
 }
 
 // New creates a new configuration instance.
@@ -106,13 +107,13 @@ func New(flags *pflag.FlagSet) *Config {
 	return c
 }
 
-func (c *Config) Init() error {
-	c.InterfaceOrder = c.flags.Args()
-
+func (c *Config) Init(args []string) error {
 	// We recreate the logger here, as the logger created
 	// in New() was created in init() before the logging system
 	// was initialized.
 	c.logger = zap.L().Named("config")
+
+	c.InterfaceOrderCLI = args
 
 	ps, err := c.GetProviders()
 	if err != nil {
@@ -148,7 +149,7 @@ func (c *Config) Reload() (map[string]Change, error) {
 // ReloadSource reloads a specific configuration source or all of nil is passed
 func (c *Config) ReloadSource(src *Source) (map[string]Change, error) {
 	newKoanf := koanf.New(".")
-	newOrder := c.flags.Args()
+	newOrder := c.InterfaceOrderCLI
 
 	for _, s := range c.Sources {
 		if src == nil || src == s {
