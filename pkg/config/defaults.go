@@ -117,15 +117,17 @@ func InitDefaults() error {
 
 	logger := zap.L().Named("config")
 
+	s := &DefaultSettings.DefaultInterfaceSettings
+
 	// Check if WireGuard interface can be created by the kernel
-	if !DefaultInterfaceSettings.WireGuard.UserSpace && !wg.KernelModuleExists() {
+	if !s.WireGuard.UserSpace && !wg.KernelModuleExists() {
 		logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
-		DefaultInterfaceSettings.WireGuard.UserSpace = true
+		s.WireGuard.UserSpace = true
 	}
 
 	// Set default hostname
-	if DefaultInterfaceSettings.PeerDisc.Hostname == "" {
-		if DefaultInterfaceSettings.PeerDisc.Hostname, err = os.Hostname(); err != nil {
+	if s.PeerDisc.Name == "" {
+		if s.PeerDisc.Name, err = os.Hostname(); err != nil {
 			return fmt.Errorf("failed to get hostname: %w", err)
 		}
 	}

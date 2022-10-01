@@ -6,7 +6,6 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -36,7 +35,7 @@ func (pd *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, m co
 
 func (pd *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
 	if msg.Peer != nil {
-		if i := pd.Daemon.Watcher.InterfaceByPublicKey(kp.Theirs); i != nil {
+		if i := pd.Daemon.InterfaceByPublicKey(kp.Theirs); i != nil {
 			// Received our own peer description. Ignoring...
 			return
 		}
@@ -47,8 +46,10 @@ func (pd *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling
 	}
 }
 
-func (pd *Interface) OnPeerDescription(pdisc *pdiscproto.PeerDescription) error {
-	pk, err := crypto.ParseKeyBytes(pdisc.PublicKey)
+func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
+	pd.logger.Debug("Received peer description", zap.Any("description", d))
+
+	pk, err := crypto.ParseKeyBytes(d.PublicKey)
 	if err != nil {
 		return fmt.Errorf("invalid public key: %w", err)
 	}
@@ -58,65 +59,68 @@ func (pd *Interface) OnPeerDescription(pdisc *pdiscproto.PeerDescription) error 
 		return nil
 	}
 
-	p := pd.Daemon.PeerByPublicKey(&pk)
+	cp := pd.Peers[pk]
 
-	switch pdisc.Change {
+	switch d.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
-		if p != nil {
+		if cp != nil {
 			pd.logger.Warn("Peer already exists. Updating it instead")
-			pdisc.Change = pdiscproto.PeerDescriptionChange_PEER_UPDATE
+			d.Change = pdiscproto.PeerDescriptionChange_PEER_UPDATE
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
-		if p == nil {
+		if cp == nil {
 			pd.logger.Warn("Peer does not exist exists yet. Adding it instead")
-			pdisc.Change = pdiscproto.PeerDescriptionChange_PEER_ADD
+			d.Change = pdiscproto.PeerDescriptionChange_PEER_ADD
 		}
 
 	default:
-		if p == nil {
-			return fmt.Errorf("cant remove non-existing peer")
+		if cp == nil {
+			pd.logger.Warn("Ignoring non-existing peer")
+			return nil
 		}
 	}
 
-	cfg := pdisc.Config()
+	cfg := d.Config()
 
-	switch pdisc.Change {
+	if d.Name != "" {
+		pd.peerNames[pk] = d.Name
+	}
+
+	switch d.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
 		if err := pd.AddPeer(&cfg); err != nil {
 			return fmt.Errorf("failed to add peer: %w", err)
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
-		if pdisc.PublicKeyNew != nil {
+		if d.PublicKeyNew != nil {
 			// Remove old peer
-			if err := p.Interface.RemovePeer(pk); err != nil {
+			if err := cp.Interface.RemovePeer(pk); err != nil {
 				return fmt.Errorf("failed to remove peer: %w", err)
 			}
 
 			// Re-add peer with new public key
-			if err := p.Interface.AddPeer(&cfg); err != nil {
+			if err := cp.Interface.AddPeer(&cfg); err != nil {
 				return fmt.Errorf("failed to add peer: %w", err)
 			}
 		} else {
-			if err := p.Interface.UpdatePeer(&cfg); err != nil {
+			if err := cp.Interface.UpdatePeer(&cfg); err != nil {
 				return fmt.Errorf("failed to remove peer: %w", err)
 			}
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_REMOVE:
-		if err := p.Interface.RemovePeer(pk); err != nil {
+		if err := cp.Interface.RemovePeer(pk); err != nil {
 			return fmt.Errorf("failed to remove peer: %w", err)
 		}
 	}
 
 	// Re-announce ourself in case this is a new peer we did not knew already
-	if p == nil {
-		// TODO: Check if delay is really necessary
+	if cp == nil {
+		// TODO: Fix the race which requires the delay
 		time.AfterFunc(1*time.Second, func() {
-			if err := pd.Daemon.ForEachInterface(func(i *daemon.Interface) error {
-				return pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil)
-			}); err != nil {
+			if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
 				pd.logger.Error("Failed to send peer description", zap.Error(err))
 			}
 		})
@@ -124,3 +128,11 @@ func (pd *Interface) OnPeerDescription(pdisc *pdiscproto.PeerDescription) error 
 
 	return nil
 }
+
+func (pd *Interface) OnPeerAdded(p *core.Peer) {
+	if name, ok := pd.peerNames[p.PublicKey()]; ok {
+		p.Name = name
+	}
+}
+
+func (pd *Interface) OnPeerRemoved(p *core.Peer) {}

@@ -16,7 +16,7 @@ message PeerDescription {
     PeerDescriptionChange change = 1;
     
     // Hostname of the node
-    string hostname = 2;
+    string name = 2;
     
     // Public WireGuard Curve25519 key
     bytes public_key = 3;
