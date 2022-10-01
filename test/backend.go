@@ -13,7 +13,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/signaling"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feat/epdisc"
+	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 type readyHandler struct {

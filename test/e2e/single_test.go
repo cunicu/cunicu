@@ -79,19 +79,23 @@ var _ = Context("single: A single node to test RPC and watcher", Pending, func()
 		})
 	})
 
-	Context("hsync: /etc/hosts synchronization", func() {
+	Context("autocfg: Auto-configuration of missing interface parameters", Pending, func() {
 
 	})
 
-	Context("rtsync: Route synchronization", func() {
+	Context("cfgsync: Config file synchronization", Pending, func() {
 
 	})
 
-	Context("cfgsync: Config file synchronization", func() {
+	Context("hooks: Hook execution", Pending, func() {
 
 	})
 
-	Context("autocfg: Auto-configuration of missing interface parameters", func() {
+	Context("hsync: /etc/hosts synchronization", Pending, func() {
+
+	})
+
+	Context("rtsync: Route synchronization", Pending, func() {
 
 	})
 })
