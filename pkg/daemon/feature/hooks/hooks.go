@@ -24,6 +24,8 @@ type Hook interface {
 type Interface struct {
 	*daemon.Interface
 
+	hooks []Hook
+
 	logger *zap.Logger
 }
 
@@ -37,31 +39,42 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		logger:    zap.L().Named("hooks").With(zap.String("intf", i.Name())),
 	}
 
-	for _, hk := range i.Settings.Hooks {
-		switch hk := hk.(type) {
+	for _, hks := range i.Settings.Hooks {
+		var hk Hook
+		switch hks := hks.(type) {
 		case *config.ExecHookSetting:
-			h.NewExecHook(hk)
+			hk = h.NewExecHook(hks)
 		case *config.WebHookSetting:
-			h.NewWebHook(hk)
+			hk = h.NewWebHook(hks)
 		}
+
+		h.OnModified(hk)
+		h.OnPeer(hk)
+
+		if ep, ok := h.Features["epdisc"]; ok {
+			ep.(*epdisc.Interface).OnConnectionStateChange(hk)
+		}
+
+		h.hooks = append(h.hooks, hk)
 	}
 
 	return h, nil
 }
 
-func (h *Interface) registerHook(j Hook) {
-	h.Daemon.Watcher.OnAll(j)
-
-	ep := h.Features["epdisc"].(*epdisc.Interface)
-	ep.OnConnectionStateChange(j)
-}
-
 func (h *Interface) Start() error {
 	h.logger.Info("Started hooks")
+
+	for _, hk := range h.hooks {
+		hk.OnInterfaceAdded(h.Interface.Interface)
+	}
 
 	return nil
 }
 
 func (h *Interface) Close() error {
+	for _, hk := range h.hooks {
+		hk.OnInterfaceRemoved(h.Interface.Interface)
+	}
+
 	return nil
 }

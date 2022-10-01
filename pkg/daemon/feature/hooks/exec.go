@@ -26,7 +26,7 @@ type ExecHook struct {
 	logger *zap.Logger
 }
 
-func (h *Interface) NewExecHook(cfg *config.ExecHookSetting) {
+func (h *Interface) NewExecHook(cfg *config.ExecHookSetting) *ExecHook {
 	hk := &ExecHook{
 		ExecHookSetting: cfg,
 		logger: h.logger.Named("exec").With(
@@ -36,7 +36,7 @@ func (h *Interface) NewExecHook(cfg *config.ExecHookSetting) {
 
 	h.logger.Debug("Created new exec hook", zap.Any("hook", hk))
 
-	h.registerHook(hk)
+	return hk
 }
 
 func (h *ExecHook) run(msg proto.Message, args ...any) {
