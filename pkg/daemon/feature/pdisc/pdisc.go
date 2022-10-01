@@ -106,10 +106,15 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	// But networks are taken in full
 	allowedIPs = append(allowedIPs, pd.Settings.PeerDisc.Networks...)
 
+	allowedIPsStrs := []string{}
+	for _, aip := range allowedIPs {
+		allowedIPsStrs = append(allowedIPsStrs, aip.String())
+	}
+
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
 		Hostname:   pd.Settings.PeerDisc.Hostname,
-		AllowedIps: util.SliceString(allowedIPs),
+		AllowedIps: allowedIPsStrs,
 		BuildInfo:  buildinfo.BuildInfo(),
 	}
 
