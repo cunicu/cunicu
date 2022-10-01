@@ -70,14 +70,14 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create control socket server to manage daemon
-	svr, err := rpc.NewServer(d, cfg.RPC.Socket)
+	s, err := rpc.NewServer(d, cfg.RPC.Socket)
 	if err != nil {
 		logger.Fatal("Failed to initialize control socket", zap.Error(err))
 	}
 
 	// Delay startup until control socket client has un-waited the daemon
 	if cfg.RPC.Wait {
-		svr.Wait()
+		s.Wait()
 	}
 
 	// Blocks until stopped
@@ -85,7 +85,7 @@ func daemon(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed start daemon", zap.Error(err))
 	}
 
-	if err := svr.Close(); err != nil {
+	if err := s.Close(); err != nil {
 		logger.Fatal("Failed to close server", zap.Error(err))
 	}
 

@@ -94,7 +94,6 @@ func (a *Interface) configureWireGuardInterface() error {
 	var err error
 
 	cfg := wgtypes.Config{}
-	configure := false
 
 	// Private key
 	if !a.PrivateKey().IsSet() || (a.Settings.WireGuard.PrivateKey.IsSet() && a.Settings.WireGuard.PrivateKey != a.PrivateKey()) {
@@ -109,7 +108,6 @@ func (a *Interface) configureWireGuardInterface() error {
 		}
 
 		cfg.PrivateKey = (*wgtypes.Key)(&sk)
-		configure = true
 	}
 
 	// Listen port
@@ -131,11 +129,9 @@ func (a *Interface) configureWireGuardInterface() error {
 
 			cfg.ListenPort = &port
 		}
-
-		configure = true
 	}
 
-	if configure {
+	if cfg.PrivateKey != nil || cfg.ListenPort != nil {
 		if err := a.Daemon.Client.ConfigureDevice(a.Name(), cfg); err != nil {
 			return fmt.Errorf("failed to configure device: %w", err)
 		}
