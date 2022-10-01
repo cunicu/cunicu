@@ -7,7 +7,6 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func (a *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
@@ -54,11 +53,6 @@ func (a *Interface) OnPeerAdded(p *core.Peer) {
 	if err := p.AddAllowedIP(ipV6); err != nil {
 		logger.Error("Failed to add link-local IPv6 address to AllowedIPs", zap.Error(err))
 	}
-
-	p.OnModified(a)
 }
 
 func (a *Interface) OnPeerRemoved(p *core.Peer) {}
-
-func (a *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
-}
