@@ -128,7 +128,7 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 
 	qis := []*coreproto.Interface{}
 	s.daemon.ForEachInterface(func(i *daemon.Interface) error {
-		epi := s.epdisc.InterfaceByCore(i.Interface)
+		epi := s.epdisc.Interface(i)
 
 		if p.Interface == "" || i.Name() == p.Interface {
 			qi := i.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {

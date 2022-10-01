@@ -30,6 +30,8 @@ type Daemon struct {
 	devices    []device.Device
 	interfaces map[*core.Interface]*Interface
 
+	onInterface []InterfaceHandler
+
 	stop          chan any
 	reexecOnClose bool
 
@@ -45,10 +47,11 @@ func New(cfg *config.Config) (*Daemon, error) {
 	}
 
 	d := &Daemon{
-		Config:     cfg,
-		devices:    []device.Device{},
-		interfaces: map[*core.Interface]*Interface{},
-		stop:       make(chan any),
+		Config:      cfg,
+		devices:     []device.Device{},
+		interfaces:  map[*core.Interface]*Interface{},
+		onInterface: []InterfaceHandler{},
+		stop:        make(chan any),
 	}
 
 	d.logger = zap.L().Named("daemon")
@@ -69,7 +72,7 @@ func New(cfg *config.Config) (*Daemon, error) {
 		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
 	}
 
-	// Create backend
+	// Create signaling backend
 	urls := []*url.URL{}
 	for _, u := range cfg.Backends {
 		urls = append(urls, &u.URL)
@@ -215,29 +218,6 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 	}
 
 	return nil
-}
-
-func (d *Daemon) OnInterfaceAdded(ci *core.Interface) {
-	i, err := d.NewInterface(ci)
-	if err != nil {
-		d.logger.Error("Failed to add interface", zap.Error(err))
-	}
-
-	d.interfaces[ci] = i
-
-	if err := i.Start(); err != nil {
-		d.logger.Error("Failed to start interface", zap.Error(err))
-	}
-}
-
-func (d *Daemon) OnInterfaceRemoved(ci *core.Interface) {
-	i := d.interfaces[ci]
-
-	if err := i.Close(); err != nil {
-		d.logger.Error("Failed to close interface", zap.Error(err))
-	}
-
-	delete(d.interfaces, ci)
 }
 
 // Simple wrappers for d.Watcher.InterfaceBy*
