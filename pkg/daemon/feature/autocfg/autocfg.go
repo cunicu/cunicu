@@ -100,6 +100,8 @@ func (a *Interface) configureWireGuardInterface() error {
 	if !a.PrivateKey().IsSet() || (a.Settings.WireGuard.PrivateKey.IsSet() && a.Settings.WireGuard.PrivateKey != a.PrivateKey()) {
 		sk := a.Settings.WireGuard.PrivateKey
 		if !sk.IsSet() {
+			a.logger.Warn("Device has no private key. Setting a random one.")
+
 			sk, err = crypto.GeneratePrivateKey()
 			if err != nil {
 				return fmt.Errorf("failed to generate private key: %w", err)
@@ -112,11 +114,13 @@ func (a *Interface) configureWireGuardInterface() error {
 
 	// Listen port
 	if a.ListenPort == 0 || (a.Settings.WireGuard.ListenPort != nil && a.ListenPort != *a.Settings.WireGuard.ListenPort) {
+		if a.ListenPort == 0 {
+			a.logger.Warn("Device has no listen port. Setting a random one.")
+		}
+
 		if a.Settings.WireGuard.ListenPort != nil {
 			cfg.ListenPort = a.Settings.WireGuard.ListenPort
 		} else {
-			a.logger.Warn("Device has no listen port. Setting a random one.")
-
 			port, err := util.FindNextPortToListen("udp",
 				a.Settings.WireGuard.ListenPortRange.Min,
 				a.Settings.WireGuard.ListenPortRange.Max,
