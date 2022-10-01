@@ -260,7 +260,7 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	p.Peer = new
 
 	if mod != PeerModifiedNone {
-		p.logger.Info("Peer has been modified", zap.Strings("changes", mod.Strings()))
+		p.logger.Debug("Peer has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range p.onModified {
 			h.OnPeerModified(p, old, mod, ipsAdded, ipsRemoved)
