@@ -277,6 +277,7 @@ func (p *Peer) Marshal() *coreproto.Peer {
 	}
 
 	q := &coreproto.Peer{
+		Name:                        p.Name,
 		PublicKey:                   p.PublicKey().Bytes(),
 		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval / time.Second),
 		TransmitBytes:               p.TransmitBytes,

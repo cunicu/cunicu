@@ -7,29 +7,31 @@ import "common.proto";
 import "feature/epdisc.proto";
 
 message Peer {
+    string name = 1;
+
     // Public WireGuard X25519 key
-    bytes public_key = 1;
-    bytes preshared_key = 2;
+    bytes public_key = 2;
+    bytes preshared_key = 3;
 
     // List of allowed IPs
-    repeated string allowed_ips = 3;
+    repeated string allowed_ips = 4;
 
-    uint32 persistent_keepalive_interval = 4;
+    uint32 persistent_keepalive_interval = 5;
 
     // Timestamps
-    Timestamp last_handshake_timestamp = 5;
-    Timestamp last_receive_timestamp = 6;
-    Timestamp last_transmit_timestamp = 7;
+    Timestamp last_handshake_timestamp = 6;
+    Timestamp last_receive_timestamp = 7;
+    Timestamp last_transmit_timestamp = 8;
 
     // Trafic counters
-    int64 transmit_bytes = 8;
-    int64 receive_bytes = 9;
+    int64 transmit_bytes = 9;
+    int64 receive_bytes = 10;
 
     // WireGuard endpoint address
-    string endpoint = 10;
+    string endpoint = 11;
 
     // WireGuard protocol version
-    uint32 protocol_version = 11;
+    uint32 protocol_version = 12;
 
-    epdisc.Peer ice = 12;
+    epdisc.Peer ice = 13;
 }
