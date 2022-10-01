@@ -191,7 +191,7 @@ func (p *Peer) AddAllowedIP(a net.IPNet) error {
 		},
 	}
 
-	p.logger.Debug("Adding new allowed IP", zap.Any("ip", a))
+	p.logger.Debug("Adding new allowed IP", zap.String("ip", a.String()))
 
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
