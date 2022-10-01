@@ -26,7 +26,7 @@ type Device interface {
 	SetDown() error
 
 	AddAddress(ip net.IPNet) error
-	AddRoute(dst net.IPNet, table int) error
+	AddRoute(dst net.IPNet, gw net.IP, table int) error
 
 	DeleteAddress(ip net.IPNet) error
 	DeleteRoute(dst net.IPNet, table int) error
