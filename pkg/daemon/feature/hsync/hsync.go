@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
@@ -64,7 +63,7 @@ func (hs *Interface) Hosts() []Host {
 		d = "." + d
 	}
 
-	hs.Daemon.ForEachPeer(func(p *core.Peer) error {
+	for _, p := range hs.Peers {
 		// We use a shorted version of the public key as a DNS name here
 		pkName := p.PublicKey().String()[:8]
 
@@ -84,9 +83,7 @@ func (hs *Interface) Hosts() []Host {
 		}
 
 		hosts = append(hosts, h)
-
-		return nil
-	})
+	}
 
 	return hosts
 }
