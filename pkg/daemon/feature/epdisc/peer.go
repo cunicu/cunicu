@@ -11,7 +11,6 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
@@ -28,18 +27,14 @@ import (
 type Peer struct {
 	*core.Peer
 
-	Discovery *Interface
-
-	config          *config.InterfaceSettings
-	agent           *ice.Agent
-	backend         signaling.Backend
-	proxy           proxy.Proxy
-	connectionState util.AtomicEnum[icex.ConnectionState]
-	lastStateChange time.Time
-	lastEndpoint    *net.UDPAddr
-	restarts        uint
-	credentials     protoepdisc.Credentials
-
+	intf                   *Interface
+	agent                  *ice.Agent
+	proxy                  proxy.Proxy
+	connectionState        util.AtomicEnum[icex.ConnectionState]
+	lastStateChange        time.Time
+	lastEndpoint           *net.UDPAddr
+	restarts               uint
+	credentials            protoepdisc.Credentials
 	signalingMessages      chan *signaling.Message
 	connectionStateChanges chan icex.ConnectionState
 
@@ -50,8 +45,8 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 	var err error
 
 	p := &Peer{
-		Peer:      cp,
-		Discovery: e,
+		Peer: cp,
+		intf: e,
 
 		signalingMessages:      make(chan *signaling.Message, 32),
 		connectionStateChanges: make(chan icex.ConnectionState, 32),
@@ -65,7 +60,7 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 
 	// Initialize signaling channel
 	kp := p.PublicPrivateKeyPair()
-	if _, err := p.backend.Subscribe(context.Background(), kp, p); err != nil {
+	if _, err := p.intf.Daemon.Backend.Subscribe(context.Background(), kp, p); err != nil {
 		// TODO: Attempt retry?
 		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
@@ -98,7 +93,7 @@ func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
 
 	// Create new subscription
 	kpNew := p.PublicPrivateKeyPair()
-	if _, err := p.backend.Subscribe(ctx, kpNew, p); err != nil {
+	if _, err := p.intf.Daemon.Backend.Subscribe(ctx, kpNew, p); err != nil {
 		return fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
 
@@ -108,7 +103,7 @@ func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
 		Theirs: p.PublicKey(),
 	}
 
-	if _, err := p.backend.Unsubscribe(ctx, kpOld, p); err != nil {
+	if _, err := p.intf.Daemon.Backend.Unsubscribe(ctx, kpOld, p); err != nil {
 		return fmt.Errorf("failed to unsubscribe from offers: %w", err)
 	}
 
@@ -174,7 +169,7 @@ func (p *Peer) sendCredentials(need bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
+	if err := p.intf.Daemon.Backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
 		return err
 	}
 
@@ -191,7 +186,7 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	if err := p.backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
+	if err := p.intf.Daemon.Backend.Publish(ctx, p.PublicPrivateKeyPair(), msg); err != nil {
 		return err
 	}
 
@@ -211,7 +206,7 @@ func (p *Peer) createAgent() error {
 
 	// Prepare ICE agent configuration
 	pk := p.Interface.PublicKey()
-	acfg, err := p.config.AgentConfig(context.Background(), &pk)
+	acfg, err := p.intf.Settings.AgentConfig(context.Background(), &pk)
 	if err != nil {
 		return fmt.Errorf("failed to generate ICE agent configuration: %w", err)
 	}
@@ -219,11 +214,11 @@ func (p *Peer) createAgent() error {
 	// Do not use WireGuard interfaces for ICE
 	origFilter := acfg.InterfaceFilter
 	acfg.InterfaceFilter = func(name string) bool {
-		return origFilter(name) && p.Discovery.Daemon.InterfaceByName(name) == nil
+		return origFilter(name) && p.intf.Daemon.InterfaceByName(name) == nil
 	}
 
-	acfg.UDPMux = p.Discovery.udpMux
-	acfg.UDPMuxSrflx = p.Discovery.udpMuxSrflx
+	acfg.UDPMux = p.intf.udpMux
+	acfg.UDPMuxSrflx = p.intf.udpMuxSrflx
 	acfg.LoggerFactory = log.NewPionLoggerFactory(p.logger)
 
 	p.credentials = protoepdisc.NewCredentials()
@@ -353,7 +348,7 @@ func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState
 		zap.String("new", strings.ToLower(new.String())),
 		zap.String("previous", strings.ToLower(prev.String())))
 
-	for _, h := range p.Discovery.onConnectionStateChange {
+	for _, h := range p.intf.onConnectionStateChange {
 		h.OnConnectionStateChange(p, new, prev)
 	}
 
@@ -371,7 +366,7 @@ func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 			zap.String("new", strings.ToLower(new.String())),
 			zap.String("previous", strings.ToLower(prev.String())))
 
-		for _, h := range p.Discovery.onConnectionStateChange {
+		for _, h := range p.intf.onConnectionStateChange {
 			h.OnConnectionStateChange(p, new, prev)
 		}
 	}

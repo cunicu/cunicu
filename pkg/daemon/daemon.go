@@ -15,18 +15,18 @@ import (
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
 	"github.com/stv0g/cunicu/pkg/signaling"
 )
 
 type Daemon struct {
-	*watcher.Watcher
-
 	// Shared
 	Backend *signaling.MultiBackend
-	Client  *wgctrl.Client
+	client  *wgctrl.Client
 	Config  *config.Config
 
+	watcher    *watcher.Watcher
 	devices    []device.Device
 	interfaces map[*core.Interface]*Interface
 
@@ -56,19 +56,13 @@ func New(cfg *config.Config) (*Daemon, error) {
 
 	d.logger = zap.L().Named("daemon")
 
-	// Initialize some defaults configuration settings at runtime
-	if err = config.InitDefaults(); err != nil {
-		return nil, fmt.Errorf("failed to initialize defaults: %w", err)
-	}
-
 	// Create WireGuard netlink socket
-	d.Client, err = wgctrl.New()
-	if err != nil {
+	if d.client, err = wgctrl.New(); err != nil {
 		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
 	}
 
 	// Create watcher
-	if d.Watcher, err = watcher.New(d.Client, cfg.WatchInterval, cfg.InterfaceFilter); err != nil {
+	if d.watcher, err = watcher.New(d.client, cfg.WatchInterval, cfg.InterfaceFilter); err != nil {
 		return nil, fmt.Errorf("failed to initialize watcher: %w", err)
 	}
 
@@ -78,13 +72,11 @@ func New(cfg *config.Config) (*Daemon, error) {
 		urls = append(urls, &u.URL)
 	}
 
-	if d.Backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{
-		OnReady: []signaling.BackendReadyHandler{},
-	}); err != nil {
+	if d.Backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{}); err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
 	}
 
-	d.Watcher.OnInterface(d)
+	d.watcher.OnInterface(d)
 
 	return d, nil
 }
@@ -100,13 +92,9 @@ func (d *Daemon) Run() error {
 
 	signals := util.SetupSignals(util.SigUpdate)
 
-	d.logger.Debug("Started initial synchronization")
-	if err := d.Watcher.Sync(); err != nil {
-		d.logger.Fatal("Initial synchronization failed", zap.Error(err))
-	}
-	d.logger.Debug("Finished initial synchronization")
+	go d.watcher.Watch()
 
-	go d.Watcher.Watch()
+	d.watcher.Sync()
 
 out:
 	for {
@@ -142,7 +130,7 @@ func (d *Daemon) Restart() {
 }
 
 func (d *Daemon) Sync() error {
-	if err := d.Watcher.Sync(); err != nil {
+	if err := d.watcher.Sync(); err != nil {
 		return err
 	}
 
@@ -156,13 +144,7 @@ func (d *Daemon) Sync() error {
 }
 
 func (d *Daemon) Close() error {
-	for _, dev := range d.devices {
-		if err := dev.Close(); err != nil {
-			return fmt.Errorf("failed to delete device: %w", err)
-		}
-	}
-
-	if err := d.Watcher.Close(); err != nil {
+	if err := d.watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close watcher: %w", err)
 	}
 
@@ -172,7 +154,13 @@ func (d *Daemon) Close() error {
 		}
 	}
 
-	if err := d.Client.Close(); err != nil {
+	for _, dev := range d.devices {
+		if err := dev.Close(); err != nil {
+			return fmt.Errorf("failed to delete device: %w", err)
+		}
+	}
+
+	if err := d.client.Close(); err != nil {
 		return fmt.Errorf("failed to close WireGuard client: %w", err)
 	}
 
@@ -189,7 +177,7 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 	var devs wg.DeviceList
 	var err error
 
-	if devs, err = d.Client.Devices(); err != nil {
+	if devs, err = d.client.Devices(); err != nil {
 		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
@@ -227,7 +215,7 @@ func (d *Daemon) InterfaceByCore(ci *core.Interface) *Interface {
 }
 
 func (d *Daemon) InterfaceByName(name string) *Interface {
-	ci := d.Watcher.InterfaceByName(name)
+	ci := d.watcher.InterfaceByName(name)
 	if ci == nil {
 		return nil
 	}
@@ -236,7 +224,7 @@ func (d *Daemon) InterfaceByName(name string) *Interface {
 }
 
 func (d *Daemon) InterfaceByPublicKey(pk crypto.Key) *Interface {
-	ci := d.Watcher.InterfaceByPublicKey(pk)
+	ci := d.watcher.InterfaceByPublicKey(pk)
 	if ci == nil {
 		return nil
 	}
@@ -245,7 +233,7 @@ func (d *Daemon) InterfaceByPublicKey(pk crypto.Key) *Interface {
 }
 
 func (d *Daemon) InterfaceByIndex(idx int) *Interface {
-	ci := d.Watcher.InterfaceByIndex(idx)
+	ci := d.watcher.InterfaceByIndex(idx)
 	if ci == nil {
 		return nil
 	}
@@ -261,4 +249,12 @@ func (d *Daemon) ForEachInterface(cb func(i *Interface) error) error {
 	}
 
 	return nil
+}
+
+func (d *Daemon) ConfigureDevice(name string, cfg wgtypes.Config) error {
+	if err := d.client.ConfigureDevice(name, cfg); err != nil {
+		return err
+	}
+
+	return d.watcher.Sync()
 }

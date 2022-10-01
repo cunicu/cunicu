@@ -10,7 +10,6 @@ import (
 )
 
 func (a *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
-
 	// Update link-local addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
 		oldPk := crypto.Key(old.PublicKey)

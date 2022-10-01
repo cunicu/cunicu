@@ -58,6 +58,7 @@ type Watcher struct {
 	events chan InterfaceEvent
 	errors chan error
 	stop   chan any
+	manual chan any
 
 	// Settings
 	filter   InterfaceFilterFunc
@@ -80,6 +81,7 @@ func New(client *wgctrl.Client, interval time.Duration, filter InterfaceFilterFu
 		events: make(chan InterfaceEvent, 16),
 		errors: make(chan error, 16),
 		stop:   make(chan any),
+		manual: make(chan any, 16),
 
 		logger: zap.L().Named("watcher"),
 	}, nil
@@ -117,18 +119,23 @@ func (w *Watcher) Watch() {
 out:
 	for {
 		select {
+		case <-w.manual:
+			logger.Debug("Start manual interface synchronization")
+			if err := w.sync(); err != nil {
+				w.logger.Error("Synchronization failed", zap.Error(err))
+			}
+
 		// We still a need periodic sync we can not (yet) monitor WireGuard interfaces
 		// for changes via a netlink socket (patch is pending)
 		case <-ticker.C:
-			logger.Debug("Started periodic interface synchronization")
-			if err := w.Sync(); err != nil {
+			logger.Debug("Start periodic interface synchronization")
+			if err := w.sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}
-			logger.Debug("Completed periodic interface synchronization")
 
 		case event := <-w.events:
 			logger.Debug("Received interface event", zap.Any("event", event))
-			if err := w.Sync(); err != nil {
+			if err := w.sync(); err != nil {
 				w.logger.Error("Synchronization failed", zap.Error(err))
 			}
 
@@ -142,6 +149,12 @@ out:
 }
 
 func (w *Watcher) Sync() error {
+	w.manual <- nil
+
+	return nil
+}
+
+func (w *Watcher) sync() error {
 	var err error
 	var new = []*wgtypes.Device{}
 	var old = w.devices
