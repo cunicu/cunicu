@@ -11,7 +11,6 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
@@ -52,8 +51,11 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		pd.peerMap[crypto.Key(k)] = false
 	}
 
-	if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
-		pd.logger.Error("Failed to send peer description", zap.Error(err))
+	// Avoid sending a peer description if the interface does not have a private key yet
+	if i.PublicKey().IsSet() {
+		if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
+			pd.logger.Error("Failed to send peer description", zap.Error(err))
+		}
 	}
 
 	i.OnModified(pd)
