@@ -13,6 +13,7 @@ checksum:
 # Signing is disabled here as we can not perform it in the CI
 # Its is expected that the maintainer adds the checksum.asc file to the release by hand
 # after the CI pipeline has created the release.
+# This procedure is automated by the script: scripts/sign_release.sh
 # signs:
 # - artifacts: checksum
 #   signature: "${artifact}.asc"
@@ -37,19 +38,29 @@ builds:
   goarch:
   - amd64
   - arm64
-  # - mips
+  - mips64
+  - mips64le
+  - riscv64
+  - ppc64le
+  - s390x
+  # TODO: Reenable for Go 1.19.2 when the following issue has been fixed:
+  #       https://github.com/golang/go/issues/54991
+  # - "386"
   # - arm
+  # - mips
+  # - mipsle 
   
   goarm:
   - "7"
 
   gomips:
   - softfloat
-  - hardfloat
 
   ignore:
   - goos: windows
     goarch: arm
+  - goos: windows
+    goarch: "386"
 
   ldflags:
   - -s
