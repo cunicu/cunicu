@@ -43,6 +43,7 @@ in which WireGuard kernel support has not landed yet.
 * [cunicu completion](cunicu_completion.md)	 - Generate the autocompletion script for the specified shell
 * [cunicu config](cunicu_config.md)	 - Manage configuration of a running cunīcu daemon.
 * [cunicu daemon](cunicu_daemon.md)	 - Start the daemon
+* [cunicu invite](cunicu_invite.md)	 - Add a new peer to the local daemon configuration and return the required configuration for this new peer
 * [cunicu monitor](cunicu_monitor.md)	 - Monitor the cunīcu daemon for events
 * [cunicu relay](cunicu_relay.md)	 - Start relay API server
 * [cunicu restart](cunicu_restart.md)	 - Restart the cunīcu daemon
