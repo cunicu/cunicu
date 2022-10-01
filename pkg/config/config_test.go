@@ -296,7 +296,7 @@ var _ = Context("config", func() {
 			err = cfg2.Koanf.Load(rawbytes.Provider(buf.Bytes()), yaml.Parser())
 			Expect(err).To(Succeed())
 
-			err = cfg2.Init()
+			err = cfg2.Init(nil)
 			Expect(err).To(Succeed())
 
 			icfg1 = &cfg1.DefaultInterfaceSettings

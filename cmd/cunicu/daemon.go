@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapio"
 
 	"github.com/stv0g/cunicu/pkg/config"
-	daem "github.com/stv0g/cunicu/pkg/daemon"
+	d "github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/rpc"
 	"github.com/stv0g/cunicu/pkg/util/terminal"
 )
@@ -50,7 +50,7 @@ func init() {
 func daemon(cmd *cobra.Command, args []string) {
 	io.WriteString(os.Stdout, Banner(color))
 
-	if err := cfg.Init(); err != nil {
+	if err := cfg.Init(args); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
 
@@ -64,7 +64,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create daemon
-	d, err := daem.New(cfg)
+	d, err := d.New(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create daemon", zap.Error(err))
 	}
