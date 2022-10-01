@@ -113,6 +113,11 @@ func (c *Config) Init(args []string) error {
 	// was initialized.
 	c.logger = zap.L().Named("config")
 
+	// Initialize some defaults configuration settings at runtime
+	if err := InitDefaults(); err != nil {
+		return fmt.Errorf("failed to initialize defaults: %w", err)
+	}
+
 	c.InterfaceOrderCLI = args
 
 	ps, err := c.GetProviders()

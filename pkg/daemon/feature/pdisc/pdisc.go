@@ -27,7 +27,8 @@ func init() {
 type Interface struct {
 	*daemon.Interface
 
-	peerMap map[crypto.Key]bool
+	peerFilter map[crypto.Key]bool
+	peerNames  map[crypto.Key]string
 
 	logger *zap.Logger
 }
@@ -38,17 +39,18 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	pd := &Interface{
-		Interface: i,
-		peerMap:   map[crypto.Key]bool{},
-		logger:    zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
+		Interface:  i,
+		peerFilter: map[crypto.Key]bool{},
+		peerNames:  map[crypto.Key]string{},
+		logger:     zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
 	}
 
 	for _, k := range pd.Settings.PeerDisc.Whitelist {
-		pd.peerMap[crypto.Key(k)] = true
+		pd.peerFilter[crypto.Key(k)] = true
 	}
 
 	for _, k := range pd.Settings.PeerDisc.Blacklist {
-		pd.peerMap[crypto.Key(k)] = false
+		pd.peerFilter[crypto.Key(k)] = false
 	}
 
 	// Avoid sending a peer description if the interface does not have a private key yet
@@ -59,6 +61,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	i.OnModified(pd)
+	i.OnPeer(pd)
 
 	return pd, nil
 }
@@ -115,7 +118,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
-		Hostname:   pd.Settings.PeerDisc.Hostname,
+		Name:       pd.Settings.PeerDisc.Name,
 		AllowedIps: allowedIPsStrs,
 		BuildInfo:  buildinfo.BuildInfo(),
 	}
@@ -150,7 +153,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 }
 
 func (pd *Interface) isAccepted(pk crypto.Key) bool {
-	if verdict, ok := pd.peerMap[pk]; ok {
+	if verdict, ok := pd.peerFilter[pk]; ok {
 		return verdict
 	}
 

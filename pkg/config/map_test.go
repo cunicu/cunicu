@@ -24,13 +24,13 @@ var _ = It("map", func() {
 					},
 				},
 				PeerDisc: config.PeerDiscoverySettings{
-					Hostname: "test",
+					Name: "test",
 				},
 			},
 		},
 		DefaultInterfaceSettings: config.InterfaceSettings{
 			PeerDisc: config.PeerDiscoverySettings{
-				Hostname: "test2",
+				Name: "test2",
 			},
 			Hooks: []config.HookSetting{
 				&config.ExecHookSetting{
