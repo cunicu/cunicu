@@ -20,7 +20,7 @@ func init() {
 	daemon.Features["hsync"] = &daemon.FeaturePlugin{
 		New:         New,
 		Description: "Hosts synchronization",
-		Order:       40,
+		Order:       100,
 	}
 }
 

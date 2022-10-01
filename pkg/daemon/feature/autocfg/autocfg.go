@@ -132,7 +132,7 @@ func (a *Interface) configureWireGuardInterface() error {
 	}
 
 	if cfg.PrivateKey != nil || cfg.ListenPort != nil {
-		if err := a.Daemon.Client.ConfigureDevice(a.Name(), cfg); err != nil {
+		if err := a.Daemon.ConfigureDevice(a.Name(), cfg); err != nil {
 			return fmt.Errorf("failed to configure device: %w", err)
 		}
 	}
