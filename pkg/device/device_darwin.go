@@ -7,10 +7,12 @@ import (
 	"github.com/stv0g/cunicu/pkg/errors"
 )
 
-func (d *BSDKernelDevice) AddRoute(dst net.IPNet, table int) error {
+func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 	if table != 0 {
 		return errors.ErrNotSupported
 	}
+
+	// TODO: Use proper gateway
 
 	return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
 }

@@ -6,7 +6,9 @@ import (
 	"os/exec"
 )
 
-func (d *BSDKernelDevice) AddRoute(dst net.IPNet, table int) error {
+func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
+	// TODO: Use proper gateway
+
 	return exec.Command("setfib", fmt.Sprint(table), "route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
 }
 
