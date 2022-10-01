@@ -21,8 +21,7 @@ type Interface struct {
 	*daemon.Interface
 
 	gwMap map[netip.Addr]*core.Peer
-
-	stop chan struct{}
+	stop  chan struct{}
 
 	logger *zap.Logger
 }
@@ -40,7 +39,6 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	i.OnPeer(rs)
-	// i.Daemon.Config.OnInterfaceChanged("rtsync", rs)
 
 	if i.Settings.RouteSync.Watch {
 		go rs.watchKernel()

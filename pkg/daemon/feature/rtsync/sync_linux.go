@@ -3,6 +3,7 @@ package rtsync
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/netip"
 	"syscall"
 
@@ -15,35 +16,52 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// removeKernel removes all routes from the kernel which have the peers link-local address
-// configured as their destination
+// removeKernel removes all routes from the kernel which target
+// the peers link local addresses as their destination
+// or have the peers link-local address configured as the gateway.
 func (rs *Interface) removeKernel(p *core.Peer) error {
 	pk := p.PublicKey()
-	gwV4, ok1 := netip.AddrFromSlice(pk.IPv4Address().IP)
-	gwV6, ok2 := netip.AddrFromSlice(pk.IPv6Address().IP)
-	if !ok1 || !ok2 {
-		return errors.New("failed to get address from slice")
-	}
 
-	routes, err := netlink.RouteList(nil, unix.AF_INET6)
+	link, err := netlink.LinkByIndex(rs.KernelDevice.Index())
 	if err != nil {
-		rs.logger.Error("Failed to get routes from kernel", zap.Error(err))
+		return fmt.Errorf("failed to find link: %w", err)
 	}
 
-	for _, route := range routes {
-		if route.Table != rs.Settings.RouteSync.Table {
-			continue
+	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
+		routes, err := netlink.RouteList(link, af)
+		if err != nil {
+			rs.logger.Error("Failed to get routes from kernel", zap.Error(err))
 		}
 
-		gw, ok := netip.AddrFromSlice(route.Gw)
-		if !ok {
-			return errors.New("failed to get address from slice")
+		var gw net.IP
+		switch af {
+		case unix.AF_INET:
+			gw = pk.IPv4Address().IP
+		case unix.AF_INET6:
+			gw = pk.IPv6Address().IP
 		}
 
-		if gwV4.Compare(gw) == 0 || gwV6.Compare(gw) == 0 {
+		for _, route := range routes {
+			if route.Table != rs.Settings.RouteSync.Table {
+				continue
+			}
+
+			if route.Dst == nil {
+				continue
+			}
+
+			if route.Gw == nil {
+				if !gw.Equal(route.Dst.IP) {
+					continue
+				}
+			} else {
+				if !gw.Equal(route.Gw) {
+					continue
+				}
+			}
+
 			if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RouteSync.Table); err != nil && !errors.Is(err, syscall.ESRCH) {
 				rs.logger.Error("Failed to delete route", zap.Error(err))
-				continue
 			}
 		}
 	}
@@ -53,18 +71,25 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 
 // syncKernel adds routes from the kernel routing table as new AllowedIPs to the respective peer
 // based on the destination address of the route.
-func (s *Interface) syncKernel() error {
-	routes, err := netlink.RouteList(nil, unix.AF_INET6)
+func (rs *Interface) syncKernel() error {
+	link, err := netlink.LinkByIndex(rs.KernelDevice.Index())
 	if err != nil {
-		return fmt.Errorf("failed to list routes from kernel: %w", err)
+		return fmt.Errorf("failed to find link: %w", err)
 	}
 
-	for _, route := range routes {
-		if err := s.handleRouteUpdate(&netlink.RouteUpdate{
-			Type:  unix.RTM_NEWROUTE,
-			Route: route,
-		}); err != nil {
-			return err
+	for _, af := range []int{unix.AF_INET6, unix.AF_INET} {
+		routes, err := netlink.RouteList(link, af)
+		if err != nil {
+			return fmt.Errorf("failed to list routes from kernel: %w", err)
+		}
+
+		for _, route := range routes {
+			if err := rs.handleRouteUpdate(&netlink.RouteUpdate{
+				Type:  unix.RTM_NEWROUTE,
+				Route: route,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -170,31 +195,21 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 }
 
 func (s *Interface) Sync() error {
-	if err := s.syncFamily(unix.AF_INET); err != nil {
-		return fmt.Errorf("failed to sync IPv4 routes: %w", err)
-	}
+	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
+		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
+			Table: s.Settings.RouteSync.Table,
+		}, netlink.RT_FILTER_TABLE)
+		if err != nil {
+			return fmt.Errorf("failed to list routes: %w", err)
+		}
 
-	if err := s.syncFamily(unix.AF_INET6); err != nil {
-		return fmt.Errorf("failed to sync IPv6 routes: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Interface) syncFamily(family int) error {
-	rts, err := netlink.RouteListFiltered(family, &netlink.Route{
-		Table: s.Settings.RouteSync.Table,
-	}, netlink.RT_FILTER_TABLE)
-	if err != nil {
-		return fmt.Errorf("failed to list routes: %w", err)
-	}
-
-	for _, rte := range rts {
-		if err := s.handleRouteUpdate(&netlink.RouteUpdate{
-			Route: rte,
-			Type:  unix.RTM_NEWROUTE,
-		}); err != nil {
-			s.logger.Error("Failed to handle route update", zap.Error(err))
+		for _, rte := range rts {
+			if err := s.handleRouteUpdate(&netlink.RouteUpdate{
+				Route: rte,
+				Type:  unix.RTM_NEWROUTE,
+			}); err != nil {
+				s.logger.Error("Failed to handle route update", zap.Error(err))
+			}
 		}
 	}
 
