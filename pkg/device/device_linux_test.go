@@ -139,7 +139,7 @@ var _ = Describe("device", func() {
 					err = d.SetUp()
 					Expect(err).To(Succeed())
 
-					err = d.AddRoute(route, config.DefaultRouteTable)
+					err = d.AddRoute(route, nil, config.DefaultRouteTable)
 					Expect(err).To(Succeed())
 
 					routes, err := nl.RouteGet(ip)

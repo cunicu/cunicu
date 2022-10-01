@@ -100,7 +100,7 @@ func (i *LinuxKernelDevice) SetDown() error {
 }
 
 func (i *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
-	i.logger.Debug("Add address", zap.Any("addr", ip))
+	i.logger.Debug("Add address", zap.String("addr", ip.String()))
 
 	addr := &netlink.Addr{
 		IPNet: &ip,
@@ -115,7 +115,7 @@ func (i *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
 }
 
 func (i *LinuxKernelDevice) DeleteAddress(ip net.IPNet) error {
-	i.logger.Debug("Delete address", zap.Any("addr", ip))
+	i.logger.Debug("Delete address", zap.String("addr", ip.String()))
 
 	addr := &netlink.Addr{
 		IPNet: &ip,
@@ -124,14 +124,17 @@ func (i *LinuxKernelDevice) DeleteAddress(ip net.IPNet) error {
 	return netlink.AddrDel(i.link, addr)
 }
 
-func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, table int) error {
-	i.logger.Debug("Add route", zap.Any("dst", dst))
+func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
+	i.logger.Debug("Add route",
+		zap.String("dst", dst.String()),
+		zap.String("gw", gw.String()))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
 		Dst:       &dst,
 		Protocol:  RouteProtocol,
 		Table:     table,
+		Gw:        gw,
 	}
 
 	if err := netlink.RouteAdd(route); err != nil && !errors.Is(err, os.ErrExist) {
@@ -142,7 +145,8 @@ func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, table int) error {
 }
 
 func (i *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
-	i.logger.Debug("Delete route", zap.Any("dst", dst))
+	i.logger.Debug("Delete route",
+		zap.String("dst", dst.String()))
 
 	route := &netlink.Route{
 		LinkIndex: i.link.Attrs().Index,
