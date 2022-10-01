@@ -36,6 +36,7 @@ fe80::e3be:9673:5a98:9348/64
   -h, --help   help for addresses
   -4, --ipv4   Print IPv4 address only
   -6, --ipv6   Print IPv6 address only
+  -m, --mask   Print CIDR mask
 ```
 
 ### Options inherited from parent commands
