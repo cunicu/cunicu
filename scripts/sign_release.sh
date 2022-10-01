@@ -18,7 +18,7 @@ function undraft_release() {
 }
 
 function get_draft_release() {
-    request releases  //| jq '. | map(select(.draft == false)) | first'
+    request releases | jq '. | map(select(.draft == false)) | first'
 }
 
 function download_asset() {
