@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
@@ -37,22 +36,23 @@ func NewEndpointDiscoveryServer(s *Server) *EndpointDiscoveryServer {
 	return eps
 }
 
-func (s *EndpointDiscoveryServer) InterfaceByCore(ci *core.Interface) *epdisc.Interface {
-	if i := s.daemon.InterfaceByCore(ci); i != nil {
-		if f, ok := i.Features["epdisc"]; ok {
-			if ep, ok := f.(*epdisc.Interface); ok {
-				return ep
-			}
+func (s *EndpointDiscoveryServer) Interface(i *daemon.Interface) *epdisc.Interface {
+	if f, ok := i.Features["epdisc"]; ok {
+		if ep, ok := f.(*epdisc.Interface); ok {
+			return ep
 		}
 	}
 
 	return nil
 }
 
-func (s *EndpointDiscoveryServer) OnInterfaceAdded(ci *core.Interface) {
-	if ep := s.InterfaceByCore(ci); ep != nil {
-		ep.OnConnectionStateChange(s)
+func (s *EndpointDiscoveryServer) OnInterfaceAdded(di *daemon.Interface) {
+	if i := s.Interface(di); i != nil {
+		i.OnConnectionStateChange(s)
 	}
+}
+
+func (s *EndpointDiscoveryServer) OnInterfaceRemoved(di *daemon.Interface) {
 }
 
 func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcproto.RestartPeerParams) (*proto.Empty, error) {
@@ -61,7 +61,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 		return nil, status.Errorf(codes.NotFound, "unknown interface %s", params.Intf)
 	}
 
-	i := s.InterfaceByCore(di.Interface)
+	i := s.Interface(di)
 	if i == nil {
 		return nil, status.Errorf(codes.NotFound, "interface %s has endpoint discovery not enabled", params.Intf)
 	}
@@ -85,7 +85,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 
 func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_StreamEventsServer) {
 	s.daemon.ForEachInterface(func(di *daemon.Interface) error {
-		i := s.InterfaceByCore(di.Interface)
+		i := s.Interface(di)
 
 		for _, p := range i.Peers {
 			e := &rpcproto.Event{
