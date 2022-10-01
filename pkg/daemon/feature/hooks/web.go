@@ -28,7 +28,7 @@ type WebHook struct {
 	logger *zap.Logger
 }
 
-func (h *Interface) NewWebHook(cfg *config.WebHookSetting) {
+func (h *Interface) NewWebHook(cfg *config.WebHookSetting) *WebHook {
 	hk := &WebHook{
 		WebHookSetting: cfg,
 		logger: h.logger.Named("web").With(
@@ -38,7 +38,7 @@ func (h *Interface) NewWebHook(cfg *config.WebHookSetting) {
 
 	h.logger.Debug("Created new web hook", zap.Any("hook", hk))
 
-	h.registerHook(hk)
+	return hk
 }
 
 func (h *WebHook) run(msg proto.Message) {
