@@ -152,7 +152,7 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	i.LastSync = time.Now()
 
 	if mod != InterfaceModifiedNone {
-		i.logger.Info("Interface has been modified", zap.Strings("changes", mod.Strings()))
+		i.logger.Debug("Interface has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range i.onModified {
 			h.OnInterfaceModified(i, old, mod)
