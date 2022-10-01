@@ -38,12 +38,16 @@ func WireGuardProvider() *wgProvider {
 }
 
 func (p *wgProvider) Read() (map[string]interface{}, error) {
+	m := map[string]any{}
+
 	des, err := os.ReadDir(p.path)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return m, nil
+		}
+
 		return nil, fmt.Errorf("failed to list config files in '%s': %w", p.path, err)
 	}
-
-	m := map[string]any{}
 
 	p.order = []string{}
 
