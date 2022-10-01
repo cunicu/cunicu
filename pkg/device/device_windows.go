@@ -14,7 +14,7 @@ func (d *WindowsKernelDevice) AddAddress(ip net.IPNet) error {
 	return errors.ErrNotSupported
 }
 
-func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, table int) error {
+func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 	return errors.ErrNotSupported
 }
 
