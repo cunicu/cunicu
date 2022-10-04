@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"net"
-	"os"
 	"os/exec"
 	"time"
 
@@ -215,84 +214,6 @@ func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer
 	return mod, peersAdded, peersRemoved
 }
 
-func (i *Interface) SyncConfig(cfgFilename string) error {
-	//#nosec G304 -- Filenames are limited to WireGuard config directory
-	cfgFile, err := os.Open(cfgFilename)
-	if err != nil {
-		return fmt.Errorf("failed to open config file %s: %w", cfgFilename, err)
-	}
-
-	cfgContents, err := io.ReadAll(cfgFile)
-	if err != nil {
-		return fmt.Errorf("failed to read config file %s: %w", cfgFilename, err)
-	}
-
-	cfg, err := wg.ParseConfig(cfgContents)
-	if err != nil {
-		return fmt.Errorf("failed to parse configuration: %s", err)
-	}
-
-	if err := i.Configure(cfg); err != nil {
-		return fmt.Errorf("failed to configure interface: %w", err)
-	}
-
-	i.logger.Info("Synchronized configuration", zap.String("config_file", cfgFilename))
-
-	return nil
-}
-
-func (i *Interface) Configure(cfg *wg.Config) error {
-	if err := i.client.ConfigureDevice(i.Name(), cfg.Config); err != nil {
-		return fmt.Errorf("failed to synchronize interface configuration: %s", err)
-	}
-
-	// TODO: remove old addresses?
-
-	for _, addr := range cfg.Address {
-		addr := addr
-		if err := i.KernelDevice.AddAddress(addr); err != nil {
-			return err
-		}
-	}
-
-	if cfg.MTU != nil {
-		if err := i.KernelDevice.SetMTU(*cfg.MTU); err != nil {
-			return err
-		}
-	}
-
-	// TODO: Emulate more wg-quick behavior here
-	//       E.g. Pre/Post-Up/Down scripts, Table, DNS
-
-	return nil
-}
-
-func (i *Interface) AddPeer(pcfg *wgtypes.PeerConfig) error {
-	return i.client.ConfigureDevice(i.Name(), wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{*pcfg},
-	})
-}
-
-func (i *Interface) UpdatePeer(pcfg *wgtypes.PeerConfig) error {
-	pcfg2 := *pcfg
-	pcfg2.UpdateOnly = true
-
-	return i.AddPeer(&pcfg2)
-}
-
-func (i *Interface) RemovePeer(pk crypto.Key) error {
-	cfg := wgtypes.Config{
-		Peers: []wgtypes.PeerConfig{
-			{
-				PublicKey: wgtypes.Key(pk),
-				Remove:    true,
-			},
-		},
-	}
-
-	return i.client.ConfigureDevice(i.Name(), cfg)
-}
-
 func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, error) {
 	var err error
 
@@ -352,12 +273,12 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	return mtu - wg.TunnelOverhead, nil
 }
 
-func (i *Interface) SetDNS(svrs []net.IP) error {
+func (i *Interface) SetDNS(svrs []net.IPAddr) error {
 	cmd := exec.Command("resolveconf", "-a", i.Name(), "-m", "0", "-x")
 
 	stdin := &bytes.Buffer{}
 	for _, svr := range svrs {
-		fmt.Fprintf(stdin, "nameserver %s\n", svr)
+		fmt.Fprintf(stdin, "nameserver %s\n", svr.String())
 	}
 
 	cmd.Stdin = stdin
