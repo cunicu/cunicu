@@ -11,6 +11,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
@@ -90,36 +91,37 @@ func (pd *Interface) Close() error {
 }
 
 func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pkOld *crypto.Key) error {
+	pk := pd.PublicKey()
+
 	// Gather all allowed IPs for this interface
-	allowedIPs := []net.IPNet{}
-	allowedIPs = append(allowedIPs, pd.Settings.AutoConfig.Addresses...)
+	allowedIPs := []*net.IPNet{}
 
-	if pd.Settings.AutoConfig.LinkLocalAddresses {
-		allowedIPs = append(allowedIPs,
-			pd.PublicKey().IPv6Address(),
-			pd.PublicKey().IPv4Address(),
-		)
+	// Static addresses
+	for _, addr := range pd.Settings.AutoConfig.Addresses {
+		_, bits := addr.Mask.Size()
+		addr.Mask = net.CIDRMask(bits, bits)
+
+		allowedIPs = append(allowedIPs, &addr)
 	}
 
-	// Only the /32 or /128 for local addresses
-	for _, allowedIP := range allowedIPs {
-		for i := range allowedIP.Mask {
-			allowedIP.Mask[i] = 0xff
-		}
+	// Auto-generated prefixes
+	for _, pfx := range pd.Settings.AutoConfig.Prefixes {
+		addr := pk.IPAddress(pfx)
+		_, bits := addr.Mask.Size()
+		addr.Mask = net.CIDRMask(bits, bits)
+
+		allowedIPs = append(allowedIPs, &addr)
 	}
 
-	// But networks are taken in full
-	allowedIPs = append(allowedIPs, pd.Settings.PeerDisc.Networks...)
-
-	allowedIPsStrs := []string{}
-	for _, aip := range allowedIPs {
-		allowedIPsStrs = append(allowedIPsStrs, aip.String())
+	// Other networks
+	for _, netw := range pd.Settings.PeerDisc.Networks {
+		allowedIPs = append(allowedIPs, &netw)
 	}
 
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
 		Name:       pd.Settings.PeerDisc.Name,
-		AllowedIps: allowedIPsStrs,
+		AllowedIps: util.SliceString(allowedIPs),
 		BuildInfo:  buildinfo.BuildInfo(),
 	}
 
