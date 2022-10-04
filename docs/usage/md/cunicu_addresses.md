@@ -26,23 +26,21 @@ cunicu addresses [flags]
 
 ```
 $ wg genkey | wg pubkey | cunicu addresses
-fe80::e3be:9673:5a98:9348/64
-169.254.29.188/16
+fc2f:9a4d:777f:7a97:8197:4a5d:1d1b:ed79
+10.237.119.127
 ```
 
 ### Options
 
 ```
   -h, --help   help for addresses
-  -4, --ipv4   Print IPv4 address only
-  -6, --ipv6   Print IPv6 address only
   -m, --mask   Print CIDR mask
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -C, --color string       Enable colorization of output (one of: auto, always, never) (default "auto")
+  -q, --color string       Enable colorization of output (one of: auto, always, never) (default "auto")
   -l, --log-file string    path of a file to write logs to
   -d, --log-level string   log level (one of: debug, info, warn, error, dpanic, panic, and fatal) (default "info")
   -v, --verbose int        verbosity level

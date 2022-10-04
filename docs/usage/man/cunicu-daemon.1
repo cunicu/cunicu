@@ -18,10 +18,6 @@ Start the daemon
 
 .SH OPTIONS
 .PP
-\fB-A\fP, \fB--auto-config\fP[=true]
-	Enable setup of link-local addresses and missing interface options
-
-.PP
 \fB-b\fP, \fB--backend\fP=[]
 	One or more \fB\fCURL\fRs to signaling backends
 
@@ -34,20 +30,16 @@ Start the daemon
 	One or more \fB\fCfilename\fRs of configuration files
 
 .PP
-\fB-S\fP, \fB--config-sync\fP[=true]
-	Enable synchronization of WireGuard configuration files
+\fB-E\fP, \fB--discover-endpoints\fP[=true]
+	Enable ICE endpoint discovery
+
+.PP
+\fB-P\fP, \fB--discover-peers\fP[=true]
+	Enable peer discovery
 
 .PP
 \fB-D\fP, \fB--domain\fP=[]
 	A DNS \fB\fCdomain\fR name used for DNS auto-configuration
-
-.PP
-\fB-E\fP, \fB--endpoint-disc\fP[=true]
-	Enable ICE endpoint discovery
-
-.PP
-\fB-H\fP, \fB--host-sync\fP[=true]
-	Enable synchronization of /etc/hosts file
 
 .PP
 \fB--ice-candidate-type\fP=[]
@@ -62,15 +54,7 @@ Start the daemon
 	The \fB\fCpassword\fR for STUN/TURN credentials
 
 .PP
-\fB-P\fP, \fB--peer-sync\fP[=true]
-	Enable peer discovery
-
-.PP
-\fB-R\fP, \fB--route-sync\fP[=true]
-	Enable synchronization of AllowedIPs and Kernel routing table
-
-.PP
-\fB-T\fP, \fB--route-table\fP=254
+\fB-T\fP, \fB--routing-table\fP=254
 	Kernel routing table to use
 
 .PP
@@ -82,6 +66,18 @@ Start the daemon
 	Wait until first client connected to control socket before continuing start
 
 .PP
+\fB-C\fP, \fB--sync-config\fP[=true]
+	Enable synchronization of configuration files
+
+.PP
+\fB-H\fP, \fB--sync-hosts\fP[=true]
+	Enable synchronization of /etc/hosts file
+
+.PP
+\fB-R\fP, \fB--sync-routes\fP[=true]
+	Enable synchronization of AllowedIPs with Kernel routes
+
+.PP
 \fB-a\fP, \fB--url\fP=[]
 	One or more \fB\fCURL\fRs of STUN and/or TURN servers
 
@@ -90,7 +86,7 @@ Start the daemon
 	The \fB\fCusername\fR for STUN/TURN credentials
 
 .PP
-\fB-w\fP, \fB--watch\fP[=false]
+\fB-w\fP, \fB--watch-config\fP[=false]
 	Watch configuration files for changes and apply changes at runtime.
 
 .PP
@@ -108,7 +104,7 @@ Start the daemon
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
 .PP
-\fB-C\fP, \fB--color\fP="auto"
+\fB-q\fP, \fB--color\fP="auto"
 	Enable colorization of output (one of: auto, always, never)
 
 .PP

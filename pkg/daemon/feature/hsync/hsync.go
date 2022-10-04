@@ -31,7 +31,7 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.HostSync.Enabled {
+	if !i.Settings.SyncHosts {
 		return nil, nil
 	}
 
@@ -58,7 +58,7 @@ func (hs *Interface) Close() error {
 func (hs *Interface) Hosts() []Host {
 	hosts := []Host{}
 
-	d := hs.Settings.HostSync.Domain
+	d := hs.Settings.Domain
 	if d != "" && !strings.HasPrefix(d, ".") {
 		d = "." + d
 	}
@@ -68,7 +68,7 @@ func (hs *Interface) Hosts() []Host {
 		// We use a shorted version of the public key as a DNS name here
 		pkName := pk.String()[:8]
 
-		for _, pfx := range hs.Settings.AutoConfig.Prefixes {
+		for _, pfx := range hs.Settings.Prefixes {
 			addr := pk.IPAddress(pfx)
 
 			h := Host{

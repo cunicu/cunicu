@@ -87,7 +87,7 @@ func init() {
 	pf.IntVarP(&verbosityLevel, "verbose", "v", 0, "verbosity level")
 	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
-	pf.StringVarP(&colorMode, "color", "C", "auto", "Enable colorization of output (one of: auto, always, never)")
+	pf.StringVarP(&colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
 
 	daemonCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp))
 	daemonCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp))

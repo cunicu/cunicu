@@ -54,17 +54,9 @@ type RPCSettings struct {
 	Wait   bool   `koanf:"wait,omitempty"`
 }
 
-type ConfigSyncSettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-}
+type HookSetting any
 
-type RouteSyncSettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-	Table   int  `koanf:"table,omitempty"`
-	Watch   bool `koanf:"watch,omitempty"`
-}
-
-type WireGuardPeerSettings struct {
+type PeerSettings struct {
 	PublicKey                   crypto.Key           `koanf:"public_key,omitempty"`
 	PresharedKey                crypto.Key           `koanf:"preshared_key,omitempty"`
 	PresharedKeyPassphrase      crypto.KeyPassphrase `koanf:"preshared_key_passphrase,omitempty"`
@@ -72,48 +64,6 @@ type WireGuardPeerSettings struct {
 	PersistentKeepaliveInterval time.Duration        `koanf:"persistent_keepalive,omitempty"`
 	AllowedIPs                  []net.IPNet          `koanf:"allowed_ips,omitempty"`
 }
-
-type WireGuardSettings struct {
-	UserSpace       bool                             `koanf:"userspace,omitempty"`
-	PrivateKey      crypto.Key                       `koanf:"private_key,omitempty"`
-	ListenPort      *int                             `koanf:"listen_port,omitempty"`
-	ListenPortRange *PortRangeSettings               `koanf:"listen_port_range,omitempty"`
-	FirewallMark    int                              `koanf:"fwmark,omitempty"`
-	Peers           map[string]WireGuardPeerSettings `koanf:"peers,omitempty"`
-}
-
-type AutoConfigSettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-
-	DNS       []net.IPAddr `koanf:"dns,omitempty"`
-	MTU       int          `koanf:"mtu,omitempty"`
-	Addresses []net.IPNet  `koanf:"addresses,omitempty"`
-	Prefixes  []net.IPNet  `koanf:"prefixes"`
-}
-
-type HostSyncSettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-
-	Domain string `koanf:"domain,omitempty"`
-}
-
-type PeerDiscoverySettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-
-	Name      string               `koanf:"hostname,omitempty"`
-	Community crypto.KeyPassphrase `koanf:"community,omitempty"`
-	Networks  []net.IPNet          `koanf:"networks,omitempty"`
-	Whitelist []crypto.Key         `koanf:"whitelist,omitempty"`
-	Blacklist []crypto.Key         `koanf:"blacklist,omitempty"`
-}
-
-type EndpointDiscoverySettings struct {
-	Enabled bool `koanf:"enabled,omitempty"`
-
-	ICE ICESettings `koanf:"ice,omitempty"`
-}
-
-type HookSetting any
 
 type BaseHookSetting struct {
 	Type string `koanf:"type"`
@@ -135,14 +85,46 @@ type ExecHookSetting struct {
 }
 
 type InterfaceSettings struct {
-	AutoConfig   AutoConfigSettings        `koanf:"autocfg,omitempty"`
-	ConfigSync   ConfigSyncSettings        `koanf:"cfgsync,omitempty"`
-	EndpointDisc EndpointDiscoverySettings `koanf:"epdisc,omitempty"`
-	Hooks        []HookSetting             `koanf:"hooks,omitempty"`
-	HostSync     HostSyncSettings          `koanf:"hsync,omitempty"`
-	PeerDisc     PeerDiscoverySettings     `koanf:"pdisc,omitempty"`
-	RouteSync    RouteSyncSettings         `koanf:"rtsync,omitempty"`
-	WireGuard    WireGuardSettings         `koanf:"wireguard,omitempty"`
+	HostName string `koanf:"hostname,omitempty"`
+	Domain   string `koanf:"domain,omitempty"`
+
+	DNS       []net.IPAddr `koanf:"dns,omitempty"`
+	MTU       int          `koanf:"mtu,omitempty"`
+	Addresses []net.IPNet  `koanf:"addresses,omitempty"`
+	Prefixes  []net.IPNet  `koanf:"prefixes"`
+	Networks  []net.IPNet  `koanf:"networks,omitempty"`
+
+	// Peer discovery
+	Community crypto.KeyPassphrase `koanf:"community,omitempty"`
+	Whitelist []crypto.Key         `koanf:"whitelist,omitempty"`
+	Blacklist []crypto.Key         `koanf:"blacklist,omitempty"`
+
+	// Endpoint discovery
+	ICE ICESettings `koanf:"ice,omitempty"`
+
+	// Route sync
+	RoutingTable int `koanf:"routing_table,omitempty"`
+
+	// Hooks
+	Hooks []HookSetting `koanf:"hooks,omitempty"`
+
+	// WireGuard
+	UserSpace       bool                    `koanf:"userspace,omitempty"`
+	PrivateKey      crypto.Key              `koanf:"private_key,omitempty"`
+	ListenPort      *int                    `koanf:"listen_port,omitempty"`
+	ListenPortRange *PortRangeSettings      `koanf:"listen_port_range,omitempty"`
+	FirewallMark    int                     `koanf:"fwmark,omitempty"`
+	Peers           map[string]PeerSettings `koanf:"peers,omitempty"`
+
+	// Feature flags
+	DiscoverEndpoints bool `koanf:"discover_endpoints,omitempty"`
+	DiscoverPeers     bool `koanf:"discover_peers,omitempty"`
+	SyncConfig        bool `koanf:"sync_config,omitempty"`
+	SyncRoutes        bool `koanf:"sync_routes,omitempty"`
+	SyncHosts         bool `koanf:"sync_hosts,omitempty"`
+
+	WatchConfig bool `koanf:"watch_config,omitempty"`
+	WatchRoutes bool `koanf:"watch_routes,omitempty"`
 }
 
 type Settings struct {
@@ -162,23 +144,23 @@ func (c *Settings) Check() error {
 	icfgs = append(icfgs, maps.Values(c.Interfaces)...)
 
 	for _, icfg := range icfgs {
-		if len(icfg.EndpointDisc.ICE.URLs) > 0 && len(icfg.EndpointDisc.ICE.CandidateTypes) > 0 {
+		if len(icfg.ICE.URLs) > 0 && len(icfg.ICE.CandidateTypes) > 0 {
 			needsURL := false
-			for _, ct := range icfg.EndpointDisc.ICE.CandidateTypes {
+			for _, ct := range icfg.ICE.CandidateTypes {
 				if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
 					needsURL = true
 				}
 			}
 
 			if !needsURL {
-				icfg.EndpointDisc.ICE.URLs = nil
+				icfg.ICE.URLs = nil
 			}
 		}
 
-		if icfg.WireGuard.ListenPortRange != nil && icfg.WireGuard.ListenPortRange.Min > icfg.WireGuard.ListenPortRange.Max {
+		if icfg.ListenPortRange != nil && icfg.ListenPortRange.Min > icfg.ListenPortRange.Max {
 			return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
-				icfg.WireGuard.ListenPortRange.Min,
-				icfg.WireGuard.ListenPortRange.Max,
+				icfg.ListenPortRange.Min,
+				icfg.ListenPortRange.Max,
 			)
 		}
 	}

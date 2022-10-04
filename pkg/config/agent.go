@@ -20,7 +20,7 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 
 	g := errgroup.Group{}
 
-	for _, u := range c.EndpointDisc.ICE.URLs {
+	for _, u := range c.ICE.URLs {
 		switch u.Scheme {
 		case "stun", "stuns", "turn", "turns":
 			// Extract credentials from URL
@@ -34,8 +34,8 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 				iu.Username = user
 				iu.Password = pass
 			} else {
-				iu.Username = c.EndpointDisc.ICE.Username
-				iu.Password = c.EndpointDisc.ICE.Password
+				iu.Username = c.ICE.Username
+				iu.Password = c.ICE.Password
 			}
 
 			iceURLs = append(iceURLs, iu)
@@ -90,14 +90,14 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 	var err error
 
 	cfg := &ice.AgentConfig{
-		InsecureSkipVerify: c.EndpointDisc.ICE.InsecureSkipVerify,
-		Lite:               c.EndpointDisc.ICE.Lite,
-		PortMin:            uint16(c.EndpointDisc.ICE.PortRange.Min),
-		PortMax:            uint16(c.EndpointDisc.ICE.PortRange.Max),
+		InsecureSkipVerify: c.ICE.InsecureSkipVerify,
+		Lite:               c.ICE.Lite,
+		PortMin:            uint16(c.ICE.PortRange.Min),
+		PortMax:            uint16(c.ICE.PortRange.Max),
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		match, err := filepath.Match(c.EndpointDisc.ICE.InterfaceFilter, name)
+		match, err := filepath.Match(c.ICE.InterfaceFilter, name)
 		return err == nil && match
 	}
 
@@ -106,43 +106,43 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 		return nil, fmt.Errorf("failed to gather ICE URLs: %w", err)
 	}
 
-	if len(c.EndpointDisc.ICE.NAT1to1IPs) > 0 {
-		cfg.NAT1To1IPs = c.EndpointDisc.ICE.NAT1to1IPs
+	if len(c.ICE.NAT1to1IPs) > 0 {
+		cfg.NAT1To1IPs = c.ICE.NAT1to1IPs
 	}
 
-	if mbr := uint16(c.EndpointDisc.ICE.MaxBindingRequests); mbr > 0 {
+	if mbr := uint16(c.ICE.MaxBindingRequests); mbr > 0 {
 		cfg.MaxBindingRequests = &mbr
 	}
 
-	if c.EndpointDisc.ICE.MDNS {
+	if c.ICE.MDNS {
 		cfg.MulticastDNSMode = ice.MulticastDNSModeQueryAndGather
 	}
 
-	if to := c.EndpointDisc.ICE.DisconnectedTimeout; to > 0 {
+	if to := c.ICE.DisconnectedTimeout; to > 0 {
 		cfg.DisconnectedTimeout = &to
 	}
 
-	if to := c.EndpointDisc.ICE.FailedTimeout; to > 0 {
+	if to := c.ICE.FailedTimeout; to > 0 {
 		cfg.FailedTimeout = &to
 	}
 
-	if to := c.EndpointDisc.ICE.KeepaliveInterval; to > 0 {
+	if to := c.ICE.KeepaliveInterval; to > 0 {
 		cfg.KeepaliveInterval = &to
 	}
 
-	if to := c.EndpointDisc.ICE.CheckInterval; to > 0 {
+	if to := c.ICE.CheckInterval; to > 0 {
 		cfg.CheckInterval = &to
 	}
 
-	if len(c.EndpointDisc.ICE.CandidateTypes) > 0 {
+	if len(c.ICE.CandidateTypes) > 0 {
 		cfg.CandidateTypes = []ice.CandidateType{}
-		for _, t := range c.EndpointDisc.ICE.CandidateTypes {
+		for _, t := range c.ICE.CandidateTypes {
 			cfg.CandidateTypes = append(cfg.CandidateTypes, t.CandidateType)
 		}
 	}
 
 	cfg.NetworkTypes = []ice.NetworkType{}
-	for _, t := range c.EndpointDisc.ICE.NetworkTypes {
+	for _, t := range c.ICE.NetworkTypes {
 		cfg.NetworkTypes = append(cfg.NetworkTypes, t.NetworkType)
 	}
 

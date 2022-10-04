@@ -28,10 +28,6 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.AutoConfig.Enabled {
-		return nil, nil
-	}
-
 	a := &Interface{
 		Interface: i,
 		logger:    zap.L().Named("autocfg").With(zap.String("intf", i.Name())),
@@ -52,7 +48,7 @@ func (ac *Interface) Start() error {
 
 	// Assign auto-generated addresses
 	if pk := ac.PublicKey(); pk.IsSet() {
-		for _, p := range ac.Settings.AutoConfig.Prefixes {
+		for _, p := range ac.Settings.Prefixes {
 			addr := pk.IPAddress(p)
 			if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 				ac.logger.Error("Failed to assign address", zap.Error(err), zap.Any("addr", addr))
@@ -62,13 +58,13 @@ func (ac *Interface) Start() error {
 
 	// Autodetect MTU
 	// TODO: Update MTU when peers are added or their endpoints change
-	if mtu := ac.Settings.AutoConfig.MTU; mtu == 0 {
+	if mtu := ac.Settings.MTU; mtu == 0 {
 		var err error
 		if mtu, err = ac.DetectMTU(); err != nil {
 			ac.logger.Error("Failed to detect MTU", zap.Error(err))
 		} else {
 			if err := ac.KernelDevice.SetMTU(mtu); err != nil {
-				ac.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", ac.Settings.AutoConfig.MTU))
+				ac.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", ac.Settings.MTU))
 			}
 		}
 	}
@@ -93,8 +89,8 @@ func (ac *Interface) configureWireGuardInterface() error {
 	cfg := wgtypes.Config{}
 
 	// Private key
-	if !ac.PrivateKey().IsSet() || (ac.Settings.WireGuard.PrivateKey.IsSet() && ac.Settings.WireGuard.PrivateKey != ac.PrivateKey()) {
-		sk := ac.Settings.WireGuard.PrivateKey
+	if !ac.PrivateKey().IsSet() || (ac.Settings.PrivateKey.IsSet() && ac.Settings.PrivateKey != ac.PrivateKey()) {
+		sk := ac.Settings.PrivateKey
 		if !sk.IsSet() {
 			ac.logger.Warn("Device has no private key. Setting a random one.")
 
@@ -108,17 +104,17 @@ func (ac *Interface) configureWireGuardInterface() error {
 	}
 
 	// Listen port
-	if ac.ListenPort == 0 || (ac.Settings.WireGuard.ListenPort != nil && ac.ListenPort != *ac.Settings.WireGuard.ListenPort) {
+	if ac.ListenPort == 0 || (ac.Settings.ListenPort != nil && ac.ListenPort != *ac.Settings.ListenPort) {
 		if ac.ListenPort == 0 {
 			ac.logger.Warn("Device has no listen port. Setting a random one.")
 		}
 
-		if ac.Settings.WireGuard.ListenPort != nil {
-			cfg.ListenPort = ac.Settings.WireGuard.ListenPort
+		if ac.Settings.ListenPort != nil {
+			cfg.ListenPort = ac.Settings.ListenPort
 		} else {
 			port, err := util.FindNextPortToListen("udp",
-				ac.Settings.WireGuard.ListenPortRange.Min,
-				ac.Settings.WireGuard.ListenPortRange.Max,
+				ac.Settings.ListenPortRange.Min,
+				ac.Settings.ListenPortRange.Max,
 			)
 			if err != nil {
 				return fmt.Errorf("failed set listen port: %w", err)

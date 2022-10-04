@@ -28,10 +28,6 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.AutoConfig.Enabled {
-		return nil, nil
-	}
-
 	c := &Interface{
 		Interface: i,
 		logger:    zap.L().Named("cfgsync").With(zap.String("intf", i.Name())),
@@ -44,14 +40,14 @@ func (cs *Interface) Start() error {
 	cs.logger.Info("Started config synchronization")
 
 	// Assign static addresses
-	for _, addr := range cs.Settings.AutoConfig.Addresses {
+	for _, addr := range cs.Settings.Addresses {
 		if err := cs.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 			cs.logger.Error("Failed to assign address", zap.Error(err), zap.Any("addr", addr))
 		}
 	}
 
 	// Set MTU
-	if mtu := cs.Settings.AutoConfig.MTU; mtu != 0 {
+	if mtu := cs.Settings.MTU; mtu != 0 {
 		if err := cs.KernelDevice.SetMTU(mtu); err != nil {
 			cs.logger.Error("Failed to set MTU",
 				zap.Error(err),
@@ -60,8 +56,8 @@ func (cs *Interface) Start() error {
 	}
 
 	// Set DNS
-	if dns := cs.Settings.AutoConfig.DNS; len(dns) > 0 {
-		if err := cs.SetDNS(cs.Settings.AutoConfig.DNS); err != nil {
+	if dns := cs.Settings.DNS; len(dns) > 0 {
+		if err := cs.SetDNS(cs.Settings.DNS); err != nil {
 			cs.logger.Error("Failed to set DNS servers",
 				zap.Error(err),
 				zap.Any("servers", dns))
@@ -76,7 +72,7 @@ func (cs *Interface) Start() error {
 
 func (cs *Interface) Close() error {
 	// Unset DNS
-	if dns := cs.Settings.AutoConfig.DNS; len(dns) > 0 {
+	if dns := cs.Settings.DNS; len(dns) > 0 {
 		if err := cs.UnsetDNS(); err != nil {
 			cs.logger.Error("Failed to restore DNS servers", zap.Error(err))
 		}

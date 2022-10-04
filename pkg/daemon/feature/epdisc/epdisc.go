@@ -52,7 +52,7 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.EndpointDisc.Enabled {
+	if !i.Settings.DiscoverEndpoints {
 		return nil, nil
 	}
 

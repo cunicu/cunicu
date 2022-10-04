@@ -295,7 +295,7 @@ func (s *DaemonServer) AddPeer(ctx context.Context, params *rpcproto.AddPeerPara
 		Interface:  i.Marshal(),
 	}
 
-	if community := crypto.Key(i.Settings.PeerDisc.Community); community.IsSet() {
+	if community := crypto.Key(i.Settings.Community); community.IsSet() {
 		resp.Invitation.Community = community.Bytes()
 	}
 

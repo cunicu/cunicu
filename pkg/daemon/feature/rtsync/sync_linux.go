@@ -39,7 +39,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 
 	for _, route := range routes {
 		// Skip routes not in the desired table
-		if route.Table != rs.Settings.RouteSync.Table {
+		if route.Table != rs.Settings.RoutingTable {
 			continue
 		}
 
@@ -49,7 +49,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 		}
 
 		ours := false
-		for _, q := range rs.Settings.AutoConfig.Prefixes {
+		for _, q := range rs.Settings.Prefixes {
 			gw := pk.IPAddress(q)
 
 			if route.Gw == nil {
@@ -67,7 +67,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 			continue
 		}
 
-		if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RouteSync.Table); err != nil && !errors.Is(err, syscall.ESRCH) {
+		if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
 			rs.logger.Error("Failed to delete route", zap.Error(err))
 		}
 	}
@@ -138,7 +138,7 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	logger.Debug("Received netlink route update", zap.Any("update", ru))
 
-	if ru.Table != s.Settings.RouteSync.Table {
+	if ru.Table != s.Settings.RoutingTable {
 		logger.Debug("Ignore route from another table")
 		return nil
 	}
@@ -203,7 +203,7 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 func (s *Interface) Sync() error {
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
 		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
-			Table: s.Settings.RouteSync.Table,
+			Table: s.Settings.RoutingTable,
 		}, netlink.RT_FILTER_TABLE)
 		if err != nil {
 			return fmt.Errorf("failed to list routes: %w", err)

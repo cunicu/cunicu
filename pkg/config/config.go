@@ -67,17 +67,16 @@ func New(flags *pflag.FlagSet) *Config {
 	}
 
 	// Feature flags
-	flags.BoolP("auto-config", "A", true, "Enable setup of link-local addresses and missing interface options")
-	flags.BoolP("config-sync", "S", true, "Enable synchronization of WireGuard configuration files")
-	flags.BoolP("endpoint-disc", "E", true, "Enable ICE endpoint discovery")
-	flags.BoolP("host-sync", "H", true, "Enable synchronization of /etc/hosts file")
-	flags.BoolP("peer-sync", "P", true, "Enable peer discovery")
-	flags.BoolP("route-sync", "R", true, "Enable synchronization of AllowedIPs and Kernel routing table")
+	flags.BoolP("discover-endpoints", "E", true, "Enable ICE endpoint discovery")
+	flags.BoolP("discover-peers", "P", true, "Enable peer discovery")
+	flags.BoolP("sync-config", "C", true, "Enable synchronization of configuration files")
+	flags.BoolP("sync-hosts", "H", true, "Enable synchronization of /etc/hosts file")
+	flags.BoolP("sync-routes", "R", true, "Enable synchronization of AllowedIPs with Kernel routes")
 
 	// Config flags
 	flags.StringSliceVarP(&c.Domains, "domain", "D", []string{}, "A DNS `domain` name used for DNS auto-configuration")
 	flags.StringSliceVarP(&c.Files, "config", "c", []string{}, "One or more `filename`s of configuration files")
-	flags.BoolVarP(&c.Watch, "watch", "w", false, "Watch configuration files for changes and apply changes at runtime.")
+	flags.BoolVarP(&c.Watch, "watch-config", "w", false, "Watch configuration files for changes and apply changes at runtime.")
 
 	// Daemon flags
 	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
@@ -91,7 +90,7 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.BoolP("wg-userspace", "U", false, "Use user-space WireGuard implementation for newly created interfaces")
 
 	// Route sync
-	flags.IntP("route-table", "T", DefaultRouteTable, "Kernel routing table to use")
+	flags.IntP("routing-table", "T", DefaultRouteTable, "Kernel routing table to use")
 
 	// Endpoint discovery
 	flags.StringSliceP("url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")

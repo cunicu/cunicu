@@ -160,14 +160,14 @@ var _ = Describe("lookup", func() {
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			Expect(icfg.PeerDisc.Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("my-community-password")))
-			Expect(icfg.EndpointDisc.ICE.Username).To(Equal("user1"))
-			Expect(icfg.EndpointDisc.ICE.Password).To(Equal("pass1"))
+			Expect(icfg.Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("my-community-password")))
+			Expect(icfg.ICE.Username).To(Equal("user1"))
+			Expect(icfg.ICE.Password).To(Equal("pass1"))
 			Expect(cfg.Backends).To(ConsistOf(
 				config.BackendURL{URL: url.URL{Scheme: "p2p"}},
 				config.BackendURL{URL: url.URL{Scheme: "grpc", Host: "example.com:8080"}},
 			))
-			Expect(icfg.EndpointDisc.ICE.URLs).To(ConsistOf(
+			Expect(icfg.ICE.URLs).To(ConsistOf(
 				config.URL{url.URL{Scheme: "stun", Opaque: "stun.example.com.:3478"}},
 				config.URL{url.URL{Scheme: "stuns", Opaque: "stun.example.com.:3478"}},
 				config.URL{url.URL{Scheme: "turn", Opaque: "turn.example.com.:3478", RawQuery: "transport=udp"}},

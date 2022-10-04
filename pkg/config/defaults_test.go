@@ -11,6 +11,6 @@ var _ = Context("default", func() {
 		err := config.InitDefaults()
 		Expect(err).To(Succeed())
 
-		Expect(config.DefaultInterfaceSettings.PeerDisc.Name).NotTo(BeEmpty())
+		Expect(config.DefaultInterfaceSettings.HostName).NotTo(BeEmpty())
 	})
 })

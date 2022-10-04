@@ -16,7 +16,7 @@ func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod 
 		newPk := i.PublicKey()
 
 		if oldPk.IsSet() {
-			for _, pfx := range ac.Settings.AutoConfig.Prefixes {
+			for _, pfx := range ac.Settings.Prefixes {
 				addr := oldPk.IPAddress(pfx)
 				if err := ac.KernelDevice.DeleteAddress(addr); err != nil {
 					ac.logger.Error("Failed to un-assign address",
@@ -27,7 +27,7 @@ func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod 
 		}
 
 		if newPk.IsSet() {
-			for _, pfx := range ac.Settings.AutoConfig.Prefixes {
+			for _, pfx := range ac.Settings.Prefixes {
 				addr := newPk.IPAddress(pfx)
 				if err := ac.KernelDevice.AddAddress(addr); err != nil {
 					ac.logger.Error("Failed to assign address",
@@ -43,7 +43,7 @@ func (ac *Interface) OnPeerAdded(p *core.Peer) {
 	logger := ac.logger.With(zap.Any("peer", p.PublicKey()))
 
 	// Add AllowedIPs for peer
-	for _, q := range ac.Settings.AutoConfig.Prefixes {
+	for _, q := range ac.Settings.Prefixes {
 		ip := p.PublicKey().IPAddress(q)
 
 		_, bits := ip.Mask.Size()

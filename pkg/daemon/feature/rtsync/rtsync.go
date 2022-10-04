@@ -27,7 +27,7 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.RouteSync.Enabled {
+	if !i.Settings.SyncRoutes {
 		return nil, nil
 	}
 
@@ -40,7 +40,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 
 	i.OnPeer(rs)
 
-	if i.Settings.RouteSync.Watch {
+	if i.Settings.WatchRoutes {
 		go rs.watchKernel()
 	}
 

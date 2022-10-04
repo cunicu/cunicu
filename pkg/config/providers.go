@@ -18,15 +18,12 @@ var (
 
 	// Map flags from the flags to to Koanf settings
 	flagMap = map[string]string{
-		// Config sync
-		"cfgsync": "cfgsync.enabled",
-
-		// Host sync
-		"hsync": "hsync.enabled",
-
-		// Route sync
-		"rtsync":       "rtsync.enabled",
-		"rtsync-table": "rtsync.table",
+		// Feature flags
+		"discover-peers":     "discover_peers",
+		"discover-endpoints": "discover_endpoints",
+		"sync-config":        "sync_config",
+		"sync-hosts":         "sync_hosts",
+		"sync-routes":        "sync_routes",
 
 		"backend":        "backends",
 		"watch-interval": "watch_interval",
@@ -39,16 +36,18 @@ var (
 		"wg-userspace": "wireguard.userspace",
 
 		// Endpoint discovery
-		"epdisc":             "epdisc.enabled",
-		"url":                "epdisc.ice.urls",
-		"username":           "epdisc.ice.username",
-		"password":           "epdisc.ice.password",
-		"ice-candidate-type": "epdisc.ice.candidate_types",
-		"ice-network-type":   "epdisc.ice.network_types",
+
+		"url":                "ice.urls",
+		"username":           "ice.username",
+		"password":           "ice.password",
+		"ice-candidate-type": "ice.candidate_types",
+		"ice-network-type":   "ice.network_types",
 
 		// Peer discovery
-		"pdisc":     "pdisc.enabled",
-		"community": "pdisc.community",
+		"community": "community",
+
+		// Route synchronization
+		"routing-table": "routing_table",
 	}
 )
 

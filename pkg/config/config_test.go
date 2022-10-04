@@ -50,7 +50,7 @@ var _ = Context("config", func() {
 			cfg, err := config.ParseArgs("--wg-userspace")
 			Expect(err).To(Succeed())
 
-			Expect(cfg.DefaultInterfaceSettings.WireGuard.UserSpace).To(BeTrue())
+			Expect(cfg.DefaultInterfaceSettings.UserSpace).To(BeTrue())
 		})
 
 		It("can parse multiple backends", func() {
@@ -215,7 +215,7 @@ var _ = Context("config", func() {
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			Expect(icfg.EndpointDisc.ICE.CandidateTypes).To(ConsistOf(
+			Expect(icfg.ICE.CandidateTypes).To(ConsistOf(
 				icex.CandidateType{
 					CandidateType: ice.CandidateTypeServerReflexive,
 				},
@@ -230,7 +230,7 @@ var _ = Context("config", func() {
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			Expect(icfg.EndpointDisc.ICE.CandidateTypes).To(ConsistOf(
+			Expect(icfg.ICE.CandidateTypes).To(ConsistOf(
 				icex.CandidateType{CandidateType: ice.CandidateTypeServerReflexive},
 				icex.CandidateType{CandidateType: ice.CandidateTypeRelay},
 			))
@@ -244,8 +244,8 @@ var _ = Context("config", func() {
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			Expect(icfg.EndpointDisc.ICE.CandidateTypes).To(HaveLen(1))
-			Expect(icfg.EndpointDisc.ICE.CandidateTypes).To(ContainElements(
+			Expect(icfg.ICE.CandidateTypes).To(HaveLen(1))
+			Expect(icfg.ICE.CandidateTypes).To(ContainElements(
 				icex.CandidateType{CandidateType: ice.CandidateTypeHost},
 			))
 		})
@@ -269,8 +269,8 @@ var _ = Context("config", func() {
 		})
 
 		It("should have a default STUN URL", func() {
-			Expect(icfg.EndpointDisc.ICE.URLs).To(HaveLen(1))
-			Expect(icfg.EndpointDisc.ICE.URLs[0].String()).To(Equal("stun:stun.cunicu.li:3478"))
+			Expect(icfg.ICE.URLs).To(HaveLen(1))
+			Expect(icfg.ICE.URLs[0].String()).To(Equal("stun:stun.cunicu.li:3478"))
 		})
 	})
 
@@ -308,11 +308,11 @@ var _ = Context("config", func() {
 		})
 
 		It("have equal ICE network types", func() {
-			Expect(icfg1.EndpointDisc.ICE.NetworkTypes).To(Equal(icfg2.EndpointDisc.ICE.NetworkTypes))
+			Expect(icfg1.ICE.NetworkTypes).To(Equal(icfg2.ICE.NetworkTypes))
 		})
 
 		It("have equal ICE URLs", func() {
-			Expect(icfg1.EndpointDisc.ICE.URLs).To(Equal(icfg2.EndpointDisc.ICE.URLs))
+			Expect(icfg1.ICE.URLs).To(Equal(icfg2.ICE.URLs))
 		})
 	})
 
@@ -322,7 +322,7 @@ var _ = Context("config", func() {
 
 		Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.yaml"}))
 		Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0", "wg1", "wg2", "wg-work-*", "wg-work-external-*"}))
-		Expect(cfg.InterfaceSettings("wg-work-laptop").PeerDisc.Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
+		Expect(cfg.InterfaceSettings("wg-work-laptop").Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
 		Expect(cfg.DefaultInterfaceSettings.Hooks).To(HaveLen(2))
 
 		h := cfg.DefaultInterfaceSettings.Hooks[0]
@@ -358,15 +358,15 @@ var _ = Context("config", func() {
 			Expect(err).To(Succeed())
 
 			Expect(cfg.WatchInterval).To(Equal(100 * time.Second))
-			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange.Min).To(Equal(100))
-			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange.Max).To(Equal(200))
+			Expect(cfg.DefaultInterfaceSettings.ListenPortRange.Min).To(Equal(100))
+			Expect(cfg.DefaultInterfaceSettings.ListenPortRange.Max).To(Equal(200))
 		})
 
 		It("fails to update multiple settings which are incorrect", func() {
 			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
 
-			orig := cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange
+			orig := cfg.DefaultInterfaceSettings.ListenPortRange
 
 			_, err = cfg.Update(map[string]any{
 				"wireguard.listen_port_range.min": 200,
@@ -376,7 +376,7 @@ var _ = Context("config", func() {
 				MatchRegexp(`invalid settings: WireGuard minimal listen port \(\d+\) must be smaller or equal than maximal port \(\d+\)`),
 			))
 
-			Expect(cfg.DefaultInterfaceSettings.WireGuard.ListenPortRange).To(Equal(orig), "Failed update has changed settings")
+			Expect(cfg.DefaultInterfaceSettings.ListenPortRange).To(Equal(orig), "Failed update has changed settings")
 		})
 
 		It("can save runtime settings", func() {
@@ -466,10 +466,10 @@ interfaces:
 			icfg := cfg.InterfaceSettings("wg0")
 			Expect(icfg).NotTo(BeNil())
 
-			Expect(icfg.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
-			Expect(icfg.EndpointDisc.ICE.DisconnectedTimeout).To(Equal(22 * time.Second))
+			Expect(icfg.ICE.RestartTimeout).To(Equal(10 * time.Second))
+			Expect(icfg.ICE.DisconnectedTimeout).To(Equal(22 * time.Second))
 
-			Expect(cfg.DefaultInterfaceSettings.EndpointDisc.ICE.RestartTimeout).To(Equal(5 * time.Second))
+			Expect(cfg.DefaultInterfaceSettings.ICE.RestartTimeout).To(Equal(5 * time.Second))
 		})
 
 		It("two interface names and two patterns", func() {
@@ -510,20 +510,20 @@ interfaces:
 			icfg1 := cfg.InterfaceSettings("wg-work-seattle")
 			Expect(icfg1).NotTo(BeNil())
 
-			Expect(icfg1.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
-			Expect(icfg1.EndpointDisc.ICE.KeepaliveInterval).To(Equal(123 * time.Second))
+			Expect(icfg1.ICE.RestartTimeout).To(Equal(30 * time.Second))
+			Expect(icfg1.ICE.KeepaliveInterval).To(Equal(123 * time.Second))
 
 			icfg2 := cfg.InterfaceSettings("wg-mobile")
 			Expect(icfg2).NotTo(BeNil())
 
-			Expect(icfg2.EndpointDisc.ICE.RestartTimeout).To(Equal(30 * time.Second))
-			Expect(icfg2.EndpointDisc.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
+			Expect(icfg2.ICE.RestartTimeout).To(Equal(30 * time.Second))
+			Expect(icfg2.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
 
 			icfg3 := cfg.InterfaceSettings("wg0")
 			Expect(icfg3).NotTo(BeNil())
 
-			Expect(icfg3.EndpointDisc.ICE.RestartTimeout).To(Equal(10 * time.Second))
-			Expect(icfg3.EndpointDisc.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
+			Expect(icfg3.ICE.RestartTimeout).To(Equal(10 * time.Second))
+			Expect(icfg3.ICE.KeepaliveInterval).To(Equal(7 * time.Second))
 
 			icfg4 := cfg.InterfaceSettings("wg1")
 			Expect(icfg4).NotTo(BeNil())
