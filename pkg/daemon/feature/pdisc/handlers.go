@@ -96,22 +96,22 @@ func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
 		if d.PublicKeyNew != nil {
 			// Remove old peer
-			if err := cp.Interface.RemovePeer(pk); err != nil {
+			if err := pd.RemovePeer(pk); err != nil {
 				return fmt.Errorf("failed to remove peer: %w", err)
 			}
 
 			// Re-add peer with new public key
-			if err := cp.Interface.AddPeer(&cfg); err != nil {
+			if err := pd.AddPeer(&cfg); err != nil {
 				return fmt.Errorf("failed to add peer: %w", err)
 			}
 		} else {
-			if err := cp.Interface.UpdatePeer(&cfg); err != nil {
+			if err := pd.UpdatePeer(&cfg); err != nil {
 				return fmt.Errorf("failed to remove peer: %w", err)
 			}
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_REMOVE:
-		if err := cp.Interface.RemovePeer(pk); err != nil {
+		if err := pd.RemovePeer(pk); err != nil {
 			return fmt.Errorf("failed to remove peer: %w", err)
 		}
 	}

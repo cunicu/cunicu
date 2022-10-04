@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"time"
@@ -55,8 +56,6 @@ var (
 	DefaultInterfaceSettings = InterfaceSettings{
 		AutoConfig: AutoConfigSettings{
 			Enabled: true,
-
-			LinkLocalAddresses: true,
 		},
 		ConfigSync: ConfigSyncSettings{
 			Enabled: true,
@@ -130,6 +129,12 @@ func InitDefaults() error {
 		if s.PeerDisc.Name, err = os.Hostname(); err != nil {
 			return fmt.Errorf("failed to get hostname: %w", err)
 		}
+	}
+
+	pfxStrs := []string{"fc2f:9a4d::/32", "10.237.0.0/16"}
+	for _, pfxStr := range pfxStrs {
+		_, pfx, _ := net.ParseCIDR(pfxStr)
+		s.AutoConfig.Prefixes = append(s.AutoConfig.Prefixes, *pfx)
 	}
 
 	return nil

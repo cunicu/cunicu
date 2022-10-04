@@ -3,6 +3,7 @@ package crypto
 import (
 	"encoding/base64"
 	"errors"
+	"math/big"
 	"net"
 
 	"github.com/dchest/siphash"
@@ -99,11 +100,12 @@ func (k Key) Bytes() []byte {
 	return k[:]
 }
 
-// IPv6Address derives an IPv6 link local address from they key
-func (k Key) IPv6Address() net.IPNet {
-	ip := net.IP{0xfe, 0x80, 0, 0, 0, 0, 0, 0}
+func (k Key) IPAddress(p net.IPNet) net.IPNet {
+	l := len(p.IP)
 
-	hash := siphash.New(addrHashKey[:])
+	ones, _ := p.Mask.Size()
+
+	hash := siphash.New128(addrHashKey[:])
 	if n, err := hash.Write(k[:]); err != nil {
 		panic(err)
 	} else if n != KeyLength {
@@ -111,48 +113,20 @@ func (k Key) IPv6Address() net.IPNet {
 	}
 
 	// Append interface identifier from the hash function
-	ip = hash.Sum(ip)
+	var db []byte
+	db = hash.Sum(db)
 
-	if len(ip) != net.IPv6len {
-		panic("invalid IP length")
-	}
+	d := new(big.Int).SetBytes(db[:l])
+	i := new(big.Int).SetBytes(p.IP)
+	m := new(big.Int).SetBytes(p.Mask)
 
-	return net.IPNet{
-		IP:   ip,
-		Mask: net.CIDRMask(64, 128),
-	}
-}
+	d.Rsh(d, uint(ones))
+	i.And(i, m)
+	d.Or(d, i)
 
-// IPv4Address derives an IPv4 link local address from they key
-func (k Key) IPv4Address() net.IPNet {
-	hash := siphash.New(addrHashKey[:])
-	if _, err := hash.Write(k[:]); err != nil {
-		panic(err)
-	}
+	p.IP = d.Bytes()
 
-	sum := hash.Sum64()
-	sum2 := uint64(0)
-
-	for i := 0; i < 4; i++ {
-		sum2 ^= sum & 0xffff
-		sum >>= 16
-	}
-
-	c := byte(sum2 >> 8)
-	d := byte(sum2 & 0xff)
-
-	// Exclude reserved addresses
-	// See: https://datatracker.ietf.org/doc/html/rfc3927#section-2.1
-	if c == 0 {
-		c++
-	} else if c == 0xff {
-		c--
-	}
-
-	return net.IPNet{
-		IP:   net.IPv4(169, 254, c, d),
-		Mask: net.CIDRMask(16, 32),
-	}
+	return p
 }
 
 // Checks if the key is not zero

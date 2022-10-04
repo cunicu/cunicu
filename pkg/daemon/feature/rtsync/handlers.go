@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/core"
-	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -16,18 +15,15 @@ import (
 func (rs *Interface) OnPeerAdded(p *core.Peer) {
 	pk := p.PublicKey()
 
-	gwV4, ok := netip.AddrFromSlice(pk.IPv4Address().IP)
-	if !ok {
-		panic(fmt.Errorf("failed to get address from slice: %s", pk.IPv4Address().IP))
-	}
+	for _, q := range rs.Settings.AutoConfig.Prefixes {
+		gwn := pk.IPAddress(q)
+		gw, ok := netip.AddrFromSlice(gwn.IP)
+		if !ok {
+			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
+		}
 
-	gwV6, ok := netip.AddrFromSlice(pk.IPv6Address().IP)
-	if !ok {
-		panic(fmt.Errorf("failed to get address from slice: %s", pk.IPv6Address().IP))
+		rs.gwMap[gw] = p
 	}
-
-	rs.gwMap[gwV4] = p
-	rs.gwMap[gwV6] = p
 
 	rs.syncKernel() // Initial sync
 
@@ -37,18 +33,15 @@ func (rs *Interface) OnPeerAdded(p *core.Peer) {
 func (rs *Interface) OnPeerRemoved(p *core.Peer) {
 	pk := p.PublicKey()
 
-	gwV4, ok := netip.AddrFromSlice(pk.IPv4Address().IP)
-	if !ok {
-		panic(fmt.Errorf("failed to get address from slice: %s", pk.IPv4Address().IP))
-	}
+	for _, q := range rs.Settings.AutoConfig.Prefixes {
+		gwn := pk.IPAddress(q)
+		gw, ok := netip.AddrFromSlice(gwn.IP)
+		if !ok {
+			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
+		}
 
-	gwV6, ok := netip.AddrFromSlice(pk.IPv6Address().IP)
-	if !ok {
-		panic(fmt.Errorf("failed to get address from slice: %s", pk.IPv6Address().IP))
+		delete(rs.gwMap, gw)
 	}
-
-	delete(rs.gwMap, gwV4)
-	delete(rs.gwMap, gwV6)
 
 	if err := rs.removeKernel(p); err != nil {
 		rs.logger.Error("Failed to remove kernel routes for peer",
@@ -62,17 +55,31 @@ func (rs *Interface) OnPeerRemoved(p *core.Peer) {
 func (rs *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	pk := p.PublicKey()
 
-	for _, dst := range ipsAdded {
-		var gwn net.IPNet
-		if isV6 := dst.IP.To4() == nil; isV6 {
-			gwn = pk.IPv6Address()
-		} else {
-			gwn = pk.IPv4Address()
+	// Determine peer gateway address by using the first IPv4 and IPv6 prefix
+	var gwV4, gwV6 net.IP
+	for _, q := range rs.Settings.AutoConfig.Prefixes {
+		isV6 := q.IP.To4() == nil
+		n := pk.IPAddress(q)
+		if isV6 && gwV6 == nil {
+			gwV6 = n.IP
 		}
 
+		if !isV6 && gwV4 == nil {
+			gwV4 = n.IP
+		}
+	}
+
+	for _, dst := range ipsAdded {
 		var gw net.IP
-		if !util.ContainsNet(&gwn, &dst) {
-			gw = gwn.IP
+		if isV6 := dst.IP.To4() == nil; isV6 {
+			gw = gwV6
+		} else {
+			gw = gwV4
+		}
+
+		ones, bits := dst.Mask.Size()
+		if gw != nil && ones == bits && dst.IP.Equal(gw) {
+			gw = nil
 		}
 
 		if err := p.Interface.KernelDevice.AddRoute(dst, gw, rs.Settings.RouteSync.Table); err != nil {

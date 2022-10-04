@@ -3,7 +3,6 @@ package rtsync
 import (
 	"errors"
 	"fmt"
-	"net"
 	"net/netip"
 	"syscall"
 
@@ -27,42 +26,49 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 		return fmt.Errorf("failed to find link: %w", err)
 	}
 
+	// Get all IPv4 and IPv6 routes on link
+	routes := []netlink.Route{}
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
-		routes, err := netlink.RouteList(link, af)
+		routesAF, err := netlink.RouteList(link, af)
 		if err != nil {
 			rs.logger.Error("Failed to get routes from kernel", zap.Error(err))
 		}
 
-		var gw net.IP
-		switch af {
-		case unix.AF_INET:
-			gw = pk.IPv4Address().IP
-		case unix.AF_INET6:
-			gw = pk.IPv6Address().IP
+		routes = append(routes, routesAF...)
+	}
+
+	for _, route := range routes {
+		// Skip routes not in the desired table
+		if route.Table != rs.Settings.RouteSync.Table {
+			continue
 		}
 
-		for _, route := range routes {
-			if route.Table != rs.Settings.RouteSync.Table {
-				continue
-			}
+		// Skip default routes
+		if route.Dst == nil {
+			continue
+		}
 
-			if route.Dst == nil {
-				continue
-			}
+		ours := false
+		for _, q := range rs.Settings.AutoConfig.Prefixes {
+			gw := pk.IPAddress(q)
 
 			if route.Gw == nil {
-				if !gw.Equal(route.Dst.IP) {
-					continue
+				if gw.IP.Equal(route.Dst.IP) {
+					ours = true
 				}
 			} else {
-				if !gw.Equal(route.Gw) {
-					continue
+				if !gw.IP.Equal(route.Gw) {
+					ours = true
 				}
 			}
+		}
 
-			if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RouteSync.Table); err != nil && !errors.Is(err, syscall.ESRCH) {
-				rs.logger.Error("Failed to delete route", zap.Error(err))
-			}
+		if !ours {
+			continue
+		}
+
+		if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RouteSync.Table); err != nil && !errors.Is(err, syscall.ESRCH) {
+			rs.logger.Error("Failed to delete route", zap.Error(err))
 		}
 	}
 

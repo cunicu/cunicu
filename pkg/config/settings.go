@@ -85,10 +85,10 @@ type WireGuardSettings struct {
 type AutoConfigSettings struct {
 	Enabled bool `koanf:"enabled,omitempty"`
 
-	DNS                []net.IPAddr `koanf:"dns,omitempty"`
-	MTU                int          `koanf:"mtu,omitempty"`
-	Addresses          []net.IPNet  `koanf:"addresses,omitempty"`
-	LinkLocalAddresses bool         `koanf:"link_local,omitempty"`
+	DNS       []net.IPAddr `koanf:"dns,omitempty"`
+	MTU       int          `koanf:"mtu,omitempty"`
+	Addresses []net.IPNet  `koanf:"addresses,omitempty"`
+	Prefixes  []net.IPNet  `koanf:"prefixes"`
 }
 
 type HostSyncSettings struct {

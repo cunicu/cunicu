@@ -9,49 +9,50 @@ import (
 	"go.uber.org/zap"
 )
 
-func (a *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
+func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 	// Update link-local addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
 		oldPk := crypto.Key(old.PublicKey)
 		newPk := i.PublicKey()
 
 		if oldPk.IsSet() {
-			if err := deleteAddresses(i.KernelDevice,
-				oldPk.IPv4Address(),
-				oldPk.IPv6Address(),
-			); err != nil {
-				a.logger.Error("Failed to delete link-local addresses", zap.Error(err))
+			for _, pfx := range ac.Settings.AutoConfig.Prefixes {
+				addr := oldPk.IPAddress(pfx)
+				if err := ac.KernelDevice.DeleteAddress(addr); err != nil {
+					ac.logger.Error("Failed to un-assign address",
+						zap.String("address", addr.String()),
+						zap.Error(err))
+				}
 			}
 		}
 
 		if newPk.IsSet() {
-			if err := addAddresses(i.KernelDevice,
-				newPk.IPv4Address(),
-				newPk.IPv6Address(),
-			); err != nil {
-				a.logger.Error("Failed to assign link-local addresses", zap.Error(err))
+			for _, pfx := range ac.Settings.AutoConfig.Prefixes {
+				addr := newPk.IPAddress(pfx)
+				if err := ac.KernelDevice.AddAddress(addr); err != nil {
+					ac.logger.Error("Failed to assign address",
+						zap.String("address", addr.String()),
+						zap.Error(err))
+				}
 			}
 		}
 	}
 }
 
-func (a *Interface) OnPeerAdded(p *core.Peer) {
-	logger := a.logger.With(zap.Any("peer", p.PublicKey()))
+func (ac *Interface) OnPeerAdded(p *core.Peer) {
+	logger := ac.logger.With(zap.Any("peer", p.PublicKey()))
 
-	// Add default link-local address as allowed IP
-	ipV4 := p.PublicKey().IPv4Address()
-	ipV6 := p.PublicKey().IPv6Address()
+	// Add AllowedIPs for peer
+	for _, q := range ac.Settings.AutoConfig.Prefixes {
+		ip := p.PublicKey().IPAddress(q)
 
-	ipV4.Mask = net.CIDRMask(32, 32)
-	ipV6.Mask = net.CIDRMask(128, 128)
+		_, bits := ip.Mask.Size()
+		ip.Mask = net.CIDRMask(bits, bits)
 
-	if err := p.AddAllowedIP(ipV4); err != nil {
-		logger.Error("Failed to add link-local IPv4 address to AllowedIPs", zap.Error(err))
-	}
-
-	if err := p.AddAllowedIP(ipV6); err != nil {
-		logger.Error("Failed to add link-local IPv6 address to AllowedIPs", zap.Error(err))
+		if err := p.AddAllowedIP(ip); err != nil {
+			logger.Error("Failed to add link-local IPv6 address to AllowedIPs", zap.Error(err))
+		}
 	}
 }
 
-func (a *Interface) OnPeerRemoved(p *core.Peer) {}
+func (ac *Interface) OnPeerRemoved(p *core.Peer) {}

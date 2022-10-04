@@ -20,7 +20,7 @@ func init() {
 	daemon.Features["hsync"] = &daemon.FeaturePlugin{
 		New:         New,
 		Description: "Hosts synchronization",
-		Order:       100,
+		Order:       200,
 	}
 }
 
@@ -64,25 +64,29 @@ func (hs *Interface) Hosts() []Host {
 	}
 
 	for _, p := range hs.Peers {
+		pk := p.PublicKey()
 		// We use a shorted version of the public key as a DNS name here
-		pkName := p.PublicKey().String()[:8]
+		pkName := pk.String()[:8]
 
-		h := Host{
-			IP: p.PublicKey().IPv6Address().IP,
-			Names: []string{
-				pkName + d,
-			},
-			Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
-				p.Interface.KernelDevice.Name(),
-				p.Interface.KernelDevice.Index(),
-				p.PublicKey()),
+		for _, pfx := range hs.Settings.AutoConfig.Prefixes {
+			addr := pk.IPAddress(pfx)
+
+			h := Host{
+				IP: addr.IP,
+				Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
+					p.Interface.KernelDevice.Name(),
+					p.Interface.KernelDevice.Index(),
+					p.PublicKey()),
+			}
+
+			if p.Name != "" {
+				h.Names = append(h.Names, p.Name+d)
+			}
+
+			h.Names = append(h.Names, pkName+d)
+
+			hosts = append(hosts, h)
 		}
-
-		if p.Name != "" {
-			h.Names = append(h.Names, p.Name+d)
-		}
-
-		hosts = append(hosts, h)
 	}
 
 	return hosts
@@ -100,11 +104,7 @@ func (hs *Interface) Sync() error {
 		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", hs.KernelDevice.Index()))
 	})
 
-	// Add a separating new line
-	lines = append(lines, "")
-
 	// Add new hosts
-	hosts := hs.Hosts()
 	for _, h := range hosts {
 		line, err := h.Line()
 		if err != nil {
