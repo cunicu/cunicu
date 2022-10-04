@@ -52,7 +52,7 @@ func (hs *Interface) Start() error {
 }
 
 func (hs *Interface) Close() error {
-	return nil
+	return hs.Update(nil)
 }
 
 func (hs *Interface) Hosts() []Host {
@@ -92,7 +92,7 @@ func (hs *Interface) Hosts() []Host {
 	return hosts
 }
 
-func (hs *Interface) Sync() error {
+func (hs *Interface) Update(hosts []Host) error {
 	lines, err := readLines(hostsPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -124,4 +124,10 @@ func (hs *Interface) Sync() error {
 	hs.logger.Info("Updated hosts file", zap.Int("num_hosts", len(hosts)))
 
 	return nil
+}
+
+func (hs *Interface) Sync() error {
+	hosts := hs.Hosts()
+
+	return hs.Update(hosts)
 }
