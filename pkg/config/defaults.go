@@ -35,14 +35,10 @@ var (
 
 	DefaultICEURLs = []URL{
 		{url.URL{
-			Scheme: "stun",
-			Opaque: "stun.cunicu.li:3478",
+			Scheme:   "grpc",
+			Host:     "relay.cunicu.li:443",
+			RawQuery: "skip_verify=true",
 		}},
-		// TODO: Use relay API
-		// {url.URL{
-		// 	Scheme: "grpc",
-		// 	Host:   "relay.cunicu.li:",
-		// }},
 	}
 
 	DefaultSettings = Settings{
