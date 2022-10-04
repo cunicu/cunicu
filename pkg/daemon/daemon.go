@@ -15,7 +15,6 @@ import (
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
 	"github.com/stv0g/cunicu/pkg/signaling"
 )
@@ -249,12 +248,4 @@ func (d *Daemon) ForEachInterface(cb func(i *Interface) error) error {
 	}
 
 	return nil
-}
-
-func (d *Daemon) ConfigureDevice(name string, cfg wgtypes.Config) error {
-	if err := d.client.ConfigureDevice(name, cfg); err != nil {
-		return err
-	}
-
-	return d.watcher.Sync()
 }

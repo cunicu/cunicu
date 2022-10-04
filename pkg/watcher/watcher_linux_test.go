@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/watcher"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test"
 	g "github.com/stv0g/gont/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -77,7 +77,7 @@ var _ = Describe("watcher", func() {
 	}
 
 	TestSync := func() {
-		var i *core.Interface
+		var i *daemon.Interface
 		var p *core.Peer
 		var d device.Device
 
@@ -91,7 +91,9 @@ var _ = Describe("watcher", func() {
 			var ie core.InterfaceAddedEvent
 			Expect(h.Events).To(test.ReceiveEvent(&ie))
 
-			i = ie.Interface
+			i = &daemon.Interface{
+				Interface: ie.Interface,
+			}
 
 			Expect(ie.Interface).NotTo(BeNil())
 			Expect(ie.Interface.Name()).To(Equal(devName))
@@ -101,10 +103,8 @@ var _ = Describe("watcher", func() {
 			oldListenPort := i.ListenPort
 			newListenPort := oldListenPort + 1
 
-			err = i.Configure(&wg.Config{
-				Config: wgtypes.Config{
-					ListenPort: &newListenPort,
-				},
+			err = i.ConfigureDevice(wgtypes.Config{
+				ListenPort: &newListenPort,
 			})
 			Expect(err).To(Succeed())
 
