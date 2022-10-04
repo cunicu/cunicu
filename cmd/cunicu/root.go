@@ -10,6 +10,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -50,6 +51,8 @@ Code & Issues:
 )
 
 var (
+	logger *zap.Logger
+
 	rootCmd = &cobra.Command{
 		Use:   "cunicu",
 		Short: "cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.",

@@ -22,6 +22,8 @@ const (
 )
 
 var (
+	DefaultPrefixes = []string{"fc2f:9a4d::/32", "10.237.0.0/16"}
+
 	DefaultBackends = []BackendURL{
 		{
 			URL: url.URL{
@@ -131,8 +133,7 @@ func InitDefaults() error {
 		}
 	}
 
-	pfxStrs := []string{"fc2f:9a4d::/32", "10.237.0.0/16"}
-	for _, pfxStr := range pfxStrs {
+	for _, pfxStr := range DefaultPrefixes {
 		_, pfx, _ := net.ParseCIDR(pfxStr)
 		s.AutoConfig.Prefixes = append(s.AutoConfig.Prefixes, *pfx)
 	}
