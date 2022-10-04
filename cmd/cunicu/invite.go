@@ -90,11 +90,8 @@ func invite(cmd *cobra.Command, args []string) {
 				ListenPort: &listenPort,
 				Peers:      []wgtypes.PeerConfig{cfgPeer},
 			},
-			Address: []net.IPNet{
-				sk.PublicKey().IPv4Address(),
-				sk.PublicKey().IPv6Address(),
-			},
-			MTU: &mtu,
+			Address: []net.IPNet{},
+			MTU:     &mtu,
 		}
 
 		if addPeerResp.Invitation.Endpoint != "" {

@@ -7,12 +7,13 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"go.uber.org/zap"
 )
 
 var (
-	v4, v6, mask bool
+	mask bool
 
 	addressesCmd = &cobra.Command{
 		Use:   "addresses",
@@ -22,15 +23,13 @@ This sub-command accepts a WireGuard public key on the standard input and prints
 `,
 		Run: addresses,
 		Example: `$ wg genkey | wg pubkey | cunicu addresses
-fe80::e3be:9673:5a98:9348/64
-169.254.29.188/16`,
+fc2f:9a4d:777f:7a97:8197:4a5d:1d1b:ed79
+10.237.119.127`,
 	}
 )
 
 func init() {
 	pf := addressesCmd.PersistentFlags()
-	pf.BoolVarP(&v4, "ipv4", "4", false, "Print IPv4 address only")
-	pf.BoolVarP(&v6, "ipv6", "6", false, "Print IPv6 address only")
 	pf.BoolVarP(&mask, "mask", "m", false, "Print CIDR mask")
 
 	rootCmd.AddCommand(addressesCmd)
@@ -51,21 +50,22 @@ func addresses(cmd *cobra.Command, args []string) {
 			zap.String("key", string(keyB64)))
 	}
 
-	both := !v4 && !v6
-
-	as := []net.IPNet{}
-	if v6 || both {
-		as = append(as, key.IPv6Address())
-	}
-	if v4 || both {
-		as = append(as, key.IPv4Address())
+	if len(args) == 0 {
+		args = config.DefaultPrefixes
 	}
 
-	for _, a := range as {
+	for _, ps := range args {
+		_, p, err := net.ParseCIDR(ps)
+		if err != nil {
+			logger.Fatal("Failed to parse prefix", zap.Error(err))
+		}
+
+		q := key.IPAddress(*p)
+
 		if mask {
-			fmt.Printf("%s\n", a.String())
+			fmt.Println(q.String())
 		} else {
-			fmt.Printf("%s\n", a.IP.String())
+			fmt.Println(q.IP.String())
 		}
 	}
 }
