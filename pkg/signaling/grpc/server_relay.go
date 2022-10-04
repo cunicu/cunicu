@@ -44,12 +44,11 @@ func (s *RelayInfo) GetCredentials(username string) (string, string, time.Time) 
 
 		exp := time.Now().Add(s.TTL)
 		user := fmt.Sprintf("%d:%s", exp.Unix(), username)
-		passRaw := []byte{}
 
 		digest := hmac.New(sha1.New, []byte(s.Secret))
 		digest.Write([]byte(user))
-		digest.Sum(passRaw)
 
+		passRaw := digest.Sum(nil)
 		pass := base64.StdEncoding.EncodeToString(passRaw)
 
 		return user, pass, exp
