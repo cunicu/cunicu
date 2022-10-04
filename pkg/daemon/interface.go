@@ -3,6 +3,8 @@ package daemon
 import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type Interface struct {
@@ -66,4 +68,38 @@ func (i *Interface) Close() error {
 	}
 
 	return nil
+}
+
+func (i *Interface) ConfigureDevice(cfg wgtypes.Config) error {
+	if err := i.Daemon.client.ConfigureDevice(i.Name(), cfg); err != nil {
+		return err
+	}
+
+	return i.Daemon.watcher.Sync()
+}
+
+func (i *Interface) AddPeer(pcfg *wgtypes.PeerConfig) error {
+	return i.ConfigureDevice(wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{*pcfg},
+	})
+}
+
+func (i *Interface) UpdatePeer(pcfg *wgtypes.PeerConfig) error {
+	pcfg2 := *pcfg
+	pcfg2.UpdateOnly = true
+
+	return i.AddPeer(&pcfg2)
+}
+
+func (i *Interface) RemovePeer(pk crypto.Key) error {
+	cfg := wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				PublicKey: wgtypes.Key(pk),
+				Remove:    true,
+			},
+		},
+	}
+
+	return i.ConfigureDevice(cfg)
 }
