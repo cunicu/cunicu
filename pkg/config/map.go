@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -14,15 +15,27 @@ func Map(v any, tagName string) map[string]any {
 }
 
 func _map(v reflect.Value, tagName string) any {
-	if v.Kind() == reflect.Pointer {
-		v = v.Elem()
+	t := v.Type()
+
+	// Stringable types will be stringed
+	if s, ok := v.Interface().(fmt.Stringer); ok {
+		return s.String()
 	}
 
-	t := v.Type()
+	if v.CanAddr() {
+		if s, ok := v.Addr().Interface().(fmt.Stringer); ok {
+			return s.String()
+		}
+	}
 
 	// Types outside the config package will be taken as an interface
 	if t.PkgPath() != configPkgPath && t.PkgPath() != "" {
 		return v.Interface()
+	}
+
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
+		t = v.Type()
 	}
 
 	switch v.Kind() {
@@ -55,15 +68,22 @@ func _map(v reflect.Value, tagName string) any {
 			d := map[string]any{}
 
 			for _, e := range v.MapKeys() {
-				mv := v.MapIndex(e)
-
-				d[e.String()] = _map(mv, tagName)
+				d[e.String()] = _map(v.MapIndex(e), tagName)
 			}
 
 			return d
 		} else {
 			return v.Interface()
 		}
+
+	case reflect.Slice:
+		d := []any{}
+
+		for i := 0; i < v.Len(); i++ {
+			d = append(d, _map(v.Index(i), tagName))
+		}
+
+		return d
 
 	default:
 		return v.Interface()
