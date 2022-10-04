@@ -34,7 +34,7 @@ func init() {
 	pf := inviteCmd.PersistentFlags()
 
 	pf.IntVarP(&listenPort, "listen-port", "L", wg.DefaultPort, "Listen port for generated config")
-	pf.BoolVarP(&qrCode, "qr-code", "q", false, "Show config as QR code in terminal")
+	pf.BoolVarP(&qrCode, "qr-code", "Q", false, "Show config as QR code in terminal")
 }
 
 func inviteValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

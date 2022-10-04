@@ -115,32 +115,28 @@ func (p *wgParser) Marshal(map[string]interface{}) ([]byte, error) {
 
 func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 	s := &InterfaceSettings{
-		WireGuard: WireGuardSettings{
-			ListenPort: c.ListenPort,
-			Peers:      map[string]WireGuardPeerSettings{},
-		},
-		AutoConfig: AutoConfigSettings{
-			Addresses: c.Address,
-			DNS:       c.DNS,
-		},
+		ListenPort: c.ListenPort,
+		Peers:      map[string]PeerSettings{},
+		Addresses:  c.Address,
+		DNS:        c.DNS,
 	}
 
 	if c.PrivateKey != nil {
-		s.WireGuard.PrivateKey = crypto.Key(*c.PrivateKey)
+		s.PrivateKey = crypto.Key(*c.PrivateKey)
 	}
 
 	if c.FirewallMark != nil {
-		s.WireGuard.FirewallMark = *c.FirewallMark
+		s.FirewallMark = *c.FirewallMark
 	}
 
 	if c.MTU != nil {
-		s.AutoConfig.MTU = *c.MTU
+		s.MTU = *c.MTU
 	}
 
 	if c.Table != nil {
 		var err error
 
-		s.RouteSync.Table, err = device.Table(*c.Table)
+		s.RoutingTable, err = device.Table(*c.Table)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse routing table '%s': %w", *c.Table, err)
 		}
@@ -149,7 +145,7 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 	// TODO: Add exec hooks for wg-quick PreUp, PostUp, PreDown, PostDown hooks
 
 	for i, p := range c.Peers {
-		wgps := WireGuardPeerSettings{
+		wgps := PeerSettings{
 			PublicKey:  crypto.Key(p.PublicKey),
 			AllowedIPs: p.AllowedIPs,
 		}
@@ -171,7 +167,7 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 			name = p.PublicKey.String()[:8]
 		}
 
-		s.WireGuard.Peers[name] = wgps
+		s.Peers[name] = wgps
 	}
 
 	return s, nil

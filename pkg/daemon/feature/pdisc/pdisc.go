@@ -35,7 +35,7 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.PeerDisc.Enabled || !crypto.Key(i.Settings.PeerDisc.Community).IsSet() {
+	if !i.Settings.DiscoverPeers || !crypto.Key(i.Settings.Community).IsSet() {
 		return nil, nil
 	}
 
@@ -46,11 +46,11 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		logger:     zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
 	}
 
-	for _, k := range pd.Settings.PeerDisc.Whitelist {
+	for _, k := range pd.Settings.Whitelist {
 		pd.peerFilter[crypto.Key(k)] = true
 	}
 
-	for _, k := range pd.Settings.PeerDisc.Blacklist {
+	for _, k := range pd.Settings.Blacklist {
 		pd.peerFilter[crypto.Key(k)] = false
 	}
 
@@ -72,7 +72,7 @@ func (pd *Interface) Start() error {
 
 	// Subscribe to peer updates
 	kp := &crypto.KeyPair{
-		Ours:   crypto.Key(pd.Settings.PeerDisc.Community),
+		Ours:   crypto.Key(pd.Settings.Community),
 		Theirs: signaling.AnyKey,
 	}
 	if _, err := pd.Daemon.Backend.Subscribe(context.Background(), kp, pd); err != nil {
@@ -97,7 +97,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	allowedIPs := []*net.IPNet{}
 
 	// Static addresses
-	for _, addr := range pd.Settings.AutoConfig.Addresses {
+	for _, addr := range pd.Settings.Addresses {
 		_, bits := addr.Mask.Size()
 		addr.Mask = net.CIDRMask(bits, bits)
 
@@ -105,7 +105,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	}
 
 	// Auto-generated prefixes
-	for _, pfx := range pd.Settings.AutoConfig.Prefixes {
+	for _, pfx := range pd.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
 		_, bits := addr.Mask.Size()
 		addr.Mask = net.CIDRMask(bits, bits)
@@ -114,13 +114,13 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	}
 
 	// Other networks
-	for _, netw := range pd.Settings.PeerDisc.Networks {
+	for _, netw := range pd.Settings.Networks {
 		allowedIPs = append(allowedIPs, &netw)
 	}
 
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
-		Name:       pd.Settings.PeerDisc.Name,
+		Name:       pd.Settings.HostName,
 		AllowedIps: util.SliceString(allowedIPs),
 		BuildInfo:  buildinfo.BuildInfo(),
 	}
@@ -142,7 +142,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 
 	kp := &crypto.KeyPair{
 		Ours:   pd.PrivateKey(),
-		Theirs: crypto.Key(pd.Settings.PeerDisc.Community).PublicKey(),
+		Theirs: crypto.Key(pd.Settings.Community).PublicKey(),
 	}
 
 	if err := pd.Daemon.Backend.Publish(context.Background(), kp, msg); err != nil {

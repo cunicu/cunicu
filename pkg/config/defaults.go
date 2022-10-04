@@ -52,59 +52,45 @@ var (
 	}
 
 	DefaultInterfaceSettings = InterfaceSettings{
-		AutoConfig: AutoConfigSettings{
-			Enabled: true,
-		},
-		ConfigSync: ConfigSyncSettings{
-			Enabled: true,
-		},
-		PeerDisc: PeerDiscoverySettings{
-			Enabled: true,
-		},
-		EndpointDisc: EndpointDiscoverySettings{
-			Enabled: true,
+		DiscoverPeers:     true,
+		DiscoverEndpoints: true,
+		SyncConfig:        true,
+		SyncHosts:         true,
+		SyncRoutes:        true,
+		WatchRoutes:       true,
 
-			ICE: ICESettings{
-				URLs:                DefaultICEURLs,
-				CheckInterval:       200 * time.Millisecond,
-				DisconnectedTimeout: 5 * time.Second,
-				FailedTimeout:       5 * time.Second,
-				RestartTimeout:      5 * time.Second,
-				InterfaceFilter:     "*",
-				KeepaliveInterval:   2 * time.Second, // TODO: increase
-				MaxBindingRequests:  7,
-				PortRange: PortRangeSettings{
-					Min: EphemeralPortMin,
-					Max: EphemeralPortMax,
-				},
-				CandidateTypes: []icex.CandidateType{
-					{CandidateType: ice.CandidateTypeHost},
-					{CandidateType: ice.CandidateTypeServerReflexive},
-					{CandidateType: ice.CandidateTypePeerReflexive},
-					{CandidateType: ice.CandidateTypeRelay},
-				},
-				NetworkTypes: []icex.NetworkType{
-					{NetworkType: ice.NetworkTypeUDP4},
-					{NetworkType: ice.NetworkTypeUDP6},
-					{NetworkType: ice.NetworkTypeTCP4},
-					{NetworkType: ice.NetworkTypeTCP6},
-				},
-			},
-		},
-		HostSync: HostSyncSettings{
-			Enabled: true,
-		},
-		RouteSync: RouteSyncSettings{
-			Enabled: true,
-
-			Watch: true,
-			Table: DefaultRouteTable,
-		},
-		WireGuard: WireGuardSettings{
-			ListenPortRange: &PortRangeSettings{
-				Min: wg.DefaultPort,
+		ICE: ICESettings{
+			URLs:                DefaultICEURLs,
+			CheckInterval:       200 * time.Millisecond,
+			DisconnectedTimeout: 5 * time.Second,
+			FailedTimeout:       5 * time.Second,
+			RestartTimeout:      5 * time.Second,
+			InterfaceFilter:     "*",
+			KeepaliveInterval:   2 * time.Second, // TODO: increase
+			MaxBindingRequests:  7,
+			PortRange: PortRangeSettings{
+				Min: EphemeralPortMin,
 				Max: EphemeralPortMax,
 			},
+			CandidateTypes: []icex.CandidateType{
+				{CandidateType: ice.CandidateTypeHost},
+				{CandidateType: ice.CandidateTypeServerReflexive},
+				{CandidateType: ice.CandidateTypePeerReflexive},
+				{CandidateType: ice.CandidateTypeRelay},
+			},
+			NetworkTypes: []icex.NetworkType{
+				{NetworkType: ice.NetworkTypeUDP4},
+				{NetworkType: ice.NetworkTypeUDP6},
+				{NetworkType: ice.NetworkTypeTCP4},
+				{NetworkType: ice.NetworkTypeTCP6},
+			},
+		},
+
+		RoutingTable: DefaultRouteTable,
+
+		ListenPortRange: &PortRangeSettings{
+			Min: wg.DefaultPort,
+			Max: EphemeralPortMax,
 		},
 	}
 )
@@ -117,21 +103,21 @@ func InitDefaults() error {
 	s := &DefaultSettings.DefaultInterfaceSettings
 
 	// Check if WireGuard interface can be created by the kernel
-	if !s.WireGuard.UserSpace && !wg.KernelModuleExists() {
+	if !s.UserSpace && !wg.KernelModuleExists() {
 		logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
-		s.WireGuard.UserSpace = true
+		s.UserSpace = true
 	}
 
 	// Set default hostname
-	if s.PeerDisc.Name == "" {
-		if s.PeerDisc.Name, err = os.Hostname(); err != nil {
+	if s.HostName == "" {
+		if s.HostName, err = os.Hostname(); err != nil {
 			return fmt.Errorf("failed to get hostname: %w", err)
 		}
 	}
 
 	for _, pfxStr := range DefaultPrefixes {
 		_, pfx, _ := net.ParseCIDR(pfxStr)
-		s.AutoConfig.Prefixes = append(s.AutoConfig.Prefixes, *pfx)
+		s.Prefixes = append(s.Prefixes, *pfx)
 	}
 
 	return nil

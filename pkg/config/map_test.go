@@ -15,23 +15,17 @@ var _ = It("map", func() {
 		WatchInterval: 5 * time.Second,
 		Interfaces: map[string]config.InterfaceSettings{
 			"wg0": {
-				EndpointDisc: config.EndpointDiscoverySettings{
-					ICE: config.ICESettings{
-						NetworkTypes: []icex.NetworkType{
-							{NetworkType: ice.NetworkTypeTCP4},
-							{NetworkType: ice.NetworkTypeTCP6},
-						},
+				ICE: config.ICESettings{
+					NetworkTypes: []icex.NetworkType{
+						{NetworkType: ice.NetworkTypeTCP4},
+						{NetworkType: ice.NetworkTypeTCP6},
 					},
 				},
-				PeerDisc: config.PeerDiscoverySettings{
-					Name: "test",
-				},
+				HostName: "test",
 			},
 		},
 		DefaultInterfaceSettings: config.InterfaceSettings{
-			PeerDisc: config.PeerDiscoverySettings{
-				Name: "test2",
-			},
+			HostName: "test2",
 			Hooks: []config.HookSetting{
 				&config.ExecHookSetting{
 					BaseHookSetting: config.BaseHookSetting{

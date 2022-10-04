@@ -196,7 +196,7 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 
 		icfg := d.Config.InterfaceSettings(name)
 
-		dev, err := device.NewDevice(name, icfg.WireGuard.UserSpace)
+		dev, err := device.NewDevice(name, icfg.UserSpace)
 		if err != nil {
 			return fmt.Errorf("failed to create WireGuard device: %w", err)
 		}

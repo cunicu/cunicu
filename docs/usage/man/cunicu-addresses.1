@@ -23,21 +23,13 @@ This sub-command accepts a WireGuard public key on the standard input and prints
 	help for addresses
 
 .PP
-\fB-4\fP, \fB--ipv4\fP[=false]
-	Print IPv4 address only
-
-.PP
-\fB-6\fP, \fB--ipv6\fP[=false]
-	Print IPv6 address only
-
-.PP
 \fB-m\fP, \fB--mask\fP[=false]
 	Print CIDR mask
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS
 .PP
-\fB-C\fP, \fB--color\fP="auto"
+\fB-q\fP, \fB--color\fP="auto"
 	Enable colorization of output (one of: auto, always, never)
 
 .PP
@@ -59,8 +51,8 @@ This sub-command accepts a WireGuard public key on the standard input and prints
 
 .nf
 $ wg genkey | wg pubkey | cunicu addresses
-fe80::e3be:9673:5a98:9348/64
-169.254.29.188/16
+fc2f:9a4d:777f:7a97:8197:4a5d:1d1b:ed79
+10.237.119.127
 
 .fi
 .RE
