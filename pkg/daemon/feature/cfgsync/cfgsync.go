@@ -1,8 +1,11 @@
 package cfgsync
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"net"
+	"os/exec"
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
@@ -88,4 +91,42 @@ func (cs *Interface) Configure(cfg *wg.Config) error {
 	}
 
 	return nil
+}
+
+func (i *Interface) SetDNS(svrs []net.IPAddr) error {
+	var cmd *exec.Cmd
+
+	// Check if SystemD's resolvectl is available
+	if resolvectl, err := exec.LookPath("resolvectl"); err == nil {
+		args := []string{"dns", i.Name()}
+		for _, svr := range svrs {
+			args = append(args, svr.String())
+		}
+
+		cmd = exec.Command(resolvectl, args...)
+	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
+		cmd := exec.Command(resolveconf, "-a", i.Name(), "-m", "0", "-x")
+
+		stdin := &bytes.Buffer{}
+		for _, svr := range svrs {
+			fmt.Fprintf(stdin, "nameserver %s\n", svr.String())
+		}
+
+		cmd.Stdin = stdin
+	}
+
+	return cmd.Run()
+}
+
+func (i *Interface) UnsetDNS() error {
+	var cmd *exec.Cmd
+
+	// Check if SystemD's resolvectl is available
+	if resolvectl, err := exec.LookPath("resolvectl"); err == nil {
+		cmd = exec.Command(resolvectl, "revert", i.Name())
+	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
+		cmd = exec.Command(resolveconf, "-d", i.Name())
+	}
+
+	return cmd.Run()
 }
