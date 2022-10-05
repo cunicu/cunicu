@@ -84,7 +84,7 @@ func (i *WireGuardInterface) Create() error {
 }
 
 func (i *WireGuardInterface) WriteConfig() error {
-	wgcpath := i.Agent.Shadowed(i.Agent.WireGuardConfigPath)
+	wgcpath := i.Agent.Shadowed(wg.ConfigPath)
 
 	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
 
