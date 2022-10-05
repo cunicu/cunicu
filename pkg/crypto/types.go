@@ -101,9 +101,7 @@ func (k Key) Bytes() []byte {
 }
 
 func (k Key) IPAddress(p net.IPNet) net.IPNet {
-	l := len(p.IP)
-
-	ones, _ := p.Mask.Size()
+	ones, bits := p.Mask.Size()
 
 	hash := siphash.New128(addrHashKey[:])
 	if n, err := hash.Write(k[:]); err != nil {
@@ -116,17 +114,24 @@ func (k Key) IPAddress(p net.IPNet) net.IPNet {
 	var db []byte
 	db = hash.Sum(db)
 
-	d := new(big.Int).SetBytes(db[:l])
-	i := new(big.Int).SetBytes(p.IP)
-	m := new(big.Int).SetBytes(p.Mask)
+	n := p.Mask
+	b := p.IP
+	if c := p.IP.To4(); c != nil {
+		b = c
+	}
+
+	d := new(big.Int).SetBytes(db[:bits/8])
+	m := new(big.Int).SetBytes(n)
+	i := new(big.Int).SetBytes(b)
 
 	d.Rsh(d, uint(ones))
 	i.And(i, m)
 	d.Or(d, i)
 
-	p.IP = d.Bytes()
-
-	return p
+	return net.IPNet{
+		IP:   d.Bytes(),
+		Mask: m.Bytes(),
+	}
 }
 
 // Checks if the key is not zero
