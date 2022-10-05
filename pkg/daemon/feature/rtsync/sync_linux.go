@@ -17,7 +17,7 @@ import (
 
 // removeKernel removes all routes from the kernel which target
 // the peers link local addresses as their destination
-// or have the peers link-local address configured as the gateway.
+// or have the peers address configured as the gateway.
 func (rs *Interface) removeKernel(p *core.Peer) error {
 	pk := p.PublicKey()
 
@@ -153,6 +153,7 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return nil
 	}
 
+	// TODO
 	if !ru.Gw.IsLinkLocalUnicast() {
 		logger.Debug("Ignoring non-link-local gateway", zap.Any("gw", ru.Gw))
 		return nil

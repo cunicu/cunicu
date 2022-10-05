@@ -10,7 +10,7 @@ import (
 )
 
 func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
-	// Update link-local addresses in case the interface key has changed
+	// Update addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
 		oldPk := crypto.Key(old.PublicKey)
 		newPk := i.PublicKey()
@@ -50,7 +50,7 @@ func (ac *Interface) OnPeerAdded(p *core.Peer) {
 		ip.Mask = net.CIDRMask(bits, bits)
 
 		if err := p.AddAllowedIP(ip); err != nil {
-			logger.Error("Failed to add link-local IPv6 address to AllowedIPs", zap.Error(err))
+			logger.Error("Failed to add auto-generated address to AllowedIPs", zap.Error(err))
 		}
 	}
 }

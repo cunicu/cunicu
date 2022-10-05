@@ -1,4 +1,4 @@
-// Package hsync synchronizes /etc/hosts with pairs of peer hostname and their respective link-local IP addresses
+// Package hsync synchronizes /etc/hosts with pairs of peer hostname and their respective IP addresses
 package hsync
 
 import (

@@ -17,8 +17,8 @@ var (
 
 	addressesCmd = &cobra.Command{
 		Use:   "addresses",
-		Short: "Calculate link-local IPv4 and IPv6 addresses from a WireGuard X25519 public key",
-		Long: `cunīcu auto-configuration feature derives and assigns link-local IPv4 and IPv6 addresses based on the public key of the WireGuard interface.
+		Short: "Derive IPv4 and IPv6 addresses from a WireGuard X25519 public key",
+		Long: `cunīcu auto-configuration feature derives and assigns IPv4 and IPv6 addresses based on the public key of the WireGuard interface.
 This sub-command accepts a WireGuard public key on the standard input and prints out the calculated IP addresses on the standard output.
 `,
 		Run: addresses,
