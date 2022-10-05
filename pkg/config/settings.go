@@ -88,8 +88,8 @@ type InterfaceSettings struct {
 	HostName string `koanf:"hostname,omitempty"`
 	Domain   string `koanf:"domain,omitempty"`
 
-	DNS       []net.IPAddr `koanf:"dns,omitempty"`
 	MTU       int          `koanf:"mtu,omitempty"`
+	DNS       []net.IPAddr `koanf:"dns,omitempty"`
 	Addresses []net.IPNet  `koanf:"addresses,omitempty"`
 	Prefixes  []net.IPNet  `koanf:"prefixes"`
 	Networks  []net.IPNet  `koanf:"networks,omitempty"`

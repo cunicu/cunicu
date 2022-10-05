@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/watcher"
 	"github.com/stv0g/cunicu/test"
@@ -77,7 +76,7 @@ var _ = Describe("watcher", func() {
 	}
 
 	TestSync := func() {
-		var i *daemon.Interface
+		var i *core.Interface
 		var p *core.Peer
 		var d device.Device
 
@@ -91,9 +90,7 @@ var _ = Describe("watcher", func() {
 			var ie core.InterfaceAddedEvent
 			Expect(h.Events).To(test.ReceiveEvent(&ie))
 
-			i = &daemon.Interface{
-				Interface: ie.Interface,
-			}
+			i = ie.Interface
 
 			Expect(ie.Interface).NotTo(BeNil())
 			Expect(ie.Interface.Name()).To(Equal(devName))
@@ -103,7 +100,7 @@ var _ = Describe("watcher", func() {
 			oldListenPort := i.ListenPort
 			newListenPort := oldListenPort + 1
 
-			err = i.ConfigureDevice(wgtypes.Config{
+			err = c.ConfigureDevice(devName, wgtypes.Config{
 				ListenPort: &newListenPort,
 			})
 			Expect(err).To(Succeed())
@@ -125,8 +122,12 @@ var _ = Describe("watcher", func() {
 			sk, err := crypto.GenerateKey()
 			Expect(err).To(Succeed())
 
-			err = i.AddPeer(&wgtypes.PeerConfig{
-				PublicKey: wgtypes.Key(sk.PublicKey()),
+			err = c.ConfigureDevice(i.Name(), wgtypes.Config{
+				Peers: []wgtypes.PeerConfig{
+					{
+						PublicKey: wgtypes.Key(sk.PublicKey()),
+					},
+				},
 			})
 			Expect(err).To(Succeed())
 
@@ -166,7 +167,14 @@ var _ = Describe("watcher", func() {
 		})
 
 		It("removing a peer", func() {
-			err := i.RemovePeer(p.PublicKey())
+			err = c.ConfigureDevice(i.Name(), wgtypes.Config{
+				Peers: []wgtypes.PeerConfig{
+					{
+						PublicKey: wgtypes.Key(p.PublicKey()),
+						Remove:    true,
+					},
+				},
+			})
 			Expect(err).To(Succeed())
 
 			err = w.Sync()

@@ -118,30 +118,11 @@ var _ = Context("config", func() {
 				})
 
 				Context("in search path", func() {
-					var oldHomeDir string
-
 					BeforeEach(func() {
 						// Move config file into XDG config directory
-						homeDir := filepath.Dir(cfgFile.Name())
-						configDir := filepath.Join(homeDir, ".config", "cunicu")
+						configDir := filepath.Dir(cfgFile.Name())
 
-						err := os.MkdirAll(configDir, 0755)
-						Expect(err).To(Succeed())
-
-						err = os.Rename(
-							cfgFile.Name(),
-							filepath.Join(configDir, "cunicu.yaml"),
-						)
-						Expect(err).To(Succeed())
-
-						oldHomeDir = os.Getenv("HOME")
-
-						err = os.Setenv("HOME", homeDir)
-						Expect(err).To(Succeed())
-					})
-
-					AfterEach(func() {
-						err := os.Setenv("HOME", oldHomeDir)
+						err := os.Setenv("CUNICU_CONFIG_DIR", configDir)
 						Expect(err).To(Succeed())
 					})
 
@@ -160,6 +141,7 @@ var _ = Context("config", func() {
 				BeforeEach(func() {
 					server = ghttp.NewServer()
 					server.AppendHandlers(
+						ghttp.VerifyRequest("HEAD", "/cunicu.yaml"),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/cunicu.yaml"),
 							ghttp.RespondWith(http.StatusOK,
@@ -208,7 +190,7 @@ var _ = Context("config", func() {
 
 	Describe("use environment variables", func() {
 		It("accepts settings via environment variables", func() {
-			os.Setenv("CUNICU_EPDISC_ICE_CANDIDATE_TYPES", "srflx")
+			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx")
 
 			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
@@ -223,7 +205,7 @@ var _ = Context("config", func() {
 		})
 
 		It("accepts multiple settings via environment variables", func() {
-			os.Setenv("CUNICU_EPDISC_ICE_CANDIDATE_TYPES", "srflx,relay")
+			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx,relay")
 
 			cfg, err := config.ParseArgs()
 			Expect(err).To(Succeed())
@@ -237,7 +219,7 @@ var _ = Context("config", func() {
 		})
 
 		It("environment variables are overwritten by command line arguments", func() {
-			os.Setenv("CUNICU_EPDISC_ICE_CANDIDATE_TYPES", "srflx,relay")
+			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx,relay")
 
 			cfg, err := config.ParseArgs("--ice-candidate-type", "host")
 			Expect(err).To(Succeed())
@@ -270,7 +252,7 @@ var _ = Context("config", func() {
 
 		It("should have a default STUN URL", func() {
 			Expect(icfg.ICE.URLs).To(HaveLen(1))
-			Expect(icfg.ICE.URLs[0].String()).To(Equal("stun:stun.cunicu.li:3478"))
+			Expect(icfg.ICE.URLs[0].String()).To(Equal("grpc://relay.cunicu.li:443"))
 		})
 	})
 
@@ -351,9 +333,9 @@ var _ = Context("config", func() {
 			Expect(err).To(Succeed())
 
 			_, err = cfg.Update(map[string]any{
-				"watch_interval":                  100 * time.Second,
-				"wireguard.listen_port_range.min": 100,
-				"wireguard.listen_port_range.max": 200,
+				"watch_interval":        100 * time.Second,
+				"listen_port_range.min": 100,
+				"listen_port_range.max": 200,
 			})
 			Expect(err).To(Succeed())
 
@@ -369,8 +351,8 @@ var _ = Context("config", func() {
 			orig := cfg.DefaultInterfaceSettings.ListenPortRange
 
 			_, err = cfg.Update(map[string]any{
-				"wireguard.listen_port_range.min": 200,
-				"wireguard.listen_port_range.max": 100,
+				"listen_port_range.min": 200,
+				"listen_port_range.max": 100,
 			})
 			Expect(err).To(MatchError(
 				MatchRegexp(`invalid settings: WireGuard minimal listen port \(\d+\) must be smaller or equal than maximal port \(\d+\)`),
@@ -443,16 +425,14 @@ var _ = Context("config", func() {
 
 		It("single interface", func() {
 			cfgFile := mkTempFile(`---
-epdisc:
-  ice:
-    restart_timeout: 5s
-    disconnected_timeout: 22s
+ice:
+  restart_timeout: 5s
+  disconnected_timeout: 22s
 
 interfaces:
   wg0:
-    epdisc:
-      ice:
-        restart_timeout: 10s
+    ice:
+      restart_timeout: 10s
 `)
 
 			cfg, err := config.ParseArgs("--config", cfgFile.Name())
@@ -474,26 +454,22 @@ interfaces:
 
 		It("two interface names and two patterns", func() {
 			cfgFile := mkTempFile(`---
-epdisc:
-  ice:
-    keepalive_interval: 7s
+ice:
+  keepalive_interval: 7s
 
 interfaces:
   wg0:
-    epdisc:
-      ice:
-        restart_timeout: 10s
+    ice:
+      restart_timeout: 10s
 
   wg-work-*:
-    epdisc:
-      ice:
-        keepalive_interval: 123s
-        restart_timeout: 20s
+    ice:
+      keepalive_interval: 123s
+      restart_timeout: 20s
 
   wg-*:
-    epdisc:
-      ice:
-        restart_timeout: 30s
+    ice:
+      restart_timeout: 30s
 `)
 
 			cfg, err := config.ParseArgs("--config", cfgFile.Name(), "wg1")

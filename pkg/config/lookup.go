@@ -189,9 +189,9 @@ func (p *lookupProvider) lookupTXT(ctx context.Context) error {
 	}
 
 	txtSettingMap := map[string]string{
-		"community":    "pdisc.community",
-		"ice-username": "epdisc.ice.username",
-		"ice-password": "epdisc.ice.password",
+		"community":    "community",
+		"ice-username": "ice.username",
+		"ice-password": "ice.password",
 	}
 
 	for txtName, settingName := range txtSettingMap {
@@ -255,7 +255,7 @@ func (p *lookupProvider) lookupSRV(ctx context.Context) error {
 	}
 
 	// We use SetDefault here as we do not want to overwrite user-provided settings with settings gathered via DNS
-	p.set("epdisc.ice.urls", urls)
+	p.set("ice.urls", urls)
 
 	return nil
 }

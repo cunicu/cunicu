@@ -33,7 +33,7 @@ var (
 		"rpc-wait":   "rpc.wait",
 
 		// WireGuard
-		"wg-userspace": "wireguard.userspace",
+		"wg-userspace": "userspace",
 
 		// Endpoint discovery
 
@@ -95,12 +95,19 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 
 	// Search for config files
 	if len(c.Files) == 0 {
-		cwd, err := os.Getwd()
-		if err != nil {
+		searchPath := []string{"/etc", "/etc/cunicu"}
+
+		if cwd, err := os.Getwd(); err != nil {
 			return nil, fmt.Errorf("failed to get working directory")
+		} else {
+			searchPath = append(searchPath, cwd)
 		}
 
-		for _, path := range []string{"/etc", "/etc/cunicu", cwd} {
+		if cfgDir := os.Getenv("CUNICU_CONFIG_DIR"); cfgDir != "" {
+			searchPath = append(searchPath, cfgDir)
+		}
+
+		for _, path := range searchPath {
 			fn := filepath.Join(path, "cunicu.yaml")
 			if fi, err := os.Stat(fn); err == nil && !fi.IsDir() {
 				c.Files = append(c.Files, fn)

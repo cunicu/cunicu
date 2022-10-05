@@ -8,9 +8,10 @@ import (
 	"os/exec"
 	"syscall"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func init() {
@@ -41,31 +42,29 @@ func (cs *Interface) Start() error {
 
 	// Assign static addresses
 	for _, addr := range cs.Settings.Addresses {
-		if err := cs.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
-			cs.logger.Error("Failed to assign address", zap.Error(err), zap.Any("addr", addr))
+		if err := cs.KernelDevice.AddAddress(net.IPNet(addr)); err != nil && !errors.Is(err, syscall.EEXIST) {
+			return fmt.Errorf("failed to assign address '%s': %w", addr.String(), err)
 		}
 	}
 
 	// Set MTU
 	if mtu := cs.Settings.MTU; mtu != 0 {
 		if err := cs.KernelDevice.SetMTU(mtu); err != nil {
-			cs.logger.Error("Failed to set MTU",
-				zap.Error(err),
-				zap.Int("mtu", mtu))
+			return fmt.Errorf("failed to set MTU: %w", err)
 		}
 	}
 
 	// Set DNS
 	if dns := cs.Settings.DNS; len(dns) > 0 {
 		if err := cs.SetDNS(cs.Settings.DNS); err != nil {
-			cs.logger.Error("Failed to set DNS servers",
-				zap.Error(err),
-				zap.Any("servers", dns))
+			return fmt.Errorf("failed to set DNS servers: %w", err)
 		}
 	}
 
-	// Configure Wireguard interface
-	// cfg := cs.Settings.WireGuard.Config()
+	// Set WireGuard settings
+	if err := cs.ConfigureWireGuard(); err != nil {
+		return fmt.Errorf("failed to configure WireGuard interface: %w", err)
+	}
 
 	return nil
 }
@@ -81,9 +80,56 @@ func (cs *Interface) Close() error {
 	return nil
 }
 
-func (cs *Interface) Configure(cfg *wg.Config) error {
-	if err := cs.ConfigureDevice(cfg.Config); err != nil {
-		return fmt.Errorf("failed to synchronize interface configuration: %s", err)
+func (cs *Interface) ConfigureWireGuard() error {
+	cfg := wgtypes.Config{}
+
+	if cs.Settings.FirewallMark != 0 && cs.Settings.FirewallMark != cs.FirewallMark {
+		cfg.FirewallMark = &cs.Settings.FirewallMark
+	}
+
+	if cs.Settings.ListenPort != nil && *cs.Settings.ListenPort != cs.ListenPort {
+		cfg.ListenPort = cs.Settings.ListenPort
+	}
+
+	if cs.Settings.PrivateKey.IsSet() && cs.Settings.PrivateKey != cs.PrivateKey() {
+		cfg.PrivateKey = (*wgtypes.Key)(&cs.Settings.PrivateKey)
+	}
+
+	for _, p := range cs.Settings.Peers {
+		pcfg := wgtypes.PeerConfig{}
+
+		pcfg.PublicKey = wgtypes.Key(p.PublicKey)
+
+		if p.Endpoint != "" {
+			addr, err := net.ResolveUDPAddr("udp", p.Endpoint)
+			if err != nil {
+				return fmt.Errorf("failed to resolve peer endpoint address '%s': %w", p.Endpoint, err)
+			}
+
+			pcfg.Endpoint = addr
+		}
+
+		if p.PersistentKeepaliveInterval > 0 {
+			pcfg.PersistentKeepaliveInterval = &p.PersistentKeepaliveInterval
+		}
+
+		if psk := p.PresharedKey; psk.IsSet() {
+			pcfg.PresharedKey = (*wgtypes.Key)(&psk)
+		} else if psk := crypto.Key(p.PresharedKeyPassphrase); psk.IsSet() {
+			pcfg.PresharedKey = (*wgtypes.Key)(&psk)
+		}
+
+		if len(p.AllowedIPs) > 0 {
+			pcfg.AllowedIPs = p.AllowedIPs
+		}
+
+		cfg.Peers = append(cfg.Peers, pcfg)
+	}
+
+	if cfg.FirewallMark != nil || cfg.ListenPort != nil || cfg.PrivateKey != nil || cfg.Peers != nil {
+		if err := cs.ConfigureDevice(cfg); err != nil {
+			return fmt.Errorf("failed to configure WireGuard interface: %w", err)
+		}
 	}
 
 	return nil

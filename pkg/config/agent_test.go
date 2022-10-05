@@ -20,6 +20,14 @@ import (
 )
 
 var _ = Describe("Agent config", func() {
+	var err error
+	var pk crypto.Key
+
+	BeforeEach(func() {
+		pk, err = crypto.GenerateKey()
+		Expect(err).To(Succeed())
+	})
+
 	DescribeTable("can parse ICE urls with credentials",
 		func(args []string, exp any) {
 			cfg, err := config.ParseArgs(args...)
@@ -27,7 +35,7 @@ var _ = Describe("Agent config", func() {
 
 			icfg := cfg.DefaultInterfaceSettings
 
-			aCfg, err := icfg.AgentConfig(context.Background(), nil)
+			aCfg, err := icfg.AgentConfig(context.Background(), &pk)
 
 			switch exp := exp.(type) {
 			case string:
@@ -66,7 +74,7 @@ var _ = Describe("Agent config", func() {
 		Entry("url4", []string{"--url", "stun:stun.cunicu.li?transport=tcp"}, "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
 	)
 
-	Context("can getch ICE urls from relay API", func() {
+	Context("can get ICE URLs from relay API", func() {
 		var err error
 		var svr *grpcx.RelayAPIServer
 		var stunRelay, turnRelay grpcx.RelayInfo
@@ -88,7 +96,7 @@ var _ = Describe("Agent config", func() {
 				Secret: "my-very-secret-secret",
 			}
 
-			relays := []string{stunRelay.URL, turnRelay.URL}
+			relays := []grpcx.RelayInfo{stunRelay, turnRelay}
 
 			svr, err = grpcx.NewRelayAPIServer(relays, grpc.Creds(insecure.NewCredentials()))
 			Expect(err).To(Succeed())
@@ -152,7 +160,7 @@ var _ = Describe("Agent config", func() {
 
 		icfg := cfg.DefaultInterfaceSettings
 
-		aCfg, err := icfg.AgentConfig(context.Background(), nil)
+		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
 		Expect(err).To(Succeed())
 		Expect(aCfg.CandidateTypes).To(ConsistOf(ice.CandidateTypeRelay, ice.CandidateTypeHost))
 	})
@@ -166,7 +174,7 @@ var _ = Describe("Agent config", func() {
 
 		icfg := cfg.DefaultInterfaceSettings
 
-		aCfg, err := icfg.AgentConfig(context.Background(), nil)
+		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
 		Expect(err).To(Succeed())
 		Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
 	})
@@ -177,7 +185,7 @@ var _ = Describe("Agent config", func() {
 
 		icfg := cfg.DefaultInterfaceSettings
 
-		aCfg, err := icfg.AgentConfig(context.Background(), nil)
+		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
 		Expect(err).To(Succeed())
 		Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
 	})
@@ -188,12 +196,13 @@ var _ = Describe("Agent config", func() {
 
 		icfg := cfg.DefaultInterfaceSettings
 
-		aCfg, err := icfg.AgentConfig(context.Background(), nil)
+		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
 		Expect(err).To(Succeed())
 
 		Expect(aCfg.InterfaceFilter("wg1")).To(BeTrue())
 
-		Expect(aCfg.Urls).To(HaveLen(1))
-		Expect(aCfg.Urls[0].String()).To(Equal(config.DefaultICEURLs[0].String()))
+		Expect(aCfg.Urls).To(HaveLen(2))
+		Expect(aCfg.Urls[0].Host).To(Equal("stun.cunicu.li"))
+		Expect(aCfg.Urls[1].Host).To(Equal("turn.cunicu.li"))
 	})
 })

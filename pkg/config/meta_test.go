@@ -19,18 +19,18 @@ var _ = Context("meta", func() {
 		keys := m.Keys()
 
 		Expect(keys).To(ContainElements(
-			Equal("hsync.enabled"),
+			Equal("sync_hosts"),
 			Equal("watch_interval"),
-			Equal("epdisc.ice.disconnected_timeout"),
+			Equal("ice.disconnected_timeout"),
 		))
 
 		Expect(keys).NotTo(ContainElements(
-			"epdisc.ice",
+			"ice",
 		))
 	})
 
 	It("can lookup a key", func() {
-		n := m.Lookup("epdisc.ice")
+		n := m.Lookup("ice")
 		Expect(n.Fields).To(HaveKey("disconnected_timeout"))
 	})
 })
