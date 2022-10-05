@@ -123,7 +123,7 @@ func (n *Network) AgentArgs() []any {
 
 	for _, r := range n.RelayNodes {
 		for _, u := range r.URLs() {
-			extraArgs = append(extraArgs, "--url", u)
+			extraArgs = append(extraArgs, "--ice-url", u)
 		}
 	}
 

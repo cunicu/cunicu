@@ -89,7 +89,7 @@ var _ = Context("config", func() {
 		})
 
 		It("fails on invalid arguments values", func() {
-			_, err := config.ParseArgs("--url", ":_")
+			_, err := config.ParseArgs("--ice-url", ":_")
 
 			Expect(err).To(MatchError(HaveSuffix("missing protocol scheme")))
 		})
@@ -263,7 +263,7 @@ var _ = Context("config", func() {
 		BeforeEach(func() {
 			var err error
 
-			args := []string{"--ice-network-type", "udp4,udp6", "--url", "stun:stun.cunicu.de", "wg0"}
+			args := []string{"--ice-network-type", "udp4,udp6", "--ice-url", "stun:stun.cunicu.de", "wg0"}
 
 			cfg1, err = config.ParseArgs(args...)
 			Expect(err).To(Succeed())

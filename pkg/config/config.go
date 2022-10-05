@@ -93,7 +93,7 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.IntP("routing-table", "T", DefaultRouteTable, "Kernel routing table to use")
 
 	// Endpoint discovery
-	flags.StringSliceP("url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
+	flags.StringSliceP("ice-url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
 	flags.StringP("username", "u", "", "The `username` for STUN/TURN credentials")
 	flags.StringP("password", "p", "", "The `password` for STUN/TURN credentials")
 
