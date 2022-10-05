@@ -35,9 +35,8 @@ var (
 
 	DefaultICEURLs = []URL{
 		{url.URL{
-			Scheme:   "grpc",
-			Host:     "relay.cunicu.li:443",
-			RawQuery: "skip_verify=true",
+			Scheme: "grpc",
+			Host:   "relay.cunicu.li:443",
 		}},
 	}
 
