@@ -5,10 +5,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
-	"golang.org/x/exp/maps"
 )
 
 type ConfigSettings struct {
@@ -140,29 +138,25 @@ type Settings struct {
 
 // Check performs plausibility checks on the provided configuration.
 func (c *Settings) Check() error {
-	icfgs := []InterfaceSettings{c.DefaultInterfaceSettings}
-	icfgs = append(icfgs, maps.Values(c.Interfaces)...)
+	if err := c.DefaultInterfaceSettings.Check(); err != nil {
+		return err
+	}
 
-	for _, icfg := range icfgs {
-		if len(icfg.ICE.URLs) > 0 && len(icfg.ICE.CandidateTypes) > 0 {
-			needsURL := false
-			for _, ct := range icfg.ICE.CandidateTypes {
-				if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
-					needsURL = true
-				}
-			}
-
-			if !needsURL {
-				icfg.ICE.URLs = nil
-			}
+	for _, icfg := range c.Interfaces {
+		if err := icfg.Check(); err != nil {
+			return err
 		}
+	}
 
-		if icfg.ListenPortRange != nil && icfg.ListenPortRange.Min > icfg.ListenPortRange.Max {
-			return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
-				icfg.ListenPortRange.Min,
-				icfg.ListenPortRange.Max,
-			)
-		}
+	return nil
+}
+
+func (c *InterfaceSettings) Check() error {
+	if c.ListenPortRange != nil && c.ListenPortRange.Min > c.ListenPortRange.Max {
+		return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
+			c.ListenPortRange.Min,
+			c.ListenPortRange.Max,
+		)
 	}
 
 	return nil
