@@ -102,8 +102,19 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 	}
 
 	// ICE URLs
-	if cfg.Urls, err = c.AgentURLs(ctx, peer); err != nil {
-		return nil, fmt.Errorf("failed to gather ICE URLs: %w", err)
+	if len(c.ICE.URLs) > 0 && len(c.ICE.CandidateTypes) > 0 {
+		needsURLs := false
+		for _, ct := range c.ICE.CandidateTypes {
+			if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
+				needsURLs = true
+			}
+		}
+
+		if needsURLs {
+			if cfg.Urls, err = c.AgentURLs(ctx, peer); err != nil {
+				return nil, fmt.Errorf("failed to gather ICE URLs: %w", err)
+			}
+		}
 	}
 
 	if len(c.ICE.NAT1to1IPs) > 0 {
