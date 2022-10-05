@@ -42,7 +42,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 func (ac *Interface) Start() error {
 	ac.logger.Info("Started auto-configuration")
 
-	if err := ac.configureWireGuardInterface(); err != nil {
+	if err := ac.ConfigureWireGuard(); err != nil {
 		ac.logger.Error("Failed to configure WireGuard interface", zap.Error(err))
 	}
 
@@ -81,9 +81,9 @@ func (ac *Interface) Close() error {
 	return nil
 }
 
-// configureWireGuardInterface configures the WireGuard device using the configuration provided by the user.
+// ConfigureWireGuard configures the WireGuard device using the configuration provided by the user.
 // Missing settings such as a private key or listen port are automatically generated/allocated.
-func (ac *Interface) configureWireGuardInterface() error {
+func (ac *Interface) ConfigureWireGuard() error {
 	var err error
 
 	cfg := wgtypes.Config{}

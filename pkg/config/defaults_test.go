@@ -11,6 +11,6 @@ var _ = Context("default", func() {
 		err := config.InitDefaults()
 		Expect(err).To(Succeed())
 
-		Expect(config.DefaultInterfaceSettings.HostName).NotTo(BeEmpty())
+		Expect(config.DefaultSettings.DefaultInterfaceSettings.HostName).NotTo(BeEmpty())
 	})
 })

@@ -67,18 +67,11 @@ type RelayAPIServer struct {
 	logger *zap.Logger
 }
 
-func NewRelayAPIServer(relaysStrs []string, opts ...grpc.ServerOption) (*RelayAPIServer, error) {
-	logger := zap.L().Named("grpc.server")
-
-	relays, err := NewRelayInfos(relaysStrs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse relays: %w", err)
-	}
-
+func NewRelayAPIServer(relays []RelayInfo, opts ...grpc.ServerOption) (*RelayAPIServer, error) {
 	s := &RelayAPIServer{
 		relays: relays,
 		Server: grpc.NewServer(opts...),
-		logger: logger,
+		logger: zap.L().Named("grpc.relay"),
 	}
 
 	signalingproto.RegisterRelayRegistryServer(s, s)

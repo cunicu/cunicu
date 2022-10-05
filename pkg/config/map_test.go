@@ -43,25 +43,18 @@ var _ = It("map", func() {
 	m := config.Map(s, "koanf")
 
 	Expect(m).To(Equal(map[string]any{
-		"watch_interval": 5 * time.Second,
+		"watch_interval": "5s",
 		"interfaces": map[string]any{
 			"wg0": map[string]any{
-				"epdisc": map[string]any{
-					"ice": map[string]any{
-						"network_types": []icex.NetworkType{
-							{NetworkType: ice.NetworkTypeTCP4},
-							{NetworkType: ice.NetworkTypeTCP6},
-						},
-					},
+				"ice": map[string]any{
+					"network_types": []any{"tcp4", "tcp6"},
 				},
-				"pdisc": map[string]any{
-					"hostname": "test",
-				},
+				"hostname": "test",
 			},
 		},
-		"hooks": s.DefaultInterfaceSettings.Hooks,
-		"pdisc": map[string]any{
-			"hostname": "test2",
+		"hooks": []any{
+			s.DefaultInterfaceSettings.Hooks[0],
 		},
+		"hostname": "test2",
 	}))
 })

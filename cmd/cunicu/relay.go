@@ -61,7 +61,12 @@ func relay(cmd *cobra.Command, args []string) {
 		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
 	}
 
-	svr, err := grpcx.NewRelayAPIServer(args, opts...)
+	relays, err := grpcx.NewRelayInfos(args)
+	if err != nil {
+		logger.Fatal("Failed to parse relays", zap.Error(err))
+	}
+
+	svr, err := grpcx.NewRelayAPIServer(relays, opts...)
 	if err != nil {
 		logger.Fatal("Failed to start gRPC server", zap.Error(err))
 	}
