@@ -51,6 +51,7 @@ PostDown   = bla2
 	When("it has a peer", func() {
 		BeforeEach(func() {
 			cfgStr += `
+# de-fra-1
 [Peer]
 PublicKey           = mBgUyqcI0XXrWskB5w9Z+C3LX5Gu5kw4mDTFPigu/Xg=
 PresharedKey        = zrD9FH+NTECIf7gcpiuvrC4qD2sY2a4YN7fjPcI+RQ8=

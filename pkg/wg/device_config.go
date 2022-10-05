@@ -138,7 +138,7 @@ func (cfg *Config) Dump(wr io.Writer) error {
 			iniPeer.PresharedKey = &psk
 		}
 
-		if cfg.PeerEndpoints[i] != "" {
+		if cfg.PeerEndpoints != nil && cfg.PeerEndpoints[i] != "" {
 			iniPeer.Endpoint = &cfg.PeerEndpoints[i]
 		} else if peer.Endpoint != nil {
 			ep := peer.Endpoint.String()
@@ -167,6 +167,14 @@ func (cfg *Config) Dump(wr io.Writer) error {
 
 	if err := iniFile.ReflectFrom(iniCfg); err != nil {
 		return err
+	}
+
+	if cfg.PeerNames != nil {
+		if peerSections, err := iniFile.SectionsByName("Peer"); err == nil {
+			for i, peerSection := range peerSections {
+				peerSection.Comment = fmt.Sprintf("# %s", cfg.PeerNames[i])
+			}
+		}
 	}
 
 	_, err := iniFile.WriteTo(wr)
