@@ -15,7 +15,6 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/rpc"
-	"github.com/stv0g/cunicu/pkg/wg"
 
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
@@ -39,10 +38,6 @@ type Agent struct {
 	ExtraArgs           []any
 	WireGuardInterfaces []*WireGuardInterface
 
-	// Path of a wg-quick(8) configuration file describing the interface rather than a kernel device
-	// Will only be created if non-empty
-	WireGuardConfigPath string
-
 	logFile io.WriteCloser
 
 	logger *zap.Logger
@@ -58,7 +53,6 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 		Host: h,
 
 		WireGuardInterfaces: []*WireGuardInterface{},
-		WireGuardConfigPath: wg.ConfigPath,
 		ExtraArgs:           []any{},
 
 		logger: zap.L().Named("node.agent").With(zap.String("node", name)),
@@ -106,8 +100,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		"--rpc-socket", rpcSockPath,
 		"--rpc-wait",
 		"--log-level", "debug",
-		"--host-sync=false",
-		"--config-path", a.WireGuardConfigPath,
+		"--sync-hosts=false",
 	)
 	args = append(args, a.ExtraArgs...)
 	args = append(args, extraArgs...)
