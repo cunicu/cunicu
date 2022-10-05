@@ -41,12 +41,12 @@ type Client struct {
 }
 
 func DaemonRunning(path string) bool {
-	conn, err := net.DialUnix("unix", nil, &net.UnixAddr{Name: path})
+	conn, err := net.Dial("unix", path)
 	return err == nil && conn.Close() == nil
 }
 
 func waitForSocket(path string) error {
-	for tries := 500; tries > 0; tries-- {
+	for tries := 200; tries > 0; tries-- {
 		if DaemonRunning(path) {
 			return nil
 		}
@@ -94,6 +94,8 @@ func (c *Client) Close() error {
 
 	// Wait until event channel is closed
 	<-c.Events
+
+	c.logger.Debug("Closed")
 
 	return nil
 }

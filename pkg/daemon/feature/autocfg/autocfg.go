@@ -48,8 +48,8 @@ func (ac *Interface) Start() error {
 
 	// Assign auto-generated addresses
 	if pk := ac.PublicKey(); pk.IsSet() {
-		for _, p := range ac.Settings.Prefixes {
-			addr := pk.IPAddress(p)
+		for _, pfx := range ac.Settings.Prefixes {
+			addr := pk.IPAddress(pfx)
 			if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 				ac.logger.Error("Failed to assign address", zap.Error(err), zap.Any("addr", addr))
 			}
