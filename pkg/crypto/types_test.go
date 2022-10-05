@@ -234,7 +234,7 @@ var _ = Describe("key", func() {
 
 	Describe("address", func() {
 		It("from IPv4 prefix", func() {
-			_, p, err := net.ParseCIDR("10.123.0.0/16")
+			_, p, err := net.ParseCIDR("10.237.0.0/16")
 			Expect(err).To(Succeed())
 
 			k, err := crypto.GenerateKey()
@@ -249,7 +249,7 @@ var _ = Describe("key", func() {
 		})
 
 		It("from IPv6 prefix", func() {
-			_, p, err := net.ParseCIDR("fe80::/10")
+			_, p, err := net.ParseCIDR("fc2f:9a4d::/32")
 			Expect(err).To(Succeed())
 
 			k, err := crypto.GenerateKey()
