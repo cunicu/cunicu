@@ -160,11 +160,11 @@ watch_config: false
 #
 # Synchronize the kernel routing table with WireGuard's AllowedIPs setting
 # 
-# It checks for routes in the kernel routing table which have a peers link-local address
+# It checks for routes in the kernel routing table which have a peers address
 # as next-hop and adds those routes to the AllowedIPs setting of the respective peer.
 #
 # In reverse, also networks listed in a peers AllowedIPs setting will be installed as a
-# kernel route with the peers link-local address as the routes next-hop. 
+# kernel route with the peers address as the routes next-hop. 
 
 # Enable route synchronization
 sync_routes: true
@@ -179,7 +179,7 @@ watch_routes: true
 
 ## /etc/hosts synchronization
 #
-# Synchronizes the local /etc/hosts file with host names and link-local IP addresses of connected peers. 
+# Synchronizes the local /etc/hosts file with host names and addresses of connected peers. 
 
 # Enable hosts file synchronization
 sync_hosts: true
