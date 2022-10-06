@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package cunicu.core;
+option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
+
+message IPAddress {
+    bytes addr = 1;    
+}
+
+message IPPrefix {
+    bytes addr = 1;
+    uint32 pfxlen = 2;
+}

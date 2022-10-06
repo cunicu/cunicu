@@ -4,11 +4,16 @@ package cunicu.pdisc;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/feature/pdisc";
 
 import "common.proto";
+import "core/net.proto";
 
 enum PeerDescriptionChange {
     PEER_ADD = 0;
     PEER_REMOVE = 1;
     PEER_UPDATE = 2;
+}
+
+message PeerAddresses {
+    repeated core.IPAddress addresses = 1;
 }
 
 // A PeerDescription is an announcement of a peer which is distributed to 
@@ -30,4 +35,7 @@ message PeerDescription {
 
     // cunicu build information
     BuildInfo build_info = 6;
+
+    // IP to Hostname mapping
+    map<string, PeerAddresses> hosts = 7;
 }
