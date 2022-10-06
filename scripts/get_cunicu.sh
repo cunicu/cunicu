@@ -131,12 +131,12 @@ function checkDesiredVersion() {
 function checkInstalledVersion() {
   if [[ -f "${INSTALL_DIR}/${BINARY_NAME}" ]]; then
     local installed_version=$("${INSTALL_DIR}/${BINARY_NAME}" version -s)
-    if [[ "v${installed_version}" == "${TAG}" ]]; then
-      echo "Installed version of ${BINARY_NAME} is v${installed_version} which is already ${DESIRED_TAG:-latest}"
+    if [[ "${installed_version}" == "${TAG}" ]]; then
+      echo "Installed version of ${BINARY_NAME} is ${installed_version} which is already ${DESIRED_TAG:-latest}"
       return 0
     else
       echo "New version of ${BINARY_NAME} is available: ${TAG}."
-      echo "Updating from ${BINARY_NAME} version v${installed_version} to ${TAG}"
+      echo "Updating from ${BINARY_NAME} version ${installed_version} to ${TAG}"
       return 1
     fi
   else
