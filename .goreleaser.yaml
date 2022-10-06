@@ -232,6 +232,7 @@ brews:
   tap:
     owner: stv0g
     name: homebrew-cunicu
+    token: "{{ .Env.TAP_GITHUB_TOKEN }}"
 
   homepage: "https://cunicu.li"
   description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
