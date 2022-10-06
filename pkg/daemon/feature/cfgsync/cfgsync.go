@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -56,7 +57,12 @@ func (cs *Interface) Start() error {
 
 	// Set DNS
 	if dns := cs.Settings.DNS; len(dns) > 0 {
-		if err := cs.SetDNS(cs.Settings.DNS); err != nil {
+		var domain []string
+		if cs.Settings.Domain != "" {
+			domain = append(domain, cs.Settings.Domain)
+		}
+
+		if err := cs.SetDNS(cs.Settings.DNS, domain); err != nil {
 			return fmt.Errorf("failed to set DNS servers: %w", err)
 		}
 	}
@@ -135,29 +141,58 @@ func (cs *Interface) ConfigureWireGuard() error {
 	return nil
 }
 
-func (i *Interface) SetDNS(svrs []net.IPAddr) error {
+func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 	var cmd *exec.Cmd
 
 	// Check if SystemD's resolvectl is available
 	if resolvectl, err := exec.LookPath("resolvectl"); err == nil {
-		args := []string{"dns", i.Name()}
-		for _, svr := range svrs {
-			args = append(args, svr.String())
+		if len(svrs) > 0 {
+			args := []string{"dns", i.Name()}
+			for _, svr := range svrs {
+				args = append(args, svr.String())
+			}
+
+			cmd = exec.Command(resolvectl, args...)
+
+			if err := cmd.Run(); err != nil {
+				return err
+			}
 		}
 
-		cmd = exec.Command(resolvectl, args...)
+		// Set DNS search domains
+		if len(domain) > 0 {
+			args := []string{"domain", i.Name()}
+			args = append(args, domain...)
+
+			cmd = exec.Command(resolvectl, args...)
+
+			if err := cmd.Run(); err != nil {
+				return err
+			}
+		}
 	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
-		cmd := exec.Command(resolveconf, "-a", i.Name(), "-m", "0", "-x")
+		if len(svrs) > 0 || len(domain) > 0 {
+			cmd := exec.Command(resolveconf, "-a", i.Name(), "-m", "0", "-x")
 
-		stdin := &bytes.Buffer{}
-		for _, svr := range svrs {
-			fmt.Fprintf(stdin, "nameserver %s\n", svr.String())
+			stdin := &bytes.Buffer{}
+
+			for _, svr := range svrs {
+				fmt.Fprintf(stdin, "nameserver %s\n", svr.String())
+			}
+
+			if len(domain) > 0 {
+				fmt.Fprintf(stdin, "search %s\n", strings.Join(domain, " "))
+			}
+
+			cmd.Stdin = stdin
+
+			if err := cmd.Run(); err != nil {
+				return err
+			}
 		}
-
-		cmd.Stdin = stdin
 	}
 
-	return cmd.Run()
+	return nil
 }
 
 func (i *Interface) UnsetDNS() error {
