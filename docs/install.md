@@ -56,13 +56,11 @@ sudo apt-get install cunicu
 ### From Yum (Redhat, Fedora, RockyLinux)
 
 ```bash
-sudo cat > /etc/yum.repos.d/cunicu.repo <<EOF
-[cunicu]
-name=RIasC
+echo '[cunicu]
+name=cunicu
 baseurl=https://packages.cunicu.li/yum/
 enabled=1
-gpgcheck=0
-EOF
+gpgcheck=0' | sudo tee /etc/yum.repos.d/cunicu.repo
 sudo yum install cunicu
 ```
 
