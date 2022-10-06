@@ -10,7 +10,7 @@ function request() {
          --location \
          --header "Accept: application/vnd.github+json" \
          --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-         "$@" https://api.github.com/repos/stv0g/cunicu/${RESOURCE}
+         "$@" "https://api.github.com/repos/${REPO}/${RESOURCE}"
 }
 
 function undraft_release() {
@@ -18,19 +18,19 @@ function undraft_release() {
 }
 
 function get_draft_release() {
-    request releases | jq '. | map(select(.draft == false)) | first'
+    request releases | jq '. | map(select(.draft == true)) | first'
 }
 
 function download_asset() {
     ASSET_NAME=$1
-
-    ASSET_URL=$(jq -r ".assets | map(select(.name == \"${ASSET_NAME}\")) | first | .browser_download_url")
+    ASSET_ID=$(jq -r ".assets | map(select(.name == \"${ASSET_NAME}\")) | first | .id")
 
     curl --silent \
          --location \
          --output ${ASSET_NAME} \
          --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-         ${ASSET_URL}
+         --header "Accept:application/octet-stream" \
+         "https://api.github.com/repos/${REPO}/releases/assets/${ASSET_ID}"
 }
 
 function upload_asset() {
@@ -45,9 +45,11 @@ function upload_asset() {
          --header "Accept: application/vnd.github+json" \
          --header "Authorization: Bearer ${GITHUB_TOKEN}" \
          --data-binary @${FILENAME} \
-         "https://uploads.github.com/repos/stv0g/cunicu/releases/${RELEASE_ID}/assets?name=${FILENAME}" | \
+         "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" | \
     jq .
 }
+
+REPO="stv0g/cunicu"
 
 RELEASE=$(get_draft_release)
 if [[ -z "${RELEASE}" ]]; then
@@ -55,8 +57,11 @@ if [[ -z "${RELEASE}" ]]; then
     exit -1
 fi
 
-RELEASE_ID=$(jq .id <<< "${RELEASE}")
-echo "Release ID: ${RELEASE_ID}"
+RELEASE_ID=$(jq -r .id <<< "${RELEASE}")
+RELEASE_AUTHOR=$(jq -r .author.login <<< "${RELEASE}")
+RELEASE_NAME=$(jq -r .name <<< "${RELEASE}")
+RELEASE_CREATED_AT=$(jq -r .created_at <<< "${RELEASE}")
+echo "Release ${RELEASE_NAME} (${RELEASE_ID}) created by ${RELEASE_AUTHOR} at ${RELEASE_CREATED_AT}"
 
 download_asset checksums.txt <<< "${RELEASE}"
 echo "Checksums:"
