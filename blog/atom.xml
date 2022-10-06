@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cunicu.li/blog</id>
     <title>cunīcu Blog</title>
-    <updated>2022-09-08T00:00:00.000Z</updated>
+    <updated>2022-09-15T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cunicu.li/blog"/>
     <subtitle>cunīcu Blog</subtitle>
@@ -11,9 +11,13 @@
         <title type="html"><![CDATA[Welcome]]></title>
         <id>welcome</id>
         <link href="https://cunicu.li/blog/welcome"/>
-        <updated>2022-09-08T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Hello, welcome to the cunīcu blog. We will start posting some updates here soon.]]></summary>
-        <content type="html"><![CDATA[<p>Hello, welcome to the cunīcu blog. We will start posting some updates here soon.</p>]]></content>
+        <updated>2022-09-15T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Hello, welcome to the first post in the cunīcu project blog!]]></summary>
+        <content type="html"><![CDATA[<p>Hello, welcome to the first post in the cunīcu project blog!</p><p>While the project is still in its infancy there are some updates in <a href="https://en.wikipedia.org/wiki/TL;DR" target="_blank" rel="noopener noreferrer">TL;DR</a>.</p><h3 class="anchor anchorWithStickyNavbar_LWe7" id="first-release">First release<a class="hash-link" href="#first-release" title="Direct link to heading">​</a></h3><p>We are planning to publish the first official release within the next 4-10 weeks 🎉.
+The release pipeline, packaging and self-update feature and more has already been implemented.
+We just need to finish the last features and do quite some more testing.</p><h3 class="anchor anchorWithStickyNavbar_LWe7" id="website-docs-and-twitter">Website, Docs and Twitter<a class="hash-link" href="#website-docs-and-twitter" title="Direct link to heading">​</a></h3><p>The project has now its dedicated <a href="https://cunicu.li" target="_blank" rel="noopener noreferrer">website</a>, <a href="https://github.com/cunicu" target="_blank" rel="noopener noreferrer">GitHub organization</a> and Twitter handle (<a href="https://twitter.com/cunicuVPN" target="_blank" rel="noopener noreferrer">@cunicuVPN</a>).
+Feel free to follow us there for updates!</p><p>You might also have realized that the project name has changed. We decided to rebrand from the previous name <em>wice</em> to avoid any potential trademark issues with the WireGuard project as well as another small German company named <em>WICE</em>.
+The project name <em>cunīcu</em> <!-- -->[kʊˈniːkʊ]<!-- --> is derived from the <a href="https://en.wiktionary.org/wiki/cuniculus#Latin" target="_blank" rel="noopener noreferrer">latin noun cunīculus</a> which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as <em>cunīcu</em> builds tunnels between otherwise hard to reach network locations.</p><p>This also gave us the opportunity to redesign the logo which you find further down in the sticker design.</p><h3 class="anchor anchorWithStickyNavbar_LWe7" id="stickers">Stickers<a class="hash-link" href="#stickers" title="Direct link to heading">​</a></h3><p>We have stickers! Just drop me a mail at <a href="mailto:info@cunicu.li" target="_blank" rel="noopener noreferrer">📧 info@cunicu.li</a> and I will send you some or talk to me at some of the upcoming conferences.</p><figure><center><img loading="lazy" src="/img/cunicu_sticker.svg" alt="The sticker design" style="transform:rotate(270deg)" class="img_ev3q"><figcaption>The sticker design</figcaption></center></figure>]]></content>
         <author>
             <name>Steffen Vogel</name>
             <uri>https://github.com/stv0g</uri>
