@@ -10,6 +10,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -54,6 +55,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 		n.AgentOptions = append(n.AgentOptions,
 			gopt.EmptyDir(wg.ConfigPath),
 			gopt.EmptyDir(wg.SocketPath),
+			opt.ExtraArgs{"--ice-candidate-type", "host"},
 		)
 
 		n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
