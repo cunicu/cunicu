@@ -2,6 +2,7 @@ package pdisc
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/stv0g/cunicu/pkg/core"
@@ -83,9 +84,7 @@ func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 
 	cfg := d.Config()
 
-	if d.Name != "" {
-		pd.peerNames[pk] = d.Name
-	}
+	pd.descs[pk] = d
 
 	switch d.Change {
 	case pdiscproto.PeerDescriptionChange_PEER_ADD:
@@ -130,8 +129,21 @@ func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 }
 
 func (pd *Interface) OnPeerAdded(p *core.Peer) {
-	if name, ok := pd.peerNames[p.PublicKey()]; ok {
-		p.Name = name
+	if d, ok := pd.descs[p.PublicKey()]; ok {
+		p.Name = d.Name
+
+		if hosts := d.Hosts; len(hosts) > 0 {
+			p.Hosts = map[string][]net.IP{}
+
+			for name, addrs := range hosts {
+				hs := []net.IP{}
+				for _, addr := range addrs.Addresses {
+					hs = append(hs, addr.Address())
+				}
+
+				p.Hosts[name] = hs
+			}
+		}
 	}
 }
 

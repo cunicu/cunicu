@@ -14,6 +14,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 
+	proto "github.com/stv0g/cunicu/pkg/proto/core"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 )
 
@@ -28,8 +29,8 @@ func init() {
 type Interface struct {
 	*daemon.Interface
 
-	peerFilter map[crypto.Key]bool
-	peerNames  map[crypto.Key]string
+	filter map[crypto.Key]bool
+	descs  map[crypto.Key]*pdiscproto.PeerDescription
 
 	logger *zap.Logger
 }
@@ -40,18 +41,18 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	pd := &Interface{
-		Interface:  i,
-		peerFilter: map[crypto.Key]bool{},
-		peerNames:  map[crypto.Key]string{},
-		logger:     zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
+		Interface: i,
+		filter:    map[crypto.Key]bool{},
+		descs:     map[crypto.Key]*pdiscproto.PeerDescription{},
+		logger:    zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
 	}
 
 	for _, k := range pd.Settings.Whitelist {
-		pd.peerFilter[crypto.Key(k)] = true
+		pd.filter[crypto.Key(k)] = true
 	}
 
 	for _, k := range pd.Settings.Blacklist {
-		pd.peerFilter[crypto.Key(k)] = false
+		pd.filter[crypto.Key(k)] = false
 	}
 
 	// Avoid sending a peer description if the interface does not have a private key yet
@@ -123,6 +124,34 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 		Name:       pd.Settings.HostName,
 		AllowedIps: util.SliceString(allowedIPs),
 		BuildInfo:  buildinfo.BuildInfo(),
+		Hosts:      map[string]*pdiscproto.PeerAddresses{},
+	}
+
+	if extraHosts := pd.Settings.ExtraHosts; len(extraHosts) > 0 {
+		for name, addrs := range extraHosts {
+			daddrs := []*proto.IPAddress{}
+
+			for _, addr := range addrs {
+				daddr := proto.Address(addr.IP)
+				daddrs = append(daddrs, daddr)
+			}
+
+			d.Hosts[name] = &pdiscproto.PeerAddresses{
+				Addresses: daddrs,
+			}
+		}
+	}
+
+	if pd.Settings.HostName != "" {
+		daddrs := []*proto.IPAddress{}
+		for _, pfx := range pd.Settings.Prefixes {
+			addr := pk.IPAddress(pfx)
+			daddrs = append(daddrs, proto.Address(addr.IP))
+		}
+
+		d.Hosts[pd.Settings.HostName] = &pdiscproto.PeerAddresses{
+			Addresses: daddrs,
+		}
 	}
 
 	if pkOld != nil {
@@ -155,7 +184,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 }
 
 func (pd *Interface) isAccepted(pk crypto.Key) bool {
-	if verdict, ok := pd.peerFilter[pk]; ok {
+	if verdict, ok := pd.filter[pk]; ok {
 		return verdict
 	}
 

@@ -22,7 +22,8 @@ type SignalingState int
 type Peer struct {
 	*wgtypes.Peer
 
-	Name string
+	Name  string
+	Hosts map[string][]net.IP
 
 	Interface *Interface
 

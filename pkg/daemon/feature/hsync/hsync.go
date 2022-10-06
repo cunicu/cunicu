@@ -3,6 +3,7 @@ package hsync
 
 import (
 	"fmt"
+	"net/netip"
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
@@ -56,34 +57,39 @@ func (hs *Interface) Close() error {
 }
 
 func (hs *Interface) Hosts() []Host {
-	hosts := []Host{}
 
 	d := hs.Settings.Domain
 	if d != "" && !strings.HasPrefix(d, ".") {
 		d = "." + d
 	}
 
+	hosts := []Host{}
+
 	for _, p := range hs.Peers {
-		pk := p.PublicKey()
-		// We use a shorted version of the public key as a DNS name here
-		pkName := pk.String()[:8]
+		m := map[netip.Addr][]string{}
 
-		for _, pfx := range hs.Settings.Prefixes {
-			addr := pk.IPAddress(pfx)
+		// Host names
+		for name, addrs := range p.Hosts {
+			for _, a := range addrs {
+				// TODO: validate that the addresses are covered by the peers AllowedIPs
+				addr, ok := netip.AddrFromSlice(a)
+				if !ok {
+					continue
+				}
 
+				m[addr] = append(m[addr], name+d)
+			}
+		}
+
+		for addr, names := range m {
 			h := Host{
-				IP: addr.IP,
+				Names: names,
+				IP:    addr.AsSlice(),
 				Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
 					p.Interface.KernelDevice.Name(),
 					p.Interface.KernelDevice.Index(),
 					p.PublicKey()),
 			}
-
-			if p.Name != "" {
-				h.Names = append(h.Names, p.Name+d)
-			}
-
-			h.Names = append(h.Names, pkName+d)
 
 			hosts = append(hosts, h)
 		}
