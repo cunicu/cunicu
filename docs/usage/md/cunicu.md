@@ -39,7 +39,7 @@ in which WireGuard kernel support has not landed yet.
 
 ### SEE ALSO
 
-* [cunicu addresses](cunicu_addresses.md)	 - Calculate link-local IPv4 and IPv6 addresses from a WireGuard X25519 public key
+* [cunicu addresses](cunicu_addresses.md)	 - Derive IPv4 and IPv6 addresses from a WireGuard X25519 public key
 * [cunicu completion](cunicu_completion.md)	 - Generate the autocompletion script for the specified shell
 * [cunicu config](cunicu_config.md)	 - Manage configuration of a running cunīcu daemon.
 * [cunicu daemon](cunicu_daemon.md)	 - Start the daemon

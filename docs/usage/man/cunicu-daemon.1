@@ -50,6 +50,10 @@ Start the daemon
 	Usable \fB\fCnetwork-type\fRs (one of udp4, udp6, tcp4, tcp6)
 
 .PP
+\fB-a\fP, \fB--ice-url\fP=[]
+	One or more \fB\fCURL\fRs of STUN and/or TURN servers
+
+.PP
 \fB-p\fP, \fB--password\fP=""
 	The \fB\fCpassword\fR for STUN/TURN credentials
 
@@ -76,10 +80,6 @@ Start the daemon
 .PP
 \fB-R\fP, \fB--sync-routes\fP[=true]
 	Enable synchronization of AllowedIPs with Kernel routes
-
-.PP
-\fB-a\fP, \fB--url\fP=[]
-	One or more \fB\fCURL\fRs of STUN and/or TURN servers
 
 .PP
 \fB-u\fP, \fB--username\fP=""
