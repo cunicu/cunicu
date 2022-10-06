@@ -43,8 +43,6 @@ builds:
   - riscv64
   - ppc64le
   - s390x
-  # TODO: Reenable for Go 1.19.2 when the following issue has been fixed:
-  #       https://github.com/golang/go/issues/54991
   - "386"
   - arm
   - mips
