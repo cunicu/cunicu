@@ -31,13 +31,12 @@ jobs:
           host_arch: amd64
           runner: ubuntu-latest
 
-        # Temporarily disabled due: https://github.com/golang/go/issues/54638
-        # - target_os: linux
-        #   target_arch: arm
-        #   host_os: linux
-        #   host_arch: amd64
-        #   arm: 7
-        #   runner: ubuntu-latest
+        - target_os: linux
+          target_arch: arm
+          host_os: linux
+          host_arch: amd64
+          arm: "7"
+          runner: ubuntu-latest
 
         - target_os: freebsd
           target_arch: amd64
@@ -51,12 +50,12 @@ jobs:
           host_arch: amd64
           runner: ubuntu-latest
 
-        # - target_os: freebsd
-        #   target_arch: arm
-        #   host_os: linux
-        #   host_arch: amd64
-        #   arm: 7
-        #   runner: ubuntu-latest
+        - target_os: freebsd
+          target_arch: arm
+          host_os: linux
+          host_arch: amd64
+          arm: "7"
+          runner: ubuntu-latest
 
         - target_os: darwin
           target_arch: arm64
@@ -82,19 +81,19 @@ jobs:
           host_arch: amd64
           runner: windows-latest
 
-        # - target_os: linux
-        #   target_arch: mips
-        #   host_os: linux
-        #   host_arch: amd64
-        #   mips: softfloat
-        #   runner: ubuntu-latest
+        - target_os: linux
+          target_arch: mips
+          host_os: linux
+          host_arch: amd64
+          mips: softfloat
+          runner: ubuntu-latest
 
-        # - target_os: linux
-        #   target_arch: mips
-        #   host_os: linux
-        #   host_arch: amd64
-        #   mips: hardfloat
-        #   runner: ubuntu-latest
+        - target_os: linux
+          target_arch: mips
+          host_os: linux
+          host_arch: amd64
+          mips: hardfloat
+          runner: ubuntu-latest
 
     env:
       GOOS: ${{ matrix.target_os }}
