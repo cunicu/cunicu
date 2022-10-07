@@ -24,7 +24,9 @@ func init() { //nolint:gochecknoinits
 	cmd := &cobra.Command{
 		Use:   "selfupdate",
 		Short: "Update the cunīcu binary",
-		Long: `Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
+		Long: `Update the cunīcu binary.
+
+This sub-command downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
 After download, the authenticity of the binary is verified using the GPG signature on the release files.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			selfUpdate(cmd, args, opts)
