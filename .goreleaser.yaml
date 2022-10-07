@@ -86,6 +86,7 @@ archives:
   - etc/cunicu.yaml
   - src: docs/usage/man/*
     dst: man/
+    strip_parent: true
 
   format_overrides:
   - goos: windows
@@ -108,13 +109,19 @@ nfpms:
   contents:
   - src: "./etc/systemd/cunicu.service"
     dst: "/usr/lib/systemd/system/cunicu.service"
+    file_info:
+      mode: 0644
 
   - src: "./etc/cunicu.yaml"
     dst: "/etc/cunicu.example.yaml"
     type: config
+    file_info:
+      mode: 0644
 
   - src: "./docs/usage/man/*.1"
     dst: "/usr/share/man/man1"
+    file_info:
+      mode: 0644
 
   - src: ./completions/cunicu.bash
     dst: /usr/share/bash-completion/completions/cunicu
@@ -249,9 +256,6 @@ brews:
     zsh_completion.install "completions/cunicu.zsh" => "_cunicu"
     fish_completion.install "completions/cunicu.fish"    
     man1.install Dir["man/*.1"]
-    man5.install Dir["man/*.5"]
-    man7.install Dir["man/*.7"]
-    man8.install Dir["man/*.8"]
 
 aurs:
 - ids:
@@ -276,15 +280,16 @@ aurs:
   package: |-
     # bin
     install -Dm755 "./cunicu" "${pkgdir}/usr/bin/cunicu"
-    
+
+    # config
+    install -Dm644 "./etc/cunicu.yaml" "${pkgdir}/etc/cunicu.example.yaml"
+    install -Dm644 "./etc/systemd/cunicu.service" "${pkgdir}/usr/lib/systemd/cunicu.service"
+
     # license
     install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/cunicu/LICENSE"
 
     # manpages
-    install -Dm644 man/*.1 "${pkgdir}/usr/share/man/man1"
-    install -Dm644 man/*.5 "${pkgdir}/usr/share/man/man5"
-    install -Dm644 man/*.7 "${pkgdir}/usr/share/man/man7"
-    install -Dm644 man/*.8 "${pkgdir}/usr/share/man/man8"
+    install -Dm644 ./man/*.1 "${pkgdir}/usr/share/man/man1"
     
     # completions
     mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
