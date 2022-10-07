@@ -25,6 +25,8 @@ This sub-command accepts a WireGuard public key on the standard input and prints
 		Example: `$ wg genkey | wg pubkey | cunicu addresses
 fc2f:9a4d:777f:7a97:8197:4a5d:1d1b:ed79
 10.237.119.127`,
+		Args:              cobra.ArbitraryArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 )
 

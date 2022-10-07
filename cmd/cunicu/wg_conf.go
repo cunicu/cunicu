@@ -15,8 +15,9 @@ var (
 		Short: "Shows the current configuration and information of the provided WireGuard interface",
 		Long:  "Shows the current configuration of `interface-name` in the wg(8) format.",
 
-		RunE: wgShowConf,
-		Args: cobra.ExactArgs(1),
+		RunE:              wgShowConf,
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: interfaceValidArg,
 	}
 )
 

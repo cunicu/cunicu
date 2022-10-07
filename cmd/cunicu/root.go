@@ -65,6 +65,8 @@ implementation of WireGuard in a single binary for environments
 in which WireGuard kernel support has not landed yet.`,
 
 		DisableAutoGenTag: true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	logLevel       = config.Level{Level: zapcore.InfoLevel}
@@ -91,6 +93,9 @@ func init() {
 
 	daemonCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp))
 	daemonCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp))
+
+	flagName := "output"
+	daemonCmd.MarkFlagFilename(flagName, "yaml", "json")
 }
 
 func onInitialize() {

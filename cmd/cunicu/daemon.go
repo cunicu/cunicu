@@ -37,6 +37,7 @@ func init() {
 
 	daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp))
 	daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp))
+	daemonCmd.MarkFlagFilename("config", "yaml", "json")
 
 	pf.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
