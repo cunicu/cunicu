@@ -19,9 +19,12 @@ import (
 
 func init() { //nolint:gochecknoinits
 	cmd := &cobra.Command{
-		Use:               "daemon [interface-names...]",
-		Short:             "Start the daemon",
-		Example:           `$ cunicu daemon -U -x mysecretpass wg0`,
+		Use:   "daemon [interface-names...]",
+		Short: "Start the main daemon",
+		Long: `Starts the main cunicu agent.
+		
+Sending a SIGUSR1 signal to the daemon will trigger an immediate synchronization of all WireGuard interfaces.`,
+		Example:           "$ cunicu daemon -U -x mysecretpass wg0",
 		ValidArgsFunction: interfaceValidArgs,
 	}
 
