@@ -36,9 +36,11 @@ jobs:
     
     - name: Install build and test dependencies
       run: make install-deps
+      working-directory: ./
 
     - name: Generate docs
       run: make docs
+      working-directory: ./
   
     - name: Setup Node.js
       uses: actions/setup-node@v3
