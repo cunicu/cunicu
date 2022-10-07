@@ -2,7 +2,9 @@ build/
 completions/
 .vscode/
 dist/
-/cunicu
+docs/usage/man/*.1
+docs/usage/md/*.md
+cunicu
 *.log
 *.out
 *.test
