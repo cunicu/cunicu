@@ -19,6 +19,26 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y
+            coturn
+            protobuf-compiler
+            make
+            libpcap-dev
+
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19.2
+        check-latest: true
+        cache: true
+    
+    - name: Install build and test dependencies
+      run: make install-deps
+
+    - name: Generate docs
+      run: make docs
   
     - name: Setup Node.js
       uses: actions/setup-node@v3
