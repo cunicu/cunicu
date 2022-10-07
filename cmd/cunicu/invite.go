@@ -22,7 +22,7 @@ var inviteCmd = &cobra.Command{
 	Short:             "Add a new peer to the local daemon configuration and return the required configuration for this new peer",
 	Run:               invite,
 	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: inviteValidArgs,
+	ValidArgsFunction: interfaceValidArg,
 }
 
 var listenPort int
@@ -37,7 +37,7 @@ func init() {
 	pf.BoolVarP(&qrCode, "qr-code", "Q", false, "Show config as QR code in terminal")
 }
 
-func inviteValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func interfaceValidArg(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// Establish RPC connection
 	rpcConnect(cmd, args)
 	defer rpcDisconnect(cmd, args)

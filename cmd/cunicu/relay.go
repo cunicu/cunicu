@@ -36,8 +36,8 @@ The command expects a list of STUN or TURN URLs according to RFC7065/RFC7064 wit
   - Example: turn:user1:pass1@server.com
 `,
 		Example: `relay turn:server.com?secret=rest-api-secret&ttl=1h`,
-
-		Run: relay,
+		Run:     relay,
+		Args:    cobra.NoArgs,
 	}
 )
 

@@ -16,8 +16,8 @@ var (
 	signalCmd = &cobra.Command{
 		Use:   "signal",
 		Short: "Start gRPC signaling server",
-
-		Run: signal,
+		Run:   signal,
+		Args:  cobra.NoArgs,
 	}
 
 	listenAddress string
