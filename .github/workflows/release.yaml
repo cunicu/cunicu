@@ -53,7 +53,7 @@ jobs:
       with:
         distribution: goreleaser
         version: latest
-        args: release --rm-dist
+        args: release --rm-dist --timeout 90m
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
