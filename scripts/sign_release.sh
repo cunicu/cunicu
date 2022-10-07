@@ -51,6 +51,11 @@ function upload_asset() {
 
 REPO="stv0g/cunicu"
 
+if [[ -z "${GITHUB_TOKEN}" ]]; then
+    echo -e "Missing GITHUB_TOKEN environment variable"
+    exit -1
+fi
+
 RELEASE=$(get_draft_release)
 if [[ -z "${RELEASE}" ]]; then
     echo -e "No drafted releases available"
