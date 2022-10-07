@@ -34,9 +34,3 @@ The following settings are automatically assigned if they have not been set befo
 - **Private Key:** a new random private key will be generated.
 - **Listen port:** the next free port in the configured listen port range is used (see `wireguard.listen_port_range` setting).
 - **MTU:** is automatically determined from the endpoint addresses or the system default route.
-
-## Configuration
-
-import ExampleConfig from '../../src/components/ExampleConfig';
-
-<ExampleConfig section="autocfg" />

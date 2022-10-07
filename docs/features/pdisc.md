@@ -13,9 +13,3 @@ No other tasks are performed.
 Paired with other features like the [endpoint discovery](./epdisc.md), [auto configuration](./autocfg.md) or [route synchronization](./rtsync.md), the peer discovery is a cornerstone of a zero-configuration peer-to-peer VPN.
 
 In addition to community passphrase, peers can be accepted by white- and blacklist filtering.
-
-## Configuration
-
-import ExampleConfig from '../../src/components/ExampleConfig';
-
-<ExampleConfig section="pdisc" />
