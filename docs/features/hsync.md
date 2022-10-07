@@ -28,9 +28,3 @@ ff02::2 ip6-allrouters
 fe80::13a9:c799:cead:4f28 buxfBfaN.wg-local fra-1.wg-local # cunicu: ifname=wg0, ifindex=9, pk=buxfBfaNZI8UFT0cB1aj9YanhbLfxlTfd/hH3DrGaFA=
 fe80::1fed:fabb:a9f6:d78 ZEki/XKE.wg-local # cunicu: ifname=wg1, ifindex=10, pk=ZEki/XKEsqdjFyURo5Sm+g3vXSKJKpV5WmwWKAQqo2c=
 ```
-
-## Configuration
-
-import ExampleConfig from '../../src/components/ExampleConfig';
-
-<ExampleConfig section="hsync" />

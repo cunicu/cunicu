@@ -4,7 +4,7 @@ sidebar_position: 199
 
 # Development
 
-cunīcu is written almost completely in Go and heavily relies on awesome tooling and packages for Golang:
+cunīcu is written almost completely in [Go](https://go.dev/) and heavily relies on awesome tooling and packages for Golang:
 
 -   [GoReleaser](https://goreleaser.com/) for release automation
 -   [Ginkgo](https://onsi.github.io/ginkgo) and [Gomega](https://onsi.github.io/gomega) for testing

@@ -53,7 +53,7 @@ The _envelopes_ are containers which encrypt the carried _message_ via asymmetri
 
 Both the _envelope_ and the _message_ are serialized using Protobuf.
 
-Checkout the [`pkg/pb/signaling.proto`](https://github.com/stv0g/cunicu/blob/master/proto/signaling.proto) for details.
+Checkout the [`pkg/pb/signaling.proto`](https://github.com/stv0g/cunicu/blob/master/proto/signaling/signaling.proto) for details.
 
 ## Backends
 
@@ -95,12 +95,12 @@ type Backend interface {
 	Publish(ctx context.Context, kp *crypto.KeyPair, msg *Message) error
 
 	// Subscribe to messages send by a specific peer
-	Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) error
+	Subscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) (bool, error)
 
-	// Subscribe to all messages irrespectively of sender
-	SubscribeAll(ctx context.Context, sk *crypto.Key, h MessageHandler) error
+	// Unsubscribe from messages send by a specific peer
+	Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h MessageHandler) (bool, error)
 
 	// Returns the backends type identifier
-	Type() pb.BackendType
+	Type() signalingproto.BackendType
 }
 ```
