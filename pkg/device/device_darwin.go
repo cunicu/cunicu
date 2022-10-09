@@ -1,8 +1,10 @@
 package device
 
 import (
+	"fmt"
 	"net"
 	"os/exec"
+	"strings"
 
 	"github.com/stv0g/cunicu/pkg/errors"
 )
@@ -12,11 +14,18 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		return errors.ErrNotSupported
 	}
 
+	args := []string{"route", "add", fmt.Sprintf("-%s", addressFamily(dst)), "-net", dst.String()}
 	if gw == nil {
-		return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
+		args = append(args, "-interface", d.Name())
 	} else {
-		return exec.Command("route", "add", "-net", dst.String(), gw.String()).Run()
+		args = append(args, gw.String())
 	}
+
+	if out, err := run(args...); err != nil {
+		return fmt.Errorf("failed to run command '%s': %w: %s", strings.Join(args, " "), err, out)
+	}
+
+	return nil
 }
 
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {

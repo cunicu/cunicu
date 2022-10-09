@@ -302,6 +302,8 @@ github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCko
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pion/dtls/v2 v2.1.5 h1:jlh2vtIyUBShchoTDqpCCqiYCyRFJ/lvf/gQ8TALs+c=
 github.com/pion/dtls/v2 v2.1.5/go.mod h1:BqCE7xPZbPSubGasRoDFJeTsyJtdD1FanJYL0JGheqY=
+github.com/pion/ice/v2 v2.2.11-0.20221009084925-46432b4dc499 h1:r6oamkd2S6ylzzELCJeiKPUjHJn1euhH8o+bvouAKq8=
+github.com/pion/ice/v2 v2.2.11-0.20221009084925-46432b4dc499/go.mod h1:NqUDUao6SjSs1+4jrqpexDmFlptlVhGxQjcymXLaVvE=
 github.com/pion/logging v0.2.2 h1:M9+AIj/+pxNsDfAT64+MAVgJO0rsyLnoJKCqf//DoeY=
 github.com/pion/logging v0.2.2/go.mod h1:k0/tDVsRCX2Mb2ZEmTqNa7CWsQPc+YYCB7Q+5pahoms=
 github.com/pion/mdns v0.0.5 h1:Q2oj/JB3NqfzY9xGZ1fPzZzK7sDSD8rZPOvcIQ10BCw=
@@ -377,8 +379,6 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/stv0g/gont v1.6.3 h1:7cIU2+F7iaGOHN9Mu2QKlKqZ4Dzk98Fu/P9gUPtjNFc=
 github.com/stv0g/gont v1.6.3/go.mod h1:Cl7BLHOE7YhWCPURgG0mvYBQBGGaNNQJeXSWNw+DJXs=
-github.com/stv0g/ice/v2 v2.2.7-0.20221009054914-bc9863e7b7ed h1:gQxIjI1XpqKWqHlLIDNe28DUeruiKXHAeXzhYPsCZYU=
-github.com/stv0g/ice/v2 v2.2.7-0.20221009054914-bc9863e7b7ed/go.mod h1:NqUDUao6SjSs1+4jrqpexDmFlptlVhGxQjcymXLaVvE=
 github.com/vishvananda/netlink v1.2.1-beta.2 h1:Llsql0lnQEbHj0I1OuKyp8otXp0r3q0mPkuhwHfStVs=
 github.com/vishvananda/netlink v1.2.1-beta.2/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=

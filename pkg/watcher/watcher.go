@@ -2,6 +2,7 @@
 package watcher
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -14,6 +15,8 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	xerrors "github.com/stv0g/cunicu/pkg/errors"
 )
 
 const (
@@ -103,7 +106,7 @@ func (w *Watcher) Watch() {
 	}
 	w.logger.Debug("Started watching for changes of WireGuard userspace devices")
 
-	if err := w.watchKernel(); err != nil {
+	if err := w.watchKernel(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
 		w.logger.Fatal("Failed to watch kernel interfaces", zap.Error(err))
 	}
 	w.logger.Debug("Started watching for changes of WireGuard kernel devices")

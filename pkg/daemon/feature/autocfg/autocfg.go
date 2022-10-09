@@ -54,7 +54,7 @@ func (ac *Interface) Start() error {
 		for _, pfx := range ac.Settings.Prefixes {
 			addr := pk.IPAddress(pfx)
 			if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
-				ac.logger.Error("Failed to assign address", zap.Error(err), zap.Any("addr", addr))
+				ac.logger.Error("Failed to assign address", zap.Error(err), zap.String("addr", addr.String()))
 			}
 		}
 	}

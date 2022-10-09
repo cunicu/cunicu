@@ -114,4 +114,4 @@ require (
 )
 
 // Workaround until https://github.com/pion/ice/pull/483 is merged
-replace github.com/pion/ice/v2 => github.com/stv0g/ice/v2 v2.2.7-0.20221009054914-bc9863e7b7ed
+replace github.com/pion/ice/v2 => github.com/pion/ice/v2 v2.2.11-0.20221009084925-46432b4dc499
