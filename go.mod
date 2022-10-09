@@ -112,3 +112,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// Workaround until https://github.com/pion/ice/pull/483 is merged
+replace github.com/pion/ice/v2 => github.com/stv0g/ice/v2 v2.2.7-0.20221009054914-bc9863e7b7ed
