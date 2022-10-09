@@ -12,9 +12,11 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		return errors.ErrNotSupported
 	}
 
-	// TODO: Use proper gateway
-
-	return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
+	if gw == nil {
+		return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
+	} else {
+		return exec.Command("route", "add", "-net", dst.String(), gw.String()).Run()
+	}
 }
 
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
@@ -23,14 +25,4 @@ func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	}
 
 	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
-}
-
-func DetectMTU(ip net.IP) (int, error) {
-	// TODO: Thats just a guess
-	return 1500, nil
-}
-
-func DetectDefaultMTU() (int, error) {
-	// TODO: Thats just a guess
-	return 1500, nil
 }
