@@ -146,11 +146,6 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 func (p *KernelProxy) copy(dst io.Writer, src io.Reader) {
 	buf := make([]byte, maxSegmentSize)
 	for {
-		// TODO: Check why this is not working
-		// if _, err := io.Copy(dst, src); err != nil {
-		// 	p.logger.Error("Failed copy", zap.Error(err))
-		// }
-
 		n, err := src.Read(buf)
 		if err != nil {
 			if errors.Is(err, ice.ErrClosed) || errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {

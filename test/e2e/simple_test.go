@@ -178,6 +178,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 				})
 
 				// TODO: Check why IPv6 relay is not working
+				// Blocked by: https://github.com/pion/ice/pull/462
 				Context("ipv6", Pending, func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp6")
 				})

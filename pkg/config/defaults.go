@@ -65,7 +65,7 @@ var (
 			FailedTimeout:       5 * time.Second,
 			RestartTimeout:      5 * time.Second,
 			InterfaceFilter:     "*",
-			KeepaliveInterval:   2 * time.Second, // TODO: increase
+			KeepaliveInterval:   2 * time.Second,
 			MaxBindingRequests:  7,
 			PortRange: PortRangeSettings{
 				Min: EphemeralPortMin,
