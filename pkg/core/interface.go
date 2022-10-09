@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"io"
-	"math"
 	"time"
 
 	"go.uber.org/zap"
@@ -238,36 +237,6 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 	)
 
 	return i, nil
-}
-
-// DetectMTU find a suitable MTU for the tunnel interface.
-// The algorithm is the same as used by wg-quick:
-//
-//	The MTU is automatically determined from the endpoint addresses
-//	or the system default route, which is usually a sane choice.
-func (i *Interface) DetectMTU() (mtu int, err error) {
-	mtu = math.MaxInt
-	for _, p := range i.Peers {
-		if p.Endpoint != nil {
-			if pmtu, err := device.DetectMTU(p.Endpoint.IP); err != nil {
-				return -1, err
-			} else if pmtu < mtu {
-				mtu = pmtu
-			}
-		}
-	}
-
-	if mtu == math.MaxInt {
-		if mtu, err = device.DetectDefaultMTU(); err != nil {
-			return -1, err
-		}
-	}
-
-	if mtu-wg.TunnelOverhead < wg.MinimalMTU {
-		return -1, fmt.Errorf("MTU too small: %d", mtu)
-	}
-
-	return mtu - wg.TunnelOverhead, nil
 }
 
 func (i *Interface) Marshal() *coreproto.Interface {
