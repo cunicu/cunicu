@@ -41,7 +41,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	if verbosity > 2 {
+	if verbosity > 5 {
 		if _, err := t.FprintKV(wri, "private key", base64.StdEncoding.EncodeToString(i.PrivateKey)); err != nil {
 			return err
 		}
