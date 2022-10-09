@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -116,4 +117,31 @@ func Table(str string) (int, error) {
 	}
 
 	return i, nil
+}
+
+func DetectMTU(ip net.IP) (int, error) {
+	return getRouteMTU(ip)
+}
+
+func DetectDefaultMTU() (int, error) {
+	return getRouteMTU(nil)
+}
+
+func getRouteMTU(ip net.IP) (int, error) {
+	netw := "default"
+	if ip != nil {
+		netw = ip.String()
+	}
+
+	c := exec.Command("route", "get", netw)
+	out, err := c.CombinedOutput()
+	if err != nil {
+		return -1, fmt.Errorf("failed to lookup route: %w", err)
+	}
+
+	lines := strings.Split(string(out), "\n")
+	lastLine := lines[len(lines)-1]
+	fields := strings.Fields(lastLine)
+
+	return strconv.Atoi(fields[6])
 }

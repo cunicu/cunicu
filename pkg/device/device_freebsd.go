@@ -7,21 +7,13 @@ import (
 )
 
 func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
-	// TODO: Use proper gateway
-
-	return exec.Command("setfib", fmt.Sprint(table), "route", "add", "-net", dst.String(), "-interface", d.Name()).Run()
+	if gw == nil {
+		return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name(), "-fib", fmt.Sprint(table)).Run()
+	} else {
+		return exec.Command("route", "add", "-net", dst.String(), gw.String(), "-fib", fmt.Sprint(table)).Run()
+	}
 }
 
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
-	return exec.Command("setfib", fmt.Sprint(table), "route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
-}
-
-func DetectMTU(ip net.IP) (int, error) {
-	// TODO: Thats just a guess
-	return 1500, nil
-}
-
-func DetectDefaultMTU() (int, error) {
-	// TODO: Thats just a guess
-	return 1500, nil
+	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name(), "-fib", fmt.Sprint(table)).Run()
 }
