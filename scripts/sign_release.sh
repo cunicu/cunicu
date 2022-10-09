@@ -14,7 +14,8 @@ function request() {
 }
 
 function undraft_release() {
-    request releases/$1 -X PATCH -d '{ "draft": false }'
+    request releases/$1 -X PATCH -d '{ "draft": false }'  | \
+    jq .
 }
 
 function get_draft_release() {
