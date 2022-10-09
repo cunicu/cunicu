@@ -17,10 +17,13 @@ func CreateUDPMux() (ice.UDPMux, int, error) {
 
 	lAddr := conn.LocalAddr().(*net.UDPAddr)
 
-	mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
+	mux, err := ice.NewUDPMuxDefault(ice.UDPMuxParams{
 		UDPConn: conn,
 		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux"),
 	})
+	if err != nil {
+		return nil, -1, err
+	}
 
 	return mux, lAddr.Port, nil
 }
@@ -36,10 +39,13 @@ func CreateUniversalUDPMux() (ice.UniversalUDPMux, int, error) {
 
 	lAddr := conn.LocalAddr().(*net.UDPAddr)
 
-	mux := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
+	mux, err := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: conn,
 		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux-universal"),
 	})
+	if err != nil {
+		return nil, -1, err
+	}
 
 	return mux, lAddr.Port, nil
 }

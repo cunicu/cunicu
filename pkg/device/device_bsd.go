@@ -5,7 +5,6 @@ package device
 import (
 	"fmt"
 	"net"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,8 +18,17 @@ type BSDKernelDevice struct {
 	logger  *zap.Logger
 }
 
+func addressFamily(ip net.IPNet) string {
+	isV4 := ip.IP.To4() != nil
+	if isV4 {
+		return "inet"
+	} else {
+		return "inet6"
+	}
+}
+
 func NewKernelDevice(name string) (*BSDKernelDevice, error) {
-	if err := exec.Command("ifconfig", "wg", "create", "name", name).Run(); err != nil {
+	if _, err := run("ifconfig", "wg", "create", "name", name); err != nil {
 		return nil, err
 	}
 
@@ -52,15 +60,26 @@ func (d *BSDKernelDevice) Name() string {
 }
 
 func (d *BSDKernelDevice) Close() error {
-	return exec.Command("ifconfig", d.Name(), "destroy").Run()
+	_, err := run("ifconfig", d.Name(), "destroy")
+	return err
 }
 
 func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
-	return exec.Command("ifconfig", d.Name(), ip.String(), "alias").Run()
+	args := []string{"ifconfig", d.Name(), addressFamily(ip), ip.String()}
+	if isV4 := ip.IP.To4() != nil; isV4 {
+		args = append(args, ip.IP.String(), "alias")
+	} else {
+		args = append(args, "alias")
+
+	}
+
+	_, err := run("alias")
+	return err
 }
 
 func (d *BSDKernelDevice) DeleteAddress(ip net.IPNet) error {
-	return exec.Command("ifconfig", d.Name(), ip.String(), "-alias").Run()
+	_, err := run("ifconfig", d.Name(), addressFamily(ip), ip.String(), "-alias")
+	return err
 }
 
 func (d *BSDKernelDevice) Index() int {
@@ -70,7 +89,7 @@ func (d *BSDKernelDevice) Index() int {
 var mtuRegex = regexp.MustCompile(`(?m)mtu (\d+)`)
 
 func (d *BSDKernelDevice) MTU() int {
-	out, err := exec.Command("ifconfig", d.Name()).Output()
+	out, err := run("ifconfig", d.Name())
 	if err != nil {
 		return -1
 	}
@@ -89,7 +108,8 @@ func (d *BSDKernelDevice) MTU() int {
 }
 
 func (d *BSDKernelDevice) SetMTU(mtu int) error {
-	return exec.Command("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu)).Run()
+	_, err := run("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu))
+	return err
 }
 
 func (d *BSDKernelDevice) SetUp() error {
@@ -98,7 +118,8 @@ func (d *BSDKernelDevice) SetUp() error {
 		return err
 	}
 
-	return exec.Command("ifconfig", "up", i.Name).Run()
+	_, err = run("ifconfig", i.Name, "up")
+	return err
 }
 
 func (d *BSDKernelDevice) SetDown() error {
@@ -107,7 +128,8 @@ func (d *BSDKernelDevice) SetDown() error {
 		return err
 	}
 
-	return exec.Command("ifconfig", "down", i.Name).Run()
+	_, err = run("ifconfig", i.Name, "down")
+	return err
 }
 
 func Table(str string) (int, error) {
@@ -133,15 +155,19 @@ func getRouteMTU(ip net.IP) (int, error) {
 		netw = ip.String()
 	}
 
-	c := exec.Command("route", "get", netw)
-	out, err := c.CombinedOutput()
+	out, err := run("route", "get", netw)
 	if err != nil {
 		return -1, fmt.Errorf("failed to lookup route: %w", err)
 	}
 
+	out = strings.TrimSpace(out)
 	lines := strings.Split(string(out), "\n")
 	lastLine := lines[len(lines)-1]
 	fields := strings.Fields(lastLine)
+
+	if len(fields) < 7 {
+		return -1, fmt.Errorf("invalid command output: %s", lastLine)
+	}
 
 	return strconv.Atoi(fields[6])
 }
