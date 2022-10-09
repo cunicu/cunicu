@@ -68,7 +68,6 @@ func (hs *Interface) Hosts() []Host {
 	for _, p := range hs.Peers {
 		m := map[netip.Addr][]string{}
 
-		// Host names
 		for name, addrs := range p.Hosts {
 			for _, a := range addrs {
 				// TODO: validate that the addresses are covered by the peers AllowedIPs

@@ -54,8 +54,6 @@ func (rs *Interface) Start() error {
 }
 
 func (rs *Interface) Close() error {
-	// TODO: Remove Kernel routes added by us
-
 	close(rs.stop)
 
 	return nil

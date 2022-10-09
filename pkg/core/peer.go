@@ -167,8 +167,7 @@ func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 		return fmt.Errorf("failed to update peer preshared key: %w", err)
 	}
 
-	// TODO: Remove PSK from log
-	p.logger.Debug("Peer preshared key updated", zap.Any("psk", psk))
+	p.logger.Debug("Peer preshared key updated")
 
 	return nil
 }
@@ -203,7 +202,10 @@ func (p *Peer) RemoveAllowedIP(a net.IPNet) error {
 		return util.CmpNet(a, b) != 0
 	})
 
-	// TODO: Check is net is in AllowedIPs before attempting removing it
+	if len(ips) == len(p.Peer.AllowedIPs) {
+		// Nothing removed...
+		return nil
+	}
 
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
