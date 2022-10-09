@@ -52,12 +52,12 @@ func (d *WindowsKernelDevice) Close() error {
 	return nil
 }
 
-func DetectMTU(ip net.IP) (int, error) {
+func DetectMTU(ip net.IP, fwmark int) (int, error) {
 	// TODO: Thats just a guess
 	return 1500, nil
 }
 
-func DetectDefaultMTU() (int, error) {
+func DetectDefaultMTU(fwmark int) (int, error) {
 	// TODO: Thats just a guess
 	return 1500, nil
 }

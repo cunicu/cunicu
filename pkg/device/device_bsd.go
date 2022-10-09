@@ -119,11 +119,11 @@ func Table(str string) (int, error) {
 	return i, nil
 }
 
-func DetectMTU(ip net.IP) (int, error) {
+func DetectMTU(ip net.IP, fwmark int) (int, error) {
 	return getRouteMTU(ip)
 }
 
-func DetectDefaultMTU() (int, error) {
+func DetectDefaultMTU(fwmark int) (int, error) {
 	return getRouteMTU(nil)
 }
 

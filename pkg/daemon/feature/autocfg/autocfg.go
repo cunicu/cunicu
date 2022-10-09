@@ -4,11 +4,14 @@ package autocfg
 import (
 	"errors"
 	"fmt"
+	"math"
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -131,4 +134,34 @@ func (ac *Interface) ConfigureWireGuard() error {
 	}
 
 	return nil
+}
+
+// DetectMTU find a suitable MTU for the tunnel interface.
+// The algorithm is the same as used by wg-quick:
+//
+//	The MTU is automatically determined from the endpoint addresses
+//	or the system default route, which is usually a sane choice.
+func (i *Interface) DetectMTU() (mtu int, err error) {
+	mtu = math.MaxInt
+	for _, p := range i.Peers {
+		if p.Endpoint != nil {
+			if pmtu, err := device.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {
+				return -1, err
+			} else if pmtu < mtu {
+				mtu = pmtu
+			}
+		}
+	}
+
+	if mtu == math.MaxInt {
+		if mtu, err = device.DetectDefaultMTU(i.FirewallMark); err != nil {
+			return -1, err
+		}
+	}
+
+	if mtu-wg.TunnelOverhead < wg.MinimalMTU {
+		return -1, fmt.Errorf("MTU too small: %d", mtu)
+	}
+
+	return mtu - wg.TunnelOverhead, nil
 }
