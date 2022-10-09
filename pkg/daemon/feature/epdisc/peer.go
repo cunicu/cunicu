@@ -89,8 +89,6 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 }
 
 func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
-	// TODO: Attempt retries?
-
 	// Create new subscription
 	kpNew := p.PublicPrivateKeyPair()
 	if _, err := p.intf.Daemon.Backend.Subscribe(ctx, kpNew, p); err != nil {

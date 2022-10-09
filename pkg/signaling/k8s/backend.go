@@ -167,7 +167,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 func (b *Backend) Close() error {
 	close(b.stop)
 
-	return nil // TODO: Shutdown backend
+	return nil
 }
 
 func (b *Backend) onEnvelopeAdded(obj any) {

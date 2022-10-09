@@ -74,8 +74,6 @@ func (e *Interface) OnPeerRemoved(cp *core.Peer) {
 func (e *Interface) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	p := e.Peers[cp]
 
-	// TODO: Handle changed endpoint addresses
-	//       What do we do when they have been changed externally?
 	if m.Is(core.PeerModifiedEndpoint) {
 		// Check if change was external
 		epNew := p.Endpoint
