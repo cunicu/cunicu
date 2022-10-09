@@ -35,13 +35,24 @@ func (pd *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, m co
 }
 
 func (pd *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
-	if msg.Peer != nil {
+	if d := msg.Peer; pd != nil {
 		if i := pd.Daemon.InterfaceByPublicKey(kp.Theirs); i != nil {
 			// Received our own peer description. Ignoring...
 			return
 		}
 
-		if err := pd.OnPeerDescription(msg.Peer); err != nil {
+		pk, err := crypto.ParseKeyBytes(d.PublicKey)
+		if err != nil {
+			pd.logger.Error("Failed to parse public key", zap.Error(err))
+			return
+		}
+
+		if pk != kp.Theirs {
+			pd.logger.Error("Received a peer description for from a wrong peer")
+			return
+		}
+
+		if err := pd.OnPeerDescription(d); err != nil {
 			pd.logger.Error("Failed to handle peer description", zap.Error(err), zap.Any("pd", msg.Peer))
 		}
 	}
