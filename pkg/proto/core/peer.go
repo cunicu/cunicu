@@ -109,7 +109,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 		}
 	}
 
-	if len(p.PresharedKey) > 0 {
+	if len(p.PresharedKey) > 0 && verbosity > 5 {
 		if _, err := t.FprintKV(wri, "preshared key", base64.StdEncoding.EncodeToString(p.PresharedKey)); err != nil {
 			return err
 		}
@@ -119,7 +119,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	if p.Ice != nil && verbosity > 4 {
+	if p.Ice != nil {
 		if _, err := fmt.Fprintln(wr); err != nil {
 			return err
 		}

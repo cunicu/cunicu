@@ -38,13 +38,15 @@ func NewCredentials() Credentials {
 }
 
 func (i *Interface) Dump(wr io.Writer, verbosity int) error {
-	if _, err := terminal.FprintKV(wr, "nat type", i.NatType); err != nil {
-		return err
-	}
-
-	if i.NatType == NATType_NAT_NFTABLES {
-		if _, err := terminal.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
+	if verbosity > 4 {
+		if _, err := terminal.FprintKV(wr, "nat type", i.NatType); err != nil {
 			return err
+		}
+
+		if i.NatType == NATType_NAT_NFTABLES {
+			if _, err := terminal.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -58,108 +60,117 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	if _, err := terminal.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
-		return err
-	}
-
 	if _, err := terminal.FprintKV(wr, "reachability", p.Reachability); err != nil {
 		return err
 	}
 
-	if _, err := terminal.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
-		return err
-	}
-
-	if p.Restarts > 0 {
-		if _, err := terminal.FprintKV(wr, "restarts", p.Restarts); err != nil {
+	if p.SelectedCandidatePair != nil {
+		if _, err := terminal.FprintKV(wr, "candidate-pair", p.SelectedCandidatePair.ToString()); err != nil {
 			return err
 		}
 	}
 
-	if verbosity > 5 && len(p.CandidatePairStats) > 0 {
-		var cmap = map[string]int{}
-		var cpsNom *CandidatePairStats
+	if verbosity > 4 {
 
-		if len(p.CandidatePairStats) > 0 {
-			for _, cps := range p.CandidatePairStats {
-				if cps.Nominated {
-					cpsNom = cps
-				}
-			}
-		}
-
-		if _, err := terminal.FprintKV(wr, "\ncandidates"); err != nil {
+		if _, err := terminal.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
 			return err
 		}
 
-		wr := terminal.NewIndenter(wr, "  ")
-		wri := terminal.NewIndenter(wr, "  ")
+		if _, err := terminal.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
+			return err
+		}
 
-		if len(p.LocalCandidateStats) > 0 {
-			slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
-
-			if _, err := terminal.FprintKV(wr, "local"); err != nil {
+		if p.Restarts > 0 {
+			if _, err := terminal.FprintKV(wr, "restarts", p.Restarts); err != nil {
 				return err
-			}
-
-			for i, cs := range p.LocalCandidateStats {
-				cmap[cs.Id] = i
-				v = fmt.Sprintf("l%d", i)
-				if isNominated := cs.Id == cpsNom.LocalCandidateId; isNominated {
-					v = terminal.Mods(v, terminal.FgRed)
-				}
-				if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
-					return err
-				}
 			}
 		}
 
-		if len(p.RemoteCandidateStats) > 0 {
-			slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
+		if verbosity > 5 && len(p.CandidatePairStats) > 0 {
+			var cmap = map[string]int{}
+			var cpsNom *CandidatePairStats
 
-			if _, err := terminal.FprintKV(wr, "\nremote"); err != nil {
+			if len(p.CandidatePairStats) > 0 {
+				for _, cps := range p.CandidatePairStats {
+					if cps.Nominated {
+						cpsNom = cps
+					}
+				}
+			}
+
+			if _, err := terminal.FprintKV(wr, "\ncandidates"); err != nil {
 				return err
 			}
 
-			for i, cs := range p.RemoteCandidateStats {
-				cmap[cs.Id] = i
-				v = fmt.Sprintf("r%d", i)
-				if isNominated := cs.Id == cpsNom.RemoteCandidateId; isNominated {
-					v = terminal.Mods(v, terminal.FgRed)
-				}
-				if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
+			wr := terminal.NewIndenter(wr, "  ")
+			wri := terminal.NewIndenter(wr, "  ")
+
+			if len(p.LocalCandidateStats) > 0 {
+				slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
+
+				if _, err := terminal.FprintKV(wr, "local"); err != nil {
 					return err
 				}
+
+				for i, cs := range p.LocalCandidateStats {
+					cmap[cs.Id] = i
+					v = fmt.Sprintf("l%d", i)
+					if isNominated := cs.Id == cpsNom.LocalCandidateId; isNominated {
+						v = terminal.Mods(v, terminal.FgRed)
+					}
+					if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
+						return err
+					}
+				}
 			}
-		}
 
-		if len(p.CandidatePairStats) > 0 && verbosity > 6 {
-			if _, err := terminal.FprintKV(wr, "\npairs"); err != nil {
-				return err
-			}
+			if len(p.RemoteCandidateStats) > 0 {
+				slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
 
-			for i, cps := range p.CandidatePairStats {
-				lci := cmap[cps.LocalCandidateId]
-				rci := cmap[cps.RemoteCandidateId]
-
-				flags := []string{
-					ice.CandidatePairState(cps.State).String(),
-				}
-
-				v = fmt.Sprintf("p%d", i)
-				if cps.Nominated {
-					v = terminal.Mods(v, terminal.FgRed)
-				}
-
-				if cps.Nominated {
-					flags = append(flags, "nominated")
-				}
-
-				if _, err := terminal.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
-					lci, rci,
-					strings.Join(flags, ", "),
-				)); err != nil {
+				if _, err := terminal.FprintKV(wr, "\nremote"); err != nil {
 					return err
+				}
+
+				for i, cs := range p.RemoteCandidateStats {
+					cmap[cs.Id] = i
+					v = fmt.Sprintf("r%d", i)
+					if isNominated := cs.Id == cpsNom.RemoteCandidateId; isNominated {
+						v = terminal.Mods(v, terminal.FgRed)
+					}
+					if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
+						return err
+					}
+				}
+			}
+
+			if len(p.CandidatePairStats) > 0 && verbosity > 6 {
+				if _, err := terminal.FprintKV(wr, "\npairs"); err != nil {
+					return err
+				}
+
+				for i, cps := range p.CandidatePairStats {
+					lci := cmap[cps.LocalCandidateId]
+					rci := cmap[cps.RemoteCandidateId]
+
+					flags := []string{
+						ice.CandidatePairState(cps.State).String(),
+					}
+
+					v = fmt.Sprintf("p%d", i)
+					if cps.Nominated {
+						v = terminal.Mods(v, terminal.FgRed)
+					}
+
+					if cps.Nominated {
+						flags = append(flags, "nominated")
+					}
+
+					if _, err := terminal.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
+						lci, rci,
+						strings.Join(flags, ", "),
+					)); err != nil {
+						return err
+					}
 				}
 			}
 		}
