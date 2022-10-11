@@ -1,16 +1,16 @@
 package log
 
 import (
-	"go.uber.org/atomic"
+	"sync/atomic"
 )
 
 type VerbosityLevel struct {
-	l *atomic.Int32
+	l atomic.Int32
 }
 
 func NewVerbosityLevel() VerbosityLevel {
 	return VerbosityLevel{
-		l: atomic.NewInt32(0),
+		l: atomic.Int32{},
 	}
 }
 
