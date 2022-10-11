@@ -15,19 +15,18 @@ require (
 	github.com/mdp/qrterminal/v3 v3.0.0
 	github.com/miekg/dns v1.1.50
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.2.10
+	github.com/pion/ice/v2 v2.2.11-0.20221010122230-f7d4014f5af1
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.3.5
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2
-	go.uber.org/atomic v1.10.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
-	golang.org/x/exp v0.0.0-20221006183845-316c7553db56
+	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
+	golang.org/x/exp v0.0.0-20221010202428-3a778c567f61
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
-	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
+	golang.org/x/sys v0.0.0-20221010170243-090e33056c14
 	golang.zx2c4.com/wireguard v0.0.0-20220920152132-bb719d3a6e2c
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20220916014741-473347a5e6e3
 	google.golang.org/grpc v1.50.0
@@ -89,6 +88,7 @@ require (
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/vishvananda/netns v0.0.0-20220913150850-18c4f4234207 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
@@ -99,19 +99,16 @@ require (
 	golang.org/x/tools v0.1.12 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20211104114900-415007cec224 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91 // indirect
+	google.golang.org/genproto v0.0.0-20221010155953-15ba04fc1c0e // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.25.2 // indirect
 	k8s.io/apiextensions-apiserver v0.25.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20220928191237-829ce0c27909 // indirect
-	k8s.io/utils v0.0.0-20220922133306-665eaaec4324 // indirect
+	k8s.io/utils v0.0.0-20221011040102-427025108f67 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.66 // indirect
 	rsc.io/qr v0.2.0 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-// Workaround until https://github.com/pion/ice/pull/483 is merged
-replace github.com/pion/ice/v2 => github.com/pion/ice/v2 v2.2.11-0.20221009084925-46432b4dc499
