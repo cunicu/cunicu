@@ -36,7 +36,6 @@ var (
 		"wg-userspace": "userspace",
 
 		// Endpoint discovery
-
 		"url":                "ice.urls",
 		"username":           "ice.username",
 		"password":           "ice.password",
@@ -45,6 +44,7 @@ var (
 
 		// Peer discovery
 		"community": "community",
+		"hostname":  "hostname",
 
 		// Route synchronization
 		"routing-table": "routing_table",

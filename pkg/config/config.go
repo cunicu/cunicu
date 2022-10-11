@@ -102,6 +102,7 @@ func New(flags *pflag.FlagSet) *Config {
 
 	// Peer discovery
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
+	flags.StringP("hostname", "n", "", "A `name` which identifies this peer")
 
 	return c
 }
