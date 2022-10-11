@@ -41,7 +41,7 @@ func (p *Peer) onCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
 	} else {
-		p.logger.Info("Found new local candidate", zap.Any("candidate", c))
+		p.logger.Debug("Found new local candidate", zap.Any("candidate", c))
 
 		if err := p.sendCandidate(c); err != nil {
 			p.logger.Error("Failed to send candidate", zap.Error(err))
@@ -93,7 +93,7 @@ func (p *Peer) onRemoteCredentials(c *protoepdisc.Credentials) {
 // onRemoteCandidate is a handler called for each received candidate via the signaling channel
 func (p *Peer) onRemoteCandidate(c *protoepdisc.Candidate) {
 	logger := p.logger.With(zap.Any("candidate", c))
-	logger.Info("Received remote candidate")
+	logger.Debug("Received remote candidate")
 
 	if err := p.addRemoteCandidate(c); err != nil {
 		p.logger.Error("Failed to add candidates", zap.Error(err))
