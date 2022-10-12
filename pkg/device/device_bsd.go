@@ -60,11 +60,15 @@ func (d *BSDKernelDevice) Name() string {
 }
 
 func (d *BSDKernelDevice) Close() error {
+	d.logger.Debug("Deleting kernel device")
+
 	_, err := run("ifconfig", d.Name(), "destroy")
 	return err
 }
 
 func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
+	d.logger.Debug("Add address", zap.String("addr", ip.String()))
+
 	args := []string{"ifconfig", d.Name(), addressFamily(ip), ip.String()}
 	if isV4 := ip.IP.To4() != nil; isV4 {
 		args = append(args, ip.IP.String(), "alias")
@@ -78,6 +82,8 @@ func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
 }
 
 func (d *BSDKernelDevice) DeleteAddress(ip net.IPNet) error {
+	d.logger.Debug("Delete address", zap.String("addr", ip.String()))
+
 	_, err := run("ifconfig", d.Name(), addressFamily(ip), ip.String(), "-alias")
 	return err
 }
@@ -108,11 +114,15 @@ func (d *BSDKernelDevice) MTU() int {
 }
 
 func (d *BSDKernelDevice) SetMTU(mtu int) error {
+	d.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
+
 	_, err := run("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu))
 	return err
 }
 
 func (d *BSDKernelDevice) SetUp() error {
+	d.logger.Debug("Set link up")
+
 	i, err := net.InterfaceByIndex(d.index)
 	if err != nil {
 		return err
@@ -123,6 +133,8 @@ func (d *BSDKernelDevice) SetUp() error {
 }
 
 func (d *BSDKernelDevice) SetDown() error {
+	d.logger.Debug("Set link down")
+
 	i, err := net.InterfaceByIndex(d.index)
 	if err != nil {
 		return err
