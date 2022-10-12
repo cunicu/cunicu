@@ -56,7 +56,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	// Avoid sending a peer description if the interface does not have a private key yet
-	if i.PublicKey().IsSet() {
+	if i.PrivateKey().IsSet() {
 		if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
 			pd.logger.Error("Failed to send peer description", zap.Error(err))
 		}
