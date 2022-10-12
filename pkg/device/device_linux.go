@@ -55,52 +55,55 @@ func FindKernelDevice(name string) (Device, error) {
 	}, nil
 }
 
-func (i *LinuxKernelDevice) Close() error {
-	i.logger.Debug("Deleting kernel device")
+func (d *LinuxKernelDevice) Close() error {
+	d.logger.Debug("Deleting kernel device")
 
-	if err := netlink.LinkDel(i.link); err != nil {
+	if err := netlink.LinkDel(d.link); err != nil {
 		return fmt.Errorf("failed to delete WireGuard device: %w", err)
 	}
 
 	return nil
 }
 
-func (i *LinuxKernelDevice) Name() string {
-	return i.link.Attrs().Name
+func (d *LinuxKernelDevice) Name() string {
+	return d.link.Attrs().Name
 }
 
-func (i *LinuxKernelDevice) Index() int {
-	return i.link.Attrs().Index
+func (d *LinuxKernelDevice) Index() int {
+	return d.link.Attrs().Index
 }
 
-func (i *LinuxKernelDevice) MTU() int {
+func (d *LinuxKernelDevice) MTU() int {
 	var err error
 
-	i.link, err = netlink.LinkByIndex(i.Index())
+	d.link, err = netlink.LinkByIndex(d.Index())
 	if err != nil {
 		panic(err)
 	}
 
-	return i.link.Attrs().MTU
+	return d.link.Attrs().MTU
 }
 
-func (i *LinuxKernelDevice) SetMTU(mtu int) error {
-	i.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
-	return netlink.LinkSetMTU(i.link, mtu)
+func (d *LinuxKernelDevice) SetMTU(mtu int) error {
+	d.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
+
+	return netlink.LinkSetMTU(d.link, mtu)
 }
 
-func (i *LinuxKernelDevice) SetUp() error {
-	i.logger.Debug("Set link up")
-	return netlink.LinkSetUp(i.link)
+func (d *LinuxKernelDevice) SetUp() error {
+	d.logger.Debug("Set link up")
+
+	return netlink.LinkSetUp(d.link)
 }
 
-func (i *LinuxKernelDevice) SetDown() error {
-	i.logger.Debug("Set link down")
-	return netlink.LinkSetDown(i.link)
+func (d *LinuxKernelDevice) SetDown() error {
+	d.logger.Debug("Set link down")
+
+	return netlink.LinkSetDown(d.link)
 }
 
-func (i *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
-	i.logger.Debug("Add address", zap.String("addr", ip.String()))
+func (d *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
+	d.logger.Debug("Add address", zap.String("addr", ip.String()))
 
 	addr := &netlink.Addr{
 		IPNet: &ip,
@@ -111,26 +114,26 @@ func (i *LinuxKernelDevice) AddAddress(ip net.IPNet) error {
 		addr.Scope = unix.RT_SCOPE_LINK
 	}
 
-	return netlink.AddrAdd(i.link, addr)
+	return netlink.AddrAdd(d.link, addr)
 }
 
-func (i *LinuxKernelDevice) DeleteAddress(ip net.IPNet) error {
-	i.logger.Debug("Delete address", zap.String("addr", ip.String()))
+func (d *LinuxKernelDevice) DeleteAddress(ip net.IPNet) error {
+	d.logger.Debug("Delete address", zap.String("addr", ip.String()))
 
 	addr := &netlink.Addr{
 		IPNet: &ip,
 	}
 
-	return netlink.AddrDel(i.link, addr)
+	return netlink.AddrDel(d.link, addr)
 }
 
-func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
-	i.logger.Debug("Add route",
+func (d *LinuxKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
+	d.logger.Debug("Add route",
 		zap.String("dst", dst.String()),
 		zap.String("gw", gw.String()))
 
 	route := &netlink.Route{
-		LinkIndex: i.link.Attrs().Index,
+		LinkIndex: d.link.Attrs().Index,
 		Dst:       &dst,
 		Protocol:  RouteProtocol,
 		Table:     table,
@@ -144,12 +147,12 @@ func (i *LinuxKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error 
 	return nil
 }
 
-func (i *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
-	i.logger.Debug("Delete route",
+func (d *LinuxKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
+	d.logger.Debug("Delete route",
 		zap.String("dst", dst.String()))
 
 	route := &netlink.Route{
-		LinkIndex: i.link.Attrs().Index,
+		LinkIndex: d.link.Attrs().Index,
 		Dst:       &dst,
 		Table:     table,
 	}
