@@ -3,10 +3,9 @@ package device
 import (
 	"fmt"
 	"net"
-	"os/exec"
-	"strings"
 
 	"github.com/stv0g/cunicu/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
@@ -25,9 +24,9 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		args = append(args, gw.String())
 	}
 
-	if out, err := run(args...); err != nil {
-		return fmt.Errorf("failed to run command '%s': %w: %s", strings.Join(args, " "), err, out)
-	}
+	_, err := run(args...)
+	return err
+}
 
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	d.logger.Debug("Delete route",
@@ -37,5 +36,6 @@ func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 		return errors.ErrNotSupported
 	}
 
-	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name()).Run()
+	_, err := run("route", "delete", "-net", dst.String(), "-interface", d.Name())
+	return err
 }

@@ -74,10 +74,9 @@ func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
 		args = append(args, ip.IP.String(), "alias")
 	} else {
 		args = append(args, "alias")
-
 	}
 
-	_, err := run("alias")
+	_, err := run(args...)
 	return err
 }
 
