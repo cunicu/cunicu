@@ -71,10 +71,14 @@ func (d *BSDKernelDevice) AddAddress(ip net.IPNet) error {
 
 	args := []string{"ifconfig", d.Name(), addressFamily(ip), ip.String()}
 	if isV4 := ip.IP.To4() != nil; isV4 {
-		args = append(args, ip.IP.String(), "alias")
-	} else {
-		args = append(args, "alias")
+		// Darwins utun interfaces are L3 point-to-point links
+		// which require a destination address for IPv4
+		if d.Flags()&net.FlagPointToPoint != 0 {
+			args = append(args, ip.IP.String())
+		}
 	}
+
+	args = append(args, "alias")
 
 	_, err := run(args...)
 	return err
@@ -105,17 +109,17 @@ var mtuRegex = regexp.MustCompile(`(?m)mtu (\d+)`)
 func (d *BSDKernelDevice) MTU() int {
 	out, err := run("ifconfig", d.Name())
 	if err != nil {
-		return -1
+		panic(err)
 	}
 
-	mtuStr := mtuRegex.FindString(string(out))
-	if mtuStr == "" {
-		return -1
+	mtuStrs := mtuRegex.FindStringSubmatch(string(out))
+	if len(mtuStrs) < 2 {
+		panic("no MTU found")
 	}
 
-	mtu, err := strconv.Atoi(mtuStr)
+	mtu, err := strconv.Atoi(mtuStrs[1])
 	if err != nil {
-		return -1
+		panic(err)
 	}
 
 	return mtu
