@@ -12,28 +12,18 @@ import (
 func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 	// Update addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
-		oldPk := crypto.Key(old.PublicKey)
-		newPk := i.PublicKey()
+		oldSk := crypto.Key(old.PrivateKey)
+		newSk := i.PrivateKey()
 
-		if oldPk.IsSet() {
-			for _, pfx := range ac.Settings.Prefixes {
-				addr := oldPk.IPAddress(pfx)
-				if err := ac.KernelDevice.DeleteAddress(addr); err != nil {
-					ac.logger.Error("Failed to un-assign address",
-						zap.String("address", addr.String()),
-						zap.Error(err))
-				}
+		if oldPk := oldSk.PublicKey(); oldSk.IsSet() {
+			if err := ac.RemoveAddresses(oldPk); err != nil {
+				ac.logger.Error("Failed to remove old addresses", zap.Error(err))
 			}
 		}
 
-		if newPk.IsSet() {
-			for _, pfx := range ac.Settings.Prefixes {
-				addr := newPk.IPAddress(pfx)
-				if err := ac.KernelDevice.AddAddress(addr); err != nil {
-					ac.logger.Error("Failed to assign address",
-						zap.String("address", addr.String()),
-						zap.Error(err))
-				}
+		if newPk := newSk.PublicKey(); newSk.IsSet() {
+			if err := ac.AddAddresses(newPk); err != nil {
+				ac.logger.Error("Failed to add new addresses", zap.Error(err))
 			}
 		}
 	}

@@ -91,6 +91,15 @@ func (d *BSDKernelDevice) Index() int {
 	return d.index
 }
 
+func (d *BSDKernelDevice) Flags() net.Flags {
+	i, err := net.InterfaceByIndex(d.index)
+	if err != nil {
+		panic(err)
+	}
+
+	return i.Flags
+}
+
 var mtuRegex = regexp.MustCompile(`(?m)mtu (\d+)`)
 
 func (d *BSDKernelDevice) MTU() int {

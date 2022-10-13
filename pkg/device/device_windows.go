@@ -41,6 +41,15 @@ func (d *WindowsKernelDevice) Index() int {
 	return -1
 }
 
+func (d *WindowsKernelDevice) Flags() net.Flags {
+	i, err := net.InterfaceByIndex(d.index)
+	if err != nil {
+		panic(err)
+	}
+
+	return i.Flags
+}
+
 func (d *WindowsKernelDevice) MTU() int {
 	// MTU is a route attribute which we need to adjust for all routes added for the interface
 	return -1
