@@ -141,7 +141,9 @@ func (e *Interface) Marshal() *protoepdisc.Interface {
 		MuxSrflxPort: uint32(e.udpMuxSrflxPort),
 	}
 
-	if e.nat != nil {
+	if e.nat == nil {
+		is.NatType = protoepdisc.NATType_NAT_NONE
+	} else {
 		is.NatType = protoepdisc.NATType_NAT_NFTABLES
 	}
 

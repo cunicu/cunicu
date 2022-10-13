@@ -173,16 +173,30 @@ func (cp *CandidatePair) ToString() string {
 }
 
 func (c *Candidate) ToString() string {
-	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(c.Type), ice.NetworkType(c.NetworkType), c.Address, c.Port)
+	var addr string
+	switch c.NetworkType {
+	case NetworkType_NETWORK_TYPE_UDP6, NetworkType_NETWORK_TYPE_TCP6:
+		addr = fmt.Sprintf("[%s]", c.Address)
+	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
+		addr = c.Address
+	}
+
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(c.Type), ice.NetworkType(c.NetworkType), addr, c.Port)
 }
 
 func (cs *CandidateStats) ToString() string {
-	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(cs.CandidateType), ice.NetworkType(cs.NetworkType), cs.Ip, cs.Port)
+	var addr string
+	switch cs.NetworkType {
+	case NetworkType_NETWORK_TYPE_UDP6, NetworkType_NETWORK_TYPE_TCP6:
+		addr = fmt.Sprintf("[%s]", cs.Ip)
+	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
+		addr = cs.Ip
+	}
+
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(cs.CandidateType), ice.NetworkType(cs.NetworkType), addr, cs.Port)
 }
 
 func (cs *CandidateStats) Dump(wr io.Writer) error {
-	// wri := util.NewIndenter(wr, "  ")
-
 	if _, err := fmt.Fprintf(wr, t.Mods("candidate", t.Bold, t.FgMagenta)+": "+t.Mods("%s", t.FgMagenta)+"\n", cs.ToString()); err != nil {
 		return err
 	}

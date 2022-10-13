@@ -33,7 +33,8 @@ enum Reachability {
 }
 
 enum NATType {
-    NAT_NFTABLES = 0;
+    NAT_NONE = 0;
+    NAT_NFTABLES = 1;
 }
 
 enum ProxyType {
