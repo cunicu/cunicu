@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net"
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -51,11 +52,8 @@ func (ac *Interface) Start() error {
 
 	// Assign auto-generated addresses
 	if pk := ac.PublicKey(); pk.IsSet() {
-		for _, pfx := range ac.Settings.Prefixes {
-			addr := pk.IPAddress(pfx)
-			if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
-				ac.logger.Error("Failed to assign address", zap.Error(err), zap.String("addr", addr.String()))
-			}
+		if err := ac.AddAddresses(pk); err != nil {
+			ac.logger.Error("Failed to add addresses", zap.Error(err))
 		}
 	}
 
@@ -164,4 +162,51 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	return mtu - wg.TunnelOverhead, nil
+}
+
+func (ac *Interface) RemoveAddresses(pk crypto.Key) error {
+	for _, pfx := range ac.Settings.Prefixes {
+		addr := pk.IPAddress(pfx)
+		if err := ac.KernelDevice.DeleteAddress(addr); err != nil {
+			return err
+		}
+
+		// On Darwin systems, the utun interfaces are point-to-point
+		// links which are only configured a source/destination address
+		// pair. Hence we need to setup dedicated routes.
+		if ac.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+			rte := net.IPNet{
+				IP:   addr.IP.Mask(addr.Mask),
+				Mask: addr.Mask,
+			}
+
+			if err := ac.KernelDevice.DeleteRoute(rte, ac.Settings.RoutingTable); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (ac *Interface) AddAddresses(pk crypto.Key) error {
+	for _, pfx := range ac.Settings.Prefixes {
+		addr := pk.IPAddress(pfx)
+		if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
+			return err
+		}
+
+		if ac.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+			rte := net.IPNet{
+				IP:   addr.IP.Mask(addr.Mask),
+				Mask: addr.Mask,
+			}
+
+			if err := ac.KernelDevice.AddRoute(rte, nil, ac.Settings.RoutingTable); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
