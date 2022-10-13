@@ -73,6 +73,15 @@ func (d *LinuxKernelDevice) Index() int {
 	return d.link.Attrs().Index
 }
 
+func (d *LinuxKernelDevice) Flags() net.Flags {
+	i, err := net.InterfaceByIndex(d.index)
+	if err != nil {
+		panic(err)
+	}
+
+	return i.Flags
+}
+
 func (d *LinuxKernelDevice) MTU() int {
 	var err error
 

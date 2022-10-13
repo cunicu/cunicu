@@ -21,6 +21,7 @@ type Device interface {
 	Name() string
 	Index() int
 	MTU() int
+	Flags() net.Flags
 
 	// Setter
 
