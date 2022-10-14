@@ -91,8 +91,13 @@ func init() {
 	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
 	pf.StringVarP(&colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
 
-	daemonCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp))
-	daemonCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp))
+	if err := daemonCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+		panic(err)
+	}
+
+	if err := daemonCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+		panic(err)
+	}
 
 	flagName := "output"
 	daemonCmd.MarkFlagFilename(flagName, "yaml", "json")

@@ -102,11 +102,11 @@ func (rs *Interface) syncKernel() error {
 
 // watchKernel watches for added/removed routes in the kernel routing table and adds/removes AllowedIPs
 // to the respective peers based on the destination address of the routes.
-func (s *Interface) watchKernel() error {
+func (rs *Interface) watchKernel() error {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
 
-	if err := netlink.RouteSubscribeWithOptions(rus, s.stop, netlink.RouteSubscribeOptions{
+	if err := netlink.RouteSubscribeWithOptions(rus, rs.stop, netlink.RouteSubscribeOptions{
 		ListExisting: true,
 		ErrorCallback: func(err error) {
 			errs <- err
@@ -118,25 +118,25 @@ func (s *Interface) watchKernel() error {
 	for {
 		select {
 		case ru := <-rus:
-			if err := s.handleRouteUpdate(&ru); err != nil {
-				s.logger.Error("Failed to handle route update", zap.Error(err))
+			if err := rs.handleRouteUpdate(&ru); err != nil {
+				rs.logger.Error("Failed to handle route update", zap.Error(err))
 			}
 
 		case err := <-errs:
-			s.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
+			rs.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
 
-		case <-s.stop:
+		case <-rs.stop:
 			return nil
 		}
 	}
 }
 
-func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
-	logger := s.logger.WithOptions(log.WithVerbose(10))
+func (rs *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
+	logger := rs.logger.WithOptions(log.WithVerbose(10))
 
 	logger.Debug("Received netlink route update", zap.Any("update", ru))
 
-	if ru.Table != s.Settings.RoutingTable {
+	if ru.Table != rs.Settings.RoutingTable {
 		logger.Debug("Ignore route from another table")
 		return nil
 	}
@@ -156,7 +156,7 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return fmt.Errorf("failed to get address from slice")
 	}
 
-	p, ok := s.gwMap[gw]
+	p, ok := rs.gwMap[gw]
 	if !ok {
 		logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
 		return nil

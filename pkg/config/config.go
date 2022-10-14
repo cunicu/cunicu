@@ -133,11 +133,13 @@ func (c *Config) Init(args []string) error {
 		c.Sources = append(c.Sources, s)
 
 		if w, ok := p.(Watchable); c.Watch && ok {
-			w.Watch(func(event interface{}, err error) {
+			if err := w.Watch(func(event interface{}, err error) {
 				if _, err := c.ReloadSource(s); err != nil {
 					c.logger.Error("Failed to reload config", zap.Error(err))
 				}
-			})
+			}); err != nil {
+				return fmt.Errorf("failed to watch for changes: %w", err)
+			}
 		}
 	}
 
@@ -328,7 +330,9 @@ func (c *Config) InterfaceSettings(name string) (cfg *InterfaceSettings) {
 		}
 
 		if icfg, ok := c.Interfaces[set]; ok {
-			mergo.Merge(cfg, icfg, mergo.WithOverride)
+			if err := mergo.Merge(cfg, icfg, mergo.WithOverride); err != nil {
+				panic(err)
+			}
 		}
 	}
 

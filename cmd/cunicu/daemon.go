@@ -35,9 +35,17 @@ func init() {
 
 	cfg = config.New(pf)
 
-	daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp))
-	daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp))
-	daemonCmd.MarkFlagFilename("config", "yaml", "json")
+	if err := daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+		panic(err)
+	}
+
+	if err := daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+		panic(err)
+	}
+
+	if err := daemonCmd.MarkFlagFilename("config", "yaml", "json"); err != nil {
+		panic(err)
+	}
 
 	pf.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
@@ -61,7 +69,10 @@ func daemon(cmd *cobra.Command, args []string) {
 			Log:   logger,
 			Level: zap.DebugLevel,
 		}, "   ")
-		cfg.Marshal(wr)
+
+		if err := cfg.Marshal(wr); err != nil {
+			logger.Fatal("Failed to marshal config", zap.Error(err))
+		}
 	}
 
 	// Create daemon

@@ -136,11 +136,11 @@ func (ac *Interface) ConfigureWireGuard() error {
 //
 //	The MTU is automatically determined from the endpoint addresses
 //	or the system default route, which is usually a sane choice.
-func (i *Interface) DetectMTU() (mtu int, err error) {
+func (ac *Interface) DetectMTU() (mtu int, err error) {
 	mtu = math.MaxInt
-	for _, p := range i.Peers {
+	for _, p := range ac.Peers {
 		if p.Endpoint != nil {
-			if pmtu, err := device.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {
+			if pmtu, err := device.DetectMTU(p.Endpoint.IP, ac.FirewallMark); err != nil {
 				return -1, err
 			} else if pmtu < mtu {
 				mtu = pmtu
@@ -149,7 +149,7 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	if mtu == math.MaxInt {
-		if mtu, err = device.DetectDefaultMTU(i.FirewallMark); err != nil {
+		if mtu, err = device.DetectDefaultMTU(ac.FirewallMark); err != nil {
 			return -1, err
 		}
 	}

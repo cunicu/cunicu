@@ -239,7 +239,7 @@ func mtuFromRoutes(rts []netlink.Route) (int, error) {
 }
 
 func Table(str string) (int, error) {
-	if f, err := os.OpenFile(ipr2TablesFile, os.O_RDONLY, 0644); err == nil {
+	if f, err := os.OpenFile(ipr2TablesFile, os.O_RDONLY, 0600); err == nil {
 		sc := bufio.NewScanner(f)
 		for sc.Scan() {
 			line := sc.Text()

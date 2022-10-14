@@ -13,16 +13,24 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		zap.String("dst", dst.String()),
 		zap.String("gw", gw.String()))
 
+	args := []string{"route", "add", "-net", dst.String()}
+
 	if gw == nil {
-		return exec.Command("route", "add", "-net", dst.String(), "-interface", d.Name(), "-fib", fmt.Sprint(table)).Run()
+		args = append(args, "-interface", d.Name())
 	} else {
-		return exec.Command("route", "add", "-net", dst.String(), gw.String(), "-fib", fmt.Sprint(table)).Run()
+		args = append(args, gw.String())
 	}
+
+	args = append(args, "-fib", fmt.Sprint(table))
+
+	_, err := run(args...)
+	return err
 }
 
 func (d *BSDKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	d.logger.Debug("Delete route",
 		zap.String("dst", dst.String()))
 
-	return exec.Command("route", "delete", "-net", dst.String(), "-interface", d.Name(), "-fib", fmt.Sprint(table)).Run()
+	_, err := run("route", "delete", "-net", dst.String(), "-interface", d.Name(), "-fib", fmt.Sprint(table))
+	return err
 }
