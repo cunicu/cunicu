@@ -104,6 +104,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	// Auto-generated prefixes
 	for _, pfx := range pd.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
+
 		_, bits := addr.Mask.Size()
 		addr.Mask = net.CIDRMask(bits, bits)
 
@@ -123,29 +124,27 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 		Hosts:      map[string]*pdiscproto.PeerAddresses{},
 	}
 
-	if extraHosts := pd.Settings.ExtraHosts; len(extraHosts) > 0 {
-		for name, addrs := range extraHosts {
-			daddrs := []*proto.IPAddress{}
+	for name, addrs := range pd.Settings.ExtraHosts {
+		daddrs := []*proto.IPAddress{}
 
-			for _, addr := range addrs {
-				daddr := proto.Address(addr.IP)
-				daddrs = append(daddrs, daddr)
-			}
+		for _, addr := range addrs {
+			daddr := proto.Address(addr.IP)
+			daddrs = append(daddrs, daddr)
+		}
 
-			d.Hosts[name] = &pdiscproto.PeerAddresses{
-				Addresses: daddrs,
-			}
+		d.Hosts[name] = &pdiscproto.PeerAddresses{
+			Addresses: daddrs,
 		}
 	}
 
-	if pd.Settings.HostName != "" {
+	if name := pd.Settings.HostName; name != "" {
 		daddrs := []*proto.IPAddress{}
 		for _, pfx := range pd.Settings.Prefixes {
 			addr := pk.IPAddress(pfx)
 			daddrs = append(daddrs, proto.Address(addr.IP))
 		}
 
-		d.Hosts[pd.Settings.HostName] = &pdiscproto.PeerAddresses{
+		d.Hosts[name] = &pdiscproto.PeerAddresses{
 			Addresses: daddrs,
 		}
 	}

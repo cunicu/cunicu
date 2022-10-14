@@ -12,16 +12,15 @@ import (
 func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
 	// Update addresses in case the interface key has changed
 	if mod&core.InterfaceModifiedPrivateKey != 0 {
-		oldSk := crypto.Key(old.PrivateKey)
-		newSk := i.PrivateKey()
-
-		if oldPk := oldSk.PublicKey(); oldSk.IsSet() {
+		if oldSk := crypto.Key(old.PrivateKey); oldSk.IsSet() {
+			oldPk := oldSk.PublicKey()
 			if err := ac.RemoveAddresses(oldPk); err != nil {
 				ac.logger.Error("Failed to remove old addresses", zap.Error(err))
 			}
 		}
 
-		if newPk := newSk.PublicKey(); newSk.IsSet() {
+		if newSk := i.PrivateKey(); newSk.IsSet() {
+			newPk := newSk.PublicKey()
 			if err := ac.AddAddresses(newPk); err != nil {
 				ac.logger.Error("Failed to add new addresses", zap.Error(err))
 			}
