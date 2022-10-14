@@ -85,7 +85,7 @@ func (d *Daemon) Run() error {
 		return fmt.Errorf("failed to cleanup stale user space sockets: %w", err)
 	}
 
-	if err := d.CreateDevicesFromArgs(); err != nil {
+	if err := d.CreateDevices(); err != nil {
 		return fmt.Errorf("failed to create devices: %w", err)
 	}
 
@@ -172,11 +172,9 @@ func (d *Daemon) Close() error {
 	return nil
 }
 
-func (d *Daemon) CreateDevicesFromArgs() error {
-	var devs wg.DeviceList
-	var err error
-
-	if devs, err = d.client.Devices(); err != nil {
+func (d *Daemon) CreateDevices() error {
+	devs, err := d.client.Devices()
+	if err != nil {
 		return fmt.Errorf("failed to get existing WireGuard devices: %w", err)
 	}
 
@@ -184,14 +182,29 @@ func (d *Daemon) CreateDevicesFromArgs() error {
 		return strings.ContainsAny(s, "*?[]\\")
 	}
 
-	for _, name := range d.Config.InterfaceOrder {
-		if isPattern(name) {
-			continue
+	alreadyExists := func(s string) bool {
+		for _, dev := range devs {
+			if dev.Name == s {
+				return true
+			}
 		}
 
-		if wgdev := devs.GetByName(name); wgdev != nil {
-			// Device already exists
-			continue
+		for _, dev := range d.devices {
+			if dev.Name() == s {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, name := range d.Config.InterfaceOrder {
+		if isPattern(name) {
+			continue // Patterns are ignored
+		}
+
+		if alreadyExists(name) {
+			continue // Device already exists
 		}
 
 		icfg := d.Config.InterfaceSettings(name)
