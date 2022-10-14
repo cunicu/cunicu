@@ -26,25 +26,25 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 		return fmt.Errorf("failed to find link: %w", err)
 	}
 
-	// Get all IPv4 and IPv6 routes on link
-	routes := []netlink.Route{}
+	// Get all IPv4 and IPv6 rts on link
+	rts := []netlink.Route{}
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
-		routesAF, err := netlink.RouteList(link, af)
+		rtsAf, err := netlink.RouteList(link, af)
 		if err != nil {
 			rs.logger.Error("Failed to get routes from kernel", zap.Error(err))
 		}
 
-		routes = append(routes, routesAF...)
+		rts = append(rts, rtsAf...)
 	}
 
-	for _, route := range routes {
+	for _, rt := range rts {
 		// Skip routes not in the desired table
-		if route.Table != rs.Settings.RoutingTable {
+		if rt.Table != rs.Settings.RoutingTable {
 			continue
 		}
 
 		// Skip default routes
-		if route.Dst == nil {
+		if rt.Dst == nil {
 			continue
 		}
 
@@ -52,12 +52,12 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 		for _, q := range rs.Settings.Prefixes {
 			gw := pk.IPAddress(q)
 
-			if route.Gw == nil {
-				if gw.IP.Equal(route.Dst.IP) {
+			if rt.Gw == nil {
+				if gw.IP.Equal(rt.Dst.IP) {
 					ours = true
 				}
 			} else {
-				if !gw.IP.Equal(route.Gw) {
+				if !gw.IP.Equal(rt.Gw) {
 					ours = true
 				}
 			}
@@ -67,7 +67,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 			continue
 		}
 
-		if err := p.Interface.KernelDevice.DeleteRoute(*route.Dst, rs.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
+		if err := p.Interface.KernelDevice.DeleteRoute(*rt.Dst, rs.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
 			rs.logger.Error("Failed to delete route", zap.Error(err))
 		}
 	}
@@ -78,23 +78,21 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 // syncKernel adds routes from the kernel routing table as new AllowedIPs to the respective peer
 // based on the destination address of the route.
 func (rs *Interface) syncKernel() error {
-	link, err := netlink.LinkByIndex(rs.KernelDevice.Index())
-	if err != nil {
-		return fmt.Errorf("failed to find link: %w", err)
-	}
-
-	for _, af := range []int{unix.AF_INET6, unix.AF_INET} {
-		routes, err := netlink.RouteList(link, af)
+	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
+		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
+			Table:     rs.Settings.RoutingTable,
+			LinkIndex: rs.KernelDevice.Index(),
+		}, netlink.RT_FILTER_TABLE|netlink.RT_FILTER_OIF)
 		if err != nil {
-			return fmt.Errorf("failed to list routes from kernel: %w", err)
+			return fmt.Errorf("failed to list routes: %w", err)
 		}
 
-		for _, route := range routes {
+		for _, rte := range rts {
 			if err := rs.handleRouteUpdate(&netlink.RouteUpdate{
+				Route: rte,
 				Type:  unix.RTM_NEWROUTE,
-				Route: route,
 			}); err != nil {
-				return err
+				rs.logger.Error("Failed to handle route update", zap.Error(err))
 			}
 		}
 	}
@@ -104,17 +102,17 @@ func (rs *Interface) syncKernel() error {
 
 // watchKernel watches for added/removed routes in the kernel routing table and adds/removes AllowedIPs
 // to the respective peers based on the destination address of the routes.
-func (s *Interface) watchKernel() {
+func (s *Interface) watchKernel() error {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
 
 	if err := netlink.RouteSubscribeWithOptions(rus, s.stop, netlink.RouteSubscribeOptions{
+		ListExisting: true,
 		ErrorCallback: func(err error) {
 			errs <- err
 		},
 	}); err != nil {
-		s.logger.Error("Failed to subscribe to netlink route updates", zap.Error(err))
-		return
+		return fmt.Errorf("failed to subscribe to netlink route updates: %w", err)
 	}
 
 	for {
@@ -128,7 +126,7 @@ func (s *Interface) watchKernel() {
 			s.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
 
 		case <-s.stop:
-			return
+			return nil
 		}
 	}
 }
@@ -150,12 +148,6 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	if ru.Gw == nil {
 		logger.Debug("Ignoring route with missing gateway")
-		return nil
-	}
-
-	// TODO
-	if !ru.Gw.IsLinkLocalUnicast() {
-		logger.Debug("Ignoring non-link-local gateway", zap.Any("gw", ru.Gw))
 		return nil
 	}
 
@@ -195,28 +187,6 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	case unix.RTM_DELROUTE:
 		if err := p.RemoveAllowedIP(*ru.Dst); err != nil {
 			return fmt.Errorf("failed to remove allowed IP: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (s *Interface) Sync() error {
-	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
-		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
-			Table: s.Settings.RoutingTable,
-		}, netlink.RT_FILTER_TABLE)
-		if err != nil {
-			return fmt.Errorf("failed to list routes: %w", err)
-		}
-
-		for _, rte := range rts {
-			if err := s.handleRouteUpdate(&netlink.RouteUpdate{
-				Route: rte,
-				Type:  unix.RTM_NEWROUTE,
-			}); err != nil {
-				s.logger.Error("Failed to handle route update", zap.Error(err))
-			}
 		}
 	}
 

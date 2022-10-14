@@ -2,11 +2,15 @@
 package rtsync
 
 import (
+	"errors"
 	"net/netip"
+
+	"go.uber.org/zap"
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"go.uber.org/zap"
+
+	xerrors "github.com/stv0g/cunicu/pkg/errors"
 )
 
 func init() {
@@ -36,15 +40,32 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 
 	i.OnPeer(rs)
 
-	if i.Settings.WatchRoutes {
-		go rs.watchKernel()
-	}
-
 	return rs, nil
 }
 
 func (rs *Interface) Start() error {
 	rs.logger.Info("Started route synchronization")
+
+	go func() {
+		if rs.Settings.WatchRoutes {
+			if err := rs.watchKernel(); err != nil {
+				if errors.Is(err, xerrors.ErrNotSupported) {
+					rs.logger.Warn("Watching the kernel routing table is not supported on this platform")
+				} else {
+					rs.logger.Error("Failed to watch kernel routing table", zap.Error(err))
+				}
+			}
+		} else {
+			// Only perform initial sync, if we are not continuously watching for changes
+			if err := rs.syncKernel(); err != nil {
+				if errors.Is(err, xerrors.ErrNotSupported) {
+					rs.logger.Warn("Synchronizing the routing table is not supported on this platform")
+				} else {
+					rs.logger.Error("Failed to sync kernel routing table", zap.Error(err))
+				}
+			}
+		}
+	}()
 
 	return nil
 }
@@ -55,6 +76,14 @@ func (rs *Interface) Close() error {
 	return nil
 }
 
-func (rs *Interface) OnConfigChanged(key string, old, new any) {
-	rs.logger.Warn("Config changed", zap.String("key", key), zap.Any("old", old), zap.Any("new", new))
+func (rs *Interface) Sync() error {
+	if err := rs.syncKernel(); err != nil {
+		if errors.Is(err, xerrors.ErrNotSupported) {
+			rs.logger.Warn("Synchronizing the routing table is not supported on this platform")
+		} else {
+			return err
+		}
+	}
+
+	return nil
 }
