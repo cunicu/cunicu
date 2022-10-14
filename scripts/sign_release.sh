@@ -14,7 +14,7 @@ function request() {
 }
 
 function undraft_release() {
-    request releases/$1 -X PATCH -d '{ "draft": false }'  | \
+    request "releases/$1" -X PATCH -d '{ "draft": false }'  | \
     jq .
 }
 
@@ -28,7 +28,7 @@ function download_asset() {
 
     curl --silent \
          --location \
-         --output ${ASSET_NAME} \
+         --output "${ASSET_NAME}" \
          --header "Authorization: Bearer ${GITHUB_TOKEN}" \
          --header "Accept:application/octet-stream" \
          "https://api.github.com/repos/${REPO}/releases/assets/${ASSET_ID}"
@@ -37,7 +37,7 @@ function download_asset() {
 function upload_asset() {
     RELEASE_ID=$1
     FILENAME=$2
-    MIME_TYPE=$(file -b --mime-type ${FILENAME})
+    MIME_TYPE=$(file -b --mime-type "${FILENAME}")
 
     curl --silent \
          --location \
@@ -45,7 +45,7 @@ function upload_asset() {
          --header "Content-Type: ${MIME_TYPE}" \
          --header "Accept: application/vnd.github+json" \
          --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-         --data-binary @${FILENAME} \
+         --data-binary "@${FILENAME}" \
          "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" | \
     jq .
 }

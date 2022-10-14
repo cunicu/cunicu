@@ -93,7 +93,9 @@ func (d *Daemon) Run() error {
 
 	go d.watcher.Watch()
 
-	d.watcher.Sync()
+	if err := d.watcher.Sync(); err != nil {
+		return fmt.Errorf("initial sync failed: %w", err)
+	}
 
 out:
 	for {

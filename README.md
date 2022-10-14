@@ -34,7 +34,7 @@ cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/do
 
 ## Authors
 
-- Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
+-   Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
 
 ## License
 

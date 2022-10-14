@@ -13,24 +13,24 @@ import (
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 )
 
-type remoteFileProvider struct {
+type RemoteFileProvider struct {
 	url          *url.URL
 	etag         string
 	lastModified time.Time
 	order        []string
 }
 
-func RemoteFileProvider(u *url.URL) *remoteFileProvider {
-	return &remoteFileProvider{
+func NewRemoteFileProvider(u *url.URL) *RemoteFileProvider {
+	return &RemoteFileProvider{
 		url: u,
 	}
 }
 
-func (p *remoteFileProvider) Read() (map[string]interface{}, error) {
+func (p *RemoteFileProvider) Read() (map[string]interface{}, error) {
 	return nil, errors.New("this provider does not support parsers")
 }
 
-func (p *remoteFileProvider) ReadBytes() ([]byte, error) {
+func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 	if p.url.Scheme != "https" {
 		host, _, err := net.SplitHostPort(p.url.Host)
 		if err != nil {
@@ -81,12 +81,14 @@ func (p *remoteFileProvider) ReadBytes() ([]byte, error) {
 	return buf, nil
 }
 
-func (p *remoteFileProvider) Order() []string {
+func (p *RemoteFileProvider) Order() []string {
 	return p.order
 }
 
-func (p *remoteFileProvider) Version() any {
-	p.hasChanged()
+func (p *RemoteFileProvider) Version() any {
+	if _, err := p.hasChanged(); err != nil {
+		return nil
+	}
 
 	if p.etag != "" {
 		return p.etag
@@ -99,7 +101,7 @@ func (p *remoteFileProvider) Version() any {
 	return nil
 }
 
-func (p *remoteFileProvider) hasChanged() (bool, error) {
+func (p *RemoteFileProvider) hasChanged() (bool, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -130,19 +132,19 @@ func (p *remoteFileProvider) hasChanged() (bool, error) {
 	return resp.StatusCode == 200, nil
 }
 
-type localFileProvider struct {
+type LocalFileProvider struct {
 	*file.File
 
 	order []string
 }
 
-func LocalFileProvider(u *url.URL) *localFileProvider {
-	return &localFileProvider{
+func NewLocalFileProvider(u *url.URL) *LocalFileProvider {
+	return &LocalFileProvider{
 		File: file.Provider(u.Path),
 	}
 }
 
-func (p *localFileProvider) ReadBytes() ([]byte, error) {
+func (p *LocalFileProvider) ReadBytes() ([]byte, error) {
 	buf, err := p.File.ReadBytes()
 
 	if err == nil {
@@ -152,6 +154,6 @@ func (p *localFileProvider) ReadBytes() ([]byte, error) {
 	return buf, err
 }
 
-func (p *localFileProvider) Order() []string {
+func (p *LocalFileProvider) Order() []string {
 	return p.order
 }

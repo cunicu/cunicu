@@ -1,4 +1,3 @@
-// Package feat contains several sub-packages each implementing a dedicated feature.
 package daemon
 
 import (

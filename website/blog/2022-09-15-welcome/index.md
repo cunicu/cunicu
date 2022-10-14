@@ -23,7 +23,7 @@ The project has now its dedicated [website](https://cunicu.li), [GitHub organiza
 Feel free to follow us there for updates!
 
 You might also have realized that the project name has changed. We decided to rebrand from the previous name _wice_ to avoid any potential trademark issues with the WireGuard project as well as another small German company named _WICE_.
-The project name _cunīcu_ [kʊˈniːkʊ] is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
+The project name _cunīcu_ \[kʊˈniːkʊ\] is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
 
 This also gave us the opportunity to redesign the logo which you find further down in the sticker design.
 

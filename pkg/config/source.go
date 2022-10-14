@@ -41,7 +41,7 @@ func (s *Source) Load() error {
 func load(p koanf.Provider) (*koanf.Koanf, []string, error) {
 	var q koanf.Parser
 	switch p.(type) {
-	case *remoteFileProvider, *localFileProvider:
+	case *RemoteFileProvider, *LocalFileProvider:
 		q = yaml.Parser()
 	default:
 		q = nil
@@ -68,15 +68,16 @@ func load(p koanf.Provider) (*koanf.Koanf, []string, error) {
 
 	if s, ok := p.(SubProvidable); ok {
 		for _, p := range s.SubProviders() {
-			if d, m, err := load(p); err != nil {
+			d, m, err := load(p)
+			if err != nil {
 				return nil, nil, err
-			} else {
-				if err := k.Merge(d); err != nil {
-					return nil, nil, fmt.Errorf("failed to merge config: %w", err)
-				}
-
-				o = append(o, m...)
 			}
+
+			if err := k.Merge(d); err != nil {
+				return nil, nil, fmt.Errorf("failed to merge config: %w", err)
+			}
+
+			o = append(o, m...)
 		}
 	}
 

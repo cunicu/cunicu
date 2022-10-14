@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapio"
 
 	"github.com/stv0g/cunicu/pkg/config"
-	d "github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/rpc"
 	"github.com/stv0g/cunicu/pkg/util/terminal"
 )
@@ -19,8 +19,8 @@ var (
 	daemonCmd = &cobra.Command{
 		Use:               "daemon [interface-names...]",
 		Short:             "Start the daemon",
-		Example:           `$ cunicu daemon -u -x mysecretpass wg0`,
-		Run:               daemon,
+		Example:           `$ cunicu daemon -U -x mysecretpass wg0`,
+		Run:               daemonRun,
 		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
@@ -43,20 +43,22 @@ func init() {
 		panic(err)
 	}
 
-	if err := daemonCmd.MarkFlagFilename("config", "yaml", "json"); err != nil {
+	if err := daemonCmd.MarkPersistentFlagFilename("config", "yaml", "json"); err != nil {
 		panic(err)
 	}
 
 	pf.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
-			daemonCmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions)
+			if err := daemonCmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions); err != nil {
+				panic(err)
+			}
 		}
 	})
 
 	rootCmd.AddCommand(daemonCmd)
 }
 
-func daemon(cmd *cobra.Command, args []string) {
+func daemonRun(cmd *cobra.Command, args []string) {
 	io.WriteString(os.Stdout, Banner(color))
 
 	if err := cfg.Init(args); err != nil {
@@ -76,7 +78,7 @@ func daemon(cmd *cobra.Command, args []string) {
 	}
 
 	// Create daemon
-	d, err := d.New(cfg)
+	d, err := daemon.New(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create daemon", zap.Error(err))
 	}
