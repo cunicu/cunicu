@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -82,6 +83,14 @@ func (pd *Interface) Start() error {
 func (pd *Interface) Close() error {
 	if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_REMOVE, nil); err != nil {
 		pd.logger.Error("Failed to send peer description", zap.Error(err))
+	}
+
+	return nil
+}
+
+func (pd *Interface) Description(cp *core.Peer) *pdiscproto.PeerDescription {
+	if d, ok := pd.descs[cp.PublicKey()]; ok {
+		return d
 	}
 
 	return nil
