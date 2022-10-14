@@ -196,6 +196,9 @@ func (ac *Interface) AddAddresses(pk crypto.Key) error {
 			return err
 		}
 
+		// On Darwin systems, the utun interfaces are point-to-point
+		// links which are only configured a source/destination address
+		// pair. Hence we need to setup dedicated routes.
 		if ac.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
 			rte := net.IPNet{
 				IP:   addr.IP.Mask(addr.Mask),
