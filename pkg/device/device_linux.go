@@ -74,7 +74,7 @@ func (d *LinuxKernelDevice) Index() int {
 }
 
 func (d *LinuxKernelDevice) Flags() net.Flags {
-	i, err := net.InterfaceByIndex(d.index)
+	i, err := net.InterfaceByIndex(d.Index())
 	if err != nil {
 		panic(err)
 	}
