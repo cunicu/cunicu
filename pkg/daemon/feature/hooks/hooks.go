@@ -47,8 +47,8 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		h.OnModified(hk)
 		h.OnPeer(hk)
 
-		if ep, ok := h.Features["epdisc"]; ok {
-			ep.(*epdisc.Interface).OnConnectionStateChange(hk)
+		if f, ok := h.Features["epdisc"]; ok {
+			f.(*epdisc.Interface).OnConnectionStateChange(hk)
 		}
 
 		h.hooks = append(h.hooks, hk)
