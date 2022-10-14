@@ -52,7 +52,7 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 		connectionStateChanges: make(chan icex.ConnectionState, 32),
 
 		logger: e.logger.Named("peer").With(
-			zap.Any("peer", cp.PublicKey()),
+			zap.String("peer", cp.String()),
 		),
 	}
 

@@ -170,7 +170,7 @@ func (s *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return nil
 	}
 
-	logger = logger.With(zap.Any("peer", p))
+	logger = logger.With(zap.String("peer", p.String()))
 
 	if ru.LinkIndex != p.Interface.KernelDevice.Index() {
 		logger.Debug("Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))

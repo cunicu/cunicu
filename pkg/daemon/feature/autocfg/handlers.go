@@ -30,7 +30,7 @@ func (ac *Interface) OnInterfaceModified(i *core.Interface, old *wg.Device, mod 
 }
 
 func (ac *Interface) OnPeerAdded(p *core.Peer) {
-	logger := ac.logger.With(zap.Any("peer", p.PublicKey()))
+	logger := ac.logger.With(zap.String("peer", p.String()))
 
 	// Add AllowedIPs for peer
 	for _, q := range ac.Settings.Prefixes {
