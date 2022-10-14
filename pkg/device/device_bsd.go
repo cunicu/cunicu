@@ -22,9 +22,9 @@ func addressFamily(ip net.IPNet) string {
 	isV4 := ip.IP.To4() != nil
 	if isV4 {
 		return "inet"
-	} else {
-		return "inet6"
 	}
+
+	return "inet6"
 }
 
 func NewKernelDevice(name string) (*BSDKernelDevice, error) {

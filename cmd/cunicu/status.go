@@ -30,7 +30,9 @@ func init() {
 	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
 	pf.BoolVarP(&indent, "indent", "i", true, "Format and indent JSON ouput")
 
-	daemonCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp))
+	if err := daemonCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+		panic(err)
+	}
 
 	addClientCommand(rootCmd, statusCmd)
 }
@@ -110,6 +112,8 @@ func status(cmd *cobra.Command, args []string) {
 		}
 
 	case config.OutputFormatHuman:
-		sts.Dump(stdout, verbosityLevel)
+		if err := sts.Dump(stdout, verbosityLevel); err != nil {
+			logger.Fatal("Failed to write to stdout", zap.Error(err))
+		}
 	}
 }

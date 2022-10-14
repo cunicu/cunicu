@@ -127,7 +127,7 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 	}
 
 	qis := []*coreproto.Interface{}
-	s.daemon.ForEachInterface(func(i *daemon.Interface) error {
+	if err := s.daemon.ForEachInterface(func(i *daemon.Interface) error {
 		epi := s.epdisc.Interface(i)
 
 		if p.Interface == "" || i.Name() == p.Interface {
@@ -155,7 +155,9 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to marshal interface: %s", err)
+	}
 
 	// Check if filters matched anything
 	if p.Interface != "" && len(qis) == 0 {

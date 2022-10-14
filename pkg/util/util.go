@@ -1,4 +1,4 @@
-// Package util implements project-wide universal utilities
+// Package util provides project-wide universal utilities
 package util
 
 import (

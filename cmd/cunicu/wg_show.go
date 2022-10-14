@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -94,7 +95,10 @@ func wgShow(cmd *cobra.Command, args []string) error {
 			case "persistent-keepalive":
 			case "dump":
 			default:
-				cmd.Usage()
+				if err := cmd.Usage(); err != nil {
+					logger.Fatal("Failed to show usage information", zap.Error(err))
+				}
+
 				os.Exit(1)
 			}
 			field = args[1]

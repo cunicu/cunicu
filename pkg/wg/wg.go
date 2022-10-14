@@ -1,3 +1,4 @@
+// Package wg provides various helpers for WireGuard
 package wg
 
 const (

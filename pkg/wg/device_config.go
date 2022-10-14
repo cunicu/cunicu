@@ -196,7 +196,9 @@ func ParseConfig(data []byte) (*Config, error) {
 	// We add a pseudo peer section just allow mapping via StrictMapTo if there are no peers configured
 	fakePeer := !iniFile.HasSection("Peer")
 	if fakePeer {
-		iniFile.NewSection("Peer")
+		if _, err := iniFile.NewSection("Peer"); err != nil {
+			return nil, fmt.Errorf("failed to create new peer section: %w", err)
+		}
 	}
 
 	iniCfg := &config{}
