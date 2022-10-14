@@ -65,40 +65,6 @@ var _ = Context("device", func() {
 		}
 	})
 
-	Context("list", func() {
-		It("can get device by name", func() {
-			l := wg.DeviceList{
-				&wgtypes.Device{
-					Name:       "wg5",
-					ListenPort: 5,
-				},
-				&wgtypes.Device{
-					Name:       "wg6",
-					ListenPort: 6,
-				},
-				&wgtypes.Device{
-					Name:       "wg2",
-					ListenPort: 2,
-				},
-				&wgtypes.Device{
-					Name:       "wg9",
-					ListenPort: 9,
-				},
-				&wgtypes.Device{
-					Name:       "wg2",
-					ListenPort: 2,
-				},
-			}
-
-			d := l.GetByName("wg9")
-			Expect(d).NotTo(BeNil())
-			Expect(d.ListenPort).To(Equal(9))
-
-			d = l.GetByName("wg3")
-			Expect(d).To(BeNil())
-		})
-	})
-
 	It("to config", func() {
 		cfg := dev.Config()
 
