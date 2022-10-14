@@ -4,10 +4,15 @@ import (
 	"net"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/errors"
 )
 
 type WindowsKernelDevice struct {
+	index int
+
+	logger *zap.Logger
 }
 
 func (d *WindowsKernelDevice) AddAddress(ip net.IPNet) error {
@@ -17,7 +22,7 @@ func (d *WindowsKernelDevice) AddAddress(ip net.IPNet) error {
 }
 
 func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
-	i.logger.Debug("Add route",
+	d.logger.Debug("Add route",
 		zap.String("dst", dst.String()),
 		zap.String("gw", gw.String()))
 
@@ -25,13 +30,13 @@ func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) erro
 }
 
 func (d *WindowsKernelDevice) DeleteAddress(ip net.IPNet) error {
-	i.logger.Debug("Delete address", zap.String("addr", ip.String()))
+	d.logger.Debug("Delete address", zap.String("addr", ip.String()))
 
 	return errors.ErrNotSupported
 }
 
 func (d *WindowsKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
-	i.logger.Debug("Delete route",
+	d.logger.Debug("Delete route",
 		zap.String("dst", dst.String()))
 
 	return errors.ErrNotSupported
@@ -69,13 +74,13 @@ func (d *WindowsKernelDevice) SetUp() error {
 }
 
 func (d *WindowsKernelDevice) SetDown() error {
-	i.logger.Debug("Set link down")
+	d.logger.Debug("Set link down")
 
 	return errors.ErrNotSupported
 }
 
 func (d *WindowsKernelDevice) Close() error {
-	i.logger.Debug("Deleting kernel device")
+	d.logger.Debug("Deleting kernel device")
 
 	return nil
 }
