@@ -46,11 +46,12 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 		onModified: []PeerModifiedHandler{},
 
 		client: i.client,
-		logger: zap.L().Named("peer").With(
-			zap.String("intf", i.Name()),
-			zap.Any("peer", wgp.PublicKey),
-		),
 	}
+
+	p.logger = zap.L().Named("peer").With(
+		zap.String("intf", i.Name()),
+		zap.String("peer", p.String()),
+	)
 
 	// We intentionally prune the AllowedIP list here for the initial sync
 	p.Peer.AllowedIPs = nil
