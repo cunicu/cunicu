@@ -15,4 +15,6 @@ func (s *Interface) syncKernel() error {
 	return errors.ErrNotSupported
 }
 
-func (s *Interface) watchKernel() {}
+func (s *Interface) watchKernel() error {
+	return errors.ErrNotSupported
+}
