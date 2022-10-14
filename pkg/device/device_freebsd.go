@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+
+	"go.uber.org/zap"
 )
 
 func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
