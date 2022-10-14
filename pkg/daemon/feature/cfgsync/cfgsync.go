@@ -16,11 +16,7 @@ import (
 )
 
 func init() {
-	daemon.Features["cfgsync"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Config synchronization",
-		Order:       20,
-	}
+	daemon.RegisterFeature("cfgsync", "Config synchronization", New, 20)
 }
 
 type Interface struct {

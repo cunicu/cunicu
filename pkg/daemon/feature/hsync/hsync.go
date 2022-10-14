@@ -18,11 +18,7 @@ const (
 )
 
 func init() {
-	daemon.Features["hsync"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Hosts synchronization",
-		Order:       200,
-	}
+	daemon.RegisterFeature("hsync", "Hosts synchronization", New, 200)
 }
 
 type Interface struct {

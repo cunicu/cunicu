@@ -19,11 +19,7 @@ import (
 )
 
 func init() {
-	daemon.Features["pdisc"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Peer discovery",
-		Order:       60,
-	}
+	daemon.RegisterFeature("pdisc", "Peer discovery", New, 60)
 }
 
 type Interface struct {
