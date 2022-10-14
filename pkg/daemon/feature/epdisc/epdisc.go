@@ -194,7 +194,7 @@ func (e *Interface) PeerByPublicKey(pk crypto.Key) *Peer {
 // Endpoint returns the best guess about our own endpoint
 func (e *Interface) Endpoint() (*net.UDPAddr, error) {
 	var ep *net.UDPAddr
-	var bestPrio uint32 = 0
+	var bestPrio uint32
 
 	for _, p := range e.Peers {
 		cs, err := p.agent.GetLocalCandidates()

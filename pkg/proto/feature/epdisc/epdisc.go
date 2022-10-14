@@ -65,7 +65,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 	}
 
 	if p.SelectedCandidatePair != nil {
-		if _, err := terminal.FprintKV(wr, "candidate-pair", p.SelectedCandidatePair.ToString()); err != nil {
+		if _, err := terminal.FprintKV(wr, "candidate pair", p.SelectedCandidatePair.ToString()); err != nil {
 			return err
 		}
 	}

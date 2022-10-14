@@ -104,6 +104,8 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 
 	// Static addresses
 	for _, addr := range pd.Settings.Addresses {
+		addr := addr
+
 		_, bits := addr.Mask.Size()
 		addr.Mask = net.CIDRMask(bits, bits)
 
@@ -112,6 +114,8 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 
 	// Auto-generated prefixes
 	for _, pfx := range pd.Settings.Prefixes {
+		pfx := pfx
+
 		addr := pk.IPAddress(pfx)
 
 		_, bits := addr.Mask.Size()

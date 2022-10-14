@@ -25,7 +25,10 @@ func (rs *Interface) OnPeerAdded(p *core.Peer) {
 		rs.gwMap[gw] = p
 	}
 
-	rs.syncKernel() // Initial sync
+	// Initial sync
+	if err := rs.syncKernel(); err != nil {
+		rs.logger.Error("Failed to synchronize kernel routing table", zap.Error(err))
+	}
 
 	p.OnModified(rs)
 }

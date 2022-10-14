@@ -94,7 +94,7 @@ func (p *lookupProvider) SubProviders() []koanf.Provider {
 		if err != nil {
 			p.logger.Warn("failed to parse URL for configuration file", zap.Error(err))
 		} else {
-			ps = append(ps, RemoteFileProvider(u))
+			ps = append(ps, NewRemoteFileProvider(u))
 		}
 	}
 

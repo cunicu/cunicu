@@ -31,6 +31,6 @@ This addresses calculation can be performed with the [`cunicu addresses`](../usa
 
 The following settings are automatically assigned if they have not been set before:
 
-- **Private Key:** a new random private key will be generated.
-- **Listen port:** the next free port in the configured listen port range is used (see `wireguard.listen_port_range` setting).
-- **MTU:** is automatically determined from the endpoint addresses or the system default route.
+-   **Private Key:** a new random private key will be generated.
+-   **Listen port:** the next free port in the configured listen port range is used (see `wireguard.listen_port_range` setting).
+-   **MTU:** is automatically determined from the endpoint addresses or the system default route.

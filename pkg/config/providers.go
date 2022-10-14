@@ -83,7 +83,7 @@ type Provider struct {
 // - command line flags
 func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	ps := []koanf.Provider{
-		StructsProvider(&DefaultSettings, "koanf"),
+		NewStructsProvider(&DefaultSettings, "koanf"),
 		WireGuardProvider(),
 	}
 
@@ -97,11 +97,12 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	if len(c.Files) == 0 {
 		searchPath := []string{"/etc", "/etc/cunicu"}
 
-		if cwd, err := os.Getwd(); err != nil {
+		cwd, err := os.Getwd()
+		if err != nil {
 			return nil, fmt.Errorf("failed to get working directory")
-		} else {
-			searchPath = append(searchPath, cwd)
 		}
+
+		searchPath = append(searchPath, cwd)
 
 		if cfgDir := os.Getenv("CUNICU_CONFIG_DIR"); cfgDir != "" {
 			searchPath = append(searchPath, cfgDir)
@@ -125,9 +126,9 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 		var p koanf.Provider
 		switch u.Scheme {
 		case "http", "https":
-			p = RemoteFileProvider(u)
+			p = NewRemoteFileProvider(u)
 		case "":
-			p = LocalFileProvider(u)
+			p = NewLocalFileProvider(u)
 		default:
 			return nil, fmt.Errorf("unsupported scheme '%s' for config file", u.Scheme)
 		}
@@ -138,7 +139,7 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	// Add a runtime configuration file if it exists
 	if fi, err := os.Stat(RuntimeConfigFile); err == nil && !fi.IsDir() {
 		ps = append(ps,
-			LocalFileProvider(&url.URL{
+			NewLocalFileProvider(&url.URL{
 				Path: RuntimeConfigFile,
 			}),
 		)

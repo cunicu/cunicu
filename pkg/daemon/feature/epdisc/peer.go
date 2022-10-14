@@ -400,14 +400,17 @@ func (p *Peer) Marshal() *protoepdisc.Peer {
 		}
 
 		for _, cps := range p.agent.GetCandidatePairsStats() {
+			cps := cps
 			q.CandidatePairStats = append(q.CandidatePairStats, protoepdisc.NewCandidatePairStats(&cps))
 		}
 
 		for _, cs := range p.agent.GetLocalCandidatesStats() {
+			cs := cs
 			q.LocalCandidateStats = append(q.LocalCandidateStats, protoepdisc.NewCandidateStats(&cs))
 		}
 
 		for _, cs := range p.agent.GetRemoteCandidatesStats() {
+			cs := cs
 			q.RemoteCandidateStats = append(q.RemoteCandidateStats, protoepdisc.NewCandidateStats(&cs))
 		}
 	}
@@ -429,16 +432,16 @@ func (p *Peer) Reachability() protoepdisc.Reachability {
 		case ice.CandidateTypeServerReflexive:
 			if cp.Remote.NetworkType().IsTCP() {
 				return protoepdisc.Reachability_DIRECT_TCP
-			} else {
-				return protoepdisc.Reachability_DIRECT_UDP
 			}
+
+			return protoepdisc.Reachability_DIRECT_UDP
 
 		case ice.CandidateTypeRelay:
 			if cp.Remote.NetworkType().IsTCP() {
 				return protoepdisc.Reachability_RELAY_TCP
-			} else {
-				return protoepdisc.Reachability_RELAY_UDP
 			}
+
+			return protoepdisc.Reachability_RELAY_UDP
 		}
 	}
 

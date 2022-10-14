@@ -52,7 +52,7 @@ Once this has been done, the cunīcu logs should show a line `state=connected`.
 
 ## Authors
 
-- Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
+-    Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
 
 ## Join us
 
@@ -60,7 +60,7 @@ Please feel free to [join our Slack channel](https://join.slack.com/t/gophers/sh
 
 ## Name
 
-The project name _cunīcu_ [kʊˈniːkʊ] is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
+The project name _cunīcu_ \[kʊˈniːkʊ\] is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
 It has been changed from the former name _wice_ in order to broaden the scope of the project and avoid any potential trademark violations. 
 
 ## License

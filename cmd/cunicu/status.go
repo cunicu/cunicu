@@ -30,7 +30,7 @@ func init() {
 	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
 	pf.BoolVarP(&indent, "indent", "i", true, "Format and indent JSON ouput")
 
-	if err := daemonCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := statusCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
@@ -39,7 +39,9 @@ func init() {
 
 func statusValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// Establish RPC connection
-	rpcConnect(cmd, args)
+	if err := rpcConnect(cmd, args); err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
 	defer rpcDisconnect(cmd, args)
 
 	p := &rpcproto.GetStatusParams{}

@@ -48,7 +48,9 @@ func wgShowValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]st
 	if len(args) == 0 {
 		comps = []string{"all", "interfaces"}
 
-		rpcConnect(cmd, args)
+		if err := rpcConnect(cmd, args); err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
 		defer rpcDisconnect(cmd, args)
 
 		sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.GetStatusParams{})

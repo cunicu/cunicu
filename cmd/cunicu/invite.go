@@ -39,7 +39,10 @@ func init() {
 
 func interfaceValidArg(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// Establish RPC connection
-	rpcConnect(cmd, args)
+	if err := rpcConnect(cmd, args); err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
 	defer rpcDisconnect(cmd, args)
 
 	p := &rpcproto.GetStatusParams{}
@@ -100,11 +103,15 @@ func invite(cmd *cobra.Command, args []string) {
 
 		if qrCode {
 			buf := &bytes.Buffer{}
-			cfg.Dump(buf)
+			if err := cfg.Dump(buf); err != nil {
+				logger.Fatal("Failed to dump config", zap.Error(err))
+			}
 
 			terminal.QRCode(buf.String())
 		} else {
-			cfg.Dump(os.Stdout)
+			if err := cfg.Dump(os.Stdout); err != nil {
+				logger.Fatal("Failed to dump config", zap.Error(err))
+			}
 		}
 	}
 }

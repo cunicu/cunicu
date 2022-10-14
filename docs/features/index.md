@@ -9,11 +9,11 @@ E.g. we can use cunīcu for the post-quantum safe exchange of pre-shared keys wi
 
 Currently, the following features are implemented as separate modules:
 
-- [Auto-configuration of missing interface settings and link-local IP addresses](./autocfg.md) (`autocfg`)
-- [Config Synchronization](./cfgsync.md) (`cfgsync`)
-- [Peer Discovery](./pdisc.md) (`pdisc`)
-- [Endpoint Discovery](./epdisc.md) (`epdisc`)
-- [Hooks](./hooks.md) (`hooks`)
-- [Hosts-file Synchronization](./hsync.md) (`hsync`)
-- [Pre-shared Key Establishment](./pske.md) (`pske`)
-- [Route Synchronization](./rtsync.md) (`rtsync`)
+-   [Auto-configuration of missing interface settings and link-local IP addresses](./autocfg.md) (`autocfg`)
+-   [Config Synchronization](./cfgsync.md) (`cfgsync`)
+-   [Peer Discovery](./pdisc.md) (`pdisc`)
+-   [Endpoint Discovery](./epdisc.md) (`epdisc`)
+-   [Hooks](./hooks.md) (`hooks`)
+-   [Hosts-file Synchronization](./hsync.md) (`hsync`)
+-   [Pre-shared Key Establishment](./pske.md) (`pske`)
+-   [Route Synchronization](./rtsync.md) (`rtsync`)

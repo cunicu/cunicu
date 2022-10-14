@@ -84,7 +84,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 }
 
 func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_StreamEventsServer) {
-	s.daemon.ForEachInterface(func(di *daemon.Interface) error {
+	if err := s.daemon.ForEachInterface(func(di *daemon.Interface) error {
 		i := s.Interface(di)
 
 		for _, p := range i.Peers {
@@ -102,12 +102,14 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_St
 			if err := stream.Send(e); err == io.EOF {
 				continue
 			} else if err != nil {
-				s.logger.Error("Failed to send", zap.Error(err))
+				s.logger.Error("Failed to send connection states", zap.Error(err))
 			}
 		}
 
 		return nil
-	})
+	}); err != nil {
+		s.logger.Error("Failed to send connection states", zap.Error(err))
+	}
 }
 
 func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
