@@ -47,7 +47,8 @@ func (ac *Interface) Start() error {
 	}
 
 	// Assign auto-generated addresses
-	if pk := ac.PublicKey(); pk.IsSet() {
+	if sk := ac.PrivateKey(); sk.IsSet() {
+		pk := sk.PublicKey()
 		if err := ac.AddAddresses(pk); err != nil {
 			ac.logger.Error("Failed to add addresses", zap.Error(err))
 		}
