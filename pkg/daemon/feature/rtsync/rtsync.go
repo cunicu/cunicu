@@ -10,11 +10,7 @@ import (
 )
 
 func init() {
-	daemon.Features["rtsync"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Route synchronization",
-		Order:       30,
-	}
+	daemon.RegisterFeature("rtsync", "Route synchronization", New, 30)
 }
 
 type Interface struct {

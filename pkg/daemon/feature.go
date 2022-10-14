@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	Features = map[string]*FeaturePlugin{}
-	plugins  []*FeaturePlugin
+	features       = map[string]*FeaturePlugin{}
+	featuresSorted []*FeaturePlugin
 )
 
 type FeaturePlugin struct {
@@ -27,17 +27,25 @@ type Feature interface {
 	Close() error
 }
 
+func RegisterFeature(name, desc string, New func(i *Interface) (Feature, error), order int) {
+	features[name] = &FeaturePlugin{
+		Name:        name,
+		Description: desc,
+		New:         New,
+		Order:       order,
+	}
+}
+
 func SortedFeatures() []*FeaturePlugin {
-	if plugins == nil {
-		for name, feat := range Features {
-			feat.Name = name
-			plugins = append(plugins, feat)
+	if featuresSorted == nil {
+		for _, feat := range features {
+			featuresSorted = append(featuresSorted, feat)
 		}
 	}
 
-	slices.SortFunc(plugins, func(a, b *FeaturePlugin) bool {
+	slices.SortFunc(featuresSorted, func(a, b *FeaturePlugin) bool {
 		return a.Order < b.Order
 	})
 
-	return plugins
+	return featuresSorted
 }

@@ -23,11 +23,7 @@ import (
 )
 
 func init() {
-	daemon.Features["epdisc"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Endpoint discovery",
-		Order:       50,
-	}
+	daemon.RegisterFeature("epdisc", "Endpoint discovery", New, 50)
 }
 
 type Interface struct {

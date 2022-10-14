@@ -9,11 +9,7 @@ import (
 )
 
 func init() {
-	daemon.Features["hooks"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Hooks",
-		Order:       70,
-	}
+	daemon.RegisterFeature("hooks", "Hooks", New, 70)
 }
 
 type Hook interface {

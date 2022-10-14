@@ -18,11 +18,7 @@ import (
 )
 
 func init() {
-	daemon.Features["autocfg"] = &daemon.FeaturePlugin{
-		New:         New,
-		Description: "Auto-configuration",
-		Order:       10,
-	}
+	daemon.RegisterFeature("autocfg", "Auto configuration", New, 10)
 }
 
 type Interface struct {
