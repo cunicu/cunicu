@@ -21,7 +21,7 @@ var (
 		Short:             "Start the daemon",
 		Example:           `$ cunicu daemon -U -x mysecretpass wg0`,
 		Run:               daemonRun,
-		ValidArgsFunction: cobra.NoFileCompletions,
+		ValidArgsFunction: interfaceValidArgs,
 	}
 
 	cfg *config.Config

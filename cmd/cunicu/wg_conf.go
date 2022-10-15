@@ -17,7 +17,7 @@ var (
 
 		RunE:              wgShowConf,
 		Args:              cobra.ExactArgs(1),
-		ValidArgsFunction: interfaceValidArg,
+		ValidArgsFunction: interfaceValidArgs,
 	}
 )
 
