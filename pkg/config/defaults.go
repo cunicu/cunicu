@@ -51,12 +51,13 @@ var (
 	}
 
 	DefaultInterfaceSettings = InterfaceSettings{
-		DiscoverPeers:     true,
-		DiscoverEndpoints: true,
-		SyncConfig:        true,
-		SyncHosts:         true,
-		SyncRoutes:        true,
-		WatchRoutes:       true,
+		DiscoverPeers:          true,
+		DiscoverEndpoints:      true,
+		SyncConfig:             true,
+		SyncHosts:              true,
+		SyncRoutes:             true,
+		WatchRoutes:            true,
+		EstablishPresharedKeys: true,
 
 		ICE: ICESettings{
 			URLs:                DefaultICEURLs,

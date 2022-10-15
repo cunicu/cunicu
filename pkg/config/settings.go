@@ -117,11 +117,12 @@ type InterfaceSettings struct {
 	Peers           map[string]PeerSettings `koanf:"peers,omitempty"`
 
 	// Feature flags
-	DiscoverEndpoints bool `koanf:"discover_endpoints,omitempty"`
-	DiscoverPeers     bool `koanf:"discover_peers,omitempty"`
-	SyncConfig        bool `koanf:"sync_config,omitempty"`
-	SyncRoutes        bool `koanf:"sync_routes,omitempty"`
-	SyncHosts         bool `koanf:"sync_hosts,omitempty"`
+	DiscoverEndpoints      bool `koanf:"discover_endpoints,omitempty"`
+	DiscoverPeers          bool `koanf:"discover_peers,omitempty"`
+	SyncConfig             bool `koanf:"sync_config,omitempty"`
+	SyncRoutes             bool `koanf:"sync_routes,omitempty"`
+	SyncHosts              bool `koanf:"sync_hosts,omitempty"`
+	EstablishPresharedKeys bool `koanf:"establish_psk,omitempty"`
 
 	WatchConfig bool `koanf:"watch_config,omitempty"`
 	WatchRoutes bool `koanf:"watch_routes,omitempty"`
