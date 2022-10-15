@@ -4,15 +4,12 @@ package autocfg
 import (
 	"errors"
 	"fmt"
-	"math"
 	"net"
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -51,19 +48,6 @@ func (ac *Interface) Start() error {
 		pk := sk.PublicKey()
 		if err := ac.AddAddresses(pk); err != nil {
 			ac.logger.Error("Failed to add addresses", zap.Error(err))
-		}
-	}
-
-	// Autodetect MTU
-	// TODO: Update MTU when peers are added or their endpoints change
-	if mtu := ac.Settings.MTU; mtu == 0 {
-		var err error
-		if mtu, err = ac.DetectMTU(); err != nil {
-			ac.logger.Error("Failed to detect MTU", zap.Error(err))
-		} else {
-			if err := ac.KernelDevice.SetMTU(mtu); err != nil {
-				ac.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", ac.Settings.MTU))
-			}
 		}
 	}
 
@@ -129,36 +113,6 @@ func (ac *Interface) ConfigureWireGuard() error {
 	}
 
 	return nil
-}
-
-// DetectMTU find a suitable MTU for the tunnel interface.
-// The algorithm is the same as used by wg-quick:
-//
-//	The MTU is automatically determined from the endpoint addresses
-//	or the system default route, which is usually a sane choice.
-func (ac *Interface) DetectMTU() (mtu int, err error) {
-	mtu = math.MaxInt
-	for _, p := range ac.Peers {
-		if p.Endpoint != nil {
-			if pmtu, err := device.DetectMTU(p.Endpoint.IP, ac.FirewallMark); err != nil {
-				return -1, err
-			} else if pmtu < mtu {
-				mtu = pmtu
-			}
-		}
-	}
-
-	if mtu == math.MaxInt {
-		if mtu, err = device.DetectDefaultMTU(ac.FirewallMark); err != nil {
-			return -1, err
-		}
-	}
-
-	if mtu-wg.TunnelOverhead < wg.MinimalMTU {
-		return -1, fmt.Errorf("MTU too small: %d", mtu)
-	}
-
-	return mtu - wg.TunnelOverhead, nil
 }
 
 func (ac *Interface) RemoveAddresses(pk crypto.Key) error {

@@ -4,7 +4,7 @@ title: Auto-configuration
 
 # Auto-configuration
 
-The auto-configuration feature assigns link-local IP addresses to WireGuard interfaces as well as configures several other common settings such as MTU, IP addresses or DNS settings.
+The auto-configuration feature assigns link-local IP addresses to WireGuard interfaces as well as configures several other common settings such as IP addresses or DNS settings.
 
 ## Link local IP-addresses
 
@@ -33,4 +33,3 @@ The following settings are automatically assigned if they have not been set befo
 
 -   **Private Key:** a new random private key will be generated.
 -   **Listen port:** the next free port in the configured listen port range is used (see `wireguard.listen_port_range` setting).
--   **MTU:** is automatically determined from the endpoint addresses or the system default route.
