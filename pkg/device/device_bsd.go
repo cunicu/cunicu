@@ -195,3 +195,14 @@ func getRouteMTU(ip net.IP) (int, error) {
 
 	return strconv.Atoi(fields[6])
 }
+
+func run(args ...string) (string, error) {
+	cmd := exec.Command(args[0], args[1:]...)
+	out, err := cmd.CombinedOutput()
+	outStr := string(out)
+	if err != nil {
+		return "", fmt.Errorf("failed to run: %s\n%s", strings.Join(args, " "), outStr)
+	}
+
+	return outStr, nil
+}
