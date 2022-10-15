@@ -65,6 +65,7 @@ implementation of WireGuard in a single binary for environments
 in which WireGuard kernel support has not landed yet.`,
 
 		DisableAutoGenTag: true,
+		SilenceUsage:      true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 	}
