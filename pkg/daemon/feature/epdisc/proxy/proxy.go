@@ -1,4 +1,5 @@
-// Package proxy provides tooling for transparently proxying STUN/TURN trafic between ICE agents and kernel/userspace WireGuard interfaces
+// Package proxy provides tooling for transparently forwarding STUN/TURN traffic
+// between ICE agents and kernel/userspace WireGuard interfaces
 package proxy
 
 import (
