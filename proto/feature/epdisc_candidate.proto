@@ -53,11 +53,18 @@ enum TCPType {
     TCP_TYPE_SIMULTANEOUS_OPEN = 3;
 }
 
+enum Protocol {
+    UNKNOWN_PROTOCOL = 0;
+    UDP = 1;
+    TCP = 2;
+    TLS = 3;
+    DTLS = 4;
+}
+
 message CandidatePair {
     Candidate local = 1;
     Candidate remote = 2;
 }
-
 
 // The Related Address conveys transport addresses related to the candidate,
 // useful for diagnostics and other purposes.
@@ -93,6 +100,9 @@ message Candidate {
 
     // The related address conveys transport addresses related to the candidate, useful for diagnostics and other purposes.
     RelatedAddress related_address = 9;
+
+	// The protocol used between the endpoint and the relay server.
+	Protocol relay_protocol = 10;
 }
 
 // CandidatePairStats contains ICE candidate pair statistics
@@ -256,7 +266,7 @@ message CandidateStats {
 	// RelayProtocol is the protocol used by the endpoint to communicate with the
 	// TURN server. This is only present for local candidates. Valid values for
 	// the TURN URL protocol is one of udp, tcp, or tls.
-	string relay_protocol = 9;
+	Protocol relay_protocol = 9;
 
 	// Deleted is true if the candidate has been deleted/freed. For host candidates,
 	// this means that any network resources (typically a socket) associated with the
