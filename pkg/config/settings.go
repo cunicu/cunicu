@@ -24,6 +24,9 @@ type ICESettings struct {
 	NetworkTypes   []icex.NetworkType   `koanf:"network_types,omitempty"`
 	NAT1to1IPs     []string             `koanf:"nat_1to1_ips,omitempty"`
 
+	RelayTCP *bool `koanf:"relay_tcp,omitempty"`
+	RelayTLS *bool `koanf:"relay_tls,omitempty"`
+
 	PortRange PortRangeSettings `koanf:"port_range,omitempty"`
 
 	Lite               bool `koanf:"lite,omitempty"`
