@@ -23,10 +23,10 @@ func NewCandidate(ic ice.Candidate) *Candidate {
 		TcpType:     TCPType(ic.TCPType()),
 	}
 
-	if r := c.RelatedAddress; r != nil {
+	if r := ic.RelatedAddress(); r != nil {
 		c.RelatedAddress = &RelatedAddress{
 			Address: r.Address,
-			Port:    r.Port,
+			Port:    int32(r.Port),
 		}
 	}
 
