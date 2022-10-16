@@ -7,7 +7,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 type Proxy interface {
@@ -15,5 +15,5 @@ type Proxy interface {
 
 	UpdateCandidatePair(cp *ice.CandidatePair, conn *ice.Conn) (*net.UDPAddr, error)
 
-	Type() protoepdisc.ProxyType
+	Type() epdiscproto.ProxyType
 }

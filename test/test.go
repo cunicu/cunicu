@@ -10,7 +10,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/signaling"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
@@ -40,7 +40,7 @@ func GenerateSignalingMessage() *signaling.Message {
 	}
 
 	return &signaling.Message{
-		Candidate: &protoepdisc.Candidate{
+		Candidate: &epdiscproto.Candidate{
 			Port: int32(r.Int64()),
 		},
 	}
