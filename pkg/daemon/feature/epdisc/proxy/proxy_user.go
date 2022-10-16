@@ -11,7 +11,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/wg"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 type UserBindProxy struct {
@@ -78,6 +78,6 @@ func (p *UserBindProxy) read(conn *ice.Conn) {
 	}
 }
 
-func (p *UserBindProxy) Type() protoepdisc.ProxyType {
-	return protoepdisc.ProxyType_USER_BIND
+func (p *UserBindProxy) Type() epdiscproto.ProxyType {
+	return epdiscproto.ProxyType_USER_BIND
 }

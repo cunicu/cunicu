@@ -14,7 +14,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
@@ -94,7 +94,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_St
 				Peer:      p.Peer.PublicKey().Bytes(),
 				Event: &rpcproto.Event_PeerConnectionStateChange{
 					PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
-						NewState: protoepdisc.NewConnectionState(p.ConnectionState()),
+						NewState: epdiscproto.NewConnectionState(p.ConnectionState()),
 					},
 				},
 			}
@@ -121,8 +121,8 @@ func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, p
 
 		Event: &rpcproto.Event_PeerConnectionStateChange{
 			PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
-				NewState:  protoepdisc.NewConnectionState(new),
-				PrevState: protoepdisc.NewConnectionState(prev),
+				NewState:  epdiscproto.NewConnectionState(new),
+				PrevState: epdiscproto.NewConnectionState(prev),
 			},
 		},
 	})

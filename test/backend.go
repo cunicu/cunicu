@@ -13,7 +13,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/signaling"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 type readyHandler struct {
@@ -94,7 +94,7 @@ func (p *peer) publish(o *peer) error {
 	}
 
 	sentMsg := &signaling.Message{
-		Candidate: &protoepdisc.Candidate{
+		Candidate: &epdiscproto.Candidate{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
 			Port: int32(p.id),

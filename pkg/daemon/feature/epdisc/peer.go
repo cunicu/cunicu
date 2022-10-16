@@ -21,7 +21,7 @@ import (
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	proto "github.com/stv0g/cunicu/pkg/proto"
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 type Peer struct {
@@ -34,7 +34,7 @@ type Peer struct {
 	lastStateChange        time.Time
 	lastEndpoint           *net.UDPAddr
 	restarts               uint
-	credentials            protoepdisc.Credentials
+	credentials            epdiscproto.Credentials
 	signalingMessages      chan *signaling.Message
 	connectionStateChanges chan icex.ConnectionState
 
@@ -178,7 +178,7 @@ func (p *Peer) sendCredentials(need bool) error {
 
 func (p *Peer) sendCandidate(c ice.Candidate) error {
 	msg := &signaling.Message{
-		Candidate: protoepdisc.NewCandidate(c),
+		Candidate: epdiscproto.NewCandidate(c),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -219,7 +219,7 @@ func (p *Peer) createAgent() error {
 	acfg.UDPMuxSrflx = p.intf.udpMuxSrflx
 	acfg.LoggerFactory = log.NewPionLoggerFactory(p.logger)
 
-	p.credentials = protoepdisc.NewCredentials()
+	p.credentials = epdiscproto.NewCredentials()
 
 	acfg.LocalUfrag = p.credentials.Ufrag
 	acfg.LocalPwd = p.credentials.Pwd
@@ -274,7 +274,7 @@ func (p *Peer) resendCredentialsWithBackoff(need bool) {
 
 // isSessionRestart checks if a received offer should restart the
 // ICE session by comparing ufrag & pwd with previously used values.
-func (p *Peer) isSessionRestart(c *protoepdisc.Credentials) bool {
+func (p *Peer) isSessionRestart(c *epdiscproto.Credentials) bool {
 	ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
 	if err != nil {
 		p.logger.Error("Failed to get local credentials", zap.Error(err))
@@ -285,7 +285,7 @@ func (p *Peer) isSessionRestart(c *protoepdisc.Credentials) bool {
 	return p.ConnectionState() != ice.ConnectionStateClosed && credsChanged
 }
 
-func (p *Peer) addRemoteCandidate(c *protoepdisc.Candidate) error {
+func (p *Peer) addRemoteCandidate(c *epdiscproto.Candidate) error {
 	ic, err := c.ICECandidate()
 	if err != nil {
 		return fmt.Errorf("failed to remote candidate: %w", err)
@@ -373,11 +373,11 @@ func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
 }
 
 // Marshal marshals a description of the peer into a Protobuf description
-func (p *Peer) Marshal() *protoepdisc.Peer {
+func (p *Peer) Marshal() *epdiscproto.Peer {
 	cs := p.ConnectionState()
 
-	q := &protoepdisc.Peer{
-		State:        protoepdisc.NewConnectionState(cs),
+	q := &epdiscproto.Peer{
+		State:        epdiscproto.NewConnectionState(cs),
 		Restarts:     uint32(p.restarts),
 		Reachability: p.Reachability(),
 	}
@@ -393,25 +393,25 @@ func (p *Peer) Marshal() *protoepdisc.Peer {
 	if p.agent != nil && cs != ice.ConnectionStateClosed {
 		cp, err := p.agent.GetSelectedCandidatePair()
 		if err == nil && cp != nil {
-			q.SelectedCandidatePair = &protoepdisc.CandidatePair{
-				Local:  protoepdisc.NewCandidate(cp.Local),
-				Remote: protoepdisc.NewCandidate(cp.Remote),
+			q.SelectedCandidatePair = &epdiscproto.CandidatePair{
+				Local:  epdiscproto.NewCandidate(cp.Local),
+				Remote: epdiscproto.NewCandidate(cp.Remote),
 			}
 		}
 
 		for _, cps := range p.agent.GetCandidatePairsStats() {
 			cps := cps
-			q.CandidatePairStats = append(q.CandidatePairStats, protoepdisc.NewCandidatePairStats(&cps))
+			q.CandidatePairStats = append(q.CandidatePairStats, epdiscproto.NewCandidatePairStats(&cps))
 		}
 
 		for _, cs := range p.agent.GetLocalCandidatesStats() {
 			cs := cs
-			q.LocalCandidateStats = append(q.LocalCandidateStats, protoepdisc.NewCandidateStats(&cs))
+			q.LocalCandidateStats = append(q.LocalCandidateStats, epdiscproto.NewCandidateStats(&cs))
 		}
 
 		for _, cs := range p.agent.GetRemoteCandidatesStats() {
 			cs := cs
-			q.RemoteCandidateStats = append(q.RemoteCandidateStats, protoepdisc.NewCandidateStats(&cs))
+			q.RemoteCandidateStats = append(q.RemoteCandidateStats, epdiscproto.NewCandidateStats(&cs))
 		}
 	}
 

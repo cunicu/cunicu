@@ -19,7 +19,7 @@ import (
 	errorsx "github.com/stv0g/cunicu/pkg/errors"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 func init() {
@@ -131,16 +131,16 @@ func (e *Interface) Close() error {
 	return nil
 }
 
-func (e *Interface) Marshal() *protoepdisc.Interface {
-	is := &protoepdisc.Interface{
+func (e *Interface) Marshal() *epdiscproto.Interface {
+	is := &epdiscproto.Interface{
 		MuxPort:      uint32(e.udpMuxPort),
 		MuxSrflxPort: uint32(e.udpMuxSrflxPort),
 	}
 
 	if e.nat == nil {
-		is.NatType = protoepdisc.NATType_NAT_NONE
+		is.NatType = epdiscproto.NATType_NAT_NONE
 	} else {
-		is.NatType = protoepdisc.NATType_NAT_NFTABLES
+		is.NatType = epdiscproto.NATType_NAT_NFTABLES
 	}
 
 	return is

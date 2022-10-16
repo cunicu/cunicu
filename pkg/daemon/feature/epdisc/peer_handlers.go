@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
-	protoepdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
 // onConnectionStateChange is a callback which gets called by the ICE agent
@@ -59,7 +59,7 @@ func (p *Peer) onSelectedCandidatePairChange(local, remote ice.Candidate) {
 }
 
 // onRemoteCredentials is a handler called for each received pair of remote Ufrag/Pwd via the signaling channel
-func (p *Peer) onRemoteCredentials(c *protoepdisc.Credentials) {
+func (p *Peer) onRemoteCredentials(c *epdiscproto.Credentials) {
 	logger := p.logger.With(zap.Any("creds", c))
 	logger.Info("Received remote credentials")
 
@@ -91,7 +91,7 @@ func (p *Peer) onRemoteCredentials(c *protoepdisc.Credentials) {
 }
 
 // onRemoteCandidate is a handler called for each received candidate via the signaling channel
-func (p *Peer) onRemoteCandidate(c *protoepdisc.Candidate) {
+func (p *Peer) onRemoteCandidate(c *epdiscproto.Candidate) {
 	logger := p.logger.With(zap.Any("candidate", c))
 	logger.Debug("Received remote candidate")
 
