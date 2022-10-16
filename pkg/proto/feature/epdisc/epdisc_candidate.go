@@ -30,6 +30,10 @@ func NewCandidate(ic ice.Candidate) *Candidate {
 		}
 	}
 
+	if rc, ok := ic.(*ice.CandidateRelay); ok {
+		c.RelayProtocol = NewProtocol(rc.RelayProtocol())
+	}
+
 	return c
 }
 
@@ -82,14 +86,15 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 
 	case CandidateType_CANDIDATE_TYPE_RELAY:
 		ic, err = ice.NewCandidateRelay(&ice.CandidateRelayConfig{
-			Network:    nw.String(),
-			Address:    c.Address,
-			Port:       int(c.Port),
-			Component:  uint16(c.Component),
-			Priority:   uint32(c.Priority),
-			Foundation: c.Foundation,
-			RelAddr:    relAddr,
-			RelPort:    relPort,
+			Network:       nw.String(),
+			Address:       c.Address,
+			Port:          int(c.Port),
+			Component:     uint16(c.Component),
+			Priority:      uint32(c.Priority),
+			Foundation:    c.Foundation,
+			RelAddr:       relAddr,
+			RelPort:       relPort,
+			RelayProtocol: c.RelayProtocol.ToString(),
 		})
 
 	default:
@@ -163,7 +168,7 @@ func NewCandidateStats(cs *ice.CandidateStats) *CandidateStats {
 		CandidateType: CandidateType(cs.CandidateType),
 		Priority:      cs.Priority,
 		Url:           cs.URL,
-		RelayProtocol: cs.RelayProtocol,
+		RelayProtocol: NewProtocol(cs.RelayProtocol),
 		Deleted:       cs.Deleted,
 	}
 }
@@ -181,7 +186,17 @@ func (c *Candidate) ToString() string {
 		addr = c.Address
 	}
 
-	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(c.Type), ice.NetworkType(c.NetworkType), addr, c.Port)
+	var nt string
+	if c.Type == CandidateType_CANDIDATE_TYPE_RELAY && c.RelayProtocol != Protocol_UNKNOWN_PROTOCOL {
+		nt = fmt.Sprintf("%s->%s",
+			c.RelayProtocol.ToString(),
+			ice.NetworkType(c.NetworkType),
+		)
+	} else {
+		nt = ice.NetworkType(c.NetworkType).String()
+	}
+
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(c.Type), nt, addr, c.Port)
 }
 
 func (cs *CandidateStats) ToString() string {
@@ -193,7 +208,17 @@ func (cs *CandidateStats) ToString() string {
 		addr = cs.Ip
 	}
 
-	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(cs.CandidateType), ice.NetworkType(cs.NetworkType), addr, cs.Port)
+	var nt string
+	if cs.CandidateType == CandidateType_CANDIDATE_TYPE_RELAY && cs.RelayProtocol != Protocol_UNKNOWN_PROTOCOL {
+		nt = fmt.Sprintf("%s->%s",
+			cs.RelayProtocol.ToString(),
+			ice.NetworkType(cs.NetworkType),
+		)
+	} else {
+		nt = ice.NetworkType(cs.NetworkType).String()
+	}
+
+	return fmt.Sprintf("%s[%s, %s:%d]", ice.CandidateType(cs.CandidateType), nt, addr, cs.Port)
 }
 
 func (cs *CandidateStats) Dump(wr io.Writer) error {
