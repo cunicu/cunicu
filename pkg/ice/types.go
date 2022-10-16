@@ -10,12 +10,23 @@ type URL struct {
 	ice.URL
 }
 
-type CandidateType struct {
-	ice.CandidateType
+func (u *URL) UnmarshalText(text []byte) error {
+	up, err := ice.ParseURL(string(text))
+	if err != nil {
+		return err
+	}
+
+	u.URL = *up
+
+	return nil
 }
 
-type NetworkType struct {
-	ice.NetworkType
+func (u URL) MarshalText() ([]byte, error) {
+	return []byte(u.String()), nil
+}
+
+type CandidateType struct {
+	ice.CandidateType
 }
 
 func (t *CandidateType) UnmarshalText(text []byte) error {
@@ -44,6 +55,10 @@ func (t CandidateType) MarshalText() ([]byte, error) {
 	return []byte(t.String()), nil
 }
 
+type NetworkType struct {
+	ice.NetworkType
+}
+
 func (t *NetworkType) UnmarshalText(text []byte) error {
 	switch string(text) {
 	case "udp4":
@@ -68,21 +83,6 @@ func (t NetworkType) MarshalText() ([]byte, error) {
 	}
 
 	return []byte(t.String()), nil
-}
-
-func (u *URL) UnmarshalText(text []byte) error {
-	up, err := ice.ParseURL(string(text))
-	if err != nil {
-		return err
-	}
-
-	u.URL = *up
-
-	return nil
-}
-
-func (u URL) MarshalText() ([]byte, error) {
-	return []byte(u.String()), nil
 }
 
 const (
