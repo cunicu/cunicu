@@ -13,6 +13,7 @@ import (
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/util"
 )
 
 func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*ice.URL, error) {
@@ -114,6 +115,21 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 			if cfg.Urls, err = c.AgentURLs(ctx, peer); err != nil {
 				return nil, fmt.Errorf("failed to gather ICE URLs: %w", err)
 			}
+
+			// Filter URLs
+			cfg.Urls = util.SliceFilter(cfg.Urls, func(u *ice.URL) bool {
+				if isRelay := u.Scheme == ice.SchemeTypeTURN || u.Scheme == ice.SchemeTypeTURNS; isRelay {
+					if c.ICE.RelayTCP != nil && *c.ICE.RelayTCP && u.Proto == ice.ProtoTypeUDP {
+						return false
+					}
+
+					if c.ICE.RelayTLS != nil && *c.ICE.RelayTLS && u.Scheme == ice.SchemeTypeTURN {
+						return false
+					}
+				}
+
+				return true
+			})
 		}
 	}
 

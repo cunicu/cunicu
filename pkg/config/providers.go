@@ -41,6 +41,8 @@ var (
 		"password":           "ice.password",
 		"ice-candidate-type": "ice.candidate_types",
 		"ice-network-type":   "ice.network_types",
+		"ice-relay-tcp":      "ice.relay_tcp",
+		"ice-relay-tls":      "ice.relay_tls",
 
 		// Peer discovery
 		"community": "community",

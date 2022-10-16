@@ -100,6 +100,9 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (one of host, srflx, prflx, relay)")
 	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")
 
+	flags.Bool("ice-relay-tcp", false, "Only use TCP relays")
+	flags.Bool("ice-relay-tls", false, "Only use TLS secured relays")
+
 	// Peer discovery
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 	flags.StringP("hostname", "n", "", "A `name` which identifies this peer")
