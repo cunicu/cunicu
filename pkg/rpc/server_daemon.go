@@ -141,6 +141,7 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 				if epi != nil {
 					if epp, ok := epi.Peers[cp]; ok {
 						qp.Ice = epp.Marshal()
+						qp.Reachability = epp.Reachability()
 					}
 				}
 

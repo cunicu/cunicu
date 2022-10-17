@@ -67,6 +67,12 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 		}
 	}
 
+	if p.Reachability != ReachabilityType_REACHABILITY_TYPE_UNSPECIFIED {
+		if _, err := t.FprintKV(wri, "reachability", p.Reachability); err != nil {
+			return err
+		}
+	}
+
 	if p.LastHandshakeTimestamp != nil {
 		if _, err := t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTimestamp.Time())); err != nil {
 			return err

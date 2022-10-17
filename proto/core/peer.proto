@@ -6,6 +6,16 @@ option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
 import "common.proto";
 import "feature/epdisc.proto";
 
+enum ReachabilityType {
+    REACHABILITY_TYPE_UNSPECIFIED = 0;
+	REACHABILITY_TYPE_UNKNOWN = 1;
+	REACHABILITY_TYPE_NONE = 2;
+	REACHABILITY_TYPE_DIRECT = 3;
+	REACHABILITY_TYPE_RELAYED = 4;
+	REACHABILITY_TYPE_RELAYED_BIDIR = 5;
+	REACHABILITY_TYPE_ROUTED = 6;
+}
+
 message Peer {
     string name = 1;
 
@@ -34,4 +44,6 @@ message Peer {
     uint32 protocol_version = 12;
 
     epdisc.Peer ice = 13;
+
+    ReachabilityType reachability = 14;
 }

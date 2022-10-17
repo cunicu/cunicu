@@ -187,7 +187,7 @@ func (c *Candidate) ToString() string {
 	}
 
 	var nt string
-	if c.Type == CandidateType_CANDIDATE_TYPE_RELAY && c.RelayProtocol != Protocol_UNKNOWN_PROTOCOL {
+	if c.Type == CandidateType_CANDIDATE_TYPE_RELAY && c.RelayProtocol != RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED {
 		nt = fmt.Sprintf("%s->%s",
 			c.RelayProtocol.ToString(),
 			ice.NetworkType(c.NetworkType),
@@ -209,7 +209,7 @@ func (cs *CandidateStats) ToString() string {
 	}
 
 	var nt string
-	if cs.CandidateType == CandidateType_CANDIDATE_TYPE_RELAY && cs.RelayProtocol != Protocol_UNKNOWN_PROTOCOL {
+	if cs.CandidateType == CandidateType_CANDIDATE_TYPE_RELAY && cs.RelayProtocol != RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED {
 		nt = fmt.Sprintf("%s->%s",
 			cs.RelayProtocol.ToString(),
 			ice.NetworkType(cs.NetworkType),

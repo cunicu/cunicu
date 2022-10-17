@@ -23,15 +23,6 @@ enum ConnectionState {
 	CLOSING = 103;        // ConnectionStateClosing ICE agent is now closing
 }
 
-enum Reachability {
-    NO_REACHABILITY = 0;
-    DIRECT_UDP = 1;
-    DIRECT_TCP = 2;
-    RELAY_UDP = 3;
-    RELAY_TCP = 4;
-    ROUTED = 5;
-}
-
 enum NATType {
     NAT_NONE = 0;
     NAT_NFTABLES = 1;
@@ -74,5 +65,4 @@ message Peer {
     Timestamp last_state_change_timestamp = 9;
 
     uint32 restarts = 10;
-    Reachability reachability = 11;
 }
