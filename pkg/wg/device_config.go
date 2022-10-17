@@ -64,11 +64,25 @@ func parseCIDRs(nets []string, ip bool) ([]net.IPNet, error) {
 	for _, ne := range nets {
 		i, n, err := net.ParseCIDR(ne)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse network %s: %w", ne, err)
-		}
+			// Try parsing URL without CIDR suffix
+			i := net.ParseIP(ne)
+			if i == nil {
+				return nil, fmt.Errorf("failed to parse network %s: %w", ne, err)
+			}
 
-		if ip {
-			n.IP = i
+			n = &net.IPNet{
+				IP: i,
+			}
+
+			if isV4 := i.To4() != nil; isV4 {
+				n.Mask = net.CIDRMask(32, 32)
+			} else {
+				n.Mask = net.CIDRMask(128, 128)
+			}
+		} else {
+			if ip {
+				n.IP = i
+			}
 		}
 
 		pn = append(pn, *n)
