@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/knadh/koanf/providers/file"
@@ -134,6 +135,7 @@ func (p *RemoteFileProvider) hasChanged() (bool, error) {
 
 type LocalFileProvider struct {
 	*file.File
+	path string
 
 	order []string
 }
@@ -141,10 +143,20 @@ type LocalFileProvider struct {
 func NewLocalFileProvider(u *url.URL) *LocalFileProvider {
 	return &LocalFileProvider{
 		File: file.Provider(u.Path),
+		path: u.Path,
 	}
 }
 
 func (p *LocalFileProvider) ReadBytes() ([]byte, error) {
+	fi, err := os.Stat(p.path)
+	if err != nil {
+		return nil, err
+	}
+
+	if p := fi.Mode().Perm(); p&07 != 0 {
+		return nil, fmt.Errorf("insecure permissions on configuration file: %#o. The configuration file must not be world-readable", p)
+	}
+
 	buf, err := p.File.ReadBytes()
 
 	if err == nil {
