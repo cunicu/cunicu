@@ -58,7 +58,6 @@ func (p *wgProvider) Read() (map[string]interface{}, error) {
 		name := strings.TrimSuffix(filename, extension)
 
 		if extension != ".conf" {
-			p.logger.Warn("Ignoring non-configuration file", zap.String("config_file", cfg))
 			continue
 		}
 
@@ -133,7 +132,7 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 		s.MTU = *c.MTU
 	}
 
-	if c.Table != nil {
+	if c.Table != nil && *c.Table != "off" {
 		var err error
 
 		s.RoutingTable, err = device.Table(*c.Table)

@@ -76,8 +76,11 @@ func stringToIPNetAddrHookFunc(
 
 	// Convert it by parsing
 	ip, net, err := net.ParseCIDR(data.(string))
+	if err != nil {
+		return nil, err
+	}
 
 	net.IP = ip
 
-	return net, err
+	return net, nil
 }
