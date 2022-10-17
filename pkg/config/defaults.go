@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pion/ice/v2"
@@ -95,8 +96,6 @@ var (
 )
 
 func InitDefaults() error {
-	var err error
-
 	logger := zap.L().Named("config")
 
 	s := &DefaultSettings.DefaultInterfaceSettings
@@ -109,9 +108,13 @@ func InitDefaults() error {
 
 	// Set default hostname
 	if s.HostName == "" {
-		if s.HostName, err = os.Hostname(); err != nil {
+		hn, err := os.Hostname()
+		if err != nil {
 			return fmt.Errorf("failed to get hostname: %w", err)
 		}
+
+		// Do not use FQDN, but just the hostname part
+		s.HostName = strings.Split(hn, ".")[0]
 	}
 
 	for _, pfxStr := range DefaultPrefixes {
