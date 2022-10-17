@@ -11,6 +11,7 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/posflag"
 	"github.com/spf13/pflag"
+	"go.uber.org/zap"
 )
 
 var (
@@ -99,12 +100,11 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	if len(c.Files) == 0 {
 		searchPath := []string{"/etc", "/etc/cunicu"}
 
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get working directory")
+		if cwd, err := os.Getwd(); err != nil {
+			c.logger.Warn("Failed to get working directory", zap.Error(err))
+		} else {
+			searchPath = append(searchPath, cwd)
 		}
-
-		searchPath = append(searchPath, cwd)
 
 		if cfgDir := os.Getenv("CUNICU_CONFIG_DIR"); cfgDir != "" {
 			searchPath = append(searchPath, cfgDir)
