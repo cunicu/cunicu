@@ -21,6 +21,7 @@ import (
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	proto "github.com/stv0g/cunicu/pkg/proto"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 
@@ -377,9 +378,8 @@ func (p *Peer) Marshal() *epdiscproto.Peer {
 	cs := p.ConnectionState()
 
 	q := &epdiscproto.Peer{
-		State:        epdiscproto.NewConnectionState(cs),
-		Restarts:     uint32(p.restarts),
-		Reachability: p.Reachability(),
+		State:    epdiscproto.NewConnectionState(cs),
+		Restarts: uint32(p.restarts),
 	}
 
 	if p.proxy != nil {
@@ -418,32 +418,37 @@ func (p *Peer) Marshal() *epdiscproto.Peer {
 	return q
 }
 
-func (p *Peer) Reachability() protoepdisc.Reachability {
-	switch p.ConnectionState() {
+func (p *Peer) Reachability() coreproto.ReachabilityType {
+	cs := p.connectionState.Load()
+	switch cs {
+	case icex.ConnectionStateConnecting,
+		icex.ConnectionStateCreating,
+		icex.ConnectionStateIdle,
+		ice.ConnectionStateChecking,
+		ice.ConnectionStateNew:
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_UNKNOWN
+
+	case ice.ConnectionStateClosed,
+		ice.ConnectionStateDisconnected,
+		ice.ConnectionStateFailed:
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+
 	case ice.ConnectionStateConnected:
 		cp, err := p.agent.GetSelectedCandidatePair()
-		if err != nil {
-			return protoepdisc.Reachability_NO_REACHABILITY
+		if err != nil || cp == nil {
+			return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
 		}
 
-		switch cp.Remote.Type() {
-		case ice.CandidateTypeHost:
-			fallthrough
-		case ice.CandidateTypeServerReflexive:
-			if cp.Remote.NetworkType().IsTCP() {
-				return protoepdisc.Reachability_DIRECT_TCP
-			}
-
-			return protoepdisc.Reachability_DIRECT_UDP
-
-		case ice.CandidateTypeRelay:
-			if cp.Remote.NetworkType().IsTCP() {
-				return protoepdisc.Reachability_RELAY_TCP
-			}
-
-			return protoepdisc.Reachability_RELAY_UDP
+		lc, rc := cp.Local, cp.Remote
+		if lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay {
+			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED_BIDIR
+		} else if lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay {
+			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED
+		} else {
+			return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
 		}
+
+	default:
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
 	}
-
-	return protoepdisc.Reachability_NO_REACHABILITY
 }

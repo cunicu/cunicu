@@ -10,7 +10,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
+	t "github.com/stv0g/cunicu/pkg/util/terminal"
 
 	icex "github.com/stv0g/cunicu/pkg/ice"
 )
@@ -39,12 +39,12 @@ func NewCredentials() Credentials {
 
 func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	if verbosity > 4 {
-		if _, err := terminal.FprintKV(wr, "nat type", i.NatType); err != nil {
+		if _, err := t.FprintKV(wr, "nat type", i.NatType); err != nil {
 			return err
 		}
 
 		if i.NatType == NATType_NAT_NFTABLES {
-			if _, err := terminal.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
+			if _, err := t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
 				return err
 			}
 		}
@@ -56,32 +56,27 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 	var v string
 
-	if _, err := terminal.FprintKV(wr, "state", terminal.Mods(p.State.String(), terminal.Bold, p.State.Color())); err != nil {
-		return err
-	}
-
-	if _, err := terminal.FprintKV(wr, "reachability", p.Reachability); err != nil {
+	if _, err := t.FprintKV(wr, "state", t.Mods(p.State.String(), t.Bold, p.State.Color())); err != nil {
 		return err
 	}
 
 	if p.SelectedCandidatePair != nil {
-		if _, err := terminal.FprintKV(wr, "candidate pair", p.SelectedCandidatePair.ToString()); err != nil {
+		if _, err := t.FprintKV(wr, "candidate pair", p.SelectedCandidatePair.ToString()); err != nil {
 			return err
 		}
 	}
 
 	if verbosity > 4 {
-
-		if _, err := terminal.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
+		if _, err := t.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
 			return err
 		}
 
-		if _, err := terminal.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
+		if _, err := t.FprintKV(wr, "latest state change", util.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
 			return err
 		}
 
 		if p.Restarts > 0 {
-			if _, err := terminal.FprintKV(wr, "restarts", p.Restarts); err != nil {
+			if _, err := t.FprintKV(wr, "restarts", p.Restarts); err != nil {
 				return err
 			}
 		}
@@ -98,17 +93,17 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 				}
 			}
 
-			if _, err := terminal.FprintKV(wr, "\ncandidates"); err != nil {
+			if _, err := t.FprintKV(wr, "\ncandidates"); err != nil {
 				return err
 			}
 
-			wr := terminal.NewIndenter(wr, "  ")
-			wri := terminal.NewIndenter(wr, "  ")
+			wr := t.NewIndenter(wr, "  ")
+			wri := t.NewIndenter(wr, "  ")
 
 			if len(p.LocalCandidateStats) > 0 {
 				slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
 
-				if _, err := terminal.FprintKV(wr, "local"); err != nil {
+				if _, err := t.FprintKV(wr, "local"); err != nil {
 					return err
 				}
 
@@ -116,9 +111,9 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 					cmap[cs.Id] = i
 					v = fmt.Sprintf("l%d", i)
 					if isNominated := cs.Id == cpsNom.LocalCandidateId; isNominated {
-						v = terminal.Mods(v, terminal.FgRed)
+						v = t.Mods(v, t.FgRed)
 					}
-					if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
+					if _, err := t.FprintKV(wri, v, cs.ToString()); err != nil {
 						return err
 					}
 				}
@@ -127,7 +122,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 			if len(p.RemoteCandidateStats) > 0 {
 				slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
 
-				if _, err := terminal.FprintKV(wr, "\nremote"); err != nil {
+				if _, err := t.FprintKV(wr, "\nremote"); err != nil {
 					return err
 				}
 
@@ -135,16 +130,16 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 					cmap[cs.Id] = i
 					v = fmt.Sprintf("r%d", i)
 					if isNominated := cs.Id == cpsNom.RemoteCandidateId; isNominated {
-						v = terminal.Mods(v, terminal.FgRed)
+						v = t.Mods(v, t.FgRed)
 					}
-					if _, err := terminal.FprintKV(wri, v, cs.ToString()); err != nil {
+					if _, err := t.FprintKV(wri, v, cs.ToString()); err != nil {
 						return err
 					}
 				}
 			}
 
 			if len(p.CandidatePairStats) > 0 && verbosity > 6 {
-				if _, err := terminal.FprintKV(wr, "\npairs"); err != nil {
+				if _, err := t.FprintKV(wr, "\npairs"); err != nil {
 					return err
 				}
 
@@ -158,14 +153,14 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 
 					v = fmt.Sprintf("p%d", i)
 					if cps.Nominated {
-						v = terminal.Mods(v, terminal.FgRed)
+						v = t.Mods(v, t.FgRed)
 					}
 
 					if cps.Nominated {
 						flags = append(flags, "nominated")
 					}
 
-					if _, err := terminal.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
+					if _, err := t.FprintKV(wri, v, fmt.Sprintf("l%d <-> r%d, %s",
 						lci, rci,
 						strings.Join(flags, ", "),
 					)); err != nil {
@@ -242,30 +237,23 @@ func (s *ConnectionState) ConnectionState() icex.ConnectionState {
 func (s *ConnectionState) Color() string {
 	switch *s {
 	case ConnectionState_CHECKING:
-		return terminal.FgYellow
+		return t.FgYellow
 	case ConnectionState_CONNECTED:
-		return terminal.FgGreen
-	case ConnectionState_FAILED:
-		fallthrough
-	case ConnectionState_DISCONNECTED:
-		return terminal.FgRed
-	case ConnectionState_NEW:
-		fallthrough
-	case ConnectionState_COMPLETED:
-		fallthrough
-	case ConnectionState_CLOSED:
-		fallthrough
-	case ConnectionState_CREATING:
-		fallthrough
-	case ConnectionState_CLOSING:
-		fallthrough
-	case ConnectionState_CONNECTING:
-		fallthrough
-	case ConnectionState_IDLE:
-		return terminal.FgWhite
+		return t.FgGreen
+	case ConnectionState_FAILED,
+		ConnectionState_DISCONNECTED:
+		return t.FgRed
+	case ConnectionState_NEW,
+		ConnectionState_COMPLETED,
+		ConnectionState_CLOSED,
+		ConnectionState_CREATING,
+		ConnectionState_CLOSING,
+		ConnectionState_CONNECTING,
+		ConnectionState_IDLE:
+		return t.FgWhite
 	}
 
-	return terminal.FgDefault
+	return t.FgDefault
 }
 
 func (s *ConnectionState) MarshalText() ([]byte, error) {

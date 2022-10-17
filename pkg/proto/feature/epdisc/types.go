@@ -1,29 +1,29 @@
 package epdisc
 
-func NewProtocol(rp string) Protocol {
+func NewProtocol(rp string) RelayProtocol {
 	switch rp {
 	case "udp", "UDP":
-		return Protocol_UDP
+		return RelayProtocol_RELAY_PROTOCOL_UDP
 	case "tcp":
-		return Protocol_TCP
+		return RelayProtocol_RELAY_PROTOCOL_TCP
 	case "dtls":
-		return Protocol_DTLS
+		return RelayProtocol_RELAY_PROTOCOL_DTLS
 	case "tls":
-		return Protocol_TLS
+		return RelayProtocol_RELAY_PROTOCOL_TLS
 	}
 
-	return Protocol_UNKNOWN_PROTOCOL
+	return RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED
 }
 
-func (p Protocol) ToString() string {
+func (p RelayProtocol) ToString() string {
 	switch p {
-	case Protocol_UDP:
+	case RelayProtocol_RELAY_PROTOCOL_UDP:
 		return "udp"
-	case Protocol_TCP:
+	case RelayProtocol_RELAY_PROTOCOL_TCP:
 		return "tcp"
-	case Protocol_DTLS:
+	case RelayProtocol_RELAY_PROTOCOL_DTLS:
 		return "dtls"
-	case Protocol_TLS:
+	case RelayProtocol_RELAY_PROTOCOL_TLS:
 		return "tls"
 	}
 
