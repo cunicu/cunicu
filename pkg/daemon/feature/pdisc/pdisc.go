@@ -198,3 +198,22 @@ func (pd *Interface) isAccepted(pk crypto.Key) bool {
 
 	return true
 }
+
+func (pd *Interface) ApplyDescription(cp *core.Peer) {
+	if d, ok := pd.descs[cp.PublicKey()]; ok {
+		cp.Name = d.Name
+
+		if hosts := d.Hosts; len(hosts) > 0 {
+			cp.Hosts = map[string][]net.IP{}
+
+			for name, addrs := range hosts {
+				hs := []net.IP{}
+				for _, addr := range addrs.Addresses {
+					hs = append(hs, addr.Address())
+				}
+
+				cp.Hosts[name] = hs
+			}
+		}
+	}
+}
