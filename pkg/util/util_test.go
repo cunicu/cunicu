@@ -25,7 +25,7 @@ var _ = Context("endpoint comparisons", func() {
 			Port: 1,
 		}
 
-		Expect(util.CmpEndpoint(&a, &a)).To(BeZero())
+		Expect(util.CmpUDPAddr(&a, &a)).To(BeZero())
 	})
 
 	It("to be unequal", func() {
@@ -39,11 +39,11 @@ var _ = Context("endpoint comparisons", func() {
 			Port: 1,
 		}
 
-		Expect(util.CmpEndpoint(&a, &b)).NotTo(BeZero())
+		Expect(util.CmpUDPAddr(&a, &b)).NotTo(BeZero())
 	})
 
 	It("nil to be equal", func() {
-		Expect(util.CmpEndpoint(nil, nil)).To(BeZero())
+		Expect(util.CmpUDPAddr(nil, nil)).To(BeZero())
 	})
 
 	It("mixed nil to be unequal", func() {
@@ -52,8 +52,8 @@ var _ = Context("endpoint comparisons", func() {
 			Port: 1,
 		}
 
-		Expect(util.CmpEndpoint(&a, nil)).NotTo(BeZero())
-		Expect(util.CmpEndpoint(nil, &a)).NotTo(BeZero())
+		Expect(util.CmpUDPAddr(&a, nil)).NotTo(BeZero())
+		Expect(util.CmpUDPAddr(nil, &a)).NotTo(BeZero())
 	})
 })
 

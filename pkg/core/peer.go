@@ -234,7 +234,7 @@ func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) 
 	if new.PresharedKey != old.PresharedKey {
 		mod |= PeerModifiedPresharedKey
 	}
-	if util.CmpEndpoint(new.Endpoint, old.Endpoint) != 0 {
+	if util.CmpUDPAddr(new.Endpoint, old.Endpoint) != 0 {
 		mod |= PeerModifiedEndpoint
 	}
 	if new.PersistentKeepaliveInterval != old.PersistentKeepaliveInterval {
