@@ -132,6 +132,11 @@ func (p *Peer) OnModified(h PeerModifiedHandler) {
 
 // UpdateEndpoint sets a new endpoint for the WireGuard peer
 func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
+	// Check if update is required
+	if util.CmpUDPAddr(addr, p.Endpoint) == 0 {
+		return nil
+	}
+
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
@@ -154,6 +159,11 @@ func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
 
 // SetPresharedKey sets a new preshared key for the WireGuard peer
 func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
+	// Check if update is required
+	if *psk == p.PresharedKey() {
+		return nil
+	}
+
 	cfg := wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
@@ -175,10 +185,10 @@ func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 
 // AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
 func (p *Peer) AddAllowedIP(a net.IPNet) error {
+	// Check if AllowedIP is already configured
 	if util.SliceContains(p.AllowedIPs, func(n net.IPNet) bool {
 		return util.CmpNet(n, a) == 0
 	}) {
-		p.logger.Warn("Not adding already existing allowed IP", zap.Any("ip", a))
 		return nil
 	}
 
@@ -203,8 +213,8 @@ func (p *Peer) RemoveAllowedIP(a net.IPNet) error {
 		return util.CmpNet(a, b) != 0
 	})
 
+	// Check if AllowedIP is configured
 	if len(ips) == len(p.Peer.AllowedIPs) {
-		// Nothing removed...
 		return nil
 	}
 
