@@ -2,14 +2,16 @@ package epdisc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
 	"time"
 
-	"github.com/jpillora/backoff"
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+
+	"github.com/cenkalti/backoff/v4"
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -80,7 +82,7 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 		return nil, fmt.Errorf("failed tp setup peer. Neither NAT or Bind is configured")
 	}
 
-	if err = p.createAgent(); err != nil {
+	if err = p.createAgentWithBackoff(); err != nil {
 		return nil, fmt.Errorf("failed to create initial agent: %w", err)
 	}
 
@@ -194,6 +196,22 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 	return nil
 }
 
+func (p *Peer) createAgentWithBackoff() error {
+	bo := backoff.NewExponentialBackOff()
+	bo.MaxInterval = 1 * time.Minute
+
+	return backoff.RetryNotify(
+		func() error {
+			return p.createAgent()
+		}, bo,
+		func(err error, d time.Duration) {
+			p.logger.Error("Failed to create agent",
+				zap.Error(err),
+				zap.Duration("after", d))
+		},
+	)
+}
+
 func (p *Peer) createAgent() error {
 	var err error
 
@@ -252,25 +270,37 @@ func (p *Peer) createAgent() error {
 	}
 
 	// Send peer credentials as long as we remain in ConnectionStateIdle
-	go p.resendCredentialsWithBackoff(true)
+	go p.sendCredentialsWithBackoff(true)
 
 	return nil
 }
 
-func (p *Peer) resendCredentialsWithBackoff(need bool) {
-	bo := backoff.Backoff{
-		Factor: 1.6,
-		Min:    time.Second,
-		Max:    time.Minute,
-	}
+func (p *Peer) sendCredentialsWithBackoff(need bool) error {
+	ErrStillIdle := errors.New("not connected yet")
 
-	for p.ConnectionState() == icex.ConnectionStateIdle {
-		if err := p.sendCredentials(need); err != nil {
-			p.logger.Error("Failed to send peer credentials", zap.Error(err))
-		}
+	bo := backoff.NewExponentialBackOff()
+	bo.MaxInterval = 1 * time.Minute
 
-		time.Sleep(bo.Duration())
-	}
+	return backoff.RetryNotify(
+		func() error {
+			if err := p.sendCredentials(need); err != nil {
+				return err
+			}
+
+			if p.ConnectionState() == icex.ConnectionStateIdle {
+				return ErrStillIdle
+			}
+
+			return nil
+		}, bo,
+		func(err error, d time.Duration) {
+			if err != ErrStillIdle {
+				p.logger.Error("Failed to send peer credentials",
+					zap.Error(err),
+					zap.Duration("after", d))
+			}
+		},
+	)
 }
 
 // isSessionRestart checks if a received offer should restart the
