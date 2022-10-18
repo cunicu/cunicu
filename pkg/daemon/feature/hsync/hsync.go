@@ -53,7 +53,6 @@ func (hs *Interface) Close() error {
 }
 
 func (hs *Interface) Hosts() []Host {
-
 	d := hs.Settings.Domain
 	if d != "" && !strings.HasPrefix(d, ".") {
 		d = "." + d

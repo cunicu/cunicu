@@ -152,7 +152,7 @@ func (p *Peer) SetEndpoint(addr *net.UDPAddr) error {
 		return fmt.Errorf("failed to update peer endpoint: %w", err)
 	}
 
-	p.logger.Debug("Peer endpoint updated", zap.Any("ep", addr))
+	p.logger.Debug("Peer endpoint changed", zap.Any("ep", addr))
 
 	return nil
 }
