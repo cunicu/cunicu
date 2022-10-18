@@ -219,6 +219,11 @@ func (p *Peer) createAgent() error {
 		return fmt.Errorf("failed to create new agent if previous one is not closed")
 	}
 
+	// Reset state to closed if we error-out of this function
+	defer func() {
+		p.setConnectionStateIf(icex.ConnectionStateCreating, ice.ConnectionStateClosed)
+	}()
+
 	p.logger.Info("Creating new agent")
 
 	// Prepare ICE agent configuration
