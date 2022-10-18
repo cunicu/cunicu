@@ -3,6 +3,7 @@ module github.com/stv0g/cunicu
 go 1.19
 
 require (
+	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cilium/ebpf v0.9.3
 	github.com/dchest/siphash v1.2.3
 	github.com/fsnotify/fsnotify v1.5.4
@@ -10,7 +11,6 @@ require (
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/nftables v0.0.0-20221002140148-535f5eb8da79
 	github.com/imdario/mergo v0.3.13
-	github.com/jpillora/backoff v1.0.0
 	github.com/knadh/koanf v1.4.3
 	github.com/mdp/qrterminal/v3 v3.0.0
 	github.com/miekg/dns v1.1.50

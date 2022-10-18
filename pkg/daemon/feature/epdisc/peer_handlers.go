@@ -15,8 +15,6 @@ import (
 // onConnectionStateChange is a callback which gets called by the ICE agent
 // whenever the state of the ICE connection has changed
 func (p *Peer) onConnectionStateChange(new icex.ConnectionState) {
-	var err error
-
 	if p.ConnectionState() == icex.ConnectionStateClosing {
 		p.logger.Debug("Ignoring state transition as we are closing the session")
 		return
@@ -29,10 +27,7 @@ func (p *Peer) onConnectionStateChange(new icex.ConnectionState) {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
 	} else if new == ice.ConnectionStateClosed {
-		if err = p.createAgent(); err != nil {
-			p.logger.Error("Failed to create agent", zap.Error(err))
-			return
-		}
+		go p.createAgentWithBackoff()
 	}
 }
 
