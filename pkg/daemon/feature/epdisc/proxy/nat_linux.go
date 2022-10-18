@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"net"
@@ -28,10 +27,13 @@ type NATRule struct {
 	nat *NAT
 }
 
-func (n *NAT) AddRule(r *nftables.Rule) (*NATRule, error) {
+func (n *NAT) AddRule(r *nftables.Rule, comment string) (*NATRule, error) {
 	id := n.lastID.Add(1)
 
-	r.UserData = binaryutil.NativeEndian.PutUint32(id)
+	r.UserData = nil
+	r.UserData = NftablesUserDataPutString(r.UserData, NftablesUserDataTypeComment, comment)
+	r.UserData = NftablesUserDataPutInt(r.UserData, NftablesUserDataTypeRuleID, id)
+
 	r = n.NFConn.AddRule(r)
 
 	if err := n.NFConn.Flush(); err != nil {
@@ -44,7 +46,8 @@ func (n *NAT) AddRule(r *nftables.Rule) (*NATRule, error) {
 	}
 
 	for _, nr := range rs {
-		if bytes.Equal(nr.UserData, r.UserData) {
+		rid, ok := NftablesUserDataGetInt(nr.UserData, NftablesUserDataTypeRuleID)
+		if ok && rid == id {
 			r.Handle = nr.Handle
 			break
 		}
@@ -177,7 +180,8 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
 		},
 	}
 
-	return n.AddRule(r)
+	comment := fmt.Sprintf("UDP destination port forwarding of non-STUN traffic from port %d to port %d", origPort, newPort)
+	return n.AddRule(r, comment)
 }
 
 // Perform SNAT to the source port of WireGuard UDP traffic to match port of our local ICE candidate
@@ -269,5 +273,6 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 		},
 	}
 
-	return n.AddRule(r)
+	comment := fmt.Sprintf("UDP source port masquerade from port %d to %d for destination %s", fromPort, toPort, dest)
+	return n.AddRule(r, comment)
 }
