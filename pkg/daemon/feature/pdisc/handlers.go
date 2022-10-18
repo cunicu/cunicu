@@ -2,11 +2,11 @@ package pdisc
 
 import (
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon/feature/hsync"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -118,6 +118,16 @@ func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 			if err := pd.UpdatePeer(&cfg); err != nil {
 				return fmt.Errorf("failed to remove peer: %w", err)
 			}
+
+			pd.ApplyDescription(cp)
+
+			// Update hostname if it has been changed
+			if f, ok := pd.Features["hsync"]; ok {
+				hs := f.(*hsync.Interface)
+				if err := hs.Sync(); err != nil {
+					return fmt.Errorf("failed to sync hosts: %w", err)
+				}
+			}
 		}
 
 	case pdiscproto.PeerDescriptionChange_PEER_REMOVE:
@@ -140,22 +150,7 @@ func (pd *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 }
 
 func (pd *Interface) OnPeerAdded(p *core.Peer) {
-	if d, ok := pd.descs[p.PublicKey()]; ok {
-		p.Name = d.Name
-
-		if hosts := d.Hosts; len(hosts) > 0 {
-			p.Hosts = map[string][]net.IP{}
-
-			for name, addrs := range hosts {
-				hs := []net.IP{}
-				for _, addr := range addrs.Addresses {
-					hs = append(hs, addr.Address())
-				}
-
-				p.Hosts[name] = hs
-			}
-		}
-	}
+	pd.ApplyDescription(p)
 }
 
 func (pd *Interface) OnPeerRemoved(p *core.Peer) {}
