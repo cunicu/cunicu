@@ -362,7 +362,7 @@ func (p *Peer) connect(ufrag, pwd string) error {
 		return fmt.Errorf("failed to update proxy: %w", err)
 	}
 
-	if err := p.UpdateEndpoint(ep); err != nil {
+	if err := p.SetEndpoint(ep); err != nil {
 		return fmt.Errorf("failed to update endpoint: %w", err)
 	}
 

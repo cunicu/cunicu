@@ -130,8 +130,8 @@ func (p *Peer) OnModified(h PeerModifiedHandler) {
 	p.onModified = append(p.onModified, h)
 }
 
-// UpdateEndpoint sets a new endpoint for the WireGuard peer
-func (p *Peer) UpdateEndpoint(addr *net.UDPAddr) error {
+// SetEndpoint sets a new endpoint for the WireGuard peer
+func (p *Peer) SetEndpoint(addr *net.UDPAddr) error {
 	// Check if update is required
 	if util.CmpUDPAddr(addr, p.Endpoint) == 0 {
 		return nil
