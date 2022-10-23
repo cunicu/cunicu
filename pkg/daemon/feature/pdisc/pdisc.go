@@ -65,45 +65,45 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return pd, nil
 }
 
-func (pd *Interface) Start() error {
-	pd.logger.Info("Started peer discovery")
+func (i *Interface) Start() error {
+	i.logger.Info("Started peer discovery")
 
 	// Subscribe to peer updates
 	kp := &crypto.KeyPair{
-		Ours:   crypto.Key(pd.Settings.Community),
+		Ours:   crypto.Key(i.Settings.Community),
 		Theirs: signaling.AnyKey,
 	}
-	if _, err := pd.Daemon.Backend.Subscribe(context.Background(), kp, pd); err != nil {
+	if _, err := i.Daemon.Backend.Subscribe(context.Background(), kp, i); err != nil {
 		return fmt.Errorf("failed to subscribe on peer discovery channel: %w", err)
 	}
 
 	return nil
 }
 
-func (pd *Interface) Close() error {
-	if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_REMOVE, nil); err != nil {
-		pd.logger.Error("Failed to send peer description", zap.Error(err))
+func (i *Interface) Close() error {
+	if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_REMOVE, nil); err != nil {
+		i.logger.Error("Failed to send peer description", zap.Error(err))
 	}
 
 	return nil
 }
 
-func (pd *Interface) Description(cp *core.Peer) *pdiscproto.PeerDescription {
-	if d, ok := pd.descs[cp.PublicKey()]; ok {
+func (i *Interface) Description(cp *core.Peer) *pdiscproto.PeerDescription {
+	if d, ok := i.descs[cp.PublicKey()]; ok {
 		return d
 	}
 
 	return nil
 }
 
-func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pkOld *crypto.Key) error {
-	pk := pd.PublicKey()
+func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pkOld *crypto.Key) error {
+	pk := i.PublicKey()
 
 	// Gather all allowed IPs for this interface
 	allowedIPs := []*net.IPNet{}
 
 	// Static addresses
-	for _, addr := range pd.Settings.Addresses {
+	for _, addr := range i.Settings.Addresses {
 		addr := addr
 
 		_, bits := addr.Mask.Size()
@@ -113,7 +113,7 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	}
 
 	// Auto-generated prefixes
-	for _, pfx := range pd.Settings.Prefixes {
+	for _, pfx := range i.Settings.Prefixes {
 		pfx := pfx
 
 		addr := pk.IPAddress(pfx)
@@ -125,19 +125,21 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	}
 
 	// Other networks
-	for _, netw := range pd.Settings.Networks {
+	for _, netw := range i.Settings.Networks {
+		netw := netw
+
 		allowedIPs = append(allowedIPs, &netw)
 	}
 
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
-		Name:       pd.Settings.HostName,
+		Name:       i.Settings.HostName,
 		AllowedIps: util.SliceString(allowedIPs),
 		BuildInfo:  buildinfo.BuildInfo(),
 		Hosts:      map[string]*pdiscproto.PeerAddresses{},
 	}
 
-	for name, addrs := range pd.Settings.ExtraHosts {
+	for name, addrs := range i.Settings.ExtraHosts {
 		daddrs := []*proto.IPAddress{}
 
 		for _, addr := range addrs {
@@ -150,9 +152,9 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 		}
 	}
 
-	if name := pd.Settings.HostName; name != "" {
+	if name := i.Settings.HostName; name != "" {
 		daddrs := []*proto.IPAddress{}
-		for _, pfx := range pd.Settings.Prefixes {
+		for _, pfx := range i.Settings.Prefixes {
 			addr := pk.IPAddress(pfx)
 			daddrs = append(daddrs, proto.Address(addr.IP))
 		}
@@ -167,10 +169,10 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 			return fmt.Errorf("can not change public key in non-update message")
 		}
 
-		d.PublicKeyNew = pd.PublicKey().Bytes()
+		d.PublicKeyNew = i.PublicKey().Bytes()
 		d.PublicKey = pkOld.Bytes()
 	} else {
-		d.PublicKey = pd.PublicKey().Bytes()
+		d.PublicKey = i.PublicKey().Bytes()
 	}
 
 	msg := &signaling.Message{
@@ -178,29 +180,29 @@ func (pd *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, p
 	}
 
 	kp := &crypto.KeyPair{
-		Ours:   pd.PrivateKey(),
-		Theirs: crypto.Key(pd.Settings.Community).PublicKey(),
+		Ours:   i.PrivateKey(),
+		Theirs: crypto.Key(i.Settings.Community).PublicKey(),
 	}
 
-	if err := pd.Daemon.Backend.Publish(context.Background(), kp, msg); err != nil {
+	if err := i.Daemon.Backend.Publish(context.Background(), kp, msg); err != nil {
 		return err
 	}
 
-	pd.logger.Debug("Send peer description", zap.Any("description", d))
+	i.logger.Debug("Send peer description", zap.Any("description", d))
 
 	return nil
 }
 
-func (pd *Interface) isAccepted(pk crypto.Key) bool {
-	if verdict, ok := pd.filter[pk]; ok {
+func (i *Interface) isAccepted(pk crypto.Key) bool {
+	if verdict, ok := i.filter[pk]; ok {
 		return verdict
 	}
 
 	return true
 }
 
-func (pd *Interface) ApplyDescription(cp *core.Peer) {
-	if d, ok := pd.descs[cp.PublicKey()]; ok {
+func (i *Interface) ApplyDescription(cp *core.Peer) {
+	if d, ok := i.descs[cp.PublicKey()]; ok {
 		cp.Name = d.Name
 
 		if hosts := d.Hosts; len(hosts) > 0 {

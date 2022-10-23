@@ -57,19 +57,19 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return h, nil
 }
 
-func (h *Interface) Start() error {
-	h.logger.Info("Started hooks")
+func (i *Interface) Start() error {
+	i.logger.Info("Started hooks")
 
-	for _, hk := range h.hooks {
-		hk.OnInterfaceAdded(h.Interface.Interface)
+	for _, hk := range i.hooks {
+		hk.OnInterfaceAdded(i.Interface.Interface)
 	}
 
 	return nil
 }
 
-func (h *Interface) Close() error {
-	for _, hk := range h.hooks {
-		hk.OnInterfaceRemoved(h.Interface.Interface)
+func (i *Interface) Close() error {
+	for _, hk := range i.hooks {
+		hk.OnInterfaceRemoved(i.Interface.Interface)
 	}
 
 	return nil

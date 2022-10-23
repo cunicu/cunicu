@@ -87,12 +87,12 @@ type Provider struct {
 func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	ps := []koanf.Provider{
 		NewStructsProvider(&DefaultSettings, "koanf"),
-		WireGuardProvider(),
+		NewWireGuardProvider(),
 	}
 
 	// Load settings from DNS lookups
 	for _, domain := range c.Domains {
-		p := LookupProvider(domain)
+		p := NewLookupProvider(domain)
 		ps = append(ps, p)
 	}
 

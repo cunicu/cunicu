@@ -327,19 +327,19 @@ func (p *Peer) Marshal() *coreproto.Peer {
 func (p *Peer) Reachability() coreproto.ReachabilityType {
 	if p.Endpoint == nil {
 		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
-	} else {
-		now := time.Now()
-		lastActivity := p.LastReceiveTime
-		if p.LastTransmitTime.After(lastActivity) {
-			lastActivity = p.LastTransmitTime
-		}
+	}
 
-		if p.LastHandshakeTime.After(now.Add(-2 * time.Minute)) {
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
-		} else if lastActivity.After(p.LastHandshakeTime) {
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
-		} else {
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_UNKNOWN
-		}
+	now := time.Now()
+	lastActivity := p.LastReceiveTime
+	if p.LastTransmitTime.After(lastActivity) {
+		lastActivity = p.LastTransmitTime
+	}
+
+	if p.LastHandshakeTime.After(now.Add(-2 * time.Minute)) {
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
+	} else if lastActivity.After(p.LastHandshakeTime) {
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+	} else {
+		return coreproto.ReachabilityType_REACHABILITY_TYPE_UNKNOWN
 	}
 }

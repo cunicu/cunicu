@@ -7,14 +7,14 @@ import (
 	"github.com/stv0g/cunicu/pkg/errors"
 )
 
-func (s *Interface) removeKernel(p *core.Peer) error {
+func (i *Interface) removeKernel(p *core.Peer) error {
 	return errors.ErrNotSupported
 }
 
-func (s *Interface) syncKernel() error {
+func (i *Interface) syncKernel() error {
 	return errors.ErrNotSupported
 }
 
-func (s *Interface) watchKernel() error {
+func (i *Interface) watchKernel() error {
 	return errors.ErrNotSupported
 }

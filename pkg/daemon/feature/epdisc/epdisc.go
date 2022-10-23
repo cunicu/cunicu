@@ -96,48 +96,48 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return e, nil
 }
 
-func (e *Interface) Start() error {
-	e.logger.Info("Started endpoint discovery")
+func (i *Interface) Start() error {
+	i.logger.Info("Started endpoint discovery")
 
 	return nil
 }
 
-func (e *Interface) Close() error {
+func (i *Interface) Close() error {
 	// First switch all sessions to closing so they do not get restarted
-	for _, p := range e.Peers {
+	for _, p := range i.Peers {
 		p.setConnectionState(icex.ConnectionStateClosing)
 	}
 
-	for _, p := range e.Peers {
+	for _, p := range i.Peers {
 		if err := p.Close(); err != nil {
 			return fmt.Errorf("failed to close peer: %w", err)
 		}
 	}
 
-	if e.nat != nil {
-		if err := e.nat.Close(); err != nil {
+	if i.nat != nil {
+		if err := i.nat.Close(); err != nil {
 			return fmt.Errorf("failed to de-initialize NAT: %w", err)
 		}
 	}
 
-	if err := e.udpMux.Close(); err != nil {
+	if err := i.udpMux.Close(); err != nil {
 		return fmt.Errorf("failed to do-initialize UDP mux: %w", err)
 	}
 
-	if err := e.udpMuxSrflx.Close(); err != nil {
+	if err := i.udpMuxSrflx.Close(); err != nil {
 		return fmt.Errorf("failed to do-initialize srflx UDP mux: %w", err)
 	}
 
 	return nil
 }
 
-func (e *Interface) Marshal() *epdiscproto.Interface {
+func (i *Interface) Marshal() *epdiscproto.Interface {
 	is := &epdiscproto.Interface{
-		MuxPort:      uint32(e.udpMuxPort),
-		MuxSrflxPort: uint32(e.udpMuxSrflxPort),
+		MuxPort:      uint32(i.udpMuxPort),
+		MuxSrflxPort: uint32(i.udpMuxSrflxPort),
 	}
 
-	if e.nat == nil {
+	if i.nat == nil {
 		is.NatType = epdiscproto.NATType_NAT_NONE
 	} else {
 		is.NatType = epdiscproto.NATType_NAT_NFTABLES
@@ -146,57 +146,57 @@ func (e *Interface) Marshal() *epdiscproto.Interface {
 	return is
 }
 
-func (e *Interface) UpdateRedirects() error {
+func (i *Interface) UpdateRedirects() error {
 	// Userspace devices need no redirects
-	if e.nat == nil {
+	if i.nat == nil {
 		return nil
 	}
 
 	// Delete old rules if present
-	if e.natRule != nil {
-		if err := e.natRule.Delete(); err != nil {
+	if i.natRule != nil {
+		if err := i.natRule.Delete(); err != nil {
 			return fmt.Errorf("failed to delete rule: %w", err)
 		}
 	}
 
-	if e.natRuleSrflx != nil {
-		if err := e.natRuleSrflx.Delete(); err != nil {
+	if i.natRuleSrflx != nil {
+		if err := i.natRuleSrflx.Delete(); err != nil {
 			return fmt.Errorf("failed to delete rule: %w", err)
 		}
 	}
 
-	return e.SetupRedirects()
+	return i.SetupRedirects()
 }
 
-func (e *Interface) SetupRedirects() error {
+func (i *Interface) SetupRedirects() error {
 	var err error
 
 	// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
-	if e.natRule, err = e.nat.RedirectNonSTUN(e.udpMuxPort, e.ListenPort); err != nil {
+	if i.natRule, err = i.nat.RedirectNonSTUN(i.udpMuxPort, i.ListenPort); err != nil {
 		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 	}
 
-	if e.natRuleSrflx, err = e.nat.RedirectNonSTUN(e.udpMuxSrflxPort, e.ListenPort); err != nil {
+	if i.natRuleSrflx, err = i.nat.RedirectNonSTUN(i.udpMuxSrflxPort, i.ListenPort); err != nil {
 		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
 	}
 
 	return nil
 }
 
-func (e *Interface) PeerByPublicKey(pk crypto.Key) *Peer {
-	if cp, ok := e.Interface.Peers[pk]; ok {
-		return e.Peers[cp]
+func (i *Interface) PeerByPublicKey(pk crypto.Key) *Peer {
+	if cp, ok := i.Interface.Peers[pk]; ok {
+		return i.Peers[cp]
 	}
 
 	return nil
 }
 
 // Endpoint returns the best guess about our own endpoint
-func (e *Interface) Endpoint() (*net.UDPAddr, error) {
+func (i *Interface) Endpoint() (*net.UDPAddr, error) {
 	var ep *net.UDPAddr
 	var bestPrio uint32
 
-	for _, p := range e.Peers {
+	for _, p := range i.Peers {
 		cs, err := p.agent.GetLocalCandidates()
 		if err != nil {
 			return nil, err
@@ -251,7 +251,7 @@ func (e *Interface) Endpoint() (*net.UDPAddr, error) {
 
 		ep = &net.UDPAddr{
 			IP:   ip,
-			Port: e.ListenPort,
+			Port: i.ListenPort,
 		}
 	}
 

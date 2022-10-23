@@ -42,25 +42,25 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return hs, nil
 }
 
-func (hs *Interface) Start() error {
-	hs.logger.Info("Started /etc/hosts synchronization")
+func (i *Interface) Start() error {
+	i.logger.Info("Started /etc/hosts synchronization")
 
 	return nil
 }
 
-func (hs *Interface) Close() error {
-	return hs.Update(nil)
+func (i *Interface) Close() error {
+	return i.Update(nil)
 }
 
-func (hs *Interface) Hosts() []Host {
-	d := hs.Settings.Domain
+func (i *Interface) Hosts() []Host {
+	d := i.Settings.Domain
 	if d != "" && !strings.HasPrefix(d, ".") {
 		d = "." + d
 	}
 
 	hosts := []Host{}
 
-	for _, p := range hs.Peers {
+	for _, p := range i.Peers {
 		m := map[netip.Addr][]string{}
 
 		for name, addrs := range p.Hosts {
@@ -92,7 +92,7 @@ func (hs *Interface) Hosts() []Host {
 	return hosts
 }
 
-func (hs *Interface) Update(hosts []Host) error {
+func (i *Interface) Update(hosts []Host) error {
 	lines, err := readLines(hostsPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -101,7 +101,7 @@ func (hs *Interface) Update(hosts []Host) error {
 	// Filter out lines not added by cunīcu
 	lines = util.SliceFilter(lines, func(line string) bool {
 		h, err := ParseHost(line)
-		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", hs.KernelDevice.Index()))
+		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", i.KernelDevice.Index()))
 	})
 
 	// Add new hosts
@@ -121,13 +121,13 @@ func (hs *Interface) Update(hosts []Host) error {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
-	hs.logger.Info("Updated hosts file", zap.Int("num_hosts", len(hosts)))
+	i.logger.Info("Updated hosts file", zap.Int("num_hosts", len(hosts)))
 
 	return nil
 }
 
-func (hs *Interface) Sync() error {
-	hosts := hs.Hosts()
+func (i *Interface) Sync() error {
+	hosts := i.Hosts()
 
-	return hs.Update(hosts)
+	return i.Update(hosts)
 }

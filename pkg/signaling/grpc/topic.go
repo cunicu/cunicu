@@ -9,11 +9,11 @@ import (
 )
 
 type topicRegistry struct {
-	topics     map[crypto.Key]*topic
+	topics     map[crypto.Key]*Topic
 	topicsLock sync.Mutex
 }
 
-func (r *topicRegistry) getTopic(pk *crypto.Key) *topic {
+func (r *topicRegistry) getTopic(pk *crypto.Key) *Topic {
 	r.topicsLock.Lock()
 	defer r.topicsLock.Unlock()
 
@@ -40,30 +40,30 @@ func (r *topicRegistry) Close() error {
 	return nil
 }
 
-type topic struct {
+type Topic struct {
 	subs *util.FanOut[*signaling.Envelope]
 }
 
-func NewTopic() *topic {
-	t := &topic{
+func NewTopic() *Topic {
+	t := &Topic{
 		subs: util.NewFanOut[*signaling.Envelope](128),
 	}
 
 	return t
 }
 
-func (t *topic) Publish(env *signaling.Envelope) {
+func (t *Topic) Publish(env *signaling.Envelope) {
 	t.subs.Send(env)
 }
 
-func (t *topic) Subscribe() chan *signaling.Envelope {
+func (t *Topic) Subscribe() chan *signaling.Envelope {
 	return t.subs.Add()
 }
 
-func (t *topic) Unsubscribe(ch chan *signaling.Envelope) {
+func (t *Topic) Unsubscribe(ch chan *signaling.Envelope) {
 	t.subs.Remove(ch)
 }
 
-func (t *topic) Close() {
+func (t *Topic) Close() {
 	t.subs.Close()
 }

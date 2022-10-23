@@ -18,26 +18,26 @@ import (
 	errorsx "github.com/stv0g/cunicu/pkg/errors"
 )
 
-type wgProvider struct {
+type WireGuardProvider struct {
 	path   string
 	order  []string
 	logger *zap.Logger
 }
 
-func WireGuardProvider() *wgProvider {
+func NewWireGuardProvider() *WireGuardProvider {
 	path := os.Getenv("WG_CONFIG_PATH")
 	if path == "" {
 		path = wg.ConfigPath
 	}
 
-	return &wgProvider{
+	return &WireGuardProvider{
 		path: path,
 
 		logger: zap.L().Named("config.wg"),
 	}
 }
 
-func (p *wgProvider) Read() (map[string]interface{}, error) {
+func (p *WireGuardProvider) Read() (map[string]interface{}, error) {
 	m := map[string]any{}
 
 	des, err := os.ReadDir(p.path)
@@ -61,6 +61,7 @@ func (p *wgProvider) Read() (map[string]interface{}, error) {
 			continue
 		}
 
+		//#nosec G304 -- Filename is only controlled by user
 		cfgData, err := os.ReadFile(cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open config file %s: %w", cfg, err)
@@ -81,11 +82,11 @@ func (p *wgProvider) Read() (map[string]interface{}, error) {
 	}, nil
 }
 
-func (p *wgProvider) ReadBytes() ([]byte, error) {
+func (p *WireGuardProvider) ReadBytes() ([]byte, error) {
 	return nil, errors.New("this provider does not support parsers")
 }
 
-func (p *wgProvider) Order() []string {
+func (p *WireGuardProvider) Order() []string {
 	slices.Sort(p.order)
 
 	return p.order

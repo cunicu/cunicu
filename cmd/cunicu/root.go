@@ -101,7 +101,10 @@ func init() {
 	}
 
 	flagName := "output"
-	daemonCmd.MarkFlagFilename(flagName, "yaml", "json")
+
+	if err := daemonCmd.MarkFlagFilename(flagName, "yaml", "json"); err != nil {
+		panic(err)
+	}
 }
 
 func onInitialize() {

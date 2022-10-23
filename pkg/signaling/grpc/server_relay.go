@@ -3,6 +3,8 @@ package grpc
 import (
 	"context"
 	"crypto/hmac"
+
+	//#nosec G501 -- SHA1 is required by TURN REST API
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"

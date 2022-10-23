@@ -251,11 +251,12 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 
 	for key, value := range s.Config.All() {
 		if match(key) {
-			if str, err := settingToString(value); err != nil {
+			str, err := settingToString(value)
+			if err != nil {
 				return nil, status.Errorf(codes.Internal, "Failed to marshal: %s", err)
-			} else {
-				settings[key] = str
 			}
+
+			settings[key] = str
 		}
 	}
 

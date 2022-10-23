@@ -19,22 +19,22 @@ type OnConnectionStateHandler interface {
 	OnConnectionStateChange(p *Peer, new, prev icex.ConnectionState)
 }
 
-func (e *Interface) OnConnectionStateChange(h OnConnectionStateHandler) {
-	e.onConnectionStateChange = append(e.onConnectionStateChange, h)
+func (i *Interface) OnConnectionStateChange(h OnConnectionStateHandler) {
+	i.onConnectionStateChange = append(i.onConnectionStateChange, h)
 }
 
-func (e *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+func (i *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m core.InterfaceModifier) {
 	if m.Is(core.InterfaceModifiedListenPort) {
-		if err := e.UpdateRedirects(); err != nil {
-			e.logger.Error("Failed to update DPAT redirects", zap.Error(err))
+		if err := i.UpdateRedirects(); err != nil {
+			i.logger.Error("Failed to update DPAT redirects", zap.Error(err))
 		}
 	}
 
-	for _, p := range e.Peers {
+	for _, p := range i.Peers {
 		if m.Is(core.InterfaceModifiedListenPort) {
 			if kproxy, ok := p.proxy.(*proxy.KernelProxy); ok {
 				if err := kproxy.UpdateListenPort(ci.ListenPort); err != nil {
-					e.logger.Error("Failed to update SPAT redirect", zap.Error(err))
+					i.logger.Error("Failed to update SPAT redirect", zap.Error(err))
 				}
 			}
 		}
@@ -42,37 +42,37 @@ func (e *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m co
 		if m.Is(core.InterfaceModifiedPrivateKey) {
 			skOld := crypto.Key(old.PrivateKey)
 			if err := p.Resubscribe(context.Background(), skOld); err != nil {
-				e.logger.Error("Failed to update subscription", zap.Error(err))
+				i.logger.Error("Failed to update subscription", zap.Error(err))
 			}
 		}
 	}
 }
 
-func (e *Interface) OnPeerAdded(cp *core.Peer) {
-	p, err := NewPeer(cp, e)
+func (i *Interface) OnPeerAdded(cp *core.Peer) {
+	p, err := NewPeer(cp, i)
 	if err != nil {
-		e.logger.Error("Failed to initialize ICE peer", zap.Error(err))
+		i.logger.Error("Failed to initialize ICE peer", zap.Error(err))
 		return
 	}
 
-	e.Peers[cp] = p
+	i.Peers[cp] = p
 }
 
-func (e *Interface) OnPeerRemoved(cp *core.Peer) {
-	p, ok := e.Peers[cp]
+func (i *Interface) OnPeerRemoved(cp *core.Peer) {
+	p, ok := i.Peers[cp]
 	if !ok {
 		return
 	}
 
 	if err := p.Close(); err != nil {
-		e.logger.Error("Failed to de-initialize ICE peer", zap.Error(err))
+		i.logger.Error("Failed to de-initialize ICE peer", zap.Error(err))
 	}
 
-	delete(e.Peers, cp)
+	delete(i.Peers, cp)
 }
 
-func (e *Interface) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
-	p := e.Peers[cp]
+func (i *Interface) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+	p := i.Peers[cp]
 
 	if m.Is(core.PeerModifiedEndpoint) {
 		// Check if change was external
@@ -80,7 +80,7 @@ func (e *Interface) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.Peer
 		epExpected := p.lastEndpoint
 
 		if (epExpected != nil && epNew != nil) && (!epNew.IP.Equal(epExpected.IP) || epNew.Port != epExpected.Port) {
-			e.logger.Warn("Endpoint address has been changed externally. This is breaks the connection and is most likely not desired.")
+			i.logger.Warn("Endpoint address has been changed externally. This is breaks the connection and is most likely not desired.")
 		}
 	}
 }
