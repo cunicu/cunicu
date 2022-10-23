@@ -98,7 +98,7 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 			}
 
 		case epdiscproto.ProxyType_KERNEL_CONN:
-			// We cant to anything for prfx and relay candidates.
+			// We ca not do anything for prfx and relay candidates.
 			// Let them pass through the userspace connection
 
 			var create = false
@@ -115,9 +115,10 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 				if newConnUser, err = p.newUserConn(newConnICE); err != nil {
 					return fmt.Errorf("failed to setup user connection: %w", err)
 				}
-				p.logger.Info("Setup user-space proxy connection",
-					zap.Any("localAddress", newConnUser.LocalAddr()),
-					zap.Any("remoteAddress", newConnUser.RemoteAddr()))
+
+				p.logger.Info("Created user-space proxy connection",
+					zap.Any("local", newConnUser.LocalAddr()),
+					zap.Any("remote", newConnUser.RemoteAddr()))
 			}
 
 			// Start copying if the underlying ice.Conn has changed
