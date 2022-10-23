@@ -1,38 +1,38 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
-const math = require('remark-math');
-const katex = require('rehype-katex');
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+const math = require("remark-math");
+const katex = require("rehype-katex");
 
 async function createConfig() {
-  const mdxMermaid = await import('mdx-mermaid')
+  const mdxMermaid = await import("mdx-mermaid");
 
-  /** @type {import('@docusaurus/types').Config} */
+  /** @type {import("@docusaurus/types").Config} */
   return {
-    title: 'cunīcu',
-    tagline: 'zeroconf • p2p • mesh • vpn',
-    url: 'https://cunicu.li',
-    baseUrl: '/',
-    onBrokenLinks: 'throw',
-    onBrokenMarkdownLinks: 'warn',
-    favicon: 'img/favicon.png',
+    title: "cunīcu",
+    tagline: "zeroconf • p2p • mesh • vpn",
+    url: "https://cunicu.li",
+    baseUrl: "/",
+    onBrokenLinks: "throw",
+    onBrokenMarkdownLinks: "warn",
+    favicon: "img/favicon.png",
     trailingSlash: false,
 
     stylesheets: [
       {
-        href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
-        type: 'text/css',
+        href: "https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css",
+        type: "text/css",
         integrity:
-          'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
-        crossorigin: 'anonymous',
+          "sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM",
+        crossorigin: "anonymous",
       },
     ],
 
     plugins: [
       [
-        require.resolve('@cmfcmf/docusaurus-search-local'),
+        require.resolve("@cmfcmf/docusaurus-search-local"),
         {
           
         }
@@ -47,7 +47,7 @@ async function createConfig() {
       ],
       function (context, options) {
         return {
-          name: 'webpack-configuration-plugin',
+          name: "webpack-configuration-plugin",
           configureWebpack(config, isServer, utils) {
             return {
               resolve: {
@@ -60,27 +60,27 @@ async function createConfig() {
     ],
 
     // GitHub pages deployment config.
-    // If you aren't using GitHub pages, you don't need these.
-    organizationName: 'stv0g', // Usually your GitHub org/user name.
-    projectName: 'cunicu', // Usually your repo name.
+    // If you aren"t using GitHub pages, you don't need these.
+    organizationName: "stv0g", // Usually your GitHub org/user name.
+    projectName: "cunicu", // Usually your repo name.
 
-    // Even if you don't use internalization, you can use this field to set useful
+    // Even if you don"t use internalization, you can use this field to set useful
     // metadata like html lang. For example, if your site is Chinese, you may want
     // to replace "en" with "zh-Hans".
     i18n: {
-      defaultLocale: 'en',
-      locales: ['en'],
+      defaultLocale: "en",
+      locales: ["en"],
     },
 
     presets: [
       [
-        'classic',
-        /** @type {import('@docusaurus/preset-classic').Options} */
+        "classic",
+        /** @type {import("@docusaurus/preset-classic").Options} */
         ({
           docs: {
-            sidebarPath: require.resolve('./sidebars.js'),
+            sidebarPath: require.resolve("./sidebars.js"),
             editUrl:
-              'https://github.com/stv0g/cunicu/edit/master/',
+              "https://github.com/stv0g/cunicu/edit/master/",
             remarkPlugins: [
               mdxMermaid.default,
               math
@@ -94,77 +94,81 @@ async function createConfig() {
             // Please change this to your repo.
             // Remove this to remove the "edit this page" links.
             editUrl:
-              'https://github.com/stv0g/cunicu/master/website',
+              "https://github.com/stv0g/cunicu/master/website",
           },
           theme: {
-            customCss: require.resolve('./src/css/custom.css'),
+            customCss: require.resolve("./src/css/custom.css"),
           },
         }),
       ],
     ],
 
     themeConfig:
-      /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+      /** @type {import("@docusaurus/preset-classic").ThemeConfig} */
       ({
         colorMode: {
           disableSwitch: true
         },
         navbar: {
-          title: 'cunīcu',
+          title: "cunīcu",
           logo: {
-            alt: 'cunīcu logo',
-            src: 'img/cunicu_icon.svg',
+            alt: "cunīcu logo",
+            src: "img/cunicu_icon.svg",
           },
           items: [
             {
-              type: 'doc',
-              docId: 'index',
-              position: 'left',
-              label: 'Docs',
+              type: "doc",
+              docId: "index",
+              position: "left",
+              label: "Docs",
             },
-            {to: '/blog', label: 'Blog', position: 'left'},
             {
-              href: 'https://github.com/stv0g/cunicu',
-              label: 'GitHub',
-              position: 'right',
+              to: "/blog",
+              label: "Blog",
+              position: "left"
+            },
+            {
+              href: "https://github.com/stv0g/cunicu",
+              label: "GitHub",
+              position: "right",
             },
           ],
         },
         footer: {
-          style: 'dark',
+          style: "dark",
           links: [
             {
-              title: 'Docs',
+              title: "Docs",
               items: [
                 {
-                  label: 'Tutorial',
-                  to: '/docs/',
+                  label: "Tutorial",
+                  to: "/docs/",
                 },
               ],
             },
             {
-              title: 'Community',
+              title: "Community",
               items: [
                 {
-                  label: 'Slack',
-                  href: 'https://gophers.slack.com/archives/C036CTEGJFN',
+                  label: "Slack",
+                  href: "https://gophers.slack.com/archives/C036CTEGJFN",
                 },
                 {
-                  label: 'Twitter',
-                  href: 'https://twitter.com/cunicuVPN',
+                  label: "Twitter",
+                  href: "https://twitter.com/cunicuVPN",
                 },
               ],
             },
             {
-              title: 'More',
+              title: "More",
               items: [
                 {
-                  label: 'Blog',
-                  to: '/blog',
+                  label: "Blog",
+                  to: "/blog",
                 },
                 {
-                  label: 'GitHub',
-                  href: 'https://github.com/stv0g/cunicu',
+                  label: "GitHub",
+                  href: "https://github.com/stv0g/cunicu",
                 },
               ],
             },
