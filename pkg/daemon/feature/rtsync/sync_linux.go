@@ -18,10 +18,10 @@ import (
 // removeKernel removes all routes from the kernel which target
 // the peers link local addresses as their destination
 // or have the peers address configured as the gateway.
-func (rs *Interface) removeKernel(p *core.Peer) error {
+func (i *Interface) removeKernel(p *core.Peer) error {
 	pk := p.PublicKey()
 
-	link, err := netlink.LinkByIndex(rs.KernelDevice.Index())
+	link, err := netlink.LinkByIndex(i.KernelDevice.Index())
 	if err != nil {
 		return fmt.Errorf("failed to find link: %w", err)
 	}
@@ -31,7 +31,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
 		rtsAf, err := netlink.RouteList(link, af)
 		if err != nil {
-			rs.logger.Error("Failed to get routes from kernel", zap.Error(err))
+			i.logger.Error("Failed to get routes from kernel", zap.Error(err))
 		}
 
 		rts = append(rts, rtsAf...)
@@ -39,7 +39,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 
 	for _, rt := range rts {
 		// Skip routes not in the desired table
-		if rt.Table != rs.Settings.RoutingTable {
+		if rt.Table != i.Settings.RoutingTable {
 			continue
 		}
 
@@ -49,7 +49,7 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 		}
 
 		ours := false
-		for _, q := range rs.Settings.Prefixes {
+		for _, q := range i.Settings.Prefixes {
 			gw := pk.IPAddress(q)
 
 			if rt.Gw == nil {
@@ -67,8 +67,8 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 			continue
 		}
 
-		if err := p.Interface.KernelDevice.DeleteRoute(*rt.Dst, rs.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
-			rs.logger.Error("Failed to delete route", zap.Error(err))
+		if err := p.Interface.KernelDevice.DeleteRoute(*rt.Dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
+			i.logger.Error("Failed to delete route", zap.Error(err))
 		}
 	}
 
@@ -77,22 +77,22 @@ func (rs *Interface) removeKernel(p *core.Peer) error {
 
 // syncKernel adds routes from the kernel routing table as new AllowedIPs to the respective peer
 // based on the destination address of the route.
-func (rs *Interface) syncKernel() error {
+func (i *Interface) syncKernel() error {
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
 		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
-			Table:     rs.Settings.RoutingTable,
-			LinkIndex: rs.KernelDevice.Index(),
+			Table:     i.Settings.RoutingTable,
+			LinkIndex: i.KernelDevice.Index(),
 		}, netlink.RT_FILTER_TABLE|netlink.RT_FILTER_OIF)
 		if err != nil {
 			return fmt.Errorf("failed to list routes: %w", err)
 		}
 
 		for _, rte := range rts {
-			if err := rs.handleRouteUpdate(&netlink.RouteUpdate{
+			if err := i.handleRouteUpdate(&netlink.RouteUpdate{
 				Route: rte,
 				Type:  unix.RTM_NEWROUTE,
 			}); err != nil {
-				rs.logger.Error("Failed to handle route update", zap.Error(err))
+				i.logger.Error("Failed to handle route update", zap.Error(err))
 			}
 		}
 	}
@@ -102,11 +102,11 @@ func (rs *Interface) syncKernel() error {
 
 // watchKernel watches for added/removed routes in the kernel routing table and adds/removes AllowedIPs
 // to the respective peers based on the destination address of the routes.
-func (rs *Interface) watchKernel() error {
+func (i *Interface) watchKernel() error {
 	rus := make(chan netlink.RouteUpdate)
 	errs := make(chan error)
 
-	if err := netlink.RouteSubscribeWithOptions(rus, rs.stop, netlink.RouteSubscribeOptions{
+	if err := netlink.RouteSubscribeWithOptions(rus, i.stop, netlink.RouteSubscribeOptions{
 		ListExisting: true,
 		ErrorCallback: func(err error) {
 			errs <- err
@@ -118,25 +118,25 @@ func (rs *Interface) watchKernel() error {
 	for {
 		select {
 		case ru := <-rus:
-			if err := rs.handleRouteUpdate(&ru); err != nil {
-				rs.logger.Error("Failed to handle route update", zap.Error(err))
+			if err := i.handleRouteUpdate(&ru); err != nil {
+				i.logger.Error("Failed to handle route update", zap.Error(err))
 			}
 
 		case err := <-errs:
-			rs.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
+			i.logger.Error("Failed to monitor kernel route updates", zap.Error(err))
 
-		case <-rs.stop:
+		case <-i.stop:
 			return nil
 		}
 	}
 }
 
-func (rs *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
-	logger := rs.logger.WithOptions(log.WithVerbose(10))
+func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
+	logger := i.logger.WithOptions(log.WithVerbose(10))
 
 	logger.Debug("Received netlink route update", zap.Any("update", ru))
 
-	if ru.Table != rs.Settings.RoutingTable {
+	if ru.Table != i.Settings.RoutingTable {
 		logger.Debug("Ignore route from another table")
 		return nil
 	}
@@ -156,7 +156,7 @@ func (rs *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return fmt.Errorf("failed to get address from slice")
 	}
 
-	p, ok := rs.gwMap[gw]
+	p, ok := i.gwMap[gw]
 	if !ok {
 		logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
 		return nil
@@ -170,6 +170,8 @@ func (rs *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	}
 
 	for _, aip := range p.AllowedIPs {
+		aip := aip
+
 		if util.ContainsNet(&aip, ru.Dst) {
 			logger.Debug("Ignoring route as it is already covered by the current AllowedIPs",
 				zap.Any("allowed_ip", aip),

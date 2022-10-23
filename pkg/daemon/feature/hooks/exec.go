@@ -26,15 +26,15 @@ type ExecHook struct {
 	logger *zap.Logger
 }
 
-func (h *Interface) NewExecHook(cfg *config.ExecHookSetting) *ExecHook {
+func (i *Interface) NewExecHook(cfg *config.ExecHookSetting) *ExecHook {
 	hk := &ExecHook{
 		ExecHookSetting: cfg,
-		logger: h.logger.Named("exec").With(
+		logger: i.logger.Named("exec").With(
 			zap.String("command", cfg.Command),
 		),
 	}
 
-	h.logger.Debug("Created new exec hook", zap.Any("hook", hk))
+	i.logger.Debug("Created new exec hook", zap.Any("hook", hk))
 
 	return hk
 }
@@ -47,6 +47,7 @@ func (h *ExecHook) run(msg proto.Message, args ...any) {
 		allArgs = append(allArgs, fmt.Sprintf("%v", arg))
 	}
 
+	//#nosec G204 -- The filename should ne configurable by the user
 	cmd := exec.Command(h.Command, allArgs...)
 
 	if msg != nil && h.Stdin {

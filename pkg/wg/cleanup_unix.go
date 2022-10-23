@@ -4,6 +4,7 @@ package wg
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path"
@@ -31,7 +32,9 @@ func CleanupUserSockets() error {
 
 		if path.Ext(p) == ".sock" {
 			if c, err := net.Dial("unix", p); err == nil {
-				c.Close()
+				if err := c.Close(); err != nil {
+					return fmt.Errorf("failed to close socket: %w", err)
+				}
 			} else if !errors.Is(err, unix.ENOENT) {
 				logger.Warn("Delete stale WireGuard user socket", zap.String("path", p))
 

@@ -39,58 +39,58 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return a, nil
 }
 
-func (ac *Interface) Start() error {
-	ac.logger.Info("Started auto-configuration")
+func (i *Interface) Start() error {
+	i.logger.Info("Started auto-configuration")
 
-	if err := ac.ConfigureWireGuard(); err != nil {
-		ac.logger.Error("Failed to configure WireGuard interface", zap.Error(err))
+	if err := i.ConfigureWireGuard(); err != nil {
+		i.logger.Error("Failed to configure WireGuard interface", zap.Error(err))
 	}
 
 	// Assign auto-generated addresses
-	if sk := ac.PrivateKey(); sk.IsSet() {
+	if sk := i.PrivateKey(); sk.IsSet() {
 		pk := sk.PublicKey()
-		if err := ac.AddAddresses(pk); err != nil {
-			ac.logger.Error("Failed to add addresses", zap.Error(err))
+		if err := i.AddAddresses(pk); err != nil {
+			i.logger.Error("Failed to add addresses", zap.Error(err))
 		}
 	}
 
 	// Autodetect MTU
 	// TODO: Update MTU when peers are added or their endpoints change
-	if mtu := ac.Settings.MTU; mtu == 0 {
+	if mtu := i.Settings.MTU; mtu == 0 {
 		var err error
-		if mtu, err = ac.DetectMTU(); err != nil {
-			ac.logger.Error("Failed to detect MTU", zap.Error(err))
+		if mtu, err = i.DetectMTU(); err != nil {
+			i.logger.Error("Failed to detect MTU", zap.Error(err))
 		} else {
-			if err := ac.KernelDevice.SetMTU(mtu); err != nil {
-				ac.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", ac.Settings.MTU))
+			if err := i.KernelDevice.SetMTU(mtu); err != nil {
+				i.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", i.Settings.MTU))
 			}
 		}
 	}
 
 	// Set link up
-	if err := ac.KernelDevice.SetUp(); err != nil {
-		ac.logger.Error("Failed to bring link up", zap.Error(err))
+	if err := i.KernelDevice.SetUp(); err != nil {
+		i.logger.Error("Failed to bring link up", zap.Error(err))
 	}
 
 	return nil
 }
 
-func (ac *Interface) Close() error {
+func (i *Interface) Close() error {
 	return nil
 }
 
 // ConfigureWireGuard configures the WireGuard device using the configuration provided by the user.
 // Missing settings such as a private key or listen port are automatically generated/allocated.
-func (ac *Interface) ConfigureWireGuard() error {
+func (i *Interface) ConfigureWireGuard() error {
 	var err error
 
 	cfg := wgtypes.Config{}
 
 	// Private key
-	if !ac.PrivateKey().IsSet() || (ac.Settings.PrivateKey.IsSet() && ac.Settings.PrivateKey != ac.PrivateKey()) {
-		sk := ac.Settings.PrivateKey
+	if !i.PrivateKey().IsSet() || (i.Settings.PrivateKey.IsSet() && i.Settings.PrivateKey != i.PrivateKey()) {
+		sk := i.Settings.PrivateKey
 		if !sk.IsSet() {
-			ac.logger.Warn("Device has no private key. Setting a random one.")
+			i.logger.Warn("Device has no private key. Setting a random one.")
 
 			sk, err = crypto.GeneratePrivateKey()
 			if err != nil {
@@ -102,17 +102,17 @@ func (ac *Interface) ConfigureWireGuard() error {
 	}
 
 	// Listen port
-	if ac.ListenPort == 0 || (ac.Settings.ListenPort != nil && ac.ListenPort != *ac.Settings.ListenPort) {
-		if ac.ListenPort == 0 {
-			ac.logger.Warn("Device has no listen port. Setting a random one.")
+	if i.ListenPort == 0 || (i.Settings.ListenPort != nil && i.ListenPort != *i.Settings.ListenPort) {
+		if i.ListenPort == 0 {
+			i.logger.Warn("Device has no listen port. Setting a random one.")
 		}
 
-		if ac.Settings.ListenPort != nil {
-			cfg.ListenPort = ac.Settings.ListenPort
+		if i.Settings.ListenPort != nil {
+			cfg.ListenPort = i.Settings.ListenPort
 		} else {
 			port, err := util.FindNextPortToListen("udp",
-				ac.Settings.ListenPortRange.Min,
-				ac.Settings.ListenPortRange.Max,
+				i.Settings.ListenPortRange.Min,
+				i.Settings.ListenPortRange.Max,
 			)
 			if err != nil {
 				return fmt.Errorf("failed set listen port: %w", err)
@@ -123,7 +123,7 @@ func (ac *Interface) ConfigureWireGuard() error {
 	}
 
 	if cfg.PrivateKey != nil || cfg.ListenPort != nil {
-		if err := ac.ConfigureDevice(cfg); err != nil {
+		if err := i.ConfigureDevice(cfg); err != nil {
 			return fmt.Errorf("failed to configure device: %w", err)
 		}
 	}
@@ -136,11 +136,11 @@ func (ac *Interface) ConfigureWireGuard() error {
 //
 //	The MTU is automatically determined from the endpoint addresses
 //	or the system default route, which is usually a sane choice.
-func (ac *Interface) DetectMTU() (mtu int, err error) {
+func (i *Interface) DetectMTU() (mtu int, err error) {
 	mtu = math.MaxInt
-	for _, p := range ac.Peers {
+	for _, p := range i.Peers {
 		if p.Endpoint != nil {
-			if pmtu, err := device.DetectMTU(p.Endpoint.IP, ac.FirewallMark); err != nil {
+			if pmtu, err := device.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {
 				return -1, err
 			} else if pmtu < mtu {
 				mtu = pmtu
@@ -149,7 +149,7 @@ func (ac *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	if mtu == math.MaxInt {
-		if mtu, err = device.DetectDefaultMTU(ac.FirewallMark); err != nil {
+		if mtu, err = device.DetectDefaultMTU(i.FirewallMark); err != nil {
 			return -1, err
 		}
 	}
@@ -161,23 +161,23 @@ func (ac *Interface) DetectMTU() (mtu int, err error) {
 	return mtu - wg.TunnelOverhead, nil
 }
 
-func (ac *Interface) RemoveAddresses(pk crypto.Key) error {
-	for _, pfx := range ac.Settings.Prefixes {
+func (i *Interface) RemoveAddresses(pk crypto.Key) error {
+	for _, pfx := range i.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
-		if err := ac.KernelDevice.DeleteAddress(addr); err != nil {
+		if err := i.KernelDevice.DeleteAddress(addr); err != nil {
 			return err
 		}
 
 		// On Darwin systems, the utun interfaces are point-to-point
 		// links which are only configured a source/destination address
 		// pair. Hence we need to setup dedicated routes.
-		if ac.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+		if i.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
 			rte := net.IPNet{
 				IP:   addr.IP.Mask(addr.Mask),
 				Mask: addr.Mask,
 			}
 
-			if err := ac.KernelDevice.DeleteRoute(rte, ac.Settings.RoutingTable); err != nil {
+			if err := i.KernelDevice.DeleteRoute(rte, i.Settings.RoutingTable); err != nil {
 				return err
 			}
 		}
@@ -186,23 +186,23 @@ func (ac *Interface) RemoveAddresses(pk crypto.Key) error {
 	return nil
 }
 
-func (ac *Interface) AddAddresses(pk crypto.Key) error {
-	for _, pfx := range ac.Settings.Prefixes {
+func (i *Interface) AddAddresses(pk crypto.Key) error {
+	for _, pfx := range i.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
-		if err := ac.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
+		if err := i.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return err
 		}
 
 		// On Darwin systems, the utun interfaces are point-to-point
 		// links which are only configured a source/destination address
 		// pair. Hence we need to setup dedicated routes.
-		if ac.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+		if i.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
 			rte := net.IPNet{
 				IP:   addr.IP.Mask(addr.Mask),
 				Mask: addr.Mask,
 			}
 
-			if err := ac.KernelDevice.AddRoute(rte, nil, ac.Settings.RoutingTable); err != nil {
+			if err := i.KernelDevice.AddRoute(rte, nil, i.Settings.RoutingTable); err != nil {
 				return err
 			}
 		}

@@ -81,7 +81,7 @@ func PrettyBytes(b int64) string {
 
 	if i == 0 {
 		return fmt.Sprintf("%.0f "+t.Mods("B", t.FgCyan), f)
-	} else {
-		return fmt.Sprintf("%.2f "+t.Mods("%ciB", t.FgCyan), f, suffices[i-1])
 	}
+
+	return fmt.Sprintf("%.2f "+t.Mods("%ciB", t.FgCyan), f, suffices[i-1])
 }

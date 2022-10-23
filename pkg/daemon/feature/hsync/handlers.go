@@ -8,25 +8,25 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func (hs *Interface) OnPeerAdded(p *core.Peer) {
-	if err := hs.Sync(); err != nil {
-		hs.logger.Error("Failed to update hosts file", zap.Error(err))
+func (i *Interface) OnPeerAdded(p *core.Peer) {
+	if err := i.Sync(); err != nil {
+		i.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 
-	p.OnModified(hs)
+	p.OnModified(i)
 }
 
-func (hs *Interface) OnPeerRemoved(p *core.Peer) {
-	if err := hs.Sync(); err != nil {
-		hs.logger.Error("Failed to update hosts file", zap.Error(err))
+func (i *Interface) OnPeerRemoved(p *core.Peer) {
+	if err := i.Sync(); err != nil {
+		i.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
-func (hs *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	// Only update if the name has changed
 	if m.Is(core.PeerModifiedName) {
-		if err := hs.Sync(); err != nil {
-			hs.logger.Error("Failed to update hosts file", zap.Error(err))
+		if err := i.Sync(); err != nil {
+			i.logger.Error("Failed to update hosts file", zap.Error(err))
 		}
 	}
 }

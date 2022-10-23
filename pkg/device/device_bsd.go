@@ -197,7 +197,9 @@ func getRouteMTU(ip net.IP) (int, error) {
 }
 
 func run(args ...string) (string, error) {
+	//#nosec G204 -- Command is always hardcoded
 	cmd := exec.Command(args[0], args[1:]...)
+
 	out, err := cmd.CombinedOutput()
 	outStr := string(out)
 	if err != nil {

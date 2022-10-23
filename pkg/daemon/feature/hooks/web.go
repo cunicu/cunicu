@@ -28,15 +28,15 @@ type WebHook struct {
 	logger *zap.Logger
 }
 
-func (h *Interface) NewWebHook(cfg *config.WebHookSetting) *WebHook {
+func (i *Interface) NewWebHook(cfg *config.WebHookSetting) *WebHook {
 	hk := &WebHook{
 		WebHookSetting: cfg,
-		logger: h.logger.Named("web").With(
+		logger: i.logger.Named("web").With(
 			zap.Any("url", cfg.URL),
 		),
 	}
 
-	h.logger.Debug("Created new web hook", zap.Any("hook", hk))
+	i.logger.Debug("Created new web hook", zap.Any("hook", hk))
 
 	return hk
 }

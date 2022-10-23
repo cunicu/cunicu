@@ -43,25 +43,25 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return rs, nil
 }
 
-func (rs *Interface) Start() error {
-	rs.logger.Info("Started route synchronization")
+func (i *Interface) Start() error {
+	i.logger.Info("Started route synchronization")
 
 	go func() {
-		if rs.Settings.WatchRoutes {
-			if err := rs.watchKernel(); err != nil {
+		if i.Settings.WatchRoutes {
+			if err := i.watchKernel(); err != nil {
 				if errors.Is(err, xerrors.ErrNotSupported) {
-					rs.logger.Warn("Watching the kernel routing table is not supported on this platform")
+					i.logger.Warn("Watching the kernel routing table is not supported on this platform")
 				} else {
-					rs.logger.Error("Failed to watch kernel routing table", zap.Error(err))
+					i.logger.Error("Failed to watch kernel routing table", zap.Error(err))
 				}
 			}
 		} else {
 			// Only perform initial sync, if we are not continuously watching for changes
-			if err := rs.syncKernel(); err != nil {
+			if err := i.syncKernel(); err != nil {
 				if errors.Is(err, xerrors.ErrNotSupported) {
-					rs.logger.Warn("Synchronizing the routing table is not supported on this platform")
+					i.logger.Warn("Synchronizing the routing table is not supported on this platform")
 				} else {
-					rs.logger.Error("Failed to sync kernel routing table", zap.Error(err))
+					i.logger.Error("Failed to sync kernel routing table", zap.Error(err))
 				}
 			}
 		}
@@ -70,16 +70,16 @@ func (rs *Interface) Start() error {
 	return nil
 }
 
-func (rs *Interface) Close() error {
-	close(rs.stop)
+func (i *Interface) Close() error {
+	close(i.stop)
 
 	return nil
 }
 
-func (rs *Interface) Sync() error {
-	if err := rs.syncKernel(); err != nil {
+func (i *Interface) Sync() error {
+	if err := i.syncKernel(); err != nil {
 		if errors.Is(err, xerrors.ErrNotSupported) {
-			rs.logger.Warn("Synchronizing the routing table is not supported on this platform")
+			i.logger.Warn("Synchronizing the routing table is not supported on this platform")
 		} else {
 			return err
 		}

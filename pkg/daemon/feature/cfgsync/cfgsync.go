@@ -34,70 +34,70 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	return c, nil
 }
 
-func (cs *Interface) Start() error {
-	cs.logger.Info("Started config synchronization")
+func (i *Interface) Start() error {
+	i.logger.Info("Started config synchronization")
 
 	// Assign static addresses
-	for _, addr := range cs.Settings.Addresses {
-		if err := cs.KernelDevice.AddAddress(net.IPNet(addr)); err != nil && !errors.Is(err, syscall.EEXIST) {
+	for _, addr := range i.Settings.Addresses {
+		if err := i.KernelDevice.AddAddress(net.IPNet(addr)); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign address '%s': %w", addr.String(), err)
 		}
 	}
 
 	// Set MTU
-	if mtu := cs.Settings.MTU; mtu != 0 {
-		if err := cs.KernelDevice.SetMTU(mtu); err != nil {
+	if mtu := i.Settings.MTU; mtu != 0 {
+		if err := i.KernelDevice.SetMTU(mtu); err != nil {
 			return fmt.Errorf("failed to set MTU: %w", err)
 		}
 	}
 
 	// Set DNS
-	if dns := cs.Settings.DNS; len(dns) > 0 {
+	if dns := i.Settings.DNS; len(dns) > 0 {
 		var domain []string
-		if cs.Settings.Domain != "" {
-			domain = append(domain, cs.Settings.Domain)
+		if i.Settings.Domain != "" {
+			domain = append(domain, i.Settings.Domain)
 		}
 
-		if err := cs.SetDNS(cs.Settings.DNS, domain); err != nil {
+		if err := i.SetDNS(i.Settings.DNS, domain); err != nil {
 			return fmt.Errorf("failed to set DNS servers: %w", err)
 		}
 	}
 
 	// Set WireGuard settings
-	if err := cs.ConfigureWireGuard(); err != nil {
+	if err := i.ConfigureWireGuard(); err != nil {
 		return fmt.Errorf("failed to configure WireGuard interface: %w", err)
 	}
 
 	return nil
 }
 
-func (cs *Interface) Close() error {
+func (i *Interface) Close() error {
 	// Unset DNS
-	if dns := cs.Settings.DNS; len(dns) > 0 {
-		if err := cs.UnsetDNS(); err != nil {
-			cs.logger.Error("Failed to restore DNS servers", zap.Error(err))
+	if dns := i.Settings.DNS; len(dns) > 0 {
+		if err := i.UnsetDNS(); err != nil {
+			i.logger.Error("Failed to restore DNS servers", zap.Error(err))
 		}
 	}
 
 	return nil
 }
 
-func (cs *Interface) ConfigureWireGuard() error {
+func (i *Interface) ConfigureWireGuard() error {
 	cfg := wgtypes.Config{}
 
-	if cs.Settings.FirewallMark != 0 && cs.Settings.FirewallMark != cs.FirewallMark {
-		cfg.FirewallMark = &cs.Settings.FirewallMark
+	if i.Settings.FirewallMark != 0 && i.Settings.FirewallMark != i.FirewallMark {
+		cfg.FirewallMark = &i.Settings.FirewallMark
 	}
 
-	if cs.Settings.ListenPort != nil && *cs.Settings.ListenPort != cs.ListenPort {
-		cfg.ListenPort = cs.Settings.ListenPort
+	if i.Settings.ListenPort != nil && *i.Settings.ListenPort != i.ListenPort {
+		cfg.ListenPort = i.Settings.ListenPort
 	}
 
-	if cs.Settings.PrivateKey.IsSet() && cs.Settings.PrivateKey != cs.PrivateKey() {
-		cfg.PrivateKey = (*wgtypes.Key)(&cs.Settings.PrivateKey)
+	if i.Settings.PrivateKey.IsSet() && i.Settings.PrivateKey != i.PrivateKey() {
+		cfg.PrivateKey = (*wgtypes.Key)(&i.Settings.PrivateKey)
 	}
 
-	for _, p := range cs.Settings.Peers {
+	for _, p := range i.Settings.Peers {
 		pcfg := wgtypes.PeerConfig{}
 
 		pcfg.PublicKey = wgtypes.Key(p.PublicKey)
@@ -129,7 +129,7 @@ func (cs *Interface) ConfigureWireGuard() error {
 	}
 
 	if cfg.FirewallMark != nil || cfg.ListenPort != nil || cfg.PrivateKey != nil || cfg.Peers != nil {
-		if err := cs.ConfigureDevice(cfg); err != nil {
+		if err := i.ConfigureDevice(cfg); err != nil {
 			return fmt.Errorf("failed to configure WireGuard interface: %w", err)
 		}
 	}
@@ -148,6 +148,7 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 				args = append(args, svr.String())
 			}
 
+			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd = exec.Command(resolvectl, args...)
 
 			if err := cmd.Run(); err != nil {
@@ -160,6 +161,7 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 			args := []string{"domain", i.Name()}
 			args = append(args, domain...)
 
+			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd = exec.Command(resolvectl, args...)
 
 			if err := cmd.Run(); err != nil {
@@ -168,6 +170,7 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 		}
 	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
 		if len(svrs) > 0 || len(domain) > 0 {
+			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd := exec.Command(resolveconf, "-a", i.Name(), "-m", "0", "-x")
 
 			stdin := &bytes.Buffer{}
@@ -196,8 +199,10 @@ func (i *Interface) UnsetDNS() error {
 
 	// Check if SystemD's resolvectl is available
 	if resolvectl, err := exec.LookPath("resolvectl"); err == nil {
+		//#nosec G204 -- Filename is only influenced by users PATH variable
 		cmd = exec.Command(resolvectl, "revert", i.Name())
 	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
+		//#nosec G204 -- Filename is only influenced by users PATH variable
 		cmd = exec.Command(resolveconf, "-d", i.Name())
 	}
 

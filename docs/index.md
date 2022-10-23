@@ -39,9 +39,9 @@ The project is currently actively developed by Steffen Vogel at the [Institute f
 
 To use cunīcu follow these steps on each host:
 
-1. [Install cunīcu](./install.md)
-2. Configure your WireGuard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
-3. Start the cunīcu daemon by running: `sudo cunicu daemon`
+1.  [Install cunīcu](./install.md)
+2.  Configure your WireGuard interfaces using `wg`, `wg-quick` or [NetworkManager](https://blogs.gnome.org/thaller/2019/03/15/wireguard-in-networkmanager/)
+3.  Start the cunīcu daemon by running: `sudo cunicu daemon`
 
 Make sure that in step 2. you have created WireGuard keys and exchanged them by hand between the hosts.
 cunīcu does not (yet) discover available peers. You are responsible to add the peers to the WireGuard interface by yourself.
@@ -52,7 +52,7 @@ Once this has been done, the cunīcu logs should show a line `state=connected`.
 
 ## Authors
 
--    Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
+-   Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
 
 ## Join us
 

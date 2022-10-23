@@ -45,7 +45,11 @@ func NewKernelProxy(nat *NAT, listenPort int) (*KernelProxy, error) {
 
 func (p *KernelProxy) Close() error {
 	if p.connUser != nil {
-		p.connUser.SetWriteDeadline(time.Now().Add(1 * time.Second)) // TODO: really required?
+		// TODO: really required?
+		if err := p.connUser.SetWriteDeadline(time.Now().Add(1 * time.Second)); err != nil {
+			return fmt.Errorf("failed to set write deadline: %w", err)
+		}
+
 		if err := p.connUser.Close(); err != nil {
 			return err
 		}

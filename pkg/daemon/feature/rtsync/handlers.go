@@ -12,42 +12,42 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func (rs *Interface) OnPeerAdded(p *core.Peer) {
+func (i *Interface) OnPeerAdded(p *core.Peer) {
 	pk := p.PublicKey()
 
-	for _, q := range rs.Settings.Prefixes {
+	for _, q := range i.Settings.Prefixes {
 		gwn := pk.IPAddress(q)
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
 			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
 		}
 
-		rs.gwMap[gw] = p
+		i.gwMap[gw] = p
 	}
 
 	// Initial sync
-	if err := rs.syncKernel(); err != nil {
-		rs.logger.Error("Failed to synchronize kernel routing table", zap.Error(err))
+	if err := i.syncKernel(); err != nil {
+		i.logger.Error("Failed to synchronize kernel routing table", zap.Error(err))
 	}
 
-	p.OnModified(rs)
+	p.OnModified(i)
 }
 
-func (rs *Interface) OnPeerRemoved(p *core.Peer) {
+func (i *Interface) OnPeerRemoved(p *core.Peer) {
 	pk := p.PublicKey()
 
-	for _, q := range rs.Settings.Prefixes {
+	for _, q := range i.Settings.Prefixes {
 		gwn := pk.IPAddress(q)
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
 			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
 		}
 
-		delete(rs.gwMap, gw)
+		delete(i.gwMap, gw)
 	}
 
-	if err := rs.removeKernel(p); err != nil {
-		rs.logger.Error("Failed to remove kernel routes for peer",
+	if err := i.removeKernel(p); err != nil {
+		i.logger.Error("Failed to remove kernel routes for peer",
 			zap.Error(err),
 			zap.Any("intf", p.Interface),
 			zap.Any("peer", p),
@@ -55,12 +55,12 @@ func (rs *Interface) OnPeerRemoved(p *core.Peer) {
 	}
 }
 
-func (rs *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	pk := p.PublicKey()
 
 	// Determine peer gateway address by using the first IPv4 and IPv6 prefix
 	var gwV4, gwV6 net.IP
-	for _, q := range rs.Settings.Prefixes {
+	for _, q := range i.Settings.Prefixes {
 		isV6 := q.IP.To4() == nil
 		n := pk.IPAddress(q)
 		if isV6 && gwV6 == nil {
@@ -85,12 +85,12 @@ func (rs *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.Peer
 			gw = nil
 		}
 
-		if err := p.Interface.KernelDevice.AddRoute(dst, gw, rs.Settings.RoutingTable); err != nil {
-			rs.logger.Error("Failed to add route", zap.Error(err))
+		if err := p.Interface.KernelDevice.AddRoute(dst, gw, i.Settings.RoutingTable); err != nil {
+			i.logger.Error("Failed to add route", zap.Error(err))
 			continue
 		}
 
-		rs.logger.Info("Added new AllowedIP to kernel routing table",
+		i.logger.Info("Added new AllowedIP to kernel routing table",
 			zap.String("dst", dst.String()),
 			zap.Any("gw", gw.String()),
 			zap.Any("intf", p.Interface),
@@ -98,12 +98,12 @@ func (rs *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.Peer
 	}
 
 	for _, dst := range ipsRemoved {
-		if err := p.Interface.KernelDevice.DeleteRoute(dst, rs.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
-			rs.logger.Error("Failed to delete route", zap.Error(err))
+		if err := p.Interface.KernelDevice.DeleteRoute(dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
+			i.logger.Error("Failed to delete route", zap.Error(err))
 			continue
 		}
 
-		rs.logger.Info("Remove vanished AllowedIP from kernel routing table",
+		i.logger.Info("Remove vanished AllowedIP from kernel routing table",
 			zap.String("dst", dst.String()),
 			zap.Any("intf", p.Interface),
 			zap.Any("peer", p))

@@ -72,9 +72,9 @@ func _map(v reflect.Value, tagName string) any {
 			}
 
 			return d
-		} else {
-			return v.Interface()
 		}
+
+		return v.Interface()
 
 	case reflect.Slice:
 		d := []any{}

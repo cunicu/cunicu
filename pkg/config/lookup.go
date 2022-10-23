@@ -18,7 +18,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type lookupProvider struct {
+type LookupProvider struct {
 	domain     string
 	lastSerial int
 	files      []string
@@ -28,10 +28,10 @@ type lookupProvider struct {
 	logger *zap.Logger
 }
 
-func LookupProvider(domain string) *lookupProvider {
+func NewLookupProvider(domain string) *LookupProvider {
 	logger := zap.L().Named("lookup")
 
-	return &lookupProvider{
+	return &LookupProvider{
 		domain: domain,
 
 		settings: map[string]any{},
@@ -39,11 +39,11 @@ func LookupProvider(domain string) *lookupProvider {
 	}
 }
 
-func (p *lookupProvider) ReadBytes() ([]byte, error) {
+func (p *LookupProvider) ReadBytes() ([]byte, error) {
 	return nil, errors.New("this provider requires no parser")
 }
 
-func (p *lookupProvider) Read() (map[string]any, error) {
+func (p *LookupProvider) Read() (map[string]any, error) {
 	g := errgroup.Group{}
 
 	g.Go(func() error { return p.lookupTXT(context.Background()) })
@@ -56,7 +56,7 @@ func (p *lookupProvider) Read() (map[string]any, error) {
 	return maps.Unflatten(p.settings, "."), nil
 }
 
-func (p *lookupProvider) Watch(cb func(event interface{}, err error)) error {
+func (p *LookupProvider) Watch(cb func(event interface{}, err error)) error {
 	go func() {
 		t := time.NewTicker(5 * time.Minute)
 		for range t.C {
@@ -76,7 +76,7 @@ func (p *lookupProvider) Watch(cb func(event interface{}, err error)) error {
 	return nil
 }
 
-func (p *lookupProvider) Version() any {
+func (p *LookupProvider) Version() any {
 	var err error
 
 	if p.lastSerial, err = p.lookupSerial(context.Background()); err != nil {
@@ -86,7 +86,7 @@ func (p *lookupProvider) Version() any {
 	return p.lastSerial
 }
 
-func (p *lookupProvider) SubProviders() []koanf.Provider {
+func (p *LookupProvider) SubProviders() []koanf.Provider {
 	ps := []koanf.Provider{}
 
 	for _, f := range p.files {
@@ -101,14 +101,14 @@ func (p *lookupProvider) SubProviders() []koanf.Provider {
 	return ps
 }
 
-func (p *lookupProvider) set(key string, value any) {
+func (p *LookupProvider) set(key string, value any) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.settings[key] = value
 }
 
-func (p *lookupProvider) lookupSerial(ctx context.Context) (int, error) {
+func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
 	var err error
 	var conn *dns.Conn
 
@@ -145,7 +145,10 @@ func (p *lookupProvider) lookupSerial(ctx context.Context) (int, error) {
 	msg := new(dns.Msg)
 	msg.SetQuestion(dns.Fqdn(p.domain), dns.TypeSOA)
 
-	conn.WriteMsg(msg)
+	if err := conn.WriteMsg(msg); err != nil {
+		return -1, fmt.Errorf("failed to write question: %w", err)
+	}
+
 	resp, err := conn.ReadMsg()
 	if err != nil {
 		return -1, fmt.Errorf("failed to read response: %w", err)
@@ -164,7 +167,7 @@ func (p *lookupProvider) lookupSerial(ctx context.Context) (int, error) {
 	return -1, errors.New("failed to find SOA record")
 }
 
-func (p *lookupProvider) lookupTXT(ctx context.Context) error {
+func (p *LookupProvider) lookupTXT(ctx context.Context) error {
 	rr, err := net.LookupTXT(p.domain)
 	if err != nil {
 		return err
@@ -215,7 +218,7 @@ func (p *lookupProvider) lookupTXT(ctx context.Context) error {
 	return nil
 }
 
-func (p *lookupProvider) lookupSRV(ctx context.Context) error {
+func (p *LookupProvider) lookupSRV(ctx context.Context) error {
 	svcs := map[string][]string{
 		"stun":  {"udp"},
 		"stuns": {"tcp"},

@@ -37,7 +37,7 @@ func NewSignalingServer(opts ...grpc.ServerOption) *Server {
 
 	s := &Server{
 		topicRegistry: topicRegistry{
-			topics: map[crypto.Key]*topic{},
+			topics: map[crypto.Key]*Topic{},
 		},
 		Server: grpc.NewServer(opts...),
 		logger: logger,

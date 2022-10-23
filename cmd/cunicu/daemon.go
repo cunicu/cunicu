@@ -59,7 +59,9 @@ func init() {
 }
 
 func daemonRun(cmd *cobra.Command, args []string) {
-	io.WriteString(os.Stdout, Banner(color))
+	if _, err := io.WriteString(os.Stdout, Banner(color)); err != nil {
+		logger.Fatal("Failed to write banner", zap.Error(err))
+	}
 
 	if err := cfg.Init(args); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))

@@ -143,7 +143,7 @@ var _ = Describe("lookup", func() {
 		})
 
 		It("can get SOA serial", func() {
-			p := config.LookupProvider("example.com")
+			p := config.NewLookupProvider("example.com")
 
 			v := p.Version()
 			Expect(v).NotTo(BeNil())
