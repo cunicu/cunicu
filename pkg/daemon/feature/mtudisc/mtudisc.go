@@ -5,7 +5,6 @@
 //
 //	The MTU is automatically determined from the endpoint addresses
 //	or the system default route, which is usually a sane choice.
-
 package mtudisc
 
 import (
