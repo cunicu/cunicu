@@ -6,20 +6,18 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/ice"
+	hooksproto "github.com/stv0g/cunicu/pkg/proto/feature/hooks"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/core"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-	"github.com/stv0g/cunicu/pkg/wg"
-
-	icex "github.com/stv0g/cunicu/pkg/ice"
-	hooksproto "github.com/stv0g/cunicu/pkg/proto/feature/hooks"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type WebHook struct {
@@ -66,12 +64,17 @@ func (h *WebHook) run(msg proto.Message) {
 		req.Body = io.NopCloser(bytes.NewReader(buf))
 	}
 
-	if resp, err := http.DefaultClient.Do(req); err != nil {
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
 		h.logger.Error("Failed to invoke web-hook", zap.Error(err))
 	} else if resp.StatusCode != http.StatusOK {
 		h.logger.Warn("Webhook endpoint responded with non-200 code",
 			zap.String("status", resp.Status),
 			zap.Int("status_code", resp.StatusCode))
+	}
+
+	if err := resp.Body.Close(); err != nil {
+		h.logger.Error("Failed to close response body", zap.Error(err))
 	}
 }
 
@@ -119,7 +122,7 @@ func (h *WebHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerMod
 	})
 }
 
-func (h *WebHook) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
+func (h *WebHook) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
 	pm := marshalRedactedPeer(p.Peer)
 	pm.Ice = p.Marshal()
 

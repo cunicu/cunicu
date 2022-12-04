@@ -8,23 +8,31 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var monitorCmd = &cobra.Command{
-	Use:   "monitor",
-	Short: "Monitor the cunīcu daemon for events",
-	Run:   monitor,
-	Args:  cobra.NoArgs,
+type monitorOptions struct {
+	format config.OutputFormat
 }
 
-var format config.OutputFormat = config.OutputFormatHuman
+func init() { //nolint:gochecknoinits
+	opts := &monitorOptions{
+		format: config.OutputFormatHuman,
+	}
 
-func init() {
-	addClientCommand(rootCmd, monitorCmd)
+	cmd := &cobra.Command{
+		Use:   "monitor",
+		Short: "Monitor the cunīcu daemon for events",
+		Run: func(cmd *cobra.Command, args []string) {
+			monitor(cmd, args, opts)
+		},
+		Args: cobra.NoArgs,
+	}
 
-	f := monitorCmd.PersistentFlags()
-	f.VarP(&format, "format", "f", "Output `format` (one of: json, logger, human)")
+	addClientCommand(rootCmd, cmd)
+
+	f := cmd.PersistentFlags()
+	f.VarP(&opts.format, "format", "f", "Output `format` (one of: json, logger, human)")
 }
 
-func monitor(cmd *cobra.Command, args []string) {
+func monitor(_ *cobra.Command, _ []string, opts *monitorOptions) {
 	signals := util.SetupSignals()
 
 	logger := logger.Named("events")
@@ -41,7 +49,7 @@ out:
 			break out
 
 		case evt := <-rpcClient.Events:
-			switch format {
+			switch opts.format {
 			case config.OutputFormatJSON:
 				buf, err := mo.Marshal(evt)
 				if err != nil {

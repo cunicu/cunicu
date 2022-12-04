@@ -3,14 +3,12 @@ package rpc
 import (
 	"net"
 
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
-
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func (s *Server) OnInterfaceAdded(i *core.Interface) {
@@ -82,5 +80,4 @@ func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 }
 
 func (s *Server) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
-
 }

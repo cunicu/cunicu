@@ -13,63 +13,68 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
+type docsOptions struct {
 	outputDir       string
 	withFrontMatter bool
+}
 
-	docsCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	opts := &docsOptions{}
+	cmd := &cobra.Command{
 		Use:    "docs",
 		Short:  "Generate documentation for the cunīcu commands",
 		Long:   `When used without a sub-command, both the Markdown documentation and Man-pages will be generated.`,
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := docsMarkdown(cmd, args); err != nil {
+			if err := docsMarkdown(cmd, args, opts); err != nil {
 				logger.Fatal("Failed to generate markdown docs", zap.Error(err))
 			}
 
-			if err := docsManpage(cmd, args); err != nil {
+			if err := docsManpage(cmd, args, opts); err != nil {
 				logger.Fatal("Failed to generate Manpage docs", zap.Error(err))
 			}
 		},
 	}
 
-	docsMarkdownCmd = &cobra.Command{
+	docsMarkdownCmd := &cobra.Command{
 		Use:   "markdown",
 		Short: "Generate markdown docs",
-		RunE:  docsMarkdown,
-		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return docsMarkdown(cmd, args, opts)
+		},
+		Args: cobra.NoArgs,
 	}
 
-	docsManpageCmd = &cobra.Command{
+	docsManpageCmd := &cobra.Command{
 		Use:   "man",
 		Short: "Generate manpages",
-		RunE:  docsManpage,
-		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return docsManpage(cmd, args, opts)
+		},
+		Args: cobra.NoArgs,
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(docsCmd)
+	rootCmd.AddCommand(cmd)
 
-	docsCmd.AddCommand(docsManpageCmd)
-	docsCmd.AddCommand(docsMarkdownCmd)
+	cmd.AddCommand(docsManpageCmd)
+	cmd.AddCommand(docsMarkdownCmd)
 
-	pf := docsCmd.PersistentFlags()
-	pf.StringVar(&outputDir, "output-dir", "./docs/usage", "Output directory of generated documentation")
-	pf.BoolVar(&withFrontMatter, "with-frontmatter", false, "Prepend a frontmatter to the generated Markdown files as used by our static website generator")
+	pf := cmd.PersistentFlags()
+	pf.StringVar(&opts.outputDir, "output-dir", "./docs/usage", "Output directory of generated documentation")
+	pf.BoolVar(&opts.withFrontMatter, "with-frontmatter", false, "Prepend a frontmatter to the generated Markdown files as used by our static website generator")
 }
 
-func docsMarkdown(cmd *cobra.Command, args []string) error {
-	dir := filepath.Join(outputDir, "md")
+func docsMarkdown(_ *cobra.Command, _ []string, opts *docsOptions) error {
+	dir := filepath.Join(opts.outputDir, "md")
 
 	//#nosec G301 -- Doc directories must be world readable
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	filePrepender := func(path string) string {
-		if !withFrontMatter {
+		if !opts.withFrontMatter {
 			return ""
 		}
 
@@ -112,11 +117,11 @@ func docsMarkdown(cmd *cobra.Command, args []string) error {
 	return doc.GenMarkdownTreeCustom(rootCmd, dir, filePrepender, linkHandler)
 }
 
-func docsManpage(cmd *cobra.Command, args []string) error {
-	dir := filepath.Join(outputDir, "man")
+func docsManpage(_ *cobra.Command, _ []string, opts *docsOptions) error {
+	dir := filepath.Join(opts.outputDir, "man")
 
 	//#nosec G301 -- Doc directories must be world readable
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 

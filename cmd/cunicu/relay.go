@@ -4,17 +4,21 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/stv0g/cunicu/pkg/util"
-
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 )
 
-var (
-	relayCmd = &cobra.Command{
+type relayOptions struct {
+	listenAddress string
+	secure        bool
+}
+
+func init() { //nolint:gochecknoinits
+	opts := &relayOptions{}
+	cmd := &cobra.Command{
 		Use:   "relay URL...",
 		Short: "Start relay API server",
 		Long: `This command starts a gRPC server providing cunicu agents with a list of available STUN and TURN servers.
@@ -36,29 +40,29 @@ The command expects a list of STUN or TURN URLs according to RFC7065/RFC7064 wit
   - Example: turn:user1:pass1@server.com
 `,
 		Example: `relay turn:server.com?secret=rest-api-secret&ttl=1h`,
-		Run:     relay,
-		Args:    cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			relay(cmd, args, opts)
+		},
+		Args: cobra.NoArgs,
 	}
-)
 
-func init() {
-	pf := relayCmd.PersistentFlags()
-	pf.StringVarP(&listenAddress, "listen", "L", ":8080", "listen address")
-	pf.BoolVarP(&secure, "secure", "S", false, "listen with TLS")
+	pf := cmd.PersistentFlags()
+	pf.StringVarP(&opts.listenAddress, "listen", "L", ":8080", "listen address")
+	pf.BoolVarP(&opts.secure, "secure", "S", false, "listen with TLS")
 
-	rootCmd.AddCommand(relayCmd)
+	rootCmd.AddCommand(cmd)
 }
 
-func relay(cmd *cobra.Command, args []string) {
-	l, err := net.Listen("tcp", listenAddress)
+func relay(_ *cobra.Command, args []string, opts *relayOptions) {
+	l, err := net.Listen("tcp", opts.listenAddress)
 	if err != nil {
 		logger.Fatal("Failed to listen", zap.Error(err))
 	}
 
 	// Disable TLS
-	opts := []grpc.ServerOption{}
-	if !secure {
-		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
+	svrOpts := []grpc.ServerOption{}
+	if !opts.secure {
+		svrOpts = append(svrOpts, grpc.Creds(insecure.NewCredentials()))
 	}
 
 	relays, err := grpcx.NewRelayInfos(args)
@@ -66,7 +70,7 @@ func relay(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to parse relays", zap.Error(err))
 	}
 
-	svr, err := grpcx.NewRelayAPIServer(relays, opts...)
+	svr, err := grpcx.NewRelayAPIServer(relays, svrOpts...)
 	if err != nil {
 		logger.Fatal("Failed to start gRPC server", zap.Error(err))
 	}
@@ -81,7 +85,7 @@ func relay(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	logger.Info("Starting gRPC relay API server", zap.String("address", listenAddress))
+	logger.Info("Starting gRPC relay API server", zap.String("address", opts.listenAddress))
 
 	if err := svr.Serve(l); err != nil {
 		logger.Fatal("Failed to start gRPC server", zap.Error(err))

@@ -30,7 +30,7 @@ var _ = Describe("find bindable port in range", func() {
 
 		Context("with used port", func() {
 			var conn net.Conn
-			var port = 10024
+			port := 10024
 
 			BeforeEach(func() {
 				var err error
@@ -72,7 +72,7 @@ var _ = Describe("find bindable port in range", func() {
 
 		Context("finds multiple ports without collisions", func() {
 			var conns []net.Conn
-			var cnt = 10
+			cnt := 10
 
 			BeforeEach(func() {
 				conns = []net.Conn{}
@@ -121,7 +121,7 @@ var _ = Describe("find bindable port in range", func() {
 
 		Context("with used port", func() {
 			var conn net.Conn
-			var port = 10011
+			port := 10011
 
 			BeforeEach(func() {
 				var err error
@@ -143,5 +143,4 @@ var _ = Describe("find bindable port in range", func() {
 			})
 		})
 	})
-
 })

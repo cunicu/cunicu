@@ -254,7 +254,7 @@ func (c *Config) Update(sets map[string]any) (map[string]Change, error) {
 
 // SaveRuntime saves the current runtime configuration to disk
 func (c *Config) SaveRuntime() error {
-	f, err := os.OpenFile(RuntimeConfigFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(RuntimeConfigFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
 	}
@@ -328,8 +328,8 @@ func (c *Config) Marshal(wr io.Writer) error {
 func (c *Config) InterfaceSettings(name string) (cfg *InterfaceSettings) {
 	for _, set := range c.InterfaceOrderByName(name) {
 		if cfg == nil {
-			copy := c.DefaultInterfaceSettings
-			cfg = &copy
+			cfgCopy := c.DefaultInterfaceSettings
+			cfg = &cfgCopy
 		}
 
 		if icfg, ok := c.Interfaces[set]; ok {

@@ -15,7 +15,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("cfgsync", "Config synchronization", New, 20)
 }
 
@@ -39,7 +39,7 @@ func (i *Interface) Start() error {
 
 	// Assign static addresses
 	for _, addr := range i.Settings.Addresses {
-		if err := i.KernelDevice.AddAddress(net.IPNet(addr)); err != nil && !errors.Is(err, syscall.EEXIST) {
+		if err := i.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign address '%s': %w", addr.String(), err)
 		}
 	}
@@ -82,7 +82,7 @@ func (i *Interface) Close() error {
 	return nil
 }
 
-func (i *Interface) ConfigureWireGuard() error {
+func (i *Interface) ConfigureWireGuard() error { //nolint:gocognit
 	cfg := wgtypes.Config{}
 
 	if i.Settings.FirewallMark != 0 && i.Settings.FirewallMark != i.FirewallMark {

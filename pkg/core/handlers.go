@@ -68,9 +68,9 @@ type EventsHandler struct {
 	Events chan Event
 }
 
-func NewEventsHandler(len int) *EventsHandler {
+func NewEventsHandler(length int) *EventsHandler {
 	return &EventsHandler{
-		Events: make(chan Event, len),
+		Events: make(chan Event, length),
 	}
 }
 

@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	rpcClient   *rpc.Client
-	rpcSockPath string
+	rpcClient   *rpc.Client //nolint:gochecknoglobals
+	rpcSockPath string      //nolint:gochecknoglobals
 )
 
 func addClientCommand(rcmd, cmd *cobra.Command) {

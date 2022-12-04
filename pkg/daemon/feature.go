@@ -4,6 +4,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+//nolint:gochecknoglobals
 var (
 	features       = map[string]*FeaturePlugin{}
 	featuresSorted []*FeaturePlugin
@@ -26,11 +27,11 @@ type Feature interface {
 	Close() error
 }
 
-func RegisterFeature(name, desc string, New func(i *Interface) (Feature, error), order int) {
+func RegisterFeature(name, desc string, ctor func(i *Interface) (Feature, error), order int) {
 	features[name] = &FeaturePlugin{
 		Name:        name,
 		Description: desc,
-		New:         New,
+		New:         ctor,
 		Order:       order,
 	}
 }

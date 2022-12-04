@@ -12,6 +12,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var errRuleNotFound = errors.New("rule not found")
+
 type NAT struct {
 	NFConn *nftables.Conn
 
@@ -54,7 +56,7 @@ func (n *NAT) AddRule(r *nftables.Rule, comment string) (*NATRule, error) {
 	}
 
 	if r.Handle == 0 {
-		return nil, errors.New("rule not found")
+		return nil, errRuleNotFound
 	}
 
 	return &NATRule{
@@ -206,7 +208,6 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 		Table: n.table,
 		Chain: n.chainEgress,
 		Exprs: []expr.Any{
-
 			// meta l4proto udp
 			&expr.Meta{
 				Key:      expr.MetaKeyL4PROTO,

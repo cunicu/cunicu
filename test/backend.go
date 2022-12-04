@@ -9,11 +9,9 @@ import (
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/signaling"
 )
 
 type readyHandler struct {
@@ -67,11 +65,12 @@ func (h *msgHandler) Check(p, o *peer) error {
 
 	found := len(msgs2)
 
-	if found > 1 {
+	switch {
+	case found > 1:
 		return fmt.Errorf("peer %d received %d messages from peer %d", p.id, found, o.id)
-	} else if found == 0 {
+	case found == 0:
 		return fmt.Errorf("peer %d received no messages from peer %d", p.id, o.id)
-	} else {
+	default:
 		msg := msgs2[0]
 		if msg.Candidate.Port != int32(o.id) {
 			return fmt.Errorf("received invalid msg: epoch == %d != %d", msg.Candidate.Port, o.id)
@@ -106,7 +105,7 @@ func (p *peer) publish(o *peer) error {
 
 // TestBackend creates n peers with separate connections to the signaling backend u
 // and exchanges a test message between each pair of backends
-func BackendTest(u *url.URL, n int) {
+func BackendTest(u *url.URL, n int) { //nolint:gocognit
 	var err error
 	var ps []*peer
 
@@ -169,7 +168,10 @@ func BackendTest(u *url.URL, n int) {
 				gomega.Expect(err).To(gomega.Succeed())
 			}
 
-			kp := &crypto.KeyPair{Ours: p.key, Theirs: signaling.AnyKey}
+			kp := &crypto.KeyPair{
+				Ours:   p.key,
+				Theirs: crypto.Key{},
+			}
 
 			_, err = p.backend.Subscribe(context.Background(), kp, mh3)
 			gomega.Expect(err).To(gomega.Succeed())

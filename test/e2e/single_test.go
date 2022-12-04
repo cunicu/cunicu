@@ -1,11 +1,10 @@
 package e2e_test
 
 import (
-	"github.com/stv0g/cunicu/pkg/wg"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 )
@@ -45,57 +44,44 @@ var _ = Context("single: A single node to test RPC and watcher", Pending, func()
 
 	Context("create: Create a new interface", func() {
 		Context("kernel: Kernel-space", func() {
-
 		})
 
 		Context("userspace: User-space", func() {
-
 		})
 	})
 
 	Context("watcher: Watch for changes of WireGuard interfaces and peers", Ordered, func() {
 		It("detects a new interface", func() {
-
 		})
 
 		It("detects a change of the interface", func() {
-
 		})
 
 		It("detects a new peer", func() {
-
 		})
 
 		It("detects a change of the peer", func() {
-
 		})
 
 		It("detects the removal of the peer", func() {
-
 		})
 
 		It("detects the removal of the interface", func() {
-
 		})
 	})
 
 	Context("autocfg: Auto-configuration of missing interface parameters", Pending, func() {
-
 	})
 
 	Context("cfgsync: Config file synchronization", Pending, func() {
-
 	})
 
 	Context("hooks: Hook execution", Pending, func() {
-
 	})
 
 	Context("hsync: /etc/hosts synchronization", Pending, func() {
-
 	})
 
 	Context("rtsync: Route synchronization", Pending, func() {
-
 	})
 })

@@ -5,29 +5,32 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"go.uber.org/zap"
-
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"go.uber.org/zap"
 )
 
 // onConnectionStateChange is a callback which gets called by the ICE agent
 // whenever the state of the ICE connection has changed
-func (p *Peer) onConnectionStateChange(new icex.ConnectionState) {
+func (p *Peer) onConnectionStateChange(newState icex.ConnectionState) {
 	if p.ConnectionState() == icex.ConnectionStateClosing {
 		p.logger.Debug("Ignoring state transition as we are closing the session")
 		return
 	}
 
-	p.setConnectionState(new)
+	p.setConnectionState(newState)
 
-	if new == ice.ConnectionStateFailed || new == ice.ConnectionStateDisconnected {
+	if newState == ice.ConnectionStateFailed || newState == ice.ConnectionStateDisconnected {
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
-	} else if new == ice.ConnectionStateClosed {
-		go p.createAgentWithBackoff()
+	} else if newState == ice.ConnectionStateClosed {
+		go func() {
+			if err := p.createAgentWithBackoff(); err != nil {
+				p.logger.Error("Failed to connect", zap.Error(err))
+			}
+		}()
 	}
 }
 

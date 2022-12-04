@@ -11,6 +11,12 @@ import (
 	"golang.zx2c4.com/wireguard/conn"
 )
 
+var (
+	errIncompleteWrite   = errors.New("incomplete write")
+	errNoEndpointFound   = errors.New("failed to find endpoint")
+	errFailedToParseAddr = errors.New("failed to parse addr from slice")
+)
+
 type userPacket struct {
 	endpoint *UserEndpoint
 	buffer   []byte
@@ -71,7 +77,10 @@ func (b *UserBind) SetMark(mark uint32) error {
 
 // Send writes a packet b to address ep.
 func (b *UserBind) Send(buf []byte, ep conn.Endpoint) error {
-	uep := ep.(*UserEndpoint)
+	uep, ok := ep.(*UserEndpoint)
+	if !ok {
+		panic("invalid endpoint type")
+	}
 
 	// b.logger.Debug("Send",
 	// 	zap.Int("len", len(buf)),
@@ -81,7 +90,7 @@ func (b *UserBind) Send(buf []byte, ep conn.Endpoint) error {
 	if n, err := uep.conn.Write(buf); err != nil {
 		return fmt.Errorf("failed to write: %w", err)
 	} else if n != len(buf) {
-		return fmt.Errorf("incomplete write: %d != %d", n, len(buf))
+		return fmt.Errorf("%w: %d != %d", errIncompleteWrite, n, len(buf))
 	}
 
 	return nil
@@ -101,7 +110,7 @@ func (b *UserBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
 
 	ep, ok := b.endpoints[ap]
 	if !ok {
-		return nil, fmt.Errorf("failed to find endpoint")
+		return nil, errNoEndpointFound
 	}
 
 	return ep, nil
@@ -111,19 +120,19 @@ func (b *UserBind) UpdateEndpoint(ep *net.UDPAddr, c net.Conn) (*UserEndpoint, e
 	// b.logger.Debug("UpdateEndpoint", zap.Any("ep", ep))
 
 	// Remove v4-in-v6 prefix
-	epip := ep.IP
-	if epipv4 := epip.To4(); epipv4 != nil {
-		epip = epipv4
+	epIP := ep.IP
+	if epIPv4 := epIP.To4(); epIPv4 != nil {
+		epIP = epIPv4
 	}
 
-	a, ok := netip.AddrFromSlice(epip)
+	a, ok := netip.AddrFromSlice(epIP)
 	if !ok {
-		return nil, errors.New("failed to parse addr from slice")
+		return nil, errFailedToParseAddr
 	}
 
 	ap := netip.AddrPortFrom(a, uint16(ep.Port))
 
-	uep := &UserEndpoint{
+	uEP := &UserEndpoint{
 		StdNetEndpoint: conn.StdNetEndpoint(ap),
 		conn:           c,
 	}
@@ -132,9 +141,9 @@ func (b *UserBind) UpdateEndpoint(ep *net.UDPAddr, c net.Conn) (*UserEndpoint, e
 	defer b.endpointsLock.Unlock()
 
 	// TODO: Remove old endpoints
-	b.endpoints[ap] = uep
+	b.endpoints[ap] = uEP
 
-	return uep, nil
+	return uEP, nil
 }
 
 func (b *UserBind) receive(buf []byte) (int, conn.Endpoint, error) {

@@ -1,2 +1,2 @@
-// Package core defines core datastructures of the project such as a WireGuard interface and peer
+// Package core defines core data structures of the project such as a WireGuard interface and peer
 package core

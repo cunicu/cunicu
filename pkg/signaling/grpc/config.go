@@ -3,9 +3,8 @@ package grpc
 import (
 	"fmt"
 
-	"google.golang.org/grpc"
-
 	"github.com/stv0g/cunicu/pkg/signaling"
+	"google.golang.org/grpc"
 )
 
 type BackendConfig struct {

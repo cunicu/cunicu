@@ -16,16 +16,15 @@ const (
 	InterfaceModifiedNone  InterfaceModifier = 0
 )
 
-var (
-	InterfaceModifiersStrings = []string{
-		"name",
-		"type",
-		"private-key",
-		"listen-port",
-		"firewall-mark",
-		"peers",
-	}
-)
+//nolint:gochecknoglobals
+var InterfaceModifiersStrings = []string{
+	"name",
+	"type",
+	"private-key",
+	"listen-port",
+	"firewall-mark",
+	"peers",
+}
 
 func (i InterfaceModifier) Strings() []string {
 	modifiers := []string{}

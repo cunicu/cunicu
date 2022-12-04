@@ -1,5 +1,4 @@
 package config
 
-var (
-	RuntimeConfigFile = "/var/lib/cunicu.runtime.yaml"
-)
+//nolint:gochecknoglobals
+var RuntimeConfigFile = "/var/lib/cunicu.runtime.yaml"

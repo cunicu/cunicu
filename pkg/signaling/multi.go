@@ -5,7 +5,6 @@ import (
 	"net/url"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 

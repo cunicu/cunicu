@@ -32,7 +32,7 @@ func PrettyDuration(left time.Duration) string {
 		num := left / comp.divisor
 
 		if num > 0 {
-			left -= num * comp.divisor
+			left -= num * comp.divisor //nolint:durationcheck
 
 			unit := comp.name
 			if num > 1 {
@@ -40,7 +40,6 @@ func PrettyDuration(left time.Duration) string {
 			}
 
 			out = append(out, fmt.Sprintf("%d "+t.Mods("%s", t.FgCyan), num, unit))
-
 		}
 	}
 
@@ -72,7 +71,7 @@ func PrettyBytes(b int64) string {
 		return fmt.Sprintf("%d "+t.Mods("B", t.FgCyan), b)
 	}
 
-	var suffices = []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
+	suffices := []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
 	var f float32
 	var i int
 

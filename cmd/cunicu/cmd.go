@@ -1,11 +1,7 @@
+//nolint:gci
 package main
 
 import (
-	// Signaling backends
-	_ "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	_ "github.com/stv0g/cunicu/pkg/signaling/inprocess"
-	_ "github.com/stv0g/cunicu/pkg/signaling/k8s"
-
 	// Daemon features
 	_ "github.com/stv0g/cunicu/pkg/daemon/feature/autocfg"
 	_ "github.com/stv0g/cunicu/pkg/daemon/feature/cfgsync"
@@ -14,4 +10,9 @@ import (
 	_ "github.com/stv0g/cunicu/pkg/daemon/feature/hsync"
 	_ "github.com/stv0g/cunicu/pkg/daemon/feature/pdisc"
 	_ "github.com/stv0g/cunicu/pkg/daemon/feature/rtsync"
+
+	// Signaling backends
+	_ "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	_ "github.com/stv0g/cunicu/pkg/signaling/inprocess"
+	_ "github.com/stv0g/cunicu/pkg/signaling/k8s"
 )

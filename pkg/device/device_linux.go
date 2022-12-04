@@ -15,6 +15,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var (
+	errNoRouteToDestination     = errors.New("no route to destination")
+	errNoRoutesOrInterfaceFound = errors.New("no routes or interfaces found")
+)
+
 const (
 	ipr2TablesFile = "/etc/iproute2/rt_tables"
 )
@@ -198,14 +203,14 @@ func DetectDefaultMTU(fwmark int) (int, error) {
 // the default MTU of the link which is used by the route as next hop.
 func mtuFromRoutes(rts []netlink.Route) (int, error) {
 	if len(rts) == 0 {
-		return -1, errors.New("no route to destination")
+		return -1, errNoRouteToDestination
 	}
 
 	var err error
 	var mtu int
-	var links = map[int]netlink.Link{}
-	var linkMTU = math.MaxInt
-	var routeMTU = math.MaxInt
+	links := map[int]netlink.Link{}
+	linkMTU := math.MaxInt
+	routeMTU := math.MaxInt
 
 	for _, rt := range rts {
 		if rt.MTU != 0 && rt.MTU < routeMTU {
@@ -231,7 +236,7 @@ func mtuFromRoutes(rts []netlink.Route) (int, error) {
 
 	if mtu = routeMTU; mtu == math.MaxInt {
 		if mtu = linkMTU; mtu == math.MaxInt {
-			return -1, fmt.Errorf("no routes or interfaces found")
+			return -1, errNoRoutesOrInterfaceFound
 		}
 	}
 
@@ -239,7 +244,7 @@ func mtuFromRoutes(rts []netlink.Route) (int, error) {
 }
 
 func Table(str string) (int, error) {
-	if f, err := os.OpenFile(ipr2TablesFile, os.O_RDONLY, 0600); err == nil {
+	if f, err := os.OpenFile(ipr2TablesFile, os.O_RDONLY, 0o600); err == nil {
 		sc := bufio.NewScanner(f)
 		for sc.Scan() {
 			line := sc.Text()

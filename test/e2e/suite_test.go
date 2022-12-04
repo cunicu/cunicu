@@ -5,38 +5,35 @@ import (
 	"math/rand"
 	"strings"
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/reporters"
 	. "github.com/onsi/gomega"
-
 	"github.com/onsi/gomega/gexec"
 	"github.com/stv0g/cunicu/pkg/util"
-
-	"github.com/onsi/ginkgo/v2/reporters"
-	"github.com/onsi/ginkgo/v2/types"
 )
 
-var (
+//nolint:gochecknoglobals
+var options testOptions
+
+type testOptions struct {
 	setup   bool
 	persist bool
 	capture bool
-)
+}
 
 // Register your flags in an init function.  This ensures they are registered _before_ `go test` calls flag.Parse().
-func init() {
-	flag.BoolVar(&setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
-	flag.BoolVar(&persist, "persist", false, "Do not tear-down virtual network")
-	flag.BoolVar(&capture, "capture", false, "Captures network-traffic to PCAPng file")
+func init() { //nolint:gochecknoinits
+	flag.BoolVar(&options.setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
+	flag.BoolVar(&options.persist, "persist", false, "Do not tear-down virtual network")
+	flag.BoolVar(&options.capture, "capture", false, "Captures network-traffic to PCAPng file")
 }
 
 func TestSuite(t *testing.T) {
 	rand.Seed(GinkgoRandomSeed() + int64(GinkgoParallelProcess()))
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2E Test Suite", types.ReporterConfig{
-		SlowSpecThreshold: 1 * time.Minute,
-	})
+	RunSpecs(t, "E2E Test Suite")
 }
 
 var _ = BeforeSuite(func() {
@@ -49,7 +46,9 @@ var _ = BeforeSuite(func() {
 
 var _ = ReportAfterSuite("Write report", func(r Report) {
 	r.SpecReports = nil
-	reporters.GenerateJSONReport(r, "logs/report.json")
+	if err := reporters.GenerateJSONReport(r, "logs/report.json"); err != nil {
+		panic(err)
+	}
 })
 
 func SpecName() []string {

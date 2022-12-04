@@ -7,11 +7,9 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-	"go.uber.org/zap"
-
-	"github.com/stv0g/cunicu/pkg/wg"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"go.uber.org/zap"
 )
 
 type UserBindProxy struct {

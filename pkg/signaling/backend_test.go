@@ -3,11 +3,10 @@ package signaling_test
 import (
 	"net/url"
 
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/signaling/inprocess"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling/inprocess"
 )
 
 type readyHandler struct {

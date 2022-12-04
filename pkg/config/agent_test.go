@@ -7,16 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/ice/v2"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
+	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var _ = Describe("Agent config", func() {
@@ -104,7 +102,10 @@ var _ = Describe("Agent config", func() {
 			l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 			Expect(err).To(Succeed())
 
-			go svr.Serve(l)
+			go func() {
+				err := svr.Serve(l)
+				Expect(err).To(Succeed())
+			}()
 		})
 
 		AfterEach(func() {
@@ -146,6 +147,8 @@ var _ = Describe("Agent config", func() {
 						pk.String(),
 					}))
 					Expect(u.Password).To(Equal(pass))
+
+				case ice.SchemeTypeSTUNS, ice.SchemeTypeTURNS:
 				}
 			}
 		})

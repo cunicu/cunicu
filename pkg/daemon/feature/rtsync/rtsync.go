@@ -5,15 +5,13 @@ import (
 	"errors"
 	"net/netip"
 
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/daemon"
-
 	xerrors "github.com/stv0g/cunicu/pkg/errors"
+	"go.uber.org/zap"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("rtsync", "Route synchronization", New, 30)
 }
 

@@ -8,23 +8,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/ice/v2"
-	"go.uber.org/zap"
-
 	"github.com/cenkalti/backoff/v4"
-
+	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
 	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util"
-
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/log"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util"
+	"go.uber.org/zap"
+)
+
+var (
+	errNoNATorBind          = errors.New("failed tp setup peer. Neither NAT or Bind is configured")
+	errCreateNonClosedAgent = errors.New("failed to create new agent if previous one is not closed")
+	errSwitchToIdle         = errors.New("failed to switch to idle state")
+	errStillIdle            = errors.New("not connected yet")
 )
 
 type Peer struct {
@@ -70,6 +74,7 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
 	// Setup proxy
+	//nolint:gocritic
 	if dev, ok := e.KernelDevice.(*device.UserDevice); ok {
 		if p.proxy, err = proxy.NewUserBindProxy(dev.Bind); err != nil {
 			return nil, fmt.Errorf("failed to setup proxy: %w", err)
@@ -79,7 +84,7 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 			return nil, fmt.Errorf("failed to setup proxy: %w", err)
 		}
 	} else {
-		return nil, fmt.Errorf("failed tp setup peer. Neither NAT or Bind is configured")
+		return nil, errNoNATorBind
 	}
 
 	if err = p.createAgentWithBackoff(); err != nil {
@@ -216,7 +221,7 @@ func (p *Peer) createAgent() error {
 	var err error
 
 	if !p.setConnectionStateIf(ice.ConnectionStateClosed, icex.ConnectionStateCreating) {
-		return fmt.Errorf("failed to create new agent if previous one is not closed")
+		return errCreateNonClosedAgent
 	}
 
 	// Reset state to closed if we error-out of this function
@@ -271,18 +276,20 @@ func (p *Peer) createAgent() error {
 	}
 
 	if !p.setConnectionStateIf(icex.ConnectionStateCreating, icex.ConnectionStateIdle) {
-		return fmt.Errorf("failed to switch to idle state")
+		return errSwitchToIdle
 	}
 
 	// Send peer credentials as long as we remain in ConnectionStateIdle
-	go p.sendCredentialsWithBackoff(true)
+	go func() {
+		if err := p.sendCredentialsWithBackoff(true); err != nil {
+			p.logger.Error("Failed to send credentials", zap.Error(err))
+		}
+	}()
 
 	return nil
 }
 
 func (p *Peer) sendCredentialsWithBackoff(need bool) error {
-	ErrStillIdle := errors.New("not connected yet")
-
 	bo := backoff.NewExponentialBackOff()
 	bo.MaxInterval = 1 * time.Minute
 
@@ -293,13 +300,13 @@ func (p *Peer) sendCredentialsWithBackoff(need bool) error {
 			}
 
 			if p.ConnectionState() == icex.ConnectionStateIdle {
-				return ErrStillIdle
+				return errStillIdle
 			}
 
 			return nil
 		}, bo,
 		func(err error, d time.Duration) {
-			if err != ErrStillIdle {
+			if errors.Is(err, errStillIdle) {
 				p.logger.Error("Failed to send peer credentials",
 					zap.Error(err),
 					zap.Duration("after", d))
@@ -373,35 +380,35 @@ func (p *Peer) connect(ufrag, pwd string) error {
 
 // setConnectionState updates the connection state of the peer and invokes registered handlers.
 // It returns the previous connection state.
-func (p *Peer) setConnectionState(new icex.ConnectionState) icex.ConnectionState {
-	prev := p.connectionState.Swap(new)
+func (p *Peer) setConnectionState(newState icex.ConnectionState) icex.ConnectionState { //nolint:unparam
+	prevState := p.connectionState.Swap(newState)
 
 	p.lastStateChange = time.Now()
 
 	p.logger.Info("Connection state changed",
-		zap.String("new", strings.ToLower(new.String())),
-		zap.String("previous", strings.ToLower(prev.String())))
+		zap.String("new", strings.ToLower(newState.String())),
+		zap.String("previous", strings.ToLower(prevState.String())))
 
 	for _, h := range p.Interface.onConnectionStateChange {
-		h.OnConnectionStateChange(p, new, prev)
+		h.OnConnectionStateChange(p, newState, prevState)
 	}
 
-	return prev
+	return prevState
 }
 
 // setConnectionStateIf updates the connection state of the peer if the previous state matches the one supplied.
 // It returns true if the state has been changed.
-func (p *Peer) setConnectionStateIf(prev, new icex.ConnectionState) bool {
-	swapped := p.connectionState.CompareAndSwap(prev, new)
+func (p *Peer) setConnectionStateIf(prevState, newState icex.ConnectionState) bool {
+	swapped := p.connectionState.CompareAndSwap(prevState, newState)
 	if swapped {
 		p.lastStateChange = time.Now()
 
 		p.logger.Info("Connection state changed",
-			zap.String("new", strings.ToLower(new.String())),
-			zap.String("previous", strings.ToLower(prev.String())))
+			zap.String("new", strings.ToLower(newState.String())),
+			zap.String("previous", strings.ToLower(prevState.String())))
 
 		for _, h := range p.Interface.onConnectionStateChange {
-			h.OnConnectionStateChange(p, new, prev)
+			h.OnConnectionStateChange(p, newState, prevState)
 		}
 	}
 
@@ -475,11 +482,13 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 		}
 
 		lc, rc := cp.Local, cp.Remote
-		if lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay {
+
+		switch {
+		case lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay:
 			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED_BIDIR
-		} else if lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay {
+		case lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay:
 			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED
-		} else {
+		default:
 			return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
 		}
 

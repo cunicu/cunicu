@@ -25,8 +25,10 @@ func TestSuite(t *testing.T) {
 
 var logger = test.SetupLogging()
 
-var testenv *envtest.Environment
-var kcfg *os.File
+var (
+	testenv *envtest.Environment
+	kcfg    *os.File
+)
 
 var _ = BeforeSuite(func() {
 	log.SetLogger(zapr.NewLogger(logger.Named("k8s")))

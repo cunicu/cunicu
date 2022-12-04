@@ -12,23 +12,23 @@ type Change struct {
 	New any
 }
 
-func DiffSettings(old, new *Settings) map[string]Change {
-	oldMap := Map(old, "koanf")
-	newMap := Map(new, "koanf")
+func DiffSettings(oldSettings, newSettings *Settings) map[string]Change {
+	oldMap := Map(oldSettings, "koanf")
+	newMap := Map(newSettings, "koanf")
 
 	return diff(oldMap, newMap)
 }
 
-func diff(old, new map[string]any) map[string]Change {
+func diff(oldSettings, newSettings map[string]any) map[string]Change {
 	added, removed, kept := util.SliceDiff(
-		maps.Keys(old),
-		maps.Keys(new),
+		maps.Keys(oldSettings),
+		maps.Keys(newSettings),
 	)
 
 	changes := map[string]Change{}
 
 	for _, key := range added {
-		newValue := new[key]
+		newValue := newSettings[key]
 
 		changes[key] = Change{
 			New: newValue,
@@ -36,7 +36,7 @@ func diff(old, new map[string]any) map[string]Change {
 	}
 
 	for _, key := range removed {
-		oldValue := old[key]
+		oldValue := oldSettings[key]
 
 		changes[key] = Change{
 			Old: oldValue,
@@ -44,19 +44,17 @@ func diff(old, new map[string]any) map[string]Change {
 	}
 
 	for _, key := range kept {
-		oldStruct, oldIsStruct := old[key].(map[string]any)
-		newStruct, newIsStruct := new[key].(map[string]any)
+		oldStruct, oldIsStruct := oldSettings[key].(map[string]any)
+		newStruct, newIsStruct := newSettings[key].(map[string]any)
 
 		if oldIsStruct && newIsStruct {
 			for skey, chg := range diff(oldStruct, newStruct) {
 				changes[key+"."+skey] = chg
 			}
-		} else {
-			if !reflect.DeepEqual(old[key], new[key]) {
-				changes[key] = Change{
-					Old: old[key],
-					New: new[key],
-				}
+		} else if !reflect.DeepEqual(oldSettings[key], newSettings[key]) {
+			changes[key] = Change{
+				Old: oldSettings[key],
+				New: newSettings[key],
 			}
 		}
 	}

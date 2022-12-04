@@ -8,9 +8,8 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
-	"go.uber.org/zap"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"go.uber.org/zap"
 )
 
 const (
@@ -45,8 +44,7 @@ func NewKernelProxy(nat *NAT, listenPort int) (*KernelProxy, error) {
 
 func (p *KernelProxy) Close() error {
 	if p.connUser != nil {
-		// TODO: really required?
-		if err := p.connUser.SetWriteDeadline(time.Now().Add(1 * time.Second)); err != nil {
+		if err := p.connUser.SetWriteDeadline(time.Now().Add(1 * time.Second)); err != nil { // TODO: really required?
 			return fmt.Errorf("failed to set write deadline: %w", err)
 		}
 
@@ -71,8 +69,6 @@ func (p *KernelProxy) UpdateCandidatePair(cp *ice.CandidatePair, conn *ice.Conn)
 }
 
 func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, newListenPort int) error {
-	var err error
-
 	if newListenPort > 0 {
 		p.listenPort = newListenPort
 	}
@@ -84,65 +80,90 @@ func (p *KernelProxy) Update(newCP *ice.CandidatePair, newConnICE *ice.Conn, new
 	if p.cp != nil {
 		switch p.Type() {
 		case epdiscproto.ProxyType_KERNEL_NAT:
-			p.ep = &net.UDPAddr{
-				IP:   net.ParseIP(p.cp.Remote.Address()),
-				Port: p.cp.Remote.Port(),
-			}
-
-			// Delete any old SPAT rule
-			if p.natRule != nil {
-				if err := p.natRule.Delete(); err != nil {
-					return fmt.Errorf("failed to delete rule: %w", err)
-				}
-			}
-
-			// Setup SNAT redirect (WireGuard listen-port -> STUN port)
-			if p.natRule, err = p.nat.MasqueradeSourcePort(p.listenPort, p.cp.Local.Port(), p.ep); err != nil {
+			if err := p.updateNAT(); err != nil {
 				return err
 			}
 
 		case epdiscproto.ProxyType_KERNEL_CONN:
-			// We ca not do anything for prfx and relay candidates.
-			// Let them pass through the userspace connection
-
-			var create = false
-			if p.connUser == nil {
-				// We lazily create the user connection on demand to avoid opening unused sockets
-				create = true
-			} else if ra, ok := p.connUser.RemoteAddr().(*net.UDPAddr); ok && ra.Port != p.listenPort {
-				// Also recreate the user connection in case the WireGuard listen port has changed
-				create = true
+			if err := p.updateConn(newConnICE); err != nil {
+				return err
 			}
 
-			var newConnUser *net.UDPConn
-			if create {
-				if newConnUser, err = p.newUserConn(newConnICE); err != nil {
-					return fmt.Errorf("failed to setup user connection: %w", err)
-				}
-
-				p.logger.Info("Created user-space proxy connection",
-					zap.Any("local", newConnUser.LocalAddr()),
-					zap.Any("remote", newConnUser.RemoteAddr()))
-			}
-
-			// Start copying if the underlying ice.Conn has changed
-			if newConnICE != p.connICE || newConnUser != p.connUser {
-				if p.connUser != nil {
-					if err := p.connUser.Close(); err != nil {
-						return fmt.Errorf("failed to close old user connection: %w", err)
-					}
-				}
-
-				p.connICE = newConnICE
-				p.connUser = newConnUser
-
-				// Bi-directional copy between ICE and loopback UDP sockets
-				go p.copy(newConnICE, p.connUser)
-				go p.copy(p.connUser, newConnICE)
-			}
-
-			p.ep = p.connUser.LocalAddr().(*net.UDPAddr)
+		case epdiscproto.ProxyType_NO_PROXY, epdiscproto.ProxyType_USER_BIND:
 		}
+	}
+
+	return nil
+}
+
+func (p *KernelProxy) updateNAT() error {
+	var err error
+
+	p.ep = &net.UDPAddr{
+		IP:   net.ParseIP(p.cp.Remote.Address()),
+		Port: p.cp.Remote.Port(),
+	}
+
+	// Delete any old SPAT rule
+	if p.natRule != nil {
+		if err := p.natRule.Delete(); err != nil {
+			return fmt.Errorf("failed to delete rule: %w", err)
+		}
+	}
+
+	// Setup SNAT redirect (WireGuard listen-port -> STUN port)
+	if p.natRule, err = p.nat.MasqueradeSourcePort(p.listenPort, p.cp.Local.Port(), p.ep); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *KernelProxy) updateConn(newConnICE *ice.Conn) error {
+	var err error
+
+	// We cant to anything for prfx and relay candidates.
+	// Let them pass through the userspace connection
+
+	create := false
+	if p.connUser == nil {
+		// We lazily create the user connection on demand to avoid opening unused sockets
+		create = true
+	} else if ra, ok := p.connUser.RemoteAddr().(*net.UDPAddr); ok && ra.Port != p.listenPort {
+		// Also recreate the user connection in case the WireGuard listen port has changed
+		create = true
+	}
+
+	var newConnUser *net.UDPConn
+	if create {
+		if newConnUser, err = p.newUserConn(newConnICE); err != nil {
+			return fmt.Errorf("failed to setup user connection: %w", err)
+		}
+		p.logger.Info("Setup user-space proxy connection",
+			zap.Any("localAddress", newConnUser.LocalAddr()),
+			zap.Any("remoteAddress", newConnUser.RemoteAddr()))
+	}
+
+	// Start copying if the underlying ice.Conn has changed
+	if newConnICE != p.connICE || newConnUser != p.connUser {
+		if p.connUser != nil {
+			if err := p.connUser.Close(); err != nil {
+				return fmt.Errorf("failed to close old user connection: %w", err)
+			}
+		}
+
+		p.connICE = newConnICE
+		p.connUser = newConnUser
+
+		// Bi-directional copy between ICE and loopback UDP sockets
+		go p.copy(newConnICE, p.connUser)
+		go p.copy(p.connUser, newConnICE)
+	}
+
+	var ok bool
+	p.ep, ok = p.connUser.LocalAddr().(*net.UDPAddr)
+	if !ok {
+		return errInvalidCast
 	}
 
 	return nil
@@ -167,11 +188,11 @@ func (p *KernelProxy) copy(dst io.Writer, src io.Reader) {
 	}
 }
 
-func (p *KernelProxy) newUserConn(iceConn *ice.Conn) (*net.UDPConn, error) {
+func (p *KernelProxy) newUserConn(_ *ice.Conn) (*net.UDPConn, error) {
 	// User-space proxying
 	rAddr := net.UDPAddr{
 		IP:   net.IPv6loopback,
-		Port: int(p.listenPort),
+		Port: p.listenPort,
 	}
 
 	lAddr := net.UDPAddr{
@@ -188,11 +209,12 @@ func (p *KernelProxy) newUserConn(iceConn *ice.Conn) (*net.UDPConn, error) {
 }
 
 func (p *KernelProxy) Type() epdiscproto.ProxyType {
-	if p.cp == nil {
+	switch {
+	case p.cp == nil:
 		return epdiscproto.ProxyType_NO_PROXY
-	} else if p.cp.Local.Type() == ice.CandidateTypeHost || p.cp.Local.Type() == ice.CandidateTypeServerReflexive {
+	case p.cp.Local.Type() == ice.CandidateTypeHost || p.cp.Local.Type() == ice.CandidateTypeServerReflexive:
 		return epdiscproto.ProxyType_KERNEL_NAT
-	} else {
+	default:
 		return epdiscproto.ProxyType_KERNEL_CONN
 	}
 }

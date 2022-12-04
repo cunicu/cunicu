@@ -45,25 +45,35 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	return d.Dump(wr, hideKeys)
 }
 
-func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
+func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	wri := t.NewIndenter(wr, "  ")
 
 	fmt.Fprintf(wr, t.Mods("interface", t.Bold, t.FgGreen)+": "+t.Mods("%s", t.FgGreen)+"\n", d.Name)
 
 	if crypto.Key(d.PrivateKey).IsSet() {
-		t.FprintKV(wri, "public key", d.PublicKey)
+		if _, err := t.FprintKV(wri, "public key", d.PublicKey); err != nil {
+			return err
+		}
 
 		if hideKeys {
-			t.FprintKV(wri, "private key", "(hidden)")
+			if _, err := t.FprintKV(wri, "private key", "(hidden)"); err != nil {
+				return err
+			}
 		} else {
-			t.FprintKV(wri, "private key", d.PrivateKey)
+			if _, err := t.FprintKV(wri, "private key", d.PrivateKey); err != nil {
+				return err
+			}
 		}
 	}
 
-	t.FprintKV(wri, "listening port", d.ListenPort)
+	if _, err := t.FprintKV(wri, "listening port", d.ListenPort); err != nil {
+		return err
+	}
 
 	if d.FirewallMark > 0 {
-		t.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark))
+		if _, err := t.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark)); err != nil {
+			return err
+		}
 	}
 
 	// Sort peers by last handshake time
@@ -76,18 +86,26 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 
 		if crypto.Key(p.PresharedKey).IsSet() {
 			if hideKeys {
-				t.FprintKV(wri, "preshared key", "(hidden)")
+				if _, err := t.FprintKV(wri, "preshared key", "(hidden)"); err != nil {
+					return err
+				}
 			} else {
-				t.FprintKV(wri, "preshared key", p.PresharedKey)
+				if _, err := t.FprintKV(wri, "preshared key", p.PresharedKey); err != nil {
+					return err
+				}
 			}
 		}
 
 		if p.Endpoint != nil {
-			t.FprintKV(wri, "endpoint", p.Endpoint)
+			if _, err := t.FprintKV(wri, "endpoint", p.Endpoint); err != nil {
+				return err
+			}
 		}
 
 		if !p.LastHandshakeTime.IsZero() {
-			t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTime))
+			if _, err := t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTime)); err != nil {
+				return err
+			}
 		}
 
 		if len(p.AllowedIPs) > 0 {
@@ -96,19 +114,27 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error {
 				allowedIPs = append(allowedIPs, allowedIP.String())
 			}
 
-			t.FprintKV(wri, "allowed ips", strings.Join(allowedIPs, ", "))
+			if _, err := t.FprintKV(wri, "allowed ips", strings.Join(allowedIPs, ", ")); err != nil {
+				return err
+			}
 		} else {
-			t.FprintKV(wri, "allowed ips", "(none)")
+			if _, err := t.FprintKV(wri, "allowed ips", "(none)"); err != nil {
+				return err
+			}
 		}
 
 		if p.ReceiveBytes > 0 || p.TransmitBytes > 0 {
-			t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
+			if _, err := t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
 				util.PrettyBytes(p.ReceiveBytes),
-				util.PrettyBytes(p.TransmitBytes)))
+				util.PrettyBytes(p.TransmitBytes))); err != nil {
+				return err
+			}
 		}
 
 		if p.PersistentKeepaliveInterval > 0 {
-			t.FprintKV(wri, "persistent keepalive", util.Every(p.PersistentKeepaliveInterval))
+			if _, err := t.FprintKV(wri, "persistent keepalive", util.Every(p.PersistentKeepaliveInterval)); err != nil {
+				return err
+			}
 		}
 	}
 

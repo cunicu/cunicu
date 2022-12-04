@@ -6,59 +6,57 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapio"
-
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/rpc"
 	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
 )
 
-var (
-	daemonCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	cmd := &cobra.Command{
 		Use:               "daemon [interface-names...]",
 		Short:             "Start the daemon",
 		Example:           `$ cunicu daemon -U -x mysecretpass wg0`,
-		Run:               daemonRun,
 		ValidArgsFunction: interfaceValidArgs,
 	}
 
-	cfg *config.Config
-)
-
-func init() {
-	f := daemonCmd.Flags()
+	f := cmd.Flags()
 	f.SortFlags = false
 
-	pf := daemonCmd.PersistentFlags()
+	pf := cmd.PersistentFlags()
 
-	cfg = config.New(pf)
+	cfg := config.New(pf)
 
-	if err := daemonCmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := cmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
-	if err := daemonCmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := cmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
-	if err := daemonCmd.MarkPersistentFlagFilename("config", "yaml", "json"); err != nil {
+	if err := cmd.MarkPersistentFlagFilename("config", "yaml", "json"); err != nil {
 		panic(err)
 	}
 
 	pf.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
-			if err := daemonCmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions); err != nil {
+			if err := cmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions); err != nil {
 				panic(err)
 			}
 		}
 	})
 
-	rootCmd.AddCommand(daemonCmd)
+	cmd.Run = func(cmd *cobra.Command, args []string) {
+		daemonRun(cmd, args, cfg)
+	}
+
+	rootCmd.AddCommand(cmd)
 }
 
-func daemonRun(cmd *cobra.Command, args []string) {
+func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	if _, err := io.WriteString(os.Stdout, Banner(color)); err != nil {
 		logger.Fatal("Failed to write banner", zap.Error(err))
 	}

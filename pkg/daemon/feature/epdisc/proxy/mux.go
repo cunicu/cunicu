@@ -1,13 +1,15 @@
 package proxy
 
 import (
+	"errors"
 	"net"
 
 	"github.com/pion/ice/v2"
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/log"
+	"go.uber.org/zap"
 )
+
+var errInvalidCast = errors.New("invalid cast")
 
 func CreateUDPMux() (ice.UDPMux, int, error) {
 	conn, err := net.ListenUDP("udp", nil)
@@ -15,7 +17,10 @@ func CreateUDPMux() (ice.UDPMux, int, error) {
 		return nil, 0, err
 	}
 
-	lAddr := conn.LocalAddr().(*net.UDPAddr)
+	lAddr, ok := conn.LocalAddr().(*net.UDPAddr)
+	if !ok {
+		return nil, -1, errInvalidCast
+	}
 
 	mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
 		UDPConn: conn,
@@ -34,7 +39,10 @@ func CreateUniversalUDPMux() (ice.UniversalUDPMux, int, error) {
 		return nil, 0, err
 	}
 
-	lAddr := conn.LocalAddr().(*net.UDPAddr)
+	lAddr, ok := conn.LocalAddr().(*net.UDPAddr)
+	if !ok {
+		return nil, -1, errInvalidCast
+	}
 
 	mux := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: conn,

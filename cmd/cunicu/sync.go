@@ -8,18 +8,16 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 )
 
-var (
-	syncCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	cmd := &cobra.Command{
 		Use:   "sync",
 		Short: "Synchronize cunīcu daemon state",
 		Long:  "Synchronizes the internal daemon state with kernel routes, interfaces and addresses",
 		RunE:  sync,
 		Args:  cobra.NoArgs,
 	}
-)
 
-func init() {
-	addClientCommand(rootCmd, syncCmd)
+	addClientCommand(rootCmd, cmd)
 }
 
 func sync(cmd *cobra.Command, args []string) error {

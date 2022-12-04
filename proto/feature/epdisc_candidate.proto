@@ -170,7 +170,7 @@ message CandidatePairStats {
 	// CurrentRoundTripTime represents the latest round trip time measured in seconds,
 	// computed from both STUN connectivity checks, including those that are sent
 	// for consent verification.
-	double curren_troundtrip_time = 16;
+	double current_roundtrip_time = 16;
 
 	// AvailableOutgoingBitrate is calculated by the underlying congestion control
 	// by combining the available bitrate for all the outgoing RTP streams using

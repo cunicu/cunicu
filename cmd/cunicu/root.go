@@ -50,10 +50,19 @@ Code & Issues:
 `
 )
 
-var (
-	logger *zap.Logger
+type options struct {
+	logLevel       config.Level
+	verbosityLevel int
+	logFile        string
+	colorMode      string
+}
 
-	rootCmd = &cobra.Command{
+var (
+	logger *zap.Logger //nolint:gochecknoglobals
+	color  bool        //nolint:gochecknoglobals
+	stdout io.Writer   //nolint:gochecknoglobals
+
+	rootCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "cunicu",
 		Short: "cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.",
 		Long: Banner(terminal.IsATTY(os.Stdout)) + `cunīcu is a user-space daemon managing WireGuard® interfaces to
@@ -69,50 +78,49 @@ in which WireGuard kernel support has not landed yet.`,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 	}
-
-	logLevel       = config.Level{Level: zapcore.InfoLevel}
-	verbosityLevel int
-	logFile        string
-	colorMode      string
-	color          bool
-	stdout         io.Writer
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
+	opts := &options{
+		logLevel: config.Level{
+			Level: zapcore.InfoLevel,
+		},
+	}
+
 	rootCmd.SetUsageTemplate(usageTemplate)
 
-	cobra.OnInitialize(onInitialize)
+	cobra.OnInitialize(func() {
+		onInitialize(opts)
+	})
 
 	f := rootCmd.Flags()
 	f.SortFlags = false
 
 	pf := rootCmd.PersistentFlags()
-	pf.IntVarP(&verbosityLevel, "verbose", "v", 0, "verbosity level")
-	pf.VarP(&logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
-	pf.StringVarP(&logFile, "log-file", "l", "", "path of a file to write logs to")
-	pf.StringVarP(&colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
+	pf.IntVarP(&opts.verbosityLevel, "verbose", "v", 0, "verbosity level")
+	pf.VarP(&opts.logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
+	pf.StringVarP(&opts.logFile, "log-file", "l", "", "path of a file to write logs to")
+	pf.StringVarP(&opts.colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
 
-	if err := daemonCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := rootCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
-	if err := daemonCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := rootCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
-	flagName := "output"
-
-	if err := daemonCmd.MarkFlagFilename(flagName, "yaml", "json"); err != nil {
+	if err := rootCmd.MarkFlagFilename("output", "yaml", "json"); err != nil {
 		panic(err)
 	}
 }
 
-func onInitialize() {
+func onInitialize(opts *options) {
 	// Initialize PRNG
 	util.SetupRand()
 
 	// Handle color output
-	switch colorMode {
+	switch opts.colorMode {
 	case "auto":
 		color = terminal.IsATTY(os.Stdout)
 	case "always":
@@ -130,12 +138,12 @@ func onInitialize() {
 	outputPaths := []string{"stdout"}
 	errOutputPaths := []string{"stderr"}
 
-	if logFile != "" {
-		outputPaths = append(outputPaths, logFile)
-		errOutputPaths = append(errOutputPaths, logFile)
+	if opts.logFile != "" {
+		outputPaths = append(outputPaths, opts.logFile)
+		errOutputPaths = append(errOutputPaths, opts.logFile)
 	}
 
-	logger = log.SetupLogging(logLevel.Level, verbosityLevel, outputPaths, errOutputPaths, color)
+	logger = log.SetupLogging(opts.logLevel.Level, opts.verbosityLevel, outputPaths, errOutputPaths, color)
 }
 
 func main() {

@@ -43,7 +43,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 	if fn != "" {
 		// Create parent directories for log file
 		if path := path.Dir(fn); path != "" {
-			if err := os.MkdirAll(path, 0750); err != nil {
+			if err := os.MkdirAll(path, 0o750); err != nil {
 				panic(fmt.Errorf("failed to directory of log file: %w", err))
 			}
 		}
@@ -55,7 +55,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 
 		//#nosec G304 -- Test code is not controllable by attackers
 		//#nosec G302 -- Log file should be readable by users
-		f, err := os.OpenFile(fn, fl, 0644)
+		f, err := os.OpenFile(fn, fl, 0o644)
 		if err != nil {
 			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
 		}

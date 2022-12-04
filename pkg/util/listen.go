@@ -1,18 +1,25 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
 	"strings"
 )
 
+var (
+	errInvalidPortRange = errors.New("minimal port must be larger than maximal port number")
+	errInvalidNetwork   = errors.New("unsupported network")
+	errNoPortFound      = errors.New("failed to find port")
+)
+
 func FindRandomPortToListen(network string, min, max int) (int, error) {
 	if max < min {
-		return -1, fmt.Errorf("minimal port must be larger than maximal port number")
+		return -1, errInvalidPortRange
 	}
 	if !strings.HasPrefix(network, "udp") {
-		return -1, fmt.Errorf("unsupported network: %s", network)
+		return -1, fmt.Errorf("%w: %s", errInvalidNetwork, network)
 	}
 
 	for attempts := 100; attempts > 0; attempts-- {
@@ -23,15 +30,15 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 		}
 	}
 
-	return -1, fmt.Errorf("failed to find port")
+	return -1, errNoPortFound
 }
 
 func FindNextPortToListen(network string, start, end int) (int, error) {
 	if end < start {
-		return -1, fmt.Errorf("minimal port must be larger than maximal port number")
+		return -1, errInvalidPortRange
 	}
 	if !strings.HasPrefix(network, "udp") {
-		return -1, fmt.Errorf("unsupported network: %s", network)
+		return -1, fmt.Errorf("%w: %s", errInvalidNetwork, network)
 	}
 
 	for port := start; port <= end; port++ {
@@ -40,7 +47,7 @@ func FindNextPortToListen(network string, start, end int) (int, error) {
 		}
 	}
 
-	return -1, fmt.Errorf("failed to find port")
+	return -1, errNoPortFound
 }
 
 func canListenOnPort(network string, port int) bool {

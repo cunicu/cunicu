@@ -18,16 +18,21 @@ const (
 	KeyLength = 32
 )
 
+//nolint:gochecknoglobals
 var (
 	// A cunīcu specific key for siphash to generate unique IPv6 addresses from the
 	// interfaces public key
 	addrHashKey = [...]byte{0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97}
 
 	argonSalt = [...]byte{0x77, 0x31, 0x63, 0x33, 0x63, 0x30, 0x6e, 0x6e, 0x33, 0x63, 0x74, 0x73, 0x33, 0x76, 0x65, 0x72, 0x79, 0x62, 0x30, 0x64, 0x79}
+
+	errInvalidKeyLength = errors.New("invalid length")
 )
 
-type Nonce []byte
-type Key [KeyLength]byte
+type (
+	Nonce []byte
+	Key   [KeyLength]byte
+)
 
 func GenerateKeyFromPassword(pw string) Key {
 	key := argon2.IDKey([]byte(pw), argonSalt[:], 1, 64*1024, 4, KeyLength)
@@ -70,7 +75,7 @@ func ParseKey(str string) (Key, error) {
 
 func ParseKeyBytes(buf []byte) (Key, error) {
 	if len(buf) != KeyLength {
-		return Key{}, errors.New("invalid length")
+		return Key{}, errInvalidKeyLength
 	}
 
 	return *(*Key)(buf), nil

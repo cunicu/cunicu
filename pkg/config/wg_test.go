@@ -13,8 +13,9 @@ import (
 var _ = Context("wg provider", func() {
 	var dir string
 
+	// TODO: Use Ginkgo facilities for creating temporary file
 	createConfigFile := func(name, contents string) {
-		err := os.WriteFile(filepath.Join(dir, name+".conf"), []byte(contents), 0644)
+		err := os.WriteFile(filepath.Join(dir, name+".conf"), []byte(contents), 0o600)
 		Expect(err).To(Succeed())
 	}
 

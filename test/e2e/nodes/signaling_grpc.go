@@ -104,7 +104,7 @@ func (s *GrpcSignalingNode) isReachable() bool {
 func (s *GrpcSignalingNode) WaitReady() error {
 	for tries := 1000; !s.isReachable(); tries-- {
 		if tries == 0 {
-			return fmt.Errorf("timed out")
+			return errTimeout
 		}
 
 		time.Sleep(20 * time.Millisecond)

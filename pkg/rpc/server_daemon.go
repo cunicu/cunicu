@@ -12,23 +12,27 @@ import (
 	"strconv"
 	"strings"
 
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
-	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+var (
+	errInvalidVerbosityLevel = errors.New("invalid verbosity level (must be between 0 and 10 inclusive)")
+	errInvalidSeverityLevel  = errors.New("invalid severity level")
+	errNoSettingChanged      = errors.New("no setting was changed")
 )
 
 type DaemonServer struct {
@@ -50,7 +54,6 @@ func NewDaemonServer(s *Server, d *daemon.Daemon) *DaemonServer {
 }
 
 func (s *DaemonServer) StreamEvents(params *proto.Empty, stream rpcproto.Daemon_StreamEventsServer) error {
-
 	// Send initial connection state of all peers
 	if s.epdisc != nil {
 		s.epdisc.SendConnectionStates(stream)
@@ -63,7 +66,7 @@ out:
 	for {
 		select {
 		case event := <-events:
-			if err := stream.Send(event); err == io.EOF {
+			if err := stream.Send(event); errors.Is(err, io.EOF) {
 				break out
 			} else if err != nil {
 				return fmt.Errorf("failed to send event: %w", err)
@@ -116,7 +119,7 @@ func (s *DaemonServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Em
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) {
+func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) { //nolint:gocognit
 	var err error
 	var pk crypto.Key
 
@@ -184,7 +187,7 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 				errs = append(errs, fmt.Errorf("invalid level: %w", err))
 				break
 			} else if level > 10 || level < 0 {
-				errs = append(errs, fmt.Errorf("invalid level (must be between 0 and 10 inclusive)"))
+				errs = append(errs, errInvalidVerbosityLevel)
 				break
 			}
 
@@ -196,7 +199,7 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 				errs = append(errs, fmt.Errorf("invalid level: %w", err))
 				break
 			} else if level < zapcore.DebugLevel || level > zapcore.FatalLevel {
-				errs = append(errs, fmt.Errorf("invalid level"))
+				errs = append(errs, errInvalidSeverityLevel)
 				break
 			}
 
@@ -215,7 +218,7 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 	if err != nil {
 		errs = append(errs, err)
 	} else if len(changes) == 0 {
-		errs = append(errs, errors.New("no setting was changed"))
+		errs = append(errs, errNoSettingChanged)
 	}
 
 	if len(errs) > 0 {
@@ -305,20 +308,20 @@ func (s *DaemonServer) AddPeer(ctx context.Context, params *rpcproto.AddPeerPara
 
 	// Detect our own endpoint
 	if f, ok := i.Features["epdisc"]; ok {
-		epi := f.(*epdisc.Interface)
+		if epi, ok := f.(*epdisc.Interface); ok {
+			if ep, err := epi.Endpoint(); err != nil {
+				s.logger.Warn("Failed to determine our own endpoint address", zap.Error(err))
+			} else if ep != nil {
+				resp.Invitation.Endpoint = ep.String()
 
-		if ep, err := epi.Endpoint(); err != nil {
-			s.logger.Warn("Failed to determine our own endpoint address", zap.Error(err))
-		} else if ep != nil {
-			resp.Invitation.Endpoint = ep.String()
+				// Perform reverse lookup of our own endpoint
+				if names, err := net.LookupAddr(resp.Invitation.Endpoint); err == nil && len(names) >= 1 {
+					epName := names[0]
 
-			// Perform reverse lookup of our own endpoint
-			if names, err := net.LookupAddr(resp.Invitation.Endpoint); err == nil && len(names) >= 1 {
-				epName := names[0]
-
-				// Do not use auto-generated IPv4 rDNS names
-				if match, _ := regexp.MatchString(`\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}`, epName); !match {
-					resp.Invitation.Endpoint = fmt.Sprintf("%s:%d", epName, ep.Port)
+					// Do not use auto-generated IPv4 rDNS names
+					if match, _ := regexp.MatchString(`\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}`, epName); !match {
+						resp.Invitation.Endpoint = fmt.Sprintf("%s:%d", epName, ep.Port)
+					}
 				}
 			}
 		}
@@ -337,11 +340,12 @@ func settingToString(value any) (string, error) {
 			in := e.Interface()
 
 			if tm, ok := in.(encoding.TextMarshaler); ok {
-				if b, err := tm.MarshalText(); err != nil {
+				b, err := tm.MarshalText()
+				if err != nil {
 					return "", err
-				} else {
-					s = append(s, string(b))
 				}
+
+				s = append(s, string(b))
 			} else {
 				s = append(s, fmt.Sprint(in))
 			}

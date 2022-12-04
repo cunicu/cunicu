@@ -23,6 +23,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	errTimeout       = errors.New("timed out")
+	errChannelClosed = errors.New("event channel closed")
+)
+
 type Client struct {
 	io.Closer
 
@@ -54,7 +59,7 @@ func waitForSocket(path string) error {
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	return fmt.Errorf("timed out")
+	return errTimeout
 }
 
 func Connect(path string) (*Client, error) {
@@ -146,7 +151,7 @@ func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.EventType, intf st
 		select {
 		case e, ok := <-c.Events:
 			if !ok {
-				return nil, errors.New("event channel closed")
+				return nil, errChannelClosed
 			}
 
 			if e.Type != t {

@@ -14,12 +14,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
-
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/test"
-
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {
@@ -34,7 +32,7 @@ var _ = Context("config", func() {
 		dir := GinkgoT().TempDir()
 		fn := filepath.Join(dir, "cunicu.yaml")
 
-		file, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0600)
+		file, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0o600)
 		Expect(err).To(Succeed())
 
 		defer file.Close()
@@ -161,7 +159,7 @@ var _ = Context("config", func() {
 				})
 
 				AfterEach(func() {
-					//shut down the server between tests
+					// shut down the server between tests
 					server.Close()
 				})
 
@@ -377,7 +375,6 @@ var _ = Context("config", func() {
 	})
 
 	Describe("reload", func() {
-
 	})
 
 	Describe("interface overwrites", func() {

@@ -17,7 +17,7 @@ const (
 	hostsPath          = "/etc/hosts"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("hsync", "Hosts synchronization", New, 200)
 }
 

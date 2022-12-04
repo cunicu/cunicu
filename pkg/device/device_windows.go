@@ -4,9 +4,8 @@ import (
 	"net"
 	"strconv"
 
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type WindowsKernelDevice struct {

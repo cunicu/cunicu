@@ -4,7 +4,7 @@ completions/
 dist/
 docs/usage/man/*.1
 docs/usage/md/*.md
-cunicu
+/cunicu
 *.log
 *.out
 *.test

@@ -9,22 +9,22 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-var (
-	wgGenKeyCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	genKeyCmd := &cobra.Command{
 		Use:   "genkey",
 		Short: "Generates a random private key in base64 and prints it to standard output.",
 		RunE:  wgGenKey,
 		Args:  cobra.NoArgs,
 	}
 
-	wgGenPSKCmd = &cobra.Command{
+	genPSKCmd := &cobra.Command{
 		Use:   "genpsk",
 		Short: "Generates a random preshared key in base64 and prints it to standard output.",
 		RunE:  wgGenKey, // a preshared key is generated in the same way as a private key
 		Args:  cobra.NoArgs,
 	}
 
-	wgPubKeyCmd = &cobra.Command{
+	pubKeyCmd := &cobra.Command{
 		Use:   "pubkey",
 		Short: "Calculates a public key and prints it in base64 to standard output.",
 		Long:  `Calculates a public key and prints it in base64 to standard output from a corresponding private key (generated with genkey) given in base64 on standard input.`,
@@ -34,12 +34,10 @@ $ wg genkey | tee private.key | wg pubkey > public.key`,
 		RunE: wgPubKey,
 		Args: cobra.NoArgs,
 	}
-)
 
-func init() {
-	wgCmd.AddCommand(wgGenKeyCmd)
-	wgCmd.AddCommand(wgGenPSKCmd)
-	wgCmd.AddCommand(wgPubKeyCmd)
+	wgCmd.AddCommand(genKeyCmd)
+	wgCmd.AddCommand(genPSKCmd)
+	wgCmd.AddCommand(pubKeyCmd)
 }
 
 func wgGenKey(cmd *cobra.Command, args []string) error {

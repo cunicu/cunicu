@@ -9,6 +9,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var (
+	errKeyPairMismatch    = errors.New("key pair mismatch")
+	errInvalidNonceLength = errors.New("invalid nonce length")
+	errFailedToDecrypt    = errors.New("failed to open")
+)
+
 func (e *Envelope) PublicKeyPair() (crypto.PublicKeyPair, error) {
 	sender, err := crypto.ParseKeyBytes(e.Sender)
 	if err != nil {
@@ -33,7 +39,7 @@ func (e *Envelope) Decrypt(kp *crypto.KeyPair) (*Message, error) {
 	}
 
 	if ekp != kp.Public() {
-		return nil, errors.New("key pair mismatch")
+		return nil, errKeyPairMismatch
 	}
 
 	msg := &Message{}
@@ -51,8 +57,12 @@ func (e *Message) Encrypt(kp *crypto.KeyPair) (*Envelope, error) {
 }
 
 func (e *Envelope) DeepCopyInto(out *Envelope) {
-	p := proto.Clone(e).(*Envelope)
-	*out = *p
+	p, ok := proto.Clone(e).(*Envelope)
+	if !ok {
+		panic("type assertion failed")
+	}
+
+	*out = *p //nolint:govet
 }
 
 func (s *EncryptedMessage) Marshal(msg proto.Message, kp *crypto.KeyPair) error {
@@ -76,12 +86,12 @@ func (s *EncryptedMessage) Marshal(msg proto.Message, kp *crypto.KeyPair) error 
 
 func (s *EncryptedMessage) Unmarshal(msg proto.Message, kp *crypto.KeyPair) error {
 	if len(s.Nonce) != 24 {
-		return errors.New("invalid nonce length")
+		return errInvalidNonceLength
 	}
 
 	body, ok := box.Open([]byte{}, s.Body, (*[24]byte)(s.Nonce), (*[32]byte)(&kp.Theirs), (*[32]byte)(&kp.Ours))
 	if !ok {
-		return errors.New("failed to open")
+		return errFailedToDecrypt
 	}
 
 	return proto.Unmarshal(body, msg)

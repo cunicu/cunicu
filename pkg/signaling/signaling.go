@@ -3,12 +3,13 @@ package signaling
 
 import (
 	"github.com/stv0g/cunicu/pkg/crypto"
-
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
-type Message = signalingproto.Message
-type Envelope = signalingproto.Envelope
+type (
+	Message  = signalingproto.Message
+	Envelope = signalingproto.Envelope
+)
 
 type MessageHandler interface {
 	OnSignalingMessage(*crypto.PublicKeyPair, *Message)

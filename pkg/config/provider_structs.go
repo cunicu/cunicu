@@ -1,9 +1,5 @@
 package config
 
-import (
-	"errors"
-)
-
 type StructsProvider struct {
 	value any
 	tag   string
@@ -19,7 +15,7 @@ func NewStructsProvider(v any, t string) *StructsProvider {
 }
 
 func (p *StructsProvider) ReadBytes() ([]byte, error) {
-	return nil, errors.New("this provider requires no parser")
+	return nil, errNotImplemented
 }
 
 func (p *StructsProvider) Read() (map[string]any, error) {

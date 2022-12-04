@@ -7,7 +7,6 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 )
 

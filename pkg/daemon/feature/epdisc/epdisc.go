@@ -8,21 +8,18 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
 	"github.com/stv0g/cunicu/pkg/device"
-
 	errorsx "github.com/stv0g/cunicu/pkg/errors"
 	icex "github.com/stv0g/cunicu/pkg/ice"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"go.uber.org/zap"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("epdisc", "Endpoint discovery", New, 50)
 }
 
@@ -216,6 +213,8 @@ func (i *Interface) Endpoint() (*net.UDPAddr, error) {
 						Port: c.Port(),
 					}
 				}
+
+			case ice.CandidateTypePeerReflexive, ice.CandidateTypeRelay, ice.CandidateTypeUnspecified:
 			}
 		}
 	}

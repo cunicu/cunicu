@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
+var errInvalidServerHostname = errors.New("missing gRPC server url")
+
 func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	opts := []grpc.DialOption{}
 
@@ -49,7 +51,8 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	} else {
 		// Use system certificate store
 		cfg := &tls.Config{
-			//#nosec G402 -- Users should have the freedom to disable verification for self-signed certificates
+			// Users should have the freedom to disable verification for self-signed certificates
+			//nolint:gosec
 			InsecureSkipVerify: skipVerify,
 		}
 
@@ -57,7 +60,7 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 			var err error
 
 			//#nosec G304 -- Filename is only controlled by env var
-			if cfg.KeyLogWriter, err = os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600); err != nil {
+			if cfg.KeyLogWriter, err = os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600); err != nil {
 				return "", nil, fmt.Errorf("failed to open SSL keylog file: %w", err)
 			}
 		}
@@ -74,7 +77,7 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	)
 
 	if u.Host == "" {
-		return "", nil, errors.New("missing gRPC server url")
+		return "", nil, errInvalidServerHostname
 	}
 
 	return u.Host, opts, nil

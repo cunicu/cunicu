@@ -10,13 +10,12 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	xerrors "github.com/stv0g/cunicu/pkg/errors"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
-	xerrors "github.com/stv0g/cunicu/pkg/errors"
 )
 
 const (
@@ -26,11 +25,13 @@ const (
 
 type InterfaceFilterFunc func(string) bool
 
-type InterfaceEventOp int
-type InterfaceEvent struct {
-	Op   InterfaceEventOp
-	Name string
-}
+type (
+	InterfaceEventOp int
+	InterfaceEvent   struct {
+		Op   InterfaceEventOp
+		Name string
+	}
+)
 
 func (ls InterfaceEventOp) String() string {
 	switch ls {
@@ -159,22 +160,22 @@ func (w *Watcher) Sync() error {
 
 func (w *Watcher) sync() error {
 	var err error
-	var new = []*wgtypes.Device{}
-	var old = w.devices
+	var newDevs []*wgtypes.Device
+	oldDevs := w.devices
 
 	w.mu.Lock()
 
-	if new, err = w.client.Devices(); err != nil {
+	if newDevs, err = w.client.Devices(); err != nil {
 		w.mu.Unlock()
 		return fmt.Errorf("failed to list WireGuard interfaces: %w", err)
 	}
 
 	// Ignore devices which do not match the filter
-	new = util.SliceFilter(new, func(d *wgtypes.Device) bool {
+	newDevs = util.SliceFilter(newDevs, func(d *wgtypes.Device) bool {
 		return w.filter == nil || w.filter(d.Name)
 	})
 
-	added, removed, kept := util.SliceDiffFunc(old, new, func(a, b *wgtypes.Device) int {
+	added, removed, kept := util.SliceDiffFunc(oldDevs, newDevs, func(a, b *wgtypes.Device) int {
 		return strings.Compare(a.Name, b.Name)
 	})
 
@@ -229,7 +230,7 @@ func (w *Watcher) sync() error {
 		i.Sync(wgd)
 	}
 
-	w.devices = new
+	w.devices = newDevs
 
 	return nil
 }
@@ -298,7 +299,7 @@ func (w *Watcher) ForEachPeer(cb func(p *core.Peer) error) error {
 	return w.ForEachInterface(func(i *core.Interface) error {
 		for _, p := range i.Peers {
 			if err := cb(p); err != nil {
-				return nil
+				return err
 			}
 		}
 

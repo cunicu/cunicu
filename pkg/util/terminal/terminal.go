@@ -44,13 +44,14 @@ func Mods(str string, mods ...string) string {
 }
 
 func FprintKV(wr io.Writer, k string, v ...any) (int, error) {
-	if len(v) == 0 {
+	switch {
+	case len(v) == 0:
 		return fmt.Fprintf(wr, Mods("%s", Bold)+":\n", k)
-	} else if len(v) == 1 {
+	case len(v) == 1:
 		return fmt.Fprintf(wr, Mods("%s", Bold)+": %v\n", k, v[0])
-	} else if len(v) > 1 {
+	case len(v) > 1:
 		return fmt.Fprintf(wr, Mods("%s", Bold)+": %v\n", k, v)
-	} else {
+	default:
 		return 0, nil
 	}
 }

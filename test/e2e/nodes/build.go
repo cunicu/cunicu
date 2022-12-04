@@ -8,13 +8,12 @@ import (
 	"github.com/stv0g/cunicu/test"
 )
 
-var (
-	testBinaryPath string
-)
+//nolint:gochecknoglobals
+var testBinaryPath string
 
 func BuildTestBinary(name string) (string, []any, error) {
 	var err error
-	var runArgs = []any{}
+	runArgs := []any{}
 
 	profileFlags := getProfileFlags()
 

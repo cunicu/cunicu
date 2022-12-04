@@ -25,6 +25,8 @@ func (p RelayProtocol) ToString() string {
 		return "dtls"
 	case RelayProtocol_RELAY_PROTOCOL_TLS:
 		return "tls"
+	case RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED:
+		return "unspecified"
 	}
 
 	return "unknown"

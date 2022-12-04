@@ -3,8 +3,8 @@ package crypto
 
 import "crypto/rand"
 
-func GetNonce(len int) (Nonce, error) {
-	var nonce = make(Nonce, len)
+func GetNonce(length int) (Nonce, error) {
+	nonce := make(Nonce, length)
 
 	_, err := rand.Read(nonce)
 	if err != nil {

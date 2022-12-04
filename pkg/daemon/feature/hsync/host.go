@@ -1,9 +1,14 @@
 package hsync
 
 import (
-	"fmt"
+	"errors"
 	"net"
 	"strings"
+)
+
+var (
+	errMissingNames     = errors.New("missing names")
+	errInvalidIPAddress = errors.New("failed to parse IP address")
 )
 
 type Host struct {
@@ -25,11 +30,11 @@ func ParseHost(line string) (Host, error) {
 	if len(ipNameStrs) > 1 {
 		h.Names = ipNameStrs[1:]
 	} else {
-		return h, fmt.Errorf("missing names")
+		return h, errMissingNames
 	}
 
 	if h.IP = net.ParseIP(ipNameStrs[0]); h.IP == nil {
-		return h, fmt.Errorf("failed to parse IP address")
+		return h, errInvalidIPAddress
 	}
 
 	return h, nil

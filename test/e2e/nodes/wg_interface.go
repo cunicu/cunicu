@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -16,6 +17,8 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
+
+var errNoTunnelAddr = errors.New("no WireGuard tunnel address configured")
 
 type WireGuardPeerSelectorFunc func(i, j *WireGuardInterface) bool
 
@@ -41,7 +44,7 @@ type WireGuardInterface struct {
 
 func (i *WireGuardInterface) Apply(a *Agent) {
 	if i.Agent != nil {
-		panic(fmt.Errorf("can not assign interface to more than a single agent"))
+		panic("can not assign interface to more than a single agent")
 	}
 
 	i.Agent = a
@@ -89,7 +92,7 @@ func (i *WireGuardInterface) WriteConfig() error {
 	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
 
 	//#nosec G304 -- Test code is not controllable by attackers
-	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0600)
+	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %w", err)
 	}
@@ -152,7 +155,7 @@ func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) {
 	}
 
 	i.Peers = append(i.Peers, wgtypes.PeerConfig{
-		PublicKey:  wgtypes.Key(peer.PrivateKey.PublicKey()),
+		PublicKey:  peer.PrivateKey.PublicKey(),
 		AllowedIPs: aIPs,
 	})
 }
@@ -161,7 +164,7 @@ func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterf
 	env := []string{"LC_ALL=C"} // fix issues with parsing of -W and -i options
 
 	if len(peer.Addresses) < 1 {
-		return fmt.Errorf("no WireGuard tunnel address configured")
+		return errNoTunnelAddr
 	}
 
 	stdout, stderr, cmd, err := i.Agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), peer.Addresses[0].IP)

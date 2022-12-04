@@ -10,14 +10,15 @@ import (
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/watcher"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-
-	"github.com/stv0g/cunicu/pkg/signaling"
 )
+
+var errInsufficientPrivileges = errors.New("insufficient privileges. Please run cunicu with administrator privileges")
 
 type Daemon struct {
 	// Shared
@@ -42,7 +43,7 @@ func New(cfg *config.Config) (*Daemon, error) {
 
 	// Check permissions
 	if !util.HasAdminPrivileges() {
-		return nil, errors.New("insufficient privileges. Please run cunicu with administrator privileges")
+		return nil, errInsufficientPrivileges
 	}
 
 	d := &Daemon{
@@ -68,6 +69,7 @@ func New(cfg *config.Config) (*Daemon, error) {
 	// Create signaling backend
 	urls := []*url.URL{}
 	for _, u := range cfg.Backends {
+		u := u
 		urls = append(urls, &u.URL)
 	}
 

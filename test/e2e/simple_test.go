@@ -3,17 +3,16 @@ package e2e_test
 import (
 	"fmt"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
-	"golang.org/x/sys/unix"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 	gfopt "github.com/stv0g/gont/pkg/options/filters"
+	"golang.org/x/sys/unix"
 )
 
 /* Simple local-area switched topology with variable number of agents
@@ -259,13 +258,14 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		It("", func() {
 			By("Check existing peers 2")
 
-			n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
+			err := n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
 				out, _, err := a.Run("wg")
 				Expect(err).To(Succeed())
 
-				GinkgoWriter.Write(out)
+				GinkgoWriter.Write(out) //nolint:errcheck
 				return nil
 			})
+			Expect(err).To(Succeed())
 		})
 	})
 })

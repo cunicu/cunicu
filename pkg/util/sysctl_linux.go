@@ -12,7 +12,7 @@ func SetSysctl(name string, value any) error {
 	path := filepath.Join("/proc/sys", parts)
 
 	//#nosec G304 -- Filename is always under /proc/sys
-	f, err := os.OpenFile(path, os.O_WRONLY, 0600)
+	f, err := os.OpenFile(path, os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
 	}

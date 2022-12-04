@@ -13,29 +13,36 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var (
-	versionCmd = &cobra.Command{
+type versionOptions struct {
+	short  bool
+	format config.OutputFormat
+}
+
+func init() { //nolint:gochecknoinits
+	opts := &versionOptions{
+		format: config.OutputFormatHuman,
+	}
+
+	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show version of the cunīcu binary and optionally also a running daemon",
 		Example: `$ sudo cunicu version
 client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
 daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)`,
-		RunE: version,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return version(cmd, args, opts)
+		},
 		Args: cobra.NoArgs,
 	}
 
-	short bool
-)
+	pf := cmd.PersistentFlags()
+	pf.VarP(&opts.format, "format", "f", "Output `format` (one of: human, json)")
+	pf.BoolVarP(&opts.short, "short", "s", false, "Only show version and nothing else")
 
-func init() {
-	pf := versionCmd.PersistentFlags()
-	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
-	pf.BoolVarP(&short, "short", "s", false, "Only show version and nothing else")
-
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(cmd)
 }
 
-func version(cmd *cobra.Command, args []string) error {
+func version(_ *cobra.Command, _ []string, opts *versionOptions) error {
 	var err error
 
 	buildInfos := &proto.BuildInfos{
@@ -52,7 +59,7 @@ func version(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	switch format {
+	switch opts.format {
 	case config.OutputFormatJSON:
 		mo := protojson.MarshalOptions{
 			AllowPartial:    true,
@@ -70,11 +77,13 @@ func version(cmd *cobra.Command, args []string) error {
 		fmt.Print(string(buf))
 		fmt.Println()
 	case config.OutputFormatHuman:
-		if short {
+		if opts.short {
 			fmt.Println(buildInfos.Client.Version)
 		} else {
 			fmt.Print(buildInfos.ToString())
 		}
+
+	case config.OutputFormatLogger:
 	}
 
 	return nil

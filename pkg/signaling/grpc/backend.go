@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	signaling.Backends["grpc"] = &signaling.BackendPlugin{
 		New:         NewBackend,
 		Description: "gRPC",
@@ -113,14 +111,14 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 
 	stream, err := b.client.Subscribe(ctx, params, grpc.WaitForReady(true))
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to offers: %s", err)
+		return fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
 
 	// Wait until subscription has been created
 	// This avoids a race between Subscribe() / Publish() when two subscribers are subscribing
 	// to each other.
 	if _, err := stream.Recv(); err != nil {
-		return fmt.Errorf("failed receive synchronization envelope: %s", err)
+		return fmt.Errorf("failed receive synchronization envelope: %w", err)
 	}
 
 	b.logger.Debug("Created new subscription", zap.Any("pk", pk))

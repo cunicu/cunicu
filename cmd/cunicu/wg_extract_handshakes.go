@@ -13,8 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	wgExtractHandshakesCmd = &cobra.Command{
+func init() {
+	cmd := &cobra.Command{
 		Use:   "extract-handshakes",
 		Short: "Extract WireGuard handshakes from Linux kernel",
 		Long: `This command extracts ephemeral session secrets from handshakes of local WireGuard interfaces via Linux eBPF and kProbes.
@@ -24,10 +24,8 @@ See: https://wiki.wireshark.org/WireGuard#key-log-format
 `,
 		RunE: wgExtractHandshakes,
 	}
-)
 
-func init() {
-	wgCmd.AddCommand(wgExtractHandshakesCmd)
+	wgCmd.AddCommand(cmd)
 }
 
 func wgExtractHandshakes(cmd *cobra.Command, args []string) error {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -9,6 +10,9 @@ import (
 	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
+var errInvalidSettings = errors.New("invalid settings")
+
+//nolint:revive
 type ConfigSettings struct {
 	Watch bool `koanf:"watch,omitempty"`
 }
@@ -158,7 +162,8 @@ func (c *Settings) Check() error {
 
 func (c *InterfaceSettings) Check() error {
 	if c.ListenPortRange != nil && c.ListenPortRange.Min > c.ListenPortRange.Max {
-		return fmt.Errorf("invalid settings: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
+		return fmt.Errorf("%w: WireGuard minimal listen port (%d) must be smaller or equal than maximal port (%d)",
+			errInvalidSettings,
 			c.ListenPortRange.Min,
 			c.ListenPortRange.Max,
 		)

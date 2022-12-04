@@ -30,7 +30,7 @@ var _ = Describe("watcher", func() {
 	JustBeforeEach(OncePerOrdered, func() {
 		By("Creating net namespace")
 
-		nsName := fmt.Sprintf("wg-test-ns-%d", rand.Intn(1000))
+		nsName := fmt.Sprintf("wg-test-ns-%d", rand.Intn(1000)) //nolint:gosec
 		ns, err = g.NewNamespace(nsName)
 		Expect(err).To(Succeed())
 
@@ -218,7 +218,7 @@ var _ = Describe("watcher", func() {
 
 		Context("user", Ordered, func() {
 			BeforeAll(func() {
-				devName = fmt.Sprintf("wg-user-%d", rand.Intn(1000))
+				devName = fmt.Sprintf("wg-user-%d", rand.Intn(1000)) //nolint:gosec
 				devUser = true
 			})
 
@@ -228,15 +228,12 @@ var _ = Describe("watcher", func() {
 
 	Context("watch", Pending, func() {
 		Context("periodic", func() {
-
 		})
 
 		Context("user", func() {
-
 		})
 
 		Context("kernel", func() {
-
 		})
 	})
 })
