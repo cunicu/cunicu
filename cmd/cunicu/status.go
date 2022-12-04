@@ -6,38 +6,45 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
-var (
+type statusOptions struct {
 	indent bool
+	format config.OutputFormat
+}
 
-	statusCmd = &cobra.Command{
-		Use:               "status [interface-name [peer-public-key]]",
-		Short:             "Show current status of the cunīcu daemon, its interfaces and peers",
-		Aliases:           []string{"show"},
-		Run:               status,
+func init() { //nolint:gochecknoinits
+	opts := &statusOptions{
+		format: config.OutputFormatHuman,
+	}
+
+	cmd := &cobra.Command{
+		Use:     "status [interface-name [peer-public-key]]",
+		Short:   "Show current status of the cunīcu daemon, its interfaces and peers",
+		Aliases: []string{"show"},
+		Run: func(cmd *cobra.Command, args []string) {
+			status(cmd, args, opts)
+		},
 		Args:              cobra.RangeArgs(0, 2),
 		ValidArgsFunction: interfaceValidArgs,
 	}
-)
 
-func init() {
-	pf := statusCmd.PersistentFlags()
-	pf.VarP(&format, "format", "f", "Output `format` (one of: human, json)")
-	pf.BoolVarP(&indent, "indent", "i", true, "Format and indent JSON ouput")
+	pf := cmd.PersistentFlags()
+	pf.VarP(&opts.format, "format", "f", "Output `format` (one of: human, json)")
+	pf.BoolVarP(&opts.indent, "indent", "i", true, "Format and indent JSON output")
 
-	if err := statusCmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
+	if err := cmd.RegisterFlagCompletionFunc("format", cobra.FixedCompletions([]string{"human", "json"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
 
-	addClientCommand(rootCmd, statusCmd)
+	addClientCommand(rootCmd, cmd)
 }
 
-func status(cmd *cobra.Command, args []string) {
+func status(_ *cobra.Command, args []string, opts *statusOptions) {
 	p := &rpcproto.GetStatusParams{}
 
 	if len(args) > 0 {
@@ -57,7 +64,7 @@ func status(cmd *cobra.Command, args []string) {
 		logger.Fatal("Failed to retrieve status from daemon", zap.Error(err))
 	}
 
-	switch format {
+	switch opts.format {
 	case config.OutputFormatJSON:
 		mo := protojson.MarshalOptions{
 			AllowPartial:    true,
@@ -65,7 +72,7 @@ func status(cmd *cobra.Command, args []string) {
 			EmitUnpopulated: false,
 		}
 
-		if indent {
+		if opts.indent {
 			mo.Multiline = true
 			mo.Indent = "  "
 		}
@@ -80,8 +87,10 @@ func status(cmd *cobra.Command, args []string) {
 		}
 
 	case config.OutputFormatHuman:
-		if err := sts.Dump(stdout, verbosityLevel); err != nil {
+		if err := sts.Dump(stdout, log.Verbosity.Level()); err != nil {
 			logger.Fatal("Failed to write to stdout", zap.Error(err))
 		}
+
+	case config.OutputFormatLogger:
 	}
 }

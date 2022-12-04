@@ -84,10 +84,7 @@ func Peer(pk crypto.Key, opts ...nodes.WireGuardPeerOption) *nodes.WireGuardPeer
 	}
 
 	for _, o := range opts {
-		switch opt := o.(type) {
-		case nodes.WireGuardPeerOption:
-			opt.Apply(p)
-		}
+		o.Apply(p)
 	}
 
 	return p

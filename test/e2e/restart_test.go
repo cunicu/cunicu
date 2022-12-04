@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/proto"
 	"github.com/stv0g/cunicu/pkg/util"
@@ -12,9 +14,6 @@ import (
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 )
@@ -178,6 +177,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 			By("Deleting old addresses from agent interface")
 
 			for _, a := range i.Addresses {
+				a := a
 				err = i.DeleteAddress(&a)
 				Expect(err).To(Succeed(), "Failed to remove IP address '%s': %s", a, err)
 			}
@@ -197,13 +197,13 @@ var _ = Context("restart: Restart ICE agents", func() {
 			}
 
 			out, _, _ := n1.Run("ip", "a")
-			GinkgoWriter.Write(out)
+			GinkgoWriter.Write(out) //nolint:errcheck
 
 			out, _, _ = n1.Run("wg")
-			GinkgoWriter.Write(out)
+			GinkgoWriter.Write(out) //nolint:errcheck
 
 			out, _, _ = n2.Run("wg")
-			GinkgoWriter.Write(out)
+			GinkgoWriter.Write(out) //nolint:errcheck
 		})
 	})
 

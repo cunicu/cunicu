@@ -9,14 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/rpc"
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
-
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/rpc"
-
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type AgentOption interface {
@@ -79,8 +77,8 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var err error
 	var stdout, stderr io.Reader
-	var rpcSockPath = fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
-	var logPath = fmt.Sprintf("%s/%s.log", dir, a.Name())
+	rpcSockPath := fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
+	logPath := fmt.Sprintf("%s/%s.log", dir, a.Name())
 
 	// Old RPC sockets are also removed by cunīcu.
 	// However we also need to do it here to avoid racing
@@ -118,12 +116,12 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 
 	//#nosec G304 -- Test code is not controllable by attackers
 	//#nosec G302 -- Log file should be readable by user
-	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
-	go io.Copy(a.logFile, multi)
+	go io.Copy(a.logFile, multi) //nolint:errcheck
 
 	if a.Client, err = rpc.Connect(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
@@ -157,7 +155,7 @@ func (a *Agent) Stop() error {
 func (a *Agent) Close() error {
 	if a.Client != nil {
 		if err := a.Client.Close(); err != nil {
-			return fmt.Errorf("failed to close RPC connection: %s", err)
+			return fmt.Errorf("failed to close RPC connection: %w", err)
 		}
 	}
 

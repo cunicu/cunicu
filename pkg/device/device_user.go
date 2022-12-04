@@ -13,6 +13,7 @@ import (
 	"golang.zx2c4.com/wireguard/tun"
 )
 
+//nolint:gochecknoglobals
 var (
 	userDevices     = map[string]*UserDevice{}
 	userDevicesLock sync.Mutex

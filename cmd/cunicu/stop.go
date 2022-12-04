@@ -8,15 +8,15 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 )
 
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Shutdown the cunīcu daemon",
-	RunE:  stop,
-	Args:  cobra.NoArgs,
-}
+func init() { //nolint:gochecknoinits
+	cmd := &cobra.Command{
+		Use:   "stop",
+		Short: "Shutdown the cunīcu daemon",
+		RunE:  stop,
+		Args:  cobra.NoArgs,
+	}
 
-func init() {
-	addClientCommand(rootCmd, stopCmd)
+	addClientCommand(rootCmd, cmd)
 }
 
 func stop(cmd *cobra.Command, args []string) error {

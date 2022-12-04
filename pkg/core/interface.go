@@ -5,17 +5,15 @@ import (
 	"io"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/device"
+	proto "github.com/stv0g/cunicu/pkg/proto"
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/wg"
-
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 )
 
 type Interface struct {
@@ -85,72 +83,72 @@ func (i *Interface) DumpConfig(wr io.Writer) error {
 	return cfg.Dump(wr)
 }
 
-func (i *Interface) Sync(new *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer, []wgtypes.Peer) {
-	old := i.Device
+func (i *Interface) Sync(newDev *wgtypes.Device) (InterfaceModifier, []wgtypes.Peer, []wgtypes.Peer) {
+	oldDev := i.Device
 	mod := InterfaceModifiedNone
 
 	// Compare device properties
-	if new.Name != old.Name {
+	if newDev.Name != oldDev.Name {
 		i.logger.Info("Name has changed",
-			zap.Any("old", old.Name),
-			zap.Any("new", new.Name),
+			zap.Any("old", oldDev.Name),
+			zap.Any("new", newDev.Name),
 		)
 
 		mod |= InterfaceModifiedName
 	}
 
 	// Compare device properties
-	if new.Type != old.Type {
+	if newDev.Type != oldDev.Type {
 		i.logger.Info("Type has changed",
-			zap.Any("old", old.Type),
-			zap.Any("new", new.Type),
+			zap.Any("old", oldDev.Type),
+			zap.Any("new", newDev.Type),
 		)
 
 		mod |= InterfaceModifiedType
 	}
 
-	if new.FirewallMark != old.FirewallMark {
+	if newDev.FirewallMark != oldDev.FirewallMark {
 		i.logger.Info("Firewall mark has changed",
-			zap.Any("old", old.FirewallMark),
-			zap.Any("new", new.FirewallMark),
+			zap.Any("old", oldDev.FirewallMark),
+			zap.Any("new", newDev.FirewallMark),
 		)
 
 		mod |= InterfaceModifiedFirewallMark
 	}
 
-	if new.PrivateKey != old.PrivateKey {
+	if newDev.PrivateKey != oldDev.PrivateKey {
 		i.logger.Info("PrivateKey has changed",
-			zap.Any("old", old.PrivateKey),
-			zap.Any("new", new.PrivateKey),
+			zap.Any("old", oldDev.PrivateKey),
+			zap.Any("new", newDev.PrivateKey),
 		)
 
 		mod |= InterfaceModifiedPrivateKey
 	}
 
-	if new.ListenPort != old.ListenPort {
+	if newDev.ListenPort != oldDev.ListenPort {
 		i.logger.Info("ListenPort has changed",
-			zap.Any("old", old.ListenPort),
-			zap.Any("new", new.ListenPort),
+			zap.Any("old", oldDev.ListenPort),
+			zap.Any("new", newDev.ListenPort),
 		)
 
 		mod |= InterfaceModifiedListenPort
 	}
 
-	peersAdded, peersRemoved, peersKept := util.SliceDiffFunc(old.Peers, new.Peers, wg.CmpPeers)
+	peersAdded, peersRemoved, peersKept := util.SliceDiffFunc(oldDev.Peers, newDev.Peers, wg.CmpPeers)
 	if len(peersAdded) > 0 || len(peersRemoved) > 0 {
 		mod |= InterfaceModifiedPeers
 	}
 
 	// Call handlers
 
-	i.Device = (*wg.Device)(new)
+	i.Device = (*wg.Device)(newDev)
 	i.LastSync = time.Now()
 
 	if mod != InterfaceModifiedNone {
 		i.logger.Debug("Interface has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range i.onModified {
-			h.OnInterfaceModified(i, old, mod)
+			h.OnInterfaceModified(i, oldDev, mod)
 		}
 	}
 

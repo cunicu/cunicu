@@ -11,6 +11,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 )
 
+//nolint:gochecknoglobals
 var (
 	// set via ldflags -X / goreleaser or from debug.ReadBuildInfo()
 	Version = "dev"
@@ -23,7 +24,7 @@ var (
 	Dirty   bool
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	if Version == "dev" {
 		_, Commit, Dirty, Date = ReadVCSInfos()
 	} else {

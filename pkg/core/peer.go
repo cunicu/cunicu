@@ -6,15 +6,13 @@ import (
 	"net"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/util"
-	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	"github.com/stv0g/cunicu/pkg/util"
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type SignalingState int
@@ -109,7 +107,7 @@ func (p *Peer) IsControlling() bool {
 // WireGuardConfig return the WireGuard peer configuration
 func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	cfg := &wgtypes.PeerConfig{
-		PublicKey:  *(*wgtypes.Key)(&p.Peer.PublicKey),
+		PublicKey:  p.Peer.PublicKey,
 		Endpoint:   p.Endpoint,
 		AllowedIPs: p.Peer.AllowedIPs,
 	}
@@ -234,50 +232,50 @@ func (p *Peer) RemoveAllowedIP(a net.IPNet) error {
 	return p.client.ConfigureDevice(p.Interface.Device.Name, cfg)
 }
 
-func (p *Peer) Sync(new *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) {
-	old := p.Peer
+func (p *Peer) Sync(newPeer *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPNet) {
+	oldPeer := p.Peer
 	mod := PeerModifiedNone
 
 	now := time.Now()
 
 	// Compare peer properties
-	if new.PresharedKey != old.PresharedKey {
+	if newPeer.PresharedKey != oldPeer.PresharedKey {
 		mod |= PeerModifiedPresharedKey
 	}
-	if util.CmpUDPAddr(new.Endpoint, old.Endpoint) != 0 {
+	if util.CmpUDPAddr(newPeer.Endpoint, oldPeer.Endpoint) != 0 {
 		mod |= PeerModifiedEndpoint
 	}
-	if new.PersistentKeepaliveInterval != old.PersistentKeepaliveInterval {
+	if newPeer.PersistentKeepaliveInterval != oldPeer.PersistentKeepaliveInterval {
 		mod |= PeerModifiedKeepaliveInterval
 	}
-	if new.LastHandshakeTime != old.LastHandshakeTime {
+	if newPeer.LastHandshakeTime != oldPeer.LastHandshakeTime {
 		mod |= PeerModifiedHandshakeTime
 	}
-	if new.ReceiveBytes != old.ReceiveBytes {
+	if newPeer.ReceiveBytes != oldPeer.ReceiveBytes {
 		mod |= PeerModifiedReceiveBytes
 		p.LastReceiveTime = now
 	}
-	if new.TransmitBytes != old.TransmitBytes {
+	if newPeer.TransmitBytes != oldPeer.TransmitBytes {
 		mod |= PeerModifiedTransmitBytes
 		p.LastTransmitTime = now
 	}
-	if new.ProtocolVersion != old.ProtocolVersion {
+	if newPeer.ProtocolVersion != oldPeer.ProtocolVersion {
 		mod |= PeerModifiedProtocolVersion
 	}
 
 	// Find changes in AllowedIP list
-	ipsAdded, ipsRemoved, _ := util.SliceDiffFunc(old.AllowedIPs, new.AllowedIPs, util.CmpNet)
+	ipsAdded, ipsRemoved, _ := util.SliceDiffFunc(oldPeer.AllowedIPs, newPeer.AllowedIPs, util.CmpNet)
 	if len(ipsAdded) > 0 || len(ipsRemoved) > 0 {
 		mod |= PeerModifiedAllowedIPs
 	}
 
-	p.Peer = new
+	p.Peer = newPeer
 
 	if mod != PeerModifiedNone {
 		p.logger.Debug("Peer has been modified", zap.Strings("changes", mod.Strings()))
 
 		for _, h := range p.onModified {
-			h.OnPeerModified(p, old, mod, ipsAdded, ipsRemoved)
+			h.OnPeerModified(p, oldPeer, mod, ipsAdded, ipsRemoved)
 		}
 	}
 
@@ -335,6 +333,7 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 		lastActivity = p.LastTransmitTime
 	}
 
+	//nolint:gocritic
 	if p.LastHandshakeTime.After(now.Add(-2 * time.Minute)) {
 		return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
 	} else if lastActivity.After(p.LastHandshakeTime) {

@@ -49,7 +49,6 @@ func (al AgentList) ForEachInterface(cb func(i *WireGuardInterface) error) error
 			g.Go(func() error {
 				return cb(ni)
 			})
-
 		}
 	}
 

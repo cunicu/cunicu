@@ -7,11 +7,10 @@ import (
 )
 
 type ChangedHandler interface {
-	OnConfigChanged(key string, old, new any)
+	OnConfigChanged(key string, oldValue, newValue any)
 }
 
 func (c *Config) OnInterfaceChanged(name, key string, h ChangedHandler) {
-
 }
 
 func (c *Config) InvokeHandlers(key string, change Change) {

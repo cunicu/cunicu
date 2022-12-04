@@ -58,7 +58,7 @@ func (i *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.
 	}
 }
 
-func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
+func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //nolint:gocognit
 	i.logger.Debug("Received peer description", zap.Any("description", d))
 
 	pk, err := crypto.ParseKeyBytes(d.PublicKey)
@@ -123,9 +123,10 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error {
 
 			// Update hostname if it has been changed
 			if f, ok := i.Features["hsync"]; ok {
-				hs := f.(*hsync.Interface)
-				if err := hs.Sync(); err != nil {
-					return fmt.Errorf("failed to sync hosts: %w", err)
+				if hs, ok := f.(*hsync.Interface); ok {
+					if err := hs.Sync(); err != nil {
+						return fmt.Errorf("failed to sync hosts: %w", err)
+					}
 				}
 			}
 		}

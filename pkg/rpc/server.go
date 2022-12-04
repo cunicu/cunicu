@@ -7,13 +7,11 @@ import (
 	"os"
 	"sync"
 
+	"github.com/stv0g/cunicu/pkg/daemon"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/util"
-
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 type Server struct {
@@ -56,7 +54,11 @@ func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 		return nil, fmt.Errorf("failed to listen at %s: %w", socket, err)
 	}
 
-	go s.grpc.Serve(l)
+	go func() {
+		if err := s.grpc.Serve(l); err != nil {
+			s.logger.Error("Failed to serve", zap.Error(err))
+		}
+	}()
 
 	return s, nil
 }

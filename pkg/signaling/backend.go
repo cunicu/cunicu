@@ -2,20 +2,21 @@ package signaling
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
 	"strings"
 
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
-
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"go.uber.org/zap"
 )
 
 var (
-	Backends = map[BackendType]*BackendPlugin{}
+	Backends = map[BackendType]*BackendPlugin{} //nolint:gochecknoglobals
+
+	errInvalidBackend = errors.New("unknown backend type")
 )
 
 type BackendType string // URL schemes
@@ -59,7 +60,7 @@ func NewBackend(cfg *BackendConfig) (Backend, error) {
 
 	p, ok := Backends[typ]
 	if !ok {
-		return nil, fmt.Errorf("unknown backend type: %s", typ)
+		return nil, fmt.Errorf("%w: %s", errInvalidBackend, typ)
 	}
 
 	if len(typs) > 1 {

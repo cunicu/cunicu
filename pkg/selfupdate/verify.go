@@ -5,19 +5,20 @@ package selfupdate
 import (
 	"bytes"
 	"embed"
+	"errors"
 	"fmt"
 	"os/exec"
 	"path"
 
-	//lint:ignore SA1019 We still need to find an alternative
-	pgp "golang.org/x/crypto/openpgp"
-	"google.golang.org/protobuf/encoding/protojson"
-
 	"github.com/stv0g/cunicu/pkg/proto"
+	pgp "golang.org/x/crypto/openpgp" //nolint:staticcheck
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 //go:embed keys/*.gpg
 var keys embed.FS
+
+var errVersionMismatch = errors.New("version mismatch")
 
 func loadKeyRing() (pgp.EntityList, error) {
 	el := pgp.EntityList{}
@@ -82,7 +83,7 @@ func VersionVerify(binaryFile, expectedVersion string) error {
 	}
 
 	if "v"+expectedVersion != bi.Client.Version {
-		return fmt.Errorf("version mismatch: dowloaded %s != expected v%s", bi.Client.Version, expectedVersion)
+		return fmt.Errorf("%w: dowloaded %s != expected v%s", errVersionMismatch, bi.Client.Version, expectedVersion)
 	}
 
 	return nil

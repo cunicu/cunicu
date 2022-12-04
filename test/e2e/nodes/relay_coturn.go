@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -13,6 +14,8 @@ import (
 	g "github.com/stv0g/gont/pkg"
 	"go.uber.org/zap"
 )
+
+var errTimeout = errors.New("timed out")
 
 type CoturnNode struct {
 	*g.Host
@@ -102,7 +105,8 @@ func (c *CoturnNode) Stop() error {
 
 	if err := GracefullyTerminate(c.Command); err != nil {
 		// Coturn exits with exit code 143 (SIGTERM received)
-		if err, ok := err.(*exec.ExitError); ok && err.ExitCode() == 143 {
+		exitErr := &exec.ExitError{}
+		if ok := errors.As(err, &exitErr); ok && exitErr.ExitCode() == 143 {
 			return nil
 		}
 	}
@@ -130,7 +134,7 @@ func (c *CoturnNode) isReachable() bool {
 func (c *CoturnNode) WaitReady() error {
 	for tries := 1000; !c.isReachable(); tries-- {
 		if tries == 0 {
-			return fmt.Errorf("timed out")
+			return errTimeout
 		}
 
 		time.Sleep(20 * time.Millisecond)

@@ -3,12 +3,11 @@ package log_test
 import (
 	"fmt"
 	"io"
+	stdlog "log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
-
-	stdlog "log"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

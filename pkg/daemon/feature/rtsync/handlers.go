@@ -2,7 +2,6 @@ package rtsync
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"net/netip"
 	"syscall"
@@ -19,7 +18,7 @@ func (i *Interface) OnPeerAdded(p *core.Peer) {
 		gwn := pk.IPAddress(q)
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
-			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
+			panic("failed to get address from slice")
 		}
 
 		i.gwMap[gw] = p
@@ -40,7 +39,7 @@ func (i *Interface) OnPeerRemoved(p *core.Peer) {
 		gwn := pk.IPAddress(q)
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
-			panic(fmt.Errorf("failed to get address from slice: %s", gwn))
+			panic("failed to get address from slice")
 		}
 
 		delete(i.gwMap, gw)

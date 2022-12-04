@@ -3,13 +3,20 @@
 package device
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
+)
+
+var (
+	errInvalidCommandOutput = errors.New("invalid command output")
+	errFailedToExecute      = errors.New("failed to run")
 )
 
 type BSDKernelDevice struct {
@@ -112,7 +119,7 @@ func (d *BSDKernelDevice) MTU() int {
 		panic(err)
 	}
 
-	mtuStrs := mtuRegex.FindStringSubmatch(string(out))
+	mtuStrs := mtuRegex.FindStringSubmatch(out)
 	if len(mtuStrs) < 2 {
 		panic("no MTU found")
 	}
@@ -185,12 +192,12 @@ func getRouteMTU(ip net.IP) (int, error) {
 	}
 
 	out = strings.TrimSpace(out)
-	lines := strings.Split(string(out), "\n")
+	lines := strings.Split(out, "\n")
 	lastLine := lines[len(lines)-1]
 	fields := strings.Fields(lastLine)
 
 	if len(fields) < 7 {
-		return -1, fmt.Errorf("invalid command output: %s", lastLine)
+		return -1, fmt.Errorf("%w: %s", errInvalidCommandOutput, lastLine)
 	}
 
 	return strconv.Atoi(fields[6])
@@ -203,7 +210,7 @@ func run(args ...string) (string, error) {
 	out, err := cmd.CombinedOutput()
 	outStr := string(out)
 	if err != nil {
-		return "", fmt.Errorf("failed to run: %s\n%s", strings.Join(args, " "), outStr)
+		return "", fmt.Errorf("%w: %s\n%s", errFailedToExecute, strings.Join(args, " "), outStr)
 	}
 
 	return outStr, nil

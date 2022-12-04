@@ -17,7 +17,9 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func init() {
+var errMTUTooSmall = errors.New("MTU too small")
+
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("autocfg", "Auto configuration", New, 10)
 }
 
@@ -155,7 +157,7 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	if mtu-wg.TunnelOverhead < wg.MinimalMTU {
-		return -1, fmt.Errorf("MTU too small: %d", mtu)
+		return -1, fmt.Errorf("%w: %d", errMTUTooSmall, mtu)
 	}
 
 	return mtu - wg.TunnelOverhead, nil

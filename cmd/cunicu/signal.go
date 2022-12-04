@@ -4,47 +4,51 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/pkg/util"
 )
 
-var (
-	signalCmd = &cobra.Command{
-		Use:   "signal",
-		Short: "Start gRPC signaling server",
-		Run:   signal,
-		Args:  cobra.NoArgs,
-	}
-
+type signalOptions struct {
 	listenAddress string
-	secure        = false
-)
-
-func init() {
-	pf := signalCmd.PersistentFlags()
-	pf.StringVarP(&listenAddress, "listen", "L", ":8080", "listen address")
-	pf.BoolVarP(&secure, "secure", "S", false, "listen with TLS")
-
-	rootCmd.AddCommand(signalCmd)
+	secure        bool
 }
 
-func signal(cmd *cobra.Command, args []string) {
-	l, err := net.Listen("tcp", listenAddress)
+func init() { //nolint:gochecknoinits
+	opts := &signalOptions{
+		secure: false,
+	}
+	cmd := &cobra.Command{
+		Use:   "signal",
+		Short: "Start gRPC signaling server",
+		Run: func(cmd *cobra.Command, args []string) {
+			signal(cmd, args, opts)
+		},
+		Args: cobra.NoArgs,
+	}
+
+	pf := cmd.PersistentFlags()
+	pf.StringVarP(&opts.listenAddress, "listen", "L", ":8080", "listen address")
+	pf.BoolVarP(&opts.secure, "secure", "S", false, "listen with TLS")
+
+	rootCmd.AddCommand(cmd)
+}
+
+func signal(_ *cobra.Command, _ []string, opts *signalOptions) {
+	l, err := net.Listen("tcp", opts.listenAddress)
 	if err != nil {
 		logger.Fatal("Failed to listen", zap.Error(err))
 	}
 
 	// Disable TLS
-	opts := []grpc.ServerOption{}
-	if !secure {
-		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
+	svrOpts := []grpc.ServerOption{}
+	if !opts.secure {
+		svrOpts = append(svrOpts, grpc.Creds(insecure.NewCredentials()))
 	}
 
-	svr := grpcx.NewSignalingServer(opts...)
+	svr := grpcx.NewSignalingServer(svrOpts...)
 
 	go func() {
 		for sig := range util.SetupSignals() {
@@ -56,7 +60,7 @@ func signal(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	logger.Info("Starting gRPC signaling server", zap.String("address", listenAddress))
+	logger.Info("Starting gRPC signaling server", zap.String("address", opts.listenAddress))
 
 	if err := svr.Serve(l); err != nil {
 		logger.Fatal("Failed to start gRPC server", zap.Error(err))

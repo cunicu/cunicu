@@ -1,12 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
 
 	"github.com/mitchellh/mapstructure"
 )
+
+var errUnknownHookType = errors.New("unknown hook type")
 
 func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 	if f.Kind() != reflect.Map {
@@ -33,7 +36,7 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 			Stdin: true,
 		}
 	default:
-		return nil, fmt.Errorf("unknown hook type: %s", base.Type)
+		return nil, fmt.Errorf("%w: %s", errUnknownHookType, base.Type)
 	}
 
 	decoder, err := mapstructure.NewDecoder(DecoderConfig(hook))
@@ -48,7 +51,8 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 func stringToIPAddrHook(
 	f reflect.Type,
 	t reflect.Type,
-	data interface{}) (interface{}, error) {
+	data interface{},
+) (interface{}, error) {
 	if f.Kind() != reflect.String {
 		return data, nil
 	}
@@ -66,7 +70,8 @@ func stringToIPAddrHook(
 func stringToIPNetAddrHookFunc(
 	f reflect.Type,
 	t reflect.Type,
-	data interface{}) (interface{}, error) {
+	data interface{},
+) (interface{}, error) {
 	if f.Kind() != reflect.String {
 		return data, nil
 	}
@@ -75,7 +80,12 @@ func stringToIPNetAddrHookFunc(
 	}
 
 	// Convert it by parsing
-	ip, net, err := net.ParseCIDR(data.(string))
+	str, ok := data.(string)
+	if !ok {
+		panic("type assertion failed")
+	}
+
+	ip, net, err := net.ParseCIDR(str)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,7 @@ var _ = Context("tty", func() {
 
 	It("is false", func() {
 		fn := filepath.Join(GinkgoT().TempDir(), "file")
-		f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0600)
+		f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0o600)
 		Expect(err).To(Succeed())
 
 		Expect(terminal.IsATTY(f)).To(BeFalse())

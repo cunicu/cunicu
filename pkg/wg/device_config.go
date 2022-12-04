@@ -79,10 +79,8 @@ func parseCIDRs(nets []string, ip bool) ([]net.IPNet, error) {
 			} else {
 				n.Mask = net.CIDRMask(128, 128)
 			}
-		} else {
-			if ip {
-				n.IP = i
-			}
+		} else if ip {
+			n.IP = i
 		}
 
 		pn = append(pn, *n)
@@ -217,7 +215,7 @@ func ParseConfig(data []byte) (*Config, error) {
 
 	iniCfg := &config{}
 	if err := iniFile.StrictMapTo(iniCfg); err != nil {
-		return nil, fmt.Errorf("failed to parse Interface section: %s", err)
+		return nil, fmt.Errorf("failed to parse Interface section: %w", err)
 	}
 
 	// Remove fake peer section again
@@ -247,7 +245,7 @@ func ParseConfig(data []byte) (*Config, error) {
 
 func (c *config) Config() (*Config, error) {
 	var err error
-	var cfg = &Config{
+	cfg := &Config{
 		Config: wgtypes.Config{
 			Peers:        []wgtypes.PeerConfig{},
 			ListenPort:   c.Interface.ListenPort,

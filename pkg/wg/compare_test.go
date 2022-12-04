@@ -3,15 +3,13 @@ package wg_test
 import (
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/wg"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 var _ = Context("compare", func() {
-
 	Context("peer", func() {
 		When("equal", func() {
 			var a wgtypes.Peer

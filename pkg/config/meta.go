@@ -77,9 +77,7 @@ func (m *Meta) Lookup(key string) *Meta {
 func (m *Meta) lookup(key []string) *Meta {
 	if len(key) == 0 {
 		return m
-	}
-
-	if m.Fields != nil {
+	} else if m.Fields != nil {
 		if n, ok := m.Fields[key[0]]; ok {
 			return n.lookup(key[1:])
 		}

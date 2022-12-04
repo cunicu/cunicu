@@ -50,7 +50,7 @@ func (p *Peer) Peer() wgtypes.Peer {
 	return q
 }
 
-func (p *Peer) Dump(wr io.Writer, verbosity int) error {
+func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 	wri := t.NewIndenter(wr, "  ")
 
 	if _, err := fmt.Fprintf(wr, t.Mods("peer", t.Bold, t.FgYellow)+": "+t.Mods("%s", t.FgYellow)+"\n", p.Name); err != nil {

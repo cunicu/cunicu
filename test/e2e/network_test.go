@@ -10,19 +10,16 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/test"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 	g "github.com/stv0g/gont/pkg"
 	gopt "github.com/stv0g/gont/pkg/options"
 	copt "github.com/stv0g/gont/pkg/options/capture"
 	"go.uber.org/zap"
-
-	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/test"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
 )
 
-var (
-	logger *zap.Logger
-)
+var logger *zap.Logger
 
 type Network struct {
 	*g.Network
@@ -60,7 +57,7 @@ func (n *Network) Start() {
 	})
 	Expect(err).To(Succeed(), "Failed to configure WireGuard interface: %s", err)
 
-	if setup {
+	if options.setup {
 		Skip("Aborting test as only network setup has been requested")
 	}
 
@@ -71,7 +68,7 @@ func (n *Network) Start() {
 	By("Writing network hosts file")
 
 	hfn := filepath.Join(n.BasePath, "hosts")
-	hf, err := os.OpenFile(hfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	hf, err := os.OpenFile(hfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 	Expect(err).To(Succeed(), "Failed to open hosts file: %s", err)
 
 	err = n.Network.WriteHostsFile(hf)
@@ -83,13 +80,14 @@ func (n *Network) Start() {
 	By("Saving network nodes file")
 
 	nfn := filepath.Join(n.BasePath, "nodes")
-	nf, err := os.OpenFile(nfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	nf, err := os.OpenFile(nfn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 	Expect(err).To(Succeed(), "Failed to open nodes file: %s", err)
 
-	n.AgentNodes.ForEachInterface(func(i *nodes.WireGuardInterface) error {
+	err = n.AgentNodes.ForEachInterface(func(i *nodes.WireGuardInterface) error {
 		_, err := fmt.Fprintf(nf, "%s %s %s\n", i.Agent.Name(), i.Name, i.PrivateKey.PublicKey())
 		return err
 	})
+	Expect(err).To(Succeed())
 
 	err = nf.Close()
 	Expect(err).To(Succeed(), "Failed to close nodes file: %s", err)
@@ -172,7 +170,7 @@ func (n *Network) WriteSpecReport() {
 	Expect(err).To(Succeed(), "Failed to indent report: %s", err)
 
 	reportFileName := filepath.Join(n.BasePath, "report.json")
-	reportFile, err := os.OpenFile(reportFileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	reportFile, err := os.OpenFile(reportFileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 	Expect(err).To(Succeed(), "Failed to open report file: %s", err)
 
 	_, err = reportFile.Write(reportJSON)
@@ -199,7 +197,7 @@ func (n *Network) ConnectivityTests() {
 func (n *Network) Init() {
 	*n = Network{}
 
-	n.Name = fmt.Sprintf("cunicu-%d", rand.Uint32())
+	n.Name = fmt.Sprintf("cunicu-%d", rand.Uint32()) //nolint:gosec
 	n.BasePath = filepath.Join(SpecName()...)
 	n.BasePath = filepath.Join("logs", n.BasePath)
 
@@ -225,7 +223,7 @@ func (n *Network) Init() {
 
 	By("Creating directory for new test case results")
 
-	err = os.MkdirAll(n.BasePath, 0755)
+	err = os.MkdirAll(n.BasePath, 0o755)
 	Expect(err).To(Succeed(), "Failed to create test case result directory: %s", err)
 
 	// Ginkgo log
@@ -236,10 +234,10 @@ func (n *Network) Init() {
 	)
 
 	n.NetworkOptions = append(n.NetworkOptions,
-		gopt.Persistent(persist),
+		gopt.Persistent(options.persist),
 	)
 
-	if capture {
+	if options.capture {
 		n.NetworkOptions = append(n.NetworkOptions,
 			gopt.CaptureAll(
 				copt.Filename(pcapFilename),

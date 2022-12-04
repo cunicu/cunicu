@@ -1,11 +1,9 @@
 package ice_test
 
 import (
-	"github.com/pion/ice/v2"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
+	"github.com/pion/ice/v2"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
@@ -25,7 +23,7 @@ var _ = Describe("Marshaling of ICE types", func() {
 		}, t)
 
 		DescribeTable("Marshal", func(ct ice.CandidateType, st string) {
-			var ctp = icex.CandidateType{ct}
+			ctp := icex.CandidateType{ct}
 			m, err := ctp.MarshalText()
 			Expect(err).To(Succeed())
 			Expect(string(m)).To(Equal(st))
@@ -47,7 +45,7 @@ var _ = Describe("Marshaling of ICE types", func() {
 		}, t)
 
 		DescribeTable("Marshal", func(ct ice.NetworkType, st string) {
-			var ntp = icex.NetworkType{ct}
+			ntp := icex.NetworkType{ct}
 			m, err := ntp.MarshalText()
 			Expect(err).To(Succeed())
 			Expect(string(m)).To(Equal(st))
@@ -95,7 +93,7 @@ var _ = Describe("Marshaling of ICE types", func() {
 		}, t)
 
 		DescribeTable("Marshal", func(urlStr string, url ice.URL) {
-			var u = icex.URL{url}
+			u := icex.URL{url}
 			m, err := u.MarshalText()
 			Expect(err).To(Succeed())
 			Expect(string(m)).To(BeEquivalentTo(urlStr))

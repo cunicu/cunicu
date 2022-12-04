@@ -153,7 +153,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	gw, ok := netip.AddrFromSlice(ru.Gw)
 	if !ok {
-		return fmt.Errorf("failed to get address from slice")
+		panic("failed to get address from slice")
 	}
 
 	p, ok := i.gwMap[gw]

@@ -8,6 +8,7 @@ import (
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
+//nolint:gochecknoglobals
 var BooleanCompletions = cobra.FixedCompletions([]string{"true", "false"}, cobra.ShellCompDirectiveNoFileComp)
 
 func interfaceValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -15,7 +16,7 @@ func interfaceValidArgs(cmd *cobra.Command, args []string, toComplete string) ([
 	if err := rpcConnect(cmd, args); err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
-	defer rpcDisconnect(cmd, args)
+	defer rpcDisconnect(cmd, args) //nolint:errcheck
 
 	p := &rpcproto.GetStatusParams{}
 

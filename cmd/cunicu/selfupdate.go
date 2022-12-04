@@ -12,20 +12,23 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
+type selfUpdateOptions struct {
 	output string
+}
 
-	selfUpdateCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	opts := &selfUpdateOptions{}
+	cmd := &cobra.Command{
 		Use:   "selfupdate",
 		Short: "Update the cunīcu binary",
 		Long: `Downloads the latest stable release of cunīcu from GitHub and replaces the currently running binary.
 After download, the authenticity of the binary is verified using the GPG signature on the release files.`,
-		Run: selfUpdate,
+		Run: func(cmd *cobra.Command, args []string) {
+			selfUpdate(cmd, args, opts)
+		},
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(selfUpdateCmd)
+	rootCmd.AddCommand(cmd)
 
 	selfPath, err := os.Executable()
 	if err != nil {
@@ -37,20 +40,20 @@ func init() {
 		self = "cunicu"
 	}
 
-	flags := selfUpdateCmd.Flags()
-	flags.StringVarP(&output, "output", "o", self, "Save the downloaded file as `filename`")
+	flags := cmd.Flags()
+	flags.StringVarP(&opts.output, "output", "o", self, "Save the downloaded file as `filename`")
 }
 
-func selfUpdate(cmd *cobra.Command, args []string) {
+func selfUpdate(_ *cobra.Command, _ []string, opts *selfUpdateOptions) {
 	logger := logger.Named("self-update")
 
-	rel, err := selfupdate.SelfUpdate(output, logger)
+	rel, err := selfupdate.SelfUpdate(opts.output, logger)
 	if err != nil {
 		logger.Fatal("Self-update failed", zap.Error(err))
 	}
 
 	logger.Info("Successfully updated cunicu",
 		zap.String("version", rel.Version),
-		zap.String("filename", output),
+		zap.String("filename", opts.output),
 	)
 }

@@ -5,20 +5,17 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/zap"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-
+	"github.com/stv0g/cunicu/pkg/signaling"
 	v1 "github.com/stv0g/cunicu/pkg/signaling/k8s/apis/cunicu/v1"
 	cunicuv1 "github.com/stv0g/cunicu/pkg/signaling/k8s/client/clientset/versioned"
 	informers "github.com/stv0g/cunicu/pkg/signaling/k8s/client/informers/externalversions"
+	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -39,7 +36,7 @@ type Backend struct {
 	logger *zap.Logger
 }
 
-func init() {
+func init() { //nolint:gochecknoinits
 	signaling.Backends["k8s"] = &signaling.BackendPlugin{
 		New:         NewBackend,
 		Description: "Exchange candidates via annotation in Kubernetes Node resource",
@@ -49,6 +46,11 @@ func init() {
 func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
 	var config *rest.Config
 	var err error
+
+	defaultConfig := BackendConfig{
+		GenerateName: "cunicu-",
+		Namespace:    "cunicu",
+	}
 
 	b := &Backend{
 		SubscriptionsRegistry: signaling.NewSubscriptionsRegistry(),
@@ -61,23 +63,20 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
-	if b.config.Kubeconfig == "" {
+	switch b.config.Kubeconfig {
+	case "":
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-		// if you want to change the loading rules (which files in which order), you can do so here
-
 		configOverrides := &clientcmd.ConfigOverrides{}
-		// if you want to change override values or bind them to flags, there are methods to help you
-
 		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
 
 		if config, err = kubeConfig.ClientConfig(); err != nil {
 			return nil, fmt.Errorf("failed to load config: %w", err)
 		}
-	} else if b.config.Kubeconfig == "incluster" {
+	case "incluster":
 		if config, err = rest.InClusterConfig(); err != nil {
 			return nil, fmt.Errorf("failed to get incluster configuration: %w", err)
 		}
-	} else {
+	default:
 		if config, err = clientcmd.BuildConfigFromFlags("", b.config.Kubeconfig); err != nil {
 			return nil, fmt.Errorf("failed to get configuration from flags: %w", err)
 		}
@@ -171,7 +170,10 @@ func (b *Backend) Close() error {
 }
 
 func (b *Backend) onEnvelopeAdded(obj any) {
-	env := obj.(*v1.SignalingEnvelope)
+	env, ok := obj.(*v1.SignalingEnvelope)
+	if !ok {
+		panic("not an envelope")
+	}
 
 	b.logger.Debug("New envelope found on API server", zap.String("name", env.ObjectMeta.Name))
 	if err := b.process(env); err != nil {
@@ -179,8 +181,11 @@ func (b *Backend) onEnvelopeAdded(obj any) {
 	}
 }
 
-func (b *Backend) onEnvelopeUpdated(old any, new any) {
-	newEnv := new.(*v1.SignalingEnvelope)
+func (b *Backend) onEnvelopeUpdated(oldEnv, newEnve any) {
+	newEnv, ok := newEnve.(*v1.SignalingEnvelope)
+	if !ok {
+		panic("not an envelope")
+	}
 
 	b.logger.Debug("Envelope updated", zap.String("name", newEnv.ObjectMeta.Name))
 	if err := b.process(newEnv); err != nil {
@@ -196,7 +201,8 @@ func (b *Backend) process(env *v1.SignalingEnvelope) error {
 
 	sub, err := b.GetSubscription(&pkp.Ours)
 	if err != nil {
-		return nil // ignore envelopes not addressed to us
+		// ignore envelopes not addressed to us
+		return nil //nolint:nilerr
 	}
 
 	if err := sub.NewMessage(&env.Envelope); err != nil {

@@ -8,15 +8,15 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 )
 
-var restartCmd = &cobra.Command{
-	Use:   "restart",
-	Short: "Restart the cunīcu daemon",
-	RunE:  restart,
-	Args:  cobra.NoArgs,
-}
+func init() { //nolint:gochecknoinits
+	cmd := &cobra.Command{
+		Use:   "restart",
+		Short: "Restart the cunīcu daemon",
+		RunE:  restart,
+		Args:  cobra.NoArgs,
+	}
 
-func init() {
-	addClientCommand(rootCmd, restartCmd)
+	addClientCommand(rootCmd, cmd)
 }
 
 func restart(cmd *cobra.Command, args []string) error {

@@ -55,7 +55,7 @@ var _ = Context("slice", func() {
 
 	Context("diff", func() {
 		var a, b, c, d, bc, cd []int
-		var f func(old, new []int) (added, removed, kept []int)
+		var f func(oldSlice, newSlice []int) (added, removed, kept []int)
 
 		BeforeEach(func() {
 			a = []int{}
@@ -125,8 +125,8 @@ var _ = Context("slice", func() {
 
 		Describe("func", func() {
 			BeforeEach(func() {
-				f = func(old, new []int) (added, removed, kept []int) {
-					return util.SliceDiffFunc(old, new, func(a, b int) int {
+				f = func(oldSlice, newSlice []int) (added, removed, kept []int) {
+					return util.SliceDiffFunc(oldSlice, newSlice, func(a, b int) int {
 						return a - b
 					})
 				}

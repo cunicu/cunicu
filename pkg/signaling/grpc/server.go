@@ -3,23 +3,22 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/proto"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/proto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 type Server struct {
@@ -51,7 +50,7 @@ func NewSignalingServer(opts ...grpc.ServerOption) *Server {
 func NewServer(opts ...grpc.ServerOption) (*grpc.Server, error) {
 	if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
 		//#nosec G304 -- Filename is only controlled via env var
-		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open SSL keylog file: %w", err)
 		}
@@ -99,7 +98,7 @@ out:
 				break out
 			}
 
-			if err := stream.Send(env); err == io.EOF {
+			if err := stream.Send(env); errors.Is(err, io.EOF) {
 				break out
 			} else if err != nil {
 				s.logger.Error("Failed to send envelope", zap.Error(err))

@@ -22,6 +22,7 @@ const (
 	EphemeralPortMax = (1 << 16) - 1
 )
 
+//nolint:gochecknoglobals
 var (
 	DefaultPrefixes = []string{"fc2f:9a4d::/32", "10.237.0.0/16"}
 

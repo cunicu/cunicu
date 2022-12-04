@@ -1,9 +1,15 @@
 package ice
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pion/ice/v2"
+)
+
+var (
+	errUnknownCandidateType = errors.New("unknown candidate type")
+	errUnknownNetworkType   = errors.New("unknown network type")
 )
 
 type URL struct {
@@ -41,7 +47,7 @@ func (t *CandidateType) UnmarshalText(text []byte) error {
 		t.CandidateType = ice.CandidateTypeRelay
 	default:
 		t.CandidateType = ice.CandidateTypeUnspecified
-		return fmt.Errorf("unknown candidate type: %s", text)
+		return fmt.Errorf("%w: %s", errUnknownCandidateType, text)
 	}
 
 	return nil
@@ -71,7 +77,7 @@ func (t *NetworkType) UnmarshalText(text []byte) error {
 		t.NetworkType = ice.NetworkTypeTCP6
 	default:
 		t.NetworkType = ice.NetworkTypeTCP4
-		return fmt.Errorf("unknown network type: %s", text)
+		return fmt.Errorf("%w: %s", errUnknownNetworkType, text)
 	}
 
 	return nil

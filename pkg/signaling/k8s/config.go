@@ -12,11 +12,6 @@ type BackendConfig struct {
 	GenerateName string
 }
 
-var defaultConfig = BackendConfig{
-	GenerateName: "cunicu-",
-	Namespace:    "cunicu",
-}
-
 func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	c.BackendConfig = *cfg
 

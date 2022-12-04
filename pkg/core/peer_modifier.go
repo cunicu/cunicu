@@ -19,19 +19,18 @@ const (
 	PeerModifiedNone  PeerModifier = 0
 )
 
-var (
-	PeerModifiersStrings = []string{
-		"preshared-key",
-		"endpoint",
-		"keepalive-interval",
-		"handshake-time",
-		"receive-bytes",
-		"transmit-bytes",
-		"allowed-ips",
-		"protocol-version",
-		"name",
-	}
-)
+//nolint:gochecknoglobals
+var PeerModifiersStrings = []string{
+	"preshared-key",
+	"endpoint",
+	"keepalive-interval",
+	"handshake-time",
+	"receive-bytes",
+	"transmit-bytes",
+	"allowed-ips",
+	"protocol-version",
+	"name",
+}
 
 func (i PeerModifier) Strings() []string {
 	modifiers := []string{}

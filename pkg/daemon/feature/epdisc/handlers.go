@@ -4,19 +4,17 @@ import (
 	"context"
 	"net"
 
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
-	"github.com/stv0g/cunicu/pkg/wg"
-
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type OnConnectionStateHandler interface {
-	OnConnectionStateChange(p *Peer, new, prev icex.ConnectionState)
+	OnConnectionStateChange(p *Peer, newState, prevState icex.ConnectionState)
 }
 
 func (i *Interface) OnConnectionStateChange(h OnConnectionStateHandler) {

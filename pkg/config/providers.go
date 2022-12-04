@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -14,45 +15,11 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
+const (
 	envPrefix = "CUNICU_"
-
-	// Map flags from the flags to to Koanf settings
-	flagMap = map[string]string{
-		// Feature flags
-		"discover-peers":     "discover_peers",
-		"discover-endpoints": "discover_endpoints",
-		"sync-config":        "sync_config",
-		"sync-hosts":         "sync_hosts",
-		"sync-routes":        "sync_routes",
-
-		"backend":        "backends",
-		"watch-interval": "watch_interval",
-
-		// Socket
-		"rpc-socket": "rpc.socket",
-		"rpc-wait":   "rpc.wait",
-
-		// WireGuard
-		"wg-userspace": "userspace",
-
-		// Endpoint discovery
-		"url":                "ice.urls",
-		"username":           "ice.username",
-		"password":           "ice.password",
-		"ice-candidate-type": "ice.candidate_types",
-		"ice-network-type":   "ice.network_types",
-		"ice-relay-tcp":      "ice.relay_tcp",
-		"ice-relay-tls":      "ice.relay_tls",
-
-		// Peer discovery
-		"community": "community",
-		"hostname":  "hostname",
-
-		// Route synchronization
-		"routing-table": "routing_table",
-	}
 )
+
+var errUnsupportedScheme = errors.New("unsupported scheme")
 
 type Watchable interface {
 	Watch(cb func(event interface{}, err error)) error
@@ -132,7 +99,7 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 		case "":
 			p = NewLocalFileProvider(u)
 		default:
-			return nil, fmt.Errorf("unsupported scheme '%s' for config file", u.Scheme)
+			return nil, fmt.Errorf("%w '%s' for config file", errUnsupportedScheme, u.Scheme)
 		}
 
 		ps = append(ps, p)
@@ -172,11 +139,46 @@ func (c *Config) EnvironmentProvider() koanf.Provider {
 		}
 
 		return k, v
-
 	})
 }
 
 func (c *Config) FlagProvider() koanf.Provider {
+	// Map flags from the flags to to Koanf settings
+	flagMap := map[string]string{
+		// Feature flags
+		"discover-peers":     "discover_peers",
+		"discover-endpoints": "discover_endpoints",
+		"sync-config":        "sync_config",
+		"sync-hosts":         "sync_hosts",
+		"sync-routes":        "sync_routes",
+
+		"backend":        "backends",
+		"watch-interval": "watch_interval",
+
+		// Socket
+		"rpc-socket": "rpc.socket",
+		"rpc-wait":   "rpc.wait",
+
+		// WireGuard
+		"wg-userspace": "userspace",
+
+		// Endpoint discovery
+		"url":                "ice.urls",
+		"username":           "ice.username",
+		"password":           "ice.password",
+		"ice-candidate-type": "ice.candidate_types",
+		"ice-network-type":   "ice.network_types",
+		"ice-relay-tcp":      "ice.relay_tcp",
+		"ice-relay-tls":      "ice.relay_tls",
+
+		// Peer discovery
+		"community": "community",
+		"hostname":  "hostname",
+
+		// Route synchronization
+		"routing-table": "routing_table",
+	}
+
 	return posflag.ProviderWithFlag(c.flags, ".", nil, func(f *pflag.Flag) (string, any) {
 		setting, ok := flagMap[f.Name]
 		if !ok {

@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
@@ -31,6 +32,13 @@ const (
 	checksumsSigFile = checksumsFile + ".asc"
 )
 
+var (
+	errOutputIsNotDir        = errors.New("output parent path is not a directory")
+	errOutputIsNotNormalFile = errors.New("output path is not a normal file")
+	errHashNotFound          = errors.New("hash not found")
+	errArchiveMultipleFiles  = errors.New("archive contains more than one file")
+)
+
 func SelfUpdate(output string, logger *zap.Logger) (*Release, error) {
 	fi, err := os.Lstat(output)
 	if err != nil {
@@ -40,12 +48,10 @@ func SelfUpdate(output string, logger *zap.Logger) (*Release, error) {
 			return nil, fmt.Errorf("failed to stat: %w", err)
 		}
 		if !di.Mode().IsDir() {
-			return nil, errors.New("output parent path is not a directory")
+			return nil, errOutputIsNotDir
 		}
-	} else {
-		if !fi.Mode().IsRegular() {
-			return nil, errors.New("output path is not a normal file")
-		}
+	} else if !fi.Mode().IsRegular() {
+		return nil, errOutputIsNotNormalFile
 	}
 
 	curVersion := strings.TrimPrefix(buildinfo.Version, "v")
@@ -60,13 +66,14 @@ func SelfUpdate(output string, logger *zap.Logger) (*Release, error) {
 	logger.Info("Latest version", zap.String("version", rel.Version))
 
 	// We do a lexicographic comparison here to compare the semver versions.
-	if rel.Version == curVersion {
+	switch {
+	case rel.Version == curVersion:
 		logger.Info("Your cunicu version is up to date. Nothing to update.")
 		return rel, nil
-	} else if rel.Version < curVersion {
+	case rel.Version < curVersion:
 		logger.Warn("You are running an unreleased version of cunicu. Nothing to update.")
 		return rel, nil
-	} else {
+	default:
 		logger.Info("Your cunicu version is outdated. Updating now!")
 	}
 
@@ -99,11 +106,11 @@ func findHash(buf []byte, filename string) (hash []byte, err error) {
 		}
 	}
 
-	return nil, fmt.Errorf("hash for file %v not found", filename)
+	return nil, fmt.Errorf("%w for: %s", errHashNotFound, filename)
 }
 
 func extractToFile(buf []byte, filename, target string) (int64, error) {
-	var mode = os.FileMode(0755)
+	mode := os.FileMode(0o755)
 
 	// get information about the target file
 	fi, err := os.Lstat(target)
@@ -131,7 +138,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		rd = nil
 		for {
 			if hdr, err := trd.Next(); err != nil {
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 
@@ -142,7 +149,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 			}
 		}
 		if rd == nil {
-			return -1, fmt.Errorf("no such file '%s'", binaryFile)
+			return -1, fmt.Errorf("%w: %s", syscall.ENOENT, binaryFile)
 		}
 	case ".zip":
 		zrd, err := zip.NewReader(bytes.NewReader(buf), int64(len(buf)))
@@ -151,7 +158,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		}
 
 		if len(zrd.File) != 1 {
-			return -1, fmt.Errorf("ZIP archive contains more than one file")
+			return -1, errArchiveMultipleFiles
 		}
 
 		file, err := zrd.File[0].Open()
@@ -168,7 +175,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 
 	// Delete old file
 	if err := os.Remove(target); err != nil && !os.IsNotExist(err) {
-		return -1, fmt.Errorf("failed to remove target file: %v", err)
+		return -1, fmt.Errorf("failed to remove target file: %w", err)
 	}
 
 	//#nosec G304 -- No file inclusion possible as we are writing only.

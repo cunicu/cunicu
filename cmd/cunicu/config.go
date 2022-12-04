@@ -7,24 +7,23 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
-
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"go.uber.org/zap"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
-var (
-	configCmd = &cobra.Command{
+func init() { //nolint:gochecknoinits
+	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Manage configuration of a running cunīcu daemon.",
 		Long: `
 `,
 	}
 
-	setCmd = &cobra.Command{
+	setCmd := &cobra.Command{
 		Use:               "set key value",
 		Short:             "Update the value of a configuration setting",
 		Run:               set,
@@ -32,7 +31,7 @@ var (
 		ValidArgsFunction: validConfigSettings,
 	}
 
-	getCmd = &cobra.Command{
+	getCmd := &cobra.Command{
 		Use:               "get [key]",
 		Short:             "Get current value of a configuration setting",
 		Run:               get,
@@ -40,19 +39,18 @@ var (
 		ValidArgsFunction: validConfigSettings,
 	}
 
-	reloadCmd = &cobra.Command{
+	reloadCmd := &cobra.Command{
 		Use:   "reload",
 		Short: "Reload the configuration of the cunīcu daemon",
 		RunE:  reload,
 		Args:  cobra.NoArgs,
 	}
-)
 
-func init() {
-	addClientCommand(rootCmd, configCmd)
-	configCmd.AddCommand(setCmd)
-	configCmd.AddCommand(getCmd)
-	configCmd.AddCommand(reloadCmd)
+	cmd.AddCommand(setCmd)
+	cmd.AddCommand(getCmd)
+	cmd.AddCommand(reloadCmd)
+
+	addClientCommand(rootCmd, cmd)
 }
 
 func getCompletions(typ reflect.Type, haveCompleted, toComplete string) ([]string, cobra.ShellCompDirective) {

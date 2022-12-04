@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -65,13 +66,14 @@ const (
 	OutputFormatHuman  OutputFormat = "human"
 )
 
-var (
-	OutputFormats = []OutputFormat{
-		OutputFormatJSON,
-		OutputFormatLogger,
-		OutputFormatHuman,
-	}
-)
+//nolint:gochecknoglobals
+var OutputFormats = []OutputFormat{
+	OutputFormatJSON,
+	OutputFormatLogger,
+	OutputFormatHuman,
+}
+
+var errUnknownFormat = errors.New("unknown output format")
 
 func (f *OutputFormat) UnmarshalText(text []byte) error {
 	*f = OutputFormat(text)
@@ -81,7 +83,7 @@ func (f *OutputFormat) UnmarshalText(text []byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("unknown output format: %s", string(text))
+	return fmt.Errorf("%w: %s", errUnknownFormat, string(text))
 }
 
 func (f OutputFormat) MarshalText() ([]byte, error) {

@@ -8,14 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/wg"
-
 	errorsx "github.com/stv0g/cunicu/pkg/errors"
+	"github.com/stv0g/cunicu/pkg/wg"
+	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 type WireGuardProvider struct {
@@ -83,7 +81,7 @@ func (p *WireGuardProvider) Read() (map[string]interface{}, error) {
 }
 
 func (p *WireGuardProvider) ReadBytes() ([]byte, error) {
-	return nil, errors.New("this provider does not support parsers")
+	return nil, errNotImplemented
 }
 
 func (p *WireGuardProvider) Order() []string {
@@ -92,13 +90,12 @@ func (p *WireGuardProvider) Order() []string {
 	return p.order
 }
 
-type wgParser struct {
-}
+type wgParser struct{}
 
 func (p *wgParser) Unmarshal(data []byte) (map[string]interface{}, error) {
 	c, err := wg.ParseConfig(data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse configuration: %s", err)
+		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
 	s, err := NewInterfaceSettingsFromConfig(c)

@@ -3,19 +3,16 @@ package inprocess
 import (
 	"context"
 
-	"go.uber.org/zap"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"github.com/stv0g/cunicu/pkg/signaling"
+	"go.uber.org/zap"
 )
 
-var (
-	subs = signaling.NewSubscriptionsRegistry()
-)
+//nolint:gochecknoglobals
+var subs = signaling.NewSubscriptionsRegistry()
 
-func init() {
+func init() { //nolint:gochecknoinits
 	signaling.Backends["inprocess"] = &signaling.BackendPlugin{
 		New:         NewBackend,
 		Description: "In-Process",

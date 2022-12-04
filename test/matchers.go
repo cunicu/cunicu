@@ -2,12 +2,11 @@ package test
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/onsi/gomega/types"
 	"github.com/stv0g/cunicu/pkg/core"
-
-	"fmt"
 )
 
 func BeRandom() types.GomegaMatcher {

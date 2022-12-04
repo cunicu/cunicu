@@ -42,7 +42,7 @@ var _ = Describe("lookup", func() {
 		var dnsSrv *mockdns.Server
 		var webSrv *ghttp.Server
 
-		var cfgPath = "/cunicu"
+		cfgPath := "/cunicu"
 
 		BeforeEach(func() {
 			var err error
@@ -176,7 +176,8 @@ var _ = Describe("lookup", func() {
 			))
 			Expect(cfg.Interfaces).To(HaveKey("wg-test"))
 
-			cfg.Marshal(GinkgoWriter)
+			err = cfg.Marshal(GinkgoWriter)
+			Expect(err).To(Succeed())
 		})
 
 		AfterEach(func() {

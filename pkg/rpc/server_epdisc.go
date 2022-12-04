@@ -2,20 +2,19 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"io"
-
-	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/proto"
-
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/proto"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type EndpointDiscoveryServer struct {
@@ -99,7 +98,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_St
 				},
 			}
 
-			if err := stream.Send(e); err == io.EOF {
+			if err := stream.Send(e); errors.Is(err, io.EOF) {
 				continue
 			} else if err != nil {
 				s.logger.Error("Failed to send connection states", zap.Error(err))
@@ -112,7 +111,7 @@ func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_St
 	}
 }
 
-func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
+func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
 	s.events.Send(&rpcproto.Event{
 		Type: rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
 
@@ -121,8 +120,8 @@ func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, new, p
 
 		Event: &rpcproto.Event_PeerConnectionStateChange{
 			PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
-				NewState:  epdiscproto.NewConnectionState(new),
-				PrevState: epdiscproto.NewConnectionState(prev),
+				NewState:  epdiscproto.NewConnectionState(newState),
+				PrevState: epdiscproto.NewConnectionState(prevState),
 			},
 		},
 	})

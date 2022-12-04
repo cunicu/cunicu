@@ -7,12 +7,10 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/randutil"
-	"golang.org/x/exp/slices"
-
+	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/util"
 	t "github.com/stv0g/cunicu/pkg/util/terminal"
-
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -53,7 +51,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	return nil
 }
 
-func (p *Peer) Dump(wr io.Writer, verbosity int) error {
+func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 	var v string
 
 	if _, err := t.FprintKV(wr, "state", t.Mods(p.State.String(), t.Bold, p.State.Color())); err != nil {
@@ -82,7 +80,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error {
 		}
 
 		if verbosity > 5 && len(p.CandidatePairStats) > 0 {
-			var cmap = map[string]int{}
+			cmap := map[string]int{}
 			var cpsNom *CandidatePairStats
 
 			if len(p.CandidatePairStats) > 0 {

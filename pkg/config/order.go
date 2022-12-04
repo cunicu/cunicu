@@ -1,16 +1,19 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
 
+var errNoMappingNode = errors.New("no mapping node")
+
 type stringMapSlice []string
 
 func (keys *stringMapSlice) UnmarshalYAML(v *yaml.Node) error {
 	if v.Kind != yaml.MappingNode {
-		return fmt.Errorf("pipeline must contain YAML mapping, has %v", v.Kind)
+		return fmt.Errorf("%w, has %v", errNoMappingNode, v.Kind)
 	}
 
 	*keys = make([]string, len(v.Content)/2)

@@ -3,23 +3,24 @@ package pdisc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
-
-	"go.uber.org/zap"
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	proto "github.com/stv0g/cunicu/pkg/proto/core"
+	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
-
-	proto "github.com/stv0g/cunicu/pkg/proto/core"
-	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
+	"go.uber.org/zap"
 )
 
-func init() {
+var errFailedUpdatePublicKey = errors.New("can not change public key in non-update message")
+
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("pdisc", "Peer discovery", New, 60)
 }
 
@@ -45,11 +46,11 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	}
 
 	for _, k := range pd.Settings.Whitelist {
-		pd.filter[crypto.Key(k)] = true
+		pd.filter[k] = true
 	}
 
 	for _, k := range pd.Settings.Blacklist {
-		pd.filter[crypto.Key(k)] = false
+		pd.filter[k] = false
 	}
 
 	// Avoid sending a peer description if the interface does not have a private key yet
@@ -71,7 +72,7 @@ func (i *Interface) Start() error {
 	// Subscribe to peer updates
 	kp := &crypto.KeyPair{
 		Ours:   crypto.Key(i.Settings.Community),
-		Theirs: signaling.AnyKey,
+		Theirs: crypto.Key{},
 	}
 	if _, err := i.Daemon.Backend.Subscribe(context.Background(), kp, i); err != nil {
 		return fmt.Errorf("failed to subscribe on peer discovery channel: %w", err)
@@ -127,7 +128,6 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 	// Other networks
 	for _, netw := range i.Settings.Networks {
 		netw := netw
-
 		allowedIPs = append(allowedIPs, &netw)
 	}
 
@@ -166,7 +166,7 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 
 	if pkOld != nil {
 		if d.Change != pdiscproto.PeerDescriptionChange_PEER_UPDATE {
-			return fmt.Errorf("can not change public key in non-update message")
+			return errFailedUpdatePublicKey
 		}
 
 		d.PublicKeyNew = i.PublicKey().Bytes()

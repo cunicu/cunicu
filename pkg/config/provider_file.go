@@ -14,6 +14,12 @@ import (
 	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 )
 
+var (
+	errInsecureRemoteConfig = errors.New("remote configuration must be provided via HTTPS")
+	errFailedToFetch        = errors.New("failed to fetch")
+	errInsecurePermissions  = errors.New("insecure permissions on configuration file")
+)
+
 type RemoteFileProvider struct {
 	url          *url.URL
 	etag         string
@@ -28,7 +34,7 @@ func NewRemoteFileProvider(u *url.URL) *RemoteFileProvider {
 }
 
 func (p *RemoteFileProvider) Read() (map[string]interface{}, error) {
-	return nil, errors.New("this provider does not support parsers")
+	return nil, errNotImplemented
 }
 
 func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
@@ -37,7 +43,7 @@ func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to split host:port: %w", err)
 		} else if host != "localhost" && host != "127.0.0.1" && host != "::1" && host != "[::1]" {
-			return nil, errors.New("remote configuration must be provided via HTTPS")
+			return nil, errInsecureRemoteConfig
 		}
 	}
 
@@ -55,10 +61,11 @@ func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch %s: %w", p.url, err)
+		return nil, fmt.Errorf("failed to fetch: %s: %w", p.url, err)
 	} else if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch: %s: %s", p.url, resp.Status)
+		return nil, fmt.Errorf("%w: %s: %s", errFailedToFetch, p.url, resp.Status)
 	}
+	defer resp.Body.Close()
 
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -125,10 +132,11 @@ func (p *RemoteFileProvider) hasChanged() (bool, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("failed to fetch %s: %w", p.url, err)
+		return false, fmt.Errorf("%s %s: %w", errFailedToFetch, p.url, err)
 	} else if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("failed to fetch: %s: %s", p.url, resp.Status)
+		return false, fmt.Errorf("%w: %s: %s", errFailedToFetch, p.url, resp.Status)
 	}
+	defer resp.Body.Close()
 
 	return resp.StatusCode == 200, nil
 }
@@ -153,8 +161,8 @@ func (p *LocalFileProvider) ReadBytes() ([]byte, error) {
 		return nil, err
 	}
 
-	if p := fi.Mode().Perm(); p&07 != 0 {
-		return nil, fmt.Errorf("insecure permissions on configuration file: %#o. The configuration file must not be world-readable", p)
+	if p := fi.Mode().Perm(); p&0o7 != 0 {
+		return nil, fmt.Errorf("%w: %#o. The configuration file must not be world-readable", errInsecurePermissions, p)
 	}
 
 	buf, err := p.File.ReadBytes()

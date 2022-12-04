@@ -6,15 +6,18 @@ import (
 	"strings"
 )
 
-var configPkgPath = reflect.TypeOf(Settings{}).PkgPath()
-
 func Map(v any, tagName string) map[string]any {
 	rv := reflect.ValueOf(v)
 
-	return _map(rv, tagName).(map[string]any)
+	m, ok := _map(rv, tagName).(map[string]any)
+	if !ok {
+		panic("type assertion failed")
+	}
+
+	return m
 }
 
-func _map(v reflect.Value, tagName string) any {
+func _map(v reflect.Value, tagName string) any { //nolint:gocognit
 	t := v.Type()
 
 	// Stringable types will be stringed
@@ -29,7 +32,7 @@ func _map(v reflect.Value, tagName string) any {
 	}
 
 	// Types outside the config package will be taken as an interface
-	if t.PkgPath() != configPkgPath && t.PkgPath() != "" {
+	if t.PkgPath() != reflect.TypeOf(Settings{}).PkgPath() && t.PkgPath() != "" {
 		return v.Interface()
 	}
 

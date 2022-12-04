@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	ErrNotSubscribed = errors.New("missing subscription")
-
-	AnyKey crypto.Key
+	ErrNotSubscribed   = errors.New("missing subscription")
+	errAlreadyExisting = errors.New("already existing")
 )
 
 type Subscription struct {
@@ -54,7 +53,7 @@ func (s *SubscriptionsRegistry) NewSubscription(k *crypto.Key) (*Subscription, e
 	defer s.mu.Unlock()
 
 	if _, ok := s.subs[k.PublicKey()]; ok {
-		return nil, errors.New("already existing")
+		return nil, errAlreadyExisting
 	}
 
 	sub := &Subscription{
@@ -137,7 +136,7 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if cbs, ok := s.onMessages[AnyKey]; ok {
+	if cbs, ok := s.onMessages[crypto.Key{}]; ok {
 		for _, cb := range cbs {
 			cb.OnSignalingMessage(&pkp, msg)
 		}

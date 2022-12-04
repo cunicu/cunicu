@@ -3,9 +3,7 @@ package grpc
 import (
 	"context"
 	"crypto/hmac"
-
-	//#nosec G501 -- SHA1 is required by TURN REST API
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec
 	"encoding/base64"
 	"fmt"
 	"time"
@@ -13,12 +11,11 @@ import (
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/proto"
+	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 )
 
 const (

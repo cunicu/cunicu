@@ -18,6 +18,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var (
+	errNotImplemented = errors.New("not implemented")
+	errNoSOA          = errors.New("failed to find SOA record")
+)
+
 type LookupProvider struct {
 	domain     string
 	lastSerial int
@@ -40,7 +45,7 @@ func NewLookupProvider(domain string) *LookupProvider {
 }
 
 func (p *LookupProvider) ReadBytes() ([]byte, error) {
-	return nil, errors.New("this provider requires no parser")
+	return nil, errNotImplemented
 }
 
 func (p *LookupProvider) Read() (map[string]any, error) {
@@ -146,7 +151,7 @@ func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
 	msg.SetQuestion(dns.Fqdn(p.domain), dns.TypeSOA)
 
 	if err := conn.WriteMsg(msg); err != nil {
-		return -1, fmt.Errorf("failed to write question: %w", err)
+		return -1, fmt.Errorf("failed to send request: %w", err)
 	}
 
 	resp, err := conn.ReadMsg()
@@ -164,16 +169,16 @@ func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
 		}
 	}
 
-	return -1, errors.New("failed to find SOA record")
+	return -1, errNoSOA
 }
 
-func (p *LookupProvider) lookupTXT(ctx context.Context) error {
+func (p *LookupProvider) lookupTXT(_ context.Context) error {
 	rr, err := net.LookupTXT(p.domain)
 	if err != nil {
 		return err
 	}
 
-	var re = regexp.MustCompile(`^(?m)cunicu-(.+?)=(.*)$`)
+	re := regexp.MustCompile(`^(?m)cunicu-(.+?)=(.*)$`)
 
 	p.logger.Debug("TXT records found", zap.Any("records", rr))
 
@@ -218,7 +223,7 @@ func (p *LookupProvider) lookupTXT(ctx context.Context) error {
 	return nil
 }
 
-func (p *LookupProvider) lookupSRV(ctx context.Context) error {
+func (p *LookupProvider) lookupSRV(_ context.Context) error {
 	svcs := map[string][]string{
 		"stun":  {"udp"},
 		"stuns": {"tcp"},

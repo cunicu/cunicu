@@ -7,17 +7,15 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
+	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/core"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/wg"
-
-	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
 type ExecHook struct {
@@ -47,8 +45,8 @@ func (h *ExecHook) run(msg proto.Message, args ...any) {
 		allArgs = append(allArgs, fmt.Sprintf("%v", arg))
 	}
 
-	//#nosec G204 -- The filename should ne configurable by the user
-	cmd := exec.Command(h.Command, allArgs...)
+	// It the main purpose of an exec hook to run arbitrary external executables
+	cmd := exec.Command(h.Command, allArgs...) //nolint:gosec
 
 	if msg != nil && h.Stdin {
 		mo := protojson.MarshalOptions{
@@ -129,14 +127,14 @@ func (h *ExecHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerMo
 	}
 
 	if m.Is(core.PeerModifiedKeepaliveInterval) {
-		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "presistent-keepalive", p.PersistentKeepaliveInterval.Seconds(), old.PersistentKeepaliveInterval.Seconds())
+		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "persistent-keepalive", p.PersistentKeepaliveInterval.Seconds(), old.PersistentKeepaliveInterval.Seconds())
 	}
 
 	if m.Is(core.PeerModifiedHandshakeTime) {
-		new := fmt.Sprint(p.LastHandshakeTime.UnixMilli())
-		old := fmt.Sprint(old.LastHandshakeTime.UnixMilli())
+		newTime := fmt.Sprint(p.LastHandshakeTime.UnixMilli())
+		oldTime := fmt.Sprint(old.LastHandshakeTime.UnixMilli())
 
-		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "last-handshake", new, old)
+		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "last-handshake", newTime, oldTime)
 	}
 
 	if m.Is(core.PeerModifiedAllowedIPs) {
@@ -162,9 +160,9 @@ func (h *ExecHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerMo
 	}
 }
 
-func (h *ExecHook) OnConnectionStateChange(p *epdisc.Peer, new, prev icex.ConnectionState) {
+func (h *ExecHook) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
 	m := p.Peer.Marshal()
 	m.Ice = p.Marshal()
 
-	go h.run(m, "changed", "peer", "connection-state", p.Interface.Name(), p.PublicKey(), new, prev)
+	go h.run(m, "changed", "peer", "connection-state", p.Interface.Name(), p.PublicKey(), newState, prevState)
 }

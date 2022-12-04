@@ -3,7 +3,6 @@ package device
 import (
 	"fmt"
 	"net"
-	"os/exec"
 
 	"go.uber.org/zap"
 )

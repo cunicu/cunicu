@@ -6,11 +6,11 @@ import (
 	"crypto/rand"
 	"math"
 	"math/big"
+	"os"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/signaling"
-
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/signaling"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
@@ -51,8 +51,8 @@ func Entropy(data []byte) float64 {
 		return 0
 	}
 
-	var length = float64(len(data))
-	var entropy = 0.0
+	length := float64(len(data))
+	entropy := 0.0
 
 	for i := 0; i < 256; i++ {
 		if p := float64(bytes.Count(data, []byte{byte(i)})) / length; p > 0 {
@@ -61,4 +61,8 @@ func Entropy(data []byte) float64 {
 	}
 
 	return entropy
+}
+
+func IsCI() bool {
+	return os.Getenv("CI") == "true"
 }

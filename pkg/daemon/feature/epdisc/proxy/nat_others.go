@@ -8,8 +8,10 @@ import (
 	"github.com/stv0g/cunicu/pkg/errors"
 )
 
-type NATRule struct{}
-type NAT struct{}
+type (
+	NATRule struct{}
+	NAT     struct{}
+)
 
 func NewNAT(ident string) (*NAT, error) {
 	return nil, errors.ErrNotSupported

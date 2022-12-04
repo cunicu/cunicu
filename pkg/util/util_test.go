@@ -98,13 +98,13 @@ var _ = Context("contains net", func() {
 })
 
 var _ = It("rand", func() {
-	a := rand.Float32()
+	a := rand.Float32() //nolint:gosec
 
 	util.SetupRand()
-	b := rand.Float32()
+	b := rand.Float32() //nolint:gosec
 
 	util.SetupRand()
-	c := rand.Float32()
+	c := rand.Float32() //nolint:gosec
 
 	Expect(a).NotTo(Equal(b))
 	Expect(a).NotTo(Equal(c))
@@ -120,7 +120,6 @@ var _ = Context("offset ip", func() {
 		Expect(ip2).NotTo(BeNil())
 
 		Expect(util.OffsetIP(ip1, 10)).To(Equal(ip2))
-
 	})
 
 	It("ipv6", func() {

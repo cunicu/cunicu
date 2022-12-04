@@ -5,9 +5,7 @@ import (
 	"io"
 
 	"github.com/pion/ice/v2"
-
 	"github.com/stv0g/cunicu/pkg/proto"
-
 	t "github.com/stv0g/cunicu/pkg/util/terminal"
 )
 
@@ -40,8 +38,8 @@ func NewCandidate(ic ice.Candidate) *Candidate {
 func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 	var err error
 
-	var relAddr = ""
-	var relPort = 0
+	relAddr := ""
+	relPort := 0
 	if c.RelatedAddress != nil {
 		relAddr = c.RelatedAddress.Address
 		relPort = int(c.RelatedAddress.Port)
@@ -98,7 +96,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 		})
 
 	default:
-		err = fmt.Errorf("unknown candidate type: %s", c.Type)
+		err = fmt.Errorf("%w: %s", ice.ErrUnknownCandidateTyp, c.Type)
 	}
 
 	return ic, err
@@ -115,7 +113,7 @@ func NewCandidatePairStats(cps *ice.CandidatePairStats) *CandidatePairStats {
 		BytesSent:                  cps.BytesSent,
 		BytesReceived:              cps.BytesReceived,
 		TotalRoundtripTime:         cps.TotalRoundTripTime,
-		CurrenTroundtripTime:       cps.CurrentRoundTripTime,
+		CurrentRoundtripTime:       cps.CurrentRoundTripTime,
 		AvailableOutgoingBitrate:   cps.AvailableOutgoingBitrate,
 		AvailableIncomingBitrate:   cps.AvailableIncomingBitrate,
 		CircuitBreakerTriggerCount: cps.CircuitBreakerTriggerCount,
@@ -184,6 +182,7 @@ func (c *Candidate) ToString() string {
 		addr = fmt.Sprintf("[%s]", c.Address)
 	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
 		addr = c.Address
+	case NetworkType_NETWORK_TYPE_UNSPECIFIED:
 	}
 
 	var nt string
@@ -206,6 +205,7 @@ func (cs *CandidateStats) ToString() string {
 		addr = fmt.Sprintf("[%s]", cs.Ip)
 	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
 		addr = cs.Ip
+	case NetworkType_NETWORK_TYPE_UNSPECIFIED:
 	}
 
 	var nt string

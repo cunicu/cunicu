@@ -8,19 +8,20 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func SliceDiff[T constraints.Ordered](old, new []T) (added, removed, kept []T) {
-	return SliceDiffFunc(old, new, func(a, b T) int {
-		if a == b {
+func SliceDiff[T constraints.Ordered](oldSlice, newSlice []T) (added, removed, kept []T) {
+	return SliceDiffFunc(oldSlice, newSlice, func(a, b T) int {
+		switch {
+		case a == b:
 			return 0
-		} else if a < b {
+		case a < b:
 			return -1
-		} else {
+		default:
 			return 1
 		}
 	})
 }
 
-func SliceDiffFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, kept []T) {
+func SliceDiffFunc[T any](oldSlice, newSlice []T, cmp func(a, b T) int) (added, removed, kept []T) {
 	added = []T{}
 	removed = []T{}
 	kept = []T{}
@@ -29,23 +30,23 @@ func SliceDiffFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, k
 		return cmp(a, b) < 0
 	}
 
-	slices.SortFunc(new, less)
-	slices.SortFunc(old, less)
+	slices.SortFunc(newSlice, less)
+	slices.SortFunc(oldSlice, less)
 
 	i, j := 0, 0
-	for i < len(old) && j < len(new) {
-		c := cmp(old[i], new[j])
+	for i < len(oldSlice) && j < len(newSlice) {
+		c := cmp(oldSlice[i], newSlice[j])
 		switch {
 		case c < 0: // removed
-			removed = append(removed, old[i])
+			removed = append(removed, oldSlice[i])
 			i++
 
 		case c > 0: // added
-			added = append(added, new[j])
+			added = append(added, newSlice[j])
 			j++
 
 		default: // kept
-			kept = append(kept, new[j])
+			kept = append(kept, newSlice[j])
 			i++
 			j++
 		}
@@ -53,15 +54,15 @@ func SliceDiffFunc[T any](old, new []T, cmp func(a, b T) int) (added, removed, k
 
 	// Add rest
 
-	for ; i < len(old); i++ {
-		removed = append(removed, old[i])
+	for ; i < len(oldSlice); i++ {
+		removed = append(removed, oldSlice[i])
 	}
 
-	for ; j < len(new); j++ {
-		added = append(added, new[j])
+	for ; j < len(newSlice); j++ {
+		added = append(added, newSlice[j])
 	}
 
-	return
+	return added, removed, kept
 }
 
 func SliceShuffle[T any](s []T) {

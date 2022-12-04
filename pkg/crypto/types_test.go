@@ -3,15 +3,13 @@ package crypto_test
 import (
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/test"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test"
 )
 
 var _ = Describe("key", func() {
-
 	Describe("Argon2id key derivation", func() {
 		var key1, key2 crypto.Key
 
@@ -195,11 +193,9 @@ var _ = Describe("key", func() {
 		})
 
 		It("marshal", func() {
-			keyCfg := crypto.Key(key)
-
-			keyCfgStr, err := keyCfg.MarshalText()
+			keyStr2, err := key.MarshalText()
 			Expect(err).To(Succeed())
-			Expect(string(keyCfgStr)).To(Equal(keyStr))
+			Expect(string(keyStr2)).To(Equal(keyStr))
 		})
 
 		It("fails on invalid key", func() {
@@ -258,7 +254,7 @@ var _ = Describe("key", func() {
 			q := k.IPAddress(*p)
 
 			ones, bits := q.Mask.Size()
-			Expect(ones).To(Equal(10))
+			Expect(ones).To(Equal(32))
 			Expect(bits).To(Equal(128))
 			Expect(p.Contains(q.IP)).To(BeTrue())
 		})

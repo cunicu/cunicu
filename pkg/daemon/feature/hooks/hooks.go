@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("hooks", "Hooks", New, 70)
 }
 
@@ -48,7 +48,9 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		h.OnPeer(hk)
 
 		if f, ok := h.Features["epdisc"]; ok {
-			f.(*epdisc.Interface).OnConnectionStateChange(hk)
+			if ep, ok := f.(*epdisc.Interface); ok {
+				ep.OnConnectionStateChange(hk)
+			}
 		}
 
 		h.hooks = append(h.hooks, hk)

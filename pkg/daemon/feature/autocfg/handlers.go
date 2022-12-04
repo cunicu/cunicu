@@ -33,11 +33,11 @@ func (i *Interface) OnPeerAdded(p *core.Peer) {
 	logger := i.logger.With(zap.String("peer", p.String()))
 
 	// Check if peer has been created by peer discovery
-	var hasDesc bool
+	hasDesc := false
 	if f, ok := i.Interface.Features["pdisc"]; ok {
-		hasDesc = f.(*pdisc.Interface).Description(p) != nil
-	} else {
-		hasDesc = false
+		if i, ok := f.(*pdisc.Interface); ok {
+			hasDesc = i.Description(p) != nil
+		}
 	}
 
 	// Add AllowedIPs for peer if they are not added by the peer-discovery

@@ -8,6 +8,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
+//nolint:gochecknoglobals
 var (
 	Verbosity VerbosityLevel
 	Severity  zap.AtomicLevel

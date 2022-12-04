@@ -32,7 +32,7 @@ var _ = Describe("gRPC backend", func() {
 
 		// Start local dummy gRPC server
 		svr = grpc.NewSignalingServer()
-		go svr.Serve(l)
+		go svr.Serve(l) //nolint:errcheck
 
 		u = url.URL{
 			Scheme:   "grpc",

@@ -2,21 +2,23 @@ package config
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 
 	"github.com/pion/ice/v2"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 	"github.com/stv0g/cunicu/pkg/util"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
-func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*ice.URL, error) {
+var errInvalidURLScheme = errors.New("invalid ICE URL scheme")
+
+func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*ice.URL, error) { //nolint:gocognit
 	iceURLs := []*ice.URL{}
 
 	g := errgroup.Group{}
@@ -80,14 +82,14 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 			})
 
 		default:
-			return nil, fmt.Errorf("invalid ICE URL scheme: %s", u.Scheme)
+			return nil, fmt.Errorf("%w: %s", errInvalidURLScheme, u.Scheme)
 		}
 	}
 
 	return iceURLs, g.Wait()
 }
 
-func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (*ice.AgentConfig, error) {
+func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (*ice.AgentConfig, error) { //nolint:gocognit
 	var err error
 
 	cfg := &ice.AgentConfig{

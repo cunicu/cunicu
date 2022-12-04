@@ -7,37 +7,40 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
 	"github.com/stv0g/cunicu/pkg/crypto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/util/terminal"
 	"github.com/stv0g/cunicu/pkg/wg"
-
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-var inviteCmd = &cobra.Command{
-	Use:               "invite [interface]",
-	Short:             "Add a new peer to the local daemon configuration and return the required configuration for this new peer",
-	Run:               invite,
-	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: interfaceValidArgs,
+type inviteOptions struct {
+	listenPort int
+	qrCode     bool
 }
 
-var listenPort int
-var qrCode bool
+func init() { //nolint:gochecknoinits
+	opts := &inviteOptions{}
+	cmd := &cobra.Command{
+		Use:   "invite [interface]",
+		Short: "Add a new peer to the local daemon configuration and return the required configuration for this new peer",
+		Run: func(cmd *cobra.Command, args []string) {
+			invite(cmd, args, opts)
+		},
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: interfaceValidArgs,
+	}
 
-func init() {
-	addClientCommand(rootCmd, inviteCmd)
+	addClientCommand(rootCmd, cmd)
 
-	pf := inviteCmd.PersistentFlags()
+	pf := cmd.PersistentFlags()
 
-	pf.IntVarP(&listenPort, "listen-port", "L", wg.DefaultPort, "Listen port for generated config")
-	pf.BoolVarP(&qrCode, "qr-code", "Q", false, "Show config as QR code in terminal")
+	pf.IntVarP(&opts.listenPort, "listen-port", "L", wg.DefaultPort, "Listen port for generated config")
+	pf.BoolVarP(&opts.qrCode, "qr-code", "Q", false, "Show config as QR code in terminal")
 }
 
-func invite(cmd *cobra.Command, args []string) {
+func invite(_ *cobra.Command, args []string, opts *inviteOptions) {
 	sk, err := crypto.GeneratePrivateKey()
 	if err != nil {
 		logger.Fatal("Failed to generate private key", zap.Error(err))
@@ -66,7 +69,7 @@ func invite(cmd *cobra.Command, args []string) {
 		cfg := wg.Config{
 			Config: wgtypes.Config{
 				PrivateKey: (*wgtypes.Key)(&sk),
-				ListenPort: &listenPort,
+				ListenPort: &opts.listenPort,
 				Peers:      []wgtypes.PeerConfig{cfgPeer},
 			},
 			Address: []net.IPNet{},
@@ -77,7 +80,7 @@ func invite(cmd *cobra.Command, args []string) {
 			cfg.PeerEndpoints = []string{addPeerResp.Invitation.Endpoint}
 		}
 
-		if qrCode {
+		if opts.qrCode {
 			buf := &bytes.Buffer{}
 			if err := cfg.Dump(buf); err != nil {
 				logger.Fatal("Failed to dump config", zap.Error(err))

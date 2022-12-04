@@ -8,15 +8,14 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/device"
-	"golang.org/x/sys/unix"
-	wgdevice "golang.zx2c4.com/wireguard/device"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/device"
 	g "github.com/stv0g/gont/pkg"
 	nl "github.com/vishvananda/netlink"
+	"golang.org/x/sys/unix"
+	wgdevice "golang.zx2c4.com/wireguard/device"
 )
 
 var _ = Describe("device", func() {
@@ -41,7 +40,7 @@ var _ = Describe("device", func() {
 	}
 
 	JustBeforeEach(OncePerOrdered, func() {
-		name := fmt.Sprintf("wg-test-%d", rand.Intn(1000))
+		name := fmt.Sprintf("wg-test-%d", rand.Intn(1000)) //nolint:gosec
 		ns, err = g.NewNamespace(name)
 		Expect(err).To(Succeed())
 
