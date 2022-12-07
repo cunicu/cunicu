@@ -84,6 +84,7 @@ require (
 	github.com/pion/transport v0.13.1 // indirect
 	github.com/pion/turn/v2 v2.0.8 // indirect
 	github.com/pion/udp v0.1.1 // indirect
+	github.com/pion/zapion v0.0.0-20220425013423-f29ac63a7069 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

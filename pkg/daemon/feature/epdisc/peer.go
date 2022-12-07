@@ -10,12 +10,12 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/pion/ice/v2"
+	"github.com/pion/zapion"
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
 	"github.com/stv0g/cunicu/pkg/device"
 	icex "github.com/stv0g/cunicu/pkg/ice"
-	"github.com/stv0g/cunicu/pkg/log"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
@@ -246,7 +246,9 @@ func (p *Peer) createAgent() error {
 
 	acfg.UDPMux = p.Interface.udpMux
 	acfg.UDPMuxSrflx = p.Interface.udpMuxSrflx
-	acfg.LoggerFactory = log.NewPionLoggerFactory(p.logger)
+	acfg.LoggerFactory = &zapion.ZapFactory{
+		BaseLogger: p.logger,
+	}
 
 	p.credentials = epdiscproto.NewCredentials()
 
