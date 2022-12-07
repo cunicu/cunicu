@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/pion/zapion"
 	"go.uber.org/zap"
 )
 
@@ -22,9 +22,13 @@ func CreateUDPMux() (ice.UDPMux, int, error) {
 		return nil, -1, errInvalidCast
 	}
 
+	lf := zapion.ZapFactory{
+		BaseLogger: zap.L().Named("ice"),
+	}
+
 	mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
 		UDPConn: conn,
-		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux"),
+		Logger:  lf.NewLogger("udpmux"),
 	})
 
 	return mux, lAddr.Port, nil
@@ -44,9 +48,13 @@ func CreateUniversalUDPMux() (ice.UniversalUDPMux, int, error) {
 		return nil, -1, errInvalidCast
 	}
 
+	lf := zapion.ZapFactory{
+		BaseLogger: zap.L().Named("ice"),
+	}
+
 	mux := ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: conn,
-		Logger:  log.NewPionLoggerFactory(zap.L()).NewLogger("udpmux-universal"),
+		Logger:  lf.NewLogger("udpmux-universal"),
 	})
 
 	return mux, lAddr.Port, nil

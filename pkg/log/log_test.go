@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/pion/zapion"
 	"github.com/stv0g/cunicu/pkg/log"
 	t "github.com/stv0g/cunicu/pkg/util/terminal"
 	"go.uber.org/zap"
@@ -63,8 +64,10 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		})
 
 		It("can log via pion logger", func() {
-			loggerFactory := log.NewPionLoggerFactory(logger)
-			logger := loggerFactory.NewLogger("myscope")
+			lf := zapion.ZapFactory{
+				BaseLogger: logger.Named("ice"),
+			}
+			logger := lf.NewLogger("myscope")
 
 			scope = "ice.myscope"
 			logger.Info(msg)
