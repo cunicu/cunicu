@@ -141,11 +141,15 @@ jobs:
       run: make cunicu
       
     - name: Lint
+      if: ${{ matrix.host_os != 'windows' }}
       run: make lint LINT_OPTS=--timeout=10m
 
     - name: Run tests
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os != 'windows' }}
       run: sudo --preserve-env env "PATH=$PATH" make tests
+      env:
+        # Pass token via environment variable to avoid GitHub API rate-limit
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run tests for Windows # which has no sudo
       if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'windows' }}

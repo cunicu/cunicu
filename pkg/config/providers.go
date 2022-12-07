@@ -163,9 +163,9 @@ func (c *Config) FlagProvider() koanf.Provider {
 		"wg-userspace": "userspace",
 
 		// Endpoint discovery
-		"url":                "ice.urls",
-		"username":           "ice.username",
-		"password":           "ice.password",
+		"ice-url":            "ice.urls",
+		"ice-username":       "ice.username",
+		"ice-password":       "ice.password",
 		"ice-candidate-type": "ice.candidate_types",
 		"ice-network-type":   "ice.network_types",
 		"ice-relay-tcp":      "ice.relay_tcp",

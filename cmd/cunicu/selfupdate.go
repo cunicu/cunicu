@@ -42,6 +42,10 @@ After download, the authenticity of the binary is verified using the GPG signatu
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.output, "output", "o", self, "Save the downloaded file as `filename`")
+
+	if err := cmd.MarkFlagFilename("output"); err != nil {
+		panic(err)
+	}
 }
 
 func selfUpdate(_ *cobra.Command, _ []string, opts *selfUpdateOptions) {

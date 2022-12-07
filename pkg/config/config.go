@@ -94,8 +94,8 @@ func New(flags *pflag.FlagSet) *Config {
 
 	// Endpoint discovery
 	flags.StringSliceP("ice-url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
-	flags.StringP("username", "u", "", "The `username` for STUN/TURN credentials")
-	flags.StringP("password", "p", "", "The `password` for STUN/TURN credentials")
+	flags.StringP("ice-username", "u", "", "The `username` for STUN/TURN credentials")
+	flags.StringP("ice-password", "p", "", "The `password` for STUN/TURN credentials")
 
 	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (one of host, srflx, prflx, relay)")
 	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")

@@ -109,10 +109,6 @@ func init() { //nolint:gochecknoinits
 	if err := rootCmd.RegisterFlagCompletionFunc("color", cobra.FixedCompletions([]string{"auto", "always", "never"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
 		panic(err)
 	}
-
-	if err := rootCmd.MarkFlagFilename("output", "yaml", "json"); err != nil {
-		panic(err)
-	}
 }
 
 func onInitialize(opts *options) {

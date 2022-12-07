@@ -53,7 +53,12 @@ var _ = Describe("watcher", func() {
 
 		w.OnAll(h)
 
-		go w.Watch()
+		go func() {
+			exit, _ := ns.Enter()
+			defer exit()
+
+			w.Watch()
+		}()
 	})
 
 	JustAfterEach(OncePerOrdered, func() {

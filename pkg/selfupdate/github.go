@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"syscall"
 	"time"
@@ -63,6 +64,10 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if tok := os.Getenv("GITHUB_TOKEN"); tok != "" {
+		req.Header.Add("Authorization", "Bearer "+tok)
 	}
 
 	// pin API version 3

@@ -61,7 +61,7 @@ func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch: %s: %w", p.url, err)
+		return nil, fmt.Errorf("failed to fetch %s: %w", p.url, err)
 	} else if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%w: %s: %s", errFailedToFetch, p.url, resp.Status)
 	}
@@ -146,23 +146,28 @@ type LocalFileProvider struct {
 	path string
 
 	order []string
+
+	allowInsecure bool
 }
 
 func NewLocalFileProvider(u *url.URL) *LocalFileProvider {
 	return &LocalFileProvider{
-		File: file.Provider(u.Path),
-		path: u.Path,
+		File:          file.Provider(u.Path),
+		path:          u.Path,
+		allowInsecure: os.Getenv("CUNICU_CONFIG_ALLOW_INSECURE") == "true",
 	}
 }
 
 func (p *LocalFileProvider) ReadBytes() ([]byte, error) {
-	fi, err := os.Stat(p.path)
-	if err != nil {
-		return nil, err
-	}
+	if !p.allowInsecure {
+		fi, err := os.Stat(p.path)
+		if err != nil {
+			return nil, err
+		}
 
-	if p := fi.Mode().Perm(); p&0o7 != 0 {
-		return nil, fmt.Errorf("%w: %#o. The configuration file must not be world-readable", errInsecurePermissions, p)
+		if perm := fi.Mode().Perm(); perm&0o7 != 0 {
+			return nil, fmt.Errorf("%w: %s", errInsecurePermissions, p.path)
+		}
 	}
 
 	buf, err := p.File.ReadBytes()
