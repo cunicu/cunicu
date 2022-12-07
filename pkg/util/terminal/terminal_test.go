@@ -19,9 +19,15 @@ func TestSuite(t *testing.T) {
 var _ = test.SetupLogging()
 
 var _ = Context("tty", func() {
-	It("is true", func() {
-		Expect(terminal.IsATTY(os.Stdout)).To(BeTrue())
-	})
+	if test.IsCI() {
+		It("is false on CI", func() {
+			Expect(terminal.IsATTY(os.Stdout)).To(BeFalse())
+		})
+	} else {
+		It("is true", func() {
+			Expect(terminal.IsATTY(os.Stdout)).To(BeTrue())
+		})
+	}
 
 	It("is false", func() {
 		fn := filepath.Join(GinkgoT().TempDir(), "file")

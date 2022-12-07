@@ -174,7 +174,7 @@ var _ = Context("config", func() {
 				It("fails on loading an non-existent local file", func() {
 					_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
 
-					Expect(err).To(MatchError("failed to load config: open /does-not-exist.yaml: no such file or directory"))
+					Expect(err).To(MatchError(MatchRegexp("no such file or directory$")))
 				})
 
 				It("fails on loading an non-existent remote file", func() {
@@ -296,18 +296,29 @@ var _ = Context("config", func() {
 		})
 	})
 
-	It("can parse the example config file", func() {
-		cfg, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
-		Expect(err).To(Succeed())
+	Context("allow insecure configs", func() {
+		BeforeEach(func() {
+			os.Setenv("CUNICU_CONFIG_ALLOW_INSECURE", "true")
+		})
 
-		Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.yaml"}))
-		Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0", "wg1", "wg2", "wg-work-*", "wg-work-external-*"}))
-		Expect(cfg.InterfaceSettings("wg-work-laptop").Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
-		Expect(cfg.DefaultInterfaceSettings.Hooks).To(HaveLen(2))
+		AfterEach(func() {
+			os.Unsetenv("CUNICU_CONFIG_ALLOW_INSECURE")
+		})
 
-		h := cfg.DefaultInterfaceSettings.Hooks[0]
-		hh, ok := h.(*config.ExecHookSetting)
-		Expect(ok).To(BeTrue(), "Found invalid hook %+#v", hh)
+		It("can parse the example config file", func() {
+			cfg, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
+
+			Expect(err).To(Succeed())
+
+			Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.yaml"}))
+			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0", "wg1", "wg2", "wg-work-*", "wg-work-external-*"}))
+			Expect(cfg.InterfaceSettings("wg-work-laptop").Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
+			Expect(cfg.DefaultInterfaceSettings.Hooks).To(HaveLen(2))
+
+			h := cfg.DefaultInterfaceSettings.Hooks[0]
+			hh, ok := h.(*config.ExecHookSetting)
+			Expect(ok).To(BeTrue(), "Found invalid hook %+#v", hh)
+		})
 	})
 
 	It("throws an error on an invalid config file path", func() {

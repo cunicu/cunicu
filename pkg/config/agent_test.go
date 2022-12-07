@@ -44,7 +44,7 @@ var _ = Describe("Agent config", func() {
 				Expect(aCfg.Urls).To(ContainElements(exp))
 			}
 		},
-		Entry("url1", []string{"--ice-url", "stun:server1", "--username", "user1", "--password", "pass1"}, &ice.URL{
+		Entry("url1", []string{"--ice-url", "stun:server1", "--ice-username", "user1", "--ice-password", "pass1"}, &ice.URL{
 			Scheme:   ice.SchemeTypeSTUN,
 			Host:     "server1",
 			Port:     3478,
@@ -52,7 +52,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url2", []string{"--ice-url", "turn:server2:1234?transport=tcp", "--username", "user1", "--password", "pass1"}, &ice.URL{
+		Entry("url2", []string{"--ice-url", "turn:server2:1234?transport=tcp", "--ice-username", "user1", "--ice-password", "pass1"}, &ice.URL{
 			Scheme:   ice.SchemeTypeTURN,
 			Host:     "server2",
 			Port:     1234,
@@ -60,7 +60,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url3", []string{"--ice-url", "turn:user3:pass3@server3:1234?transport=tcp", "--password", "pass3"}, &ice.URL{
+		Entry("url3", []string{"--ice-url", "turn:user3:pass3@server3:1234?transport=tcp", "--ice-password", "pass3"}, &ice.URL{
 			Scheme:   ice.SchemeTypeTURN,
 			Host:     "server3",
 			Port:     1234,
@@ -68,7 +68,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user3",
 			Password: "pass3",
 		}),
-		Entry("url3", []string{"--password", "pass1", "--ice-url", "http://bla.0l.de"}, "failed to gather ICE URLs: invalid ICE URL scheme: http"),
+		Entry("url3", []string{"--ice-password", "pass1", "--ice-url", "http://bla.0l.de"}, "failed to gather ICE URLs: invalid ICE URL scheme: http"),
 		Entry("url4", []string{"--ice-url", "stun:stun.cunicu.li?transport=tcp"}, "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
 	)
 
@@ -204,7 +204,7 @@ var _ = Describe("Agent config", func() {
 
 		Expect(aCfg.InterfaceFilter("wg1")).To(BeTrue())
 
-		Expect(aCfg.Urls).To(HaveLen(2))
+		Expect(aCfg.Urls).To(HaveLen(5))
 		Expect(aCfg.Urls[0].Host).To(Equal("stun.cunicu.li"))
 		Expect(aCfg.Urls[1].Host).To(Equal("turn.cunicu.li"))
 	})
