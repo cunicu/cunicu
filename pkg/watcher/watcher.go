@@ -10,13 +10,14 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	xerrors "github.com/stv0g/cunicu/pkg/errors"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
+
+var errNotSupported = errors.New("not supported on this platform")
 
 const (
 	InterfaceAdded InterfaceEventOp = iota
@@ -107,7 +108,7 @@ func (w *Watcher) Watch() {
 	}
 	w.logger.Debug("Started watching for changes of WireGuard userspace devices")
 
-	if err := w.watchKernel(); err != nil && !errors.Is(err, xerrors.ErrNotSupported) {
+	if err := w.watchKernel(); err != nil && !errors.Is(err, errNotSupported) {
 		w.logger.Fatal("Failed to watch kernel interfaces", zap.Error(err))
 	}
 	w.logger.Debug("Started watching for changes of WireGuard kernel devices")

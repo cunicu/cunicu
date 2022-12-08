@@ -4,7 +4,6 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/stv0g/cunicu/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -17,7 +16,7 @@ type WindowsKernelDevice struct {
 func (d *WindowsKernelDevice) AddAddress(ip net.IPNet) error {
 	d.logger.Debug("Add address", zap.String("addr", ip.String()))
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
@@ -25,20 +24,20 @@ func (d *WindowsKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) erro
 		zap.String("dst", dst.String()),
 		zap.String("gw", gw.String()))
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) DeleteAddress(ip net.IPNet) error {
 	d.logger.Debug("Delete address", zap.String("addr", ip.String()))
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) DeleteRoute(dst net.IPNet, table int) error {
 	d.logger.Debug("Delete route",
 		zap.String("dst", dst.String()))
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) Index() int {
@@ -63,19 +62,19 @@ func (d *WindowsKernelDevice) SetMTU(mtu int) error {
 	d.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
 
 	// MTU is a route attribute which we need to adjust for all routes added for the interface
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) SetUp() error {
 	d.logger.Debug("Set link up")
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) SetDown() error {
 	d.logger.Debug("Set link down")
 
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (d *WindowsKernelDevice) Close() error {

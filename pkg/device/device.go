@@ -2,6 +2,7 @@
 package device
 
 import (
+	"errors"
 	"net"
 	"os"
 )
@@ -9,6 +10,8 @@ import (
 const (
 	RouteProtocol = 98
 )
+
+var errNotSupported = errors.New("not supported")
 
 type Device interface {
 	Close() error
