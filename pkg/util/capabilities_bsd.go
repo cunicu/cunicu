@@ -7,5 +7,5 @@ import (
 )
 
 func HasAdminPrivileges() bool {
-	return os.Getuid() == 0
+	return os.Geteuid() == 0
 }
