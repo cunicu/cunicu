@@ -72,7 +72,13 @@ func (b *UserBind) Close() error {
 func (b *UserBind) SetMark(mark uint32) error {
 	// b.logger.Debug("SetMark", zap.Uint32("mark", mark))
 
-	return nil // Stub
+	for _, conn := range b.conns {
+		if err := SetMark(conn.UDPConn, mark); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Send writes a packet b to address ep.
