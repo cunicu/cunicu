@@ -3,10 +3,11 @@
 package proxy
 
 import (
+	"errors"
 	"net"
-
-	"github.com/stv0g/cunicu/pkg/errors"
 )
+
+var errNotSupported = errors.New("not supported")
 
 type (
 	NATRule struct{}
@@ -14,21 +15,21 @@ type (
 )
 
 func NewNAT(ident string) (*NAT, error) {
-	return nil, errors.ErrNotSupported
+	return nil, errNotSupported
 }
 
 func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NATRule, error) {
-	return nil, errors.ErrNotSupported
+	return nil, errNotSupported
 }
 
 func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
-	return nil, errors.ErrNotSupported
+	return nil, errNotSupported
 }
 
 func (n *NAT) Close() error {
-	return errors.ErrNotSupported
+	return errNotSupported
 }
 
 func (nr *NATRule) Delete() error {
-	return errors.ErrNotSupported
+	return errNotSupported
 }

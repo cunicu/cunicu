@@ -2,14 +2,10 @@
 
 package device
 
-import (
-	"github.com/stv0g/cunicu/pkg/errors"
-)
-
 func FindKernelDevice(name string) (Device, error) {
-	return nil, errors.ErrNotSupported
+	return nil, errNotSupported
 }
 
 func NewKernelDevice(name string) (Device, error) {
-	return nil, errors.ErrNotSupported
+	return nil, errNotSupported
 }

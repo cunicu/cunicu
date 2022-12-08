@@ -13,11 +13,12 @@ import (
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
 	"github.com/stv0g/cunicu/pkg/device"
-	errorsx "github.com/stv0g/cunicu/pkg/errors"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"go.uber.org/zap"
 )
+
+var errNotSupported = errors.New("not supported on this platform")
 
 func init() { //nolint:gochecknoinits
 	daemon.RegisterFeature("epdisc", "Endpoint discovery", New, 50)
@@ -58,14 +59,12 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		logger: zap.L().Named("epdisc").With(zap.String("intf", i.Name())),
 	}
 
-	// Create per-interface UDPMux
-	var err error
-
-	if e.udpMux, e.udpMuxPort, err = proxy.CreateUDPMux(); err != nil && !errors.Is(err, errorsx.ErrNotSupported) {
+	// Create per-interface UDP Muxes
+	if e.udpMux, e.udpMuxPort, err = proxy.CreateUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
 		return nil, fmt.Errorf("failed to setup host UDP mux: %w", err)
 	}
 
-	if e.udpMuxSrflx, e.udpMuxSrflxPort, err = proxy.CreateUniversalUDPMux(); err != nil && !errors.Is(err, errorsx.ErrNotSupported) {
+	if e.udpMuxSrflx, e.udpMuxSrflxPort, err = proxy.CreateUniversalUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
 		return nil, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
 	}
 
@@ -77,7 +76,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 	if _, ok := i.KernelDevice.(*device.UserDevice); !ok {
 		// Setup NAT
 		ident := fmt.Sprintf("cunicu-if%d", i.KernelDevice.Index())
-		if e.nat, err = proxy.NewNAT(ident); err != nil && !errors.Is(err, errorsx.ErrNotSupported) {
+		if e.nat, err = proxy.NewNAT(ident); err != nil && !errors.Is(err, errNotSupported) {
 			return nil, fmt.Errorf("failed to setup NAT: %w", err)
 		}
 

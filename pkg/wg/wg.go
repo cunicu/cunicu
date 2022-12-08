@@ -1,6 +1,8 @@
 // Package wg provides various helpers for WireGuard
 package wg
 
+import "errors"
+
 const (
 	SocketPath = "/var/run/wireguard"
 	ConfigPath = "/etc/wireguard"
@@ -11,3 +13,5 @@ const (
 	DefaultMTU     = 1500 - TunnelOverhead
 	MinimalMTU     = 1280 // Byte for minimal IPv6 MTU
 )
+
+var errNotSupported = errors.New("not supported")

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +13,7 @@ func (d *BSDKernelDevice) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		zap.String("gw", gw.String()))
 
 	if table != 0 {
-		return errors.ErrNotSupported
+		return errNotSupported
 	}
 
 	args := []string{"route", "add", fmt.Sprintf("-%s", addressFamily(dst)), "-net", dst.String()}

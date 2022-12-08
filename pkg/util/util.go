@@ -4,6 +4,7 @@ package util
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	mrand "math/rand"
 	"net"
 	"os"
@@ -18,6 +19,8 @@ const (
 	RunesAlpha        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	RunesAlphaNumeric = RunesAlpha + "0123456789"
 )
+
+var errNotSupported = errors.New("not supported")
 
 func CmpUDPAddr(a, b *net.UDPAddr) int {
 	if a == nil && b == nil {

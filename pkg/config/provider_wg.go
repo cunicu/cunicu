@@ -10,11 +10,12 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
-	errorsx "github.com/stv0g/cunicu/pkg/errors"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
+
+var errNotSupported = errors.New("not supported on this platform")
 
 type WireGuardProvider struct {
 	path   string
@@ -107,7 +108,7 @@ func (p *wgParser) Unmarshal(data []byte) (map[string]interface{}, error) {
 }
 
 func (p *wgParser) Marshal(map[string]interface{}) ([]byte, error) {
-	return nil, errorsx.ErrNotSupported
+	return nil, errNotSupported
 }
 
 func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
