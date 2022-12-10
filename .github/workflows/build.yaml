@@ -38,24 +38,27 @@ jobs:
           arm: "7"
           runner: ubuntu-latest
 
-        - target_os: freebsd
-          target_arch: amd64
-          host_os: linux
-          host_arch: amd64
-          runner: ubuntu-latest
+        # TODO: FreeBSD builds require cgo and FreeBSD
+        #       system headers.
 
-        - target_os: freebsd
-          target_arch: arm64
-          host_os: linux
-          host_arch: amd64
-          runner: ubuntu-latest
+        # - target_os: freebsd
+        #   target_arch: amd64
+        #   host_os: linux
+        #   host_arch: amd64
+        #   runner: ubuntu-latest
 
-        - target_os: freebsd
-          target_arch: arm
-          host_os: linux
-          host_arch: amd64
-          arm: "7"
-          runner: ubuntu-latest
+        # - target_os: freebsd
+        #   target_arch: arm64
+        #   host_os: linux
+        #   host_arch: amd64
+        #   runner: ubuntu-latest
+
+        # - target_os: freebsd
+        #   target_arch: arm
+        #   host_os: linux
+        #   host_arch: amd64
+        #   arm: "7"
+        #   runner: ubuntu-latest
 
         - target_os: darwin
           target_arch: arm64

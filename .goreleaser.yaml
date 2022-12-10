@@ -32,8 +32,10 @@ builds:
   goos:
   - linux
   - darwin
-  - freebsd
   - windows
+  # TODO: FreeBSD builds require cgo and FreeBSD
+  #       system headers.
+  # - freebsd
 
   goarch:
   - amd64
