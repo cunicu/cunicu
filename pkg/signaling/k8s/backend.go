@@ -93,10 +93,12 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 	// Get the informer for the right resource, in this case a Pod
 	b.informer = factory.Cunicu().V1().SignalingEnvelopes().Informer()
 
-	b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	if _, err = b.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    b.onEnvelopeAdded,
 		UpdateFunc: b.onEnvelopeUpdated,
-	})
+	}); err != nil {
+		return nil, fmt.Errorf("failed to add event handler: %w", err)
+	}
 
 	go b.informer.Run(b.stop)
 	b.logger.Debug("Started watching node resources")
