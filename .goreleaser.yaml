@@ -4,7 +4,7 @@ project_name: cunicu
 
 before:
   hooks:
-  - make prepare
+  - make prepare LINT_OPTS=--timeout=15m
 
 checksum:
   name_template: "checksums.txt"
@@ -32,8 +32,10 @@ builds:
   goos:
   - linux
   - darwin
-  - freebsd
   - windows
+  # TODO: FreeBSD builds require cgo and FreeBSD
+  #       system headers.
+  # - freebsd
 
   goarch:
   - amd64
