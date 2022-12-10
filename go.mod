@@ -16,9 +16,9 @@ require (
 	github.com/miekg/dns v1.1.50
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v2 v2.2.11-0.20221010122230-f7d4014f5af1
-	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.3.5
+	github.com/pion/zapion v0.0.0-20220425013423-f29ac63a7069
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2
@@ -80,11 +80,11 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pion/dtls/v2 v2.1.5 // indirect
+	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.5 // indirect
 	github.com/pion/transport v0.13.1 // indirect
 	github.com/pion/turn/v2 v2.0.8 // indirect
 	github.com/pion/udp v0.1.1 // indirect
-	github.com/pion/zapion v0.0.0-20220425013423-f29ac63a7069 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
