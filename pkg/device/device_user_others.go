@@ -12,13 +12,8 @@ import (
 func ListenUAPI(name string) (net.Listener, error) {
 	file, err := ipc.UAPIOpen(name)
 	if err != nil {
-		return nil, fmt.Errorf("UAPI listen error: %w", err)
+		return nil, fmt.Errorf("failed to open UAPI socket: %w", err)
 	}
 
-	var listener net.Listener
-	if listener, err = ipc.UAPIListen(name, file); err != nil {
-		return nil, fmt.Errorf("failed to listen on UAPI socket: %w", err)
-	}
-
-	return listener, nil
+	return ipc.UAPIListen(name, file)
 }
