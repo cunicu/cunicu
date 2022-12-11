@@ -65,12 +65,12 @@ func NewUserDevice(name string) (*UserDevice, error) {
 	dev.device = device.NewDevice(tunDev, dev.Bind, wgDeviceLogger)
 
 	if dev.Device, err = FindKernelDevice(name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find kernel device: %w", err)
 	}
 
 	// Open UAPI socket
 	if dev.api, err = ListenUAPI(name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to listen on UAPI socket: %w", err)
 	}
 
 	// Handle UApi requests
@@ -80,9 +80,8 @@ func NewUserDevice(name string) (*UserDevice, error) {
 
 	// Register user device
 	userDevicesLock.Lock()
-	defer userDevicesLock.Unlock()
-
 	userDevices[name] = dev
+	userDevicesLock.Unlock()
 
 	return dev, nil
 }
