@@ -114,8 +114,8 @@ func (n *Network) AgentArgs() []any {
 	if len(n.RelayNodes) > 0 {
 		// TODO: We currently assume that all relays use the same credentials
 		extraArgs = append(extraArgs,
-			"--username", n.RelayNodes[0].Username(),
-			"--password", n.RelayNodes[0].Password(),
+			"--ice-username", n.RelayNodes[0].Username(),
+			"--ice-password", n.RelayNodes[0].Password(),
 		)
 	}
 
