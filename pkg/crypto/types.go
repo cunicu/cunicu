@@ -160,6 +160,7 @@ type KeyPair struct {
 type PublicKeyPair KeyPair
 
 func (kp KeyPair) Shared() Key {
+	// TODO: use new crypto/ecdh package (https://pkg.go.dev/crypto/ecdh#X25519)
 	shared, err := curve25519.X25519(kp.Ours[:], kp.Theirs[:])
 	if err != nil {
 		panic(err)
