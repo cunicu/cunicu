@@ -55,7 +55,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 
 	// Avoid sending a peer description if the interface does not have a private key yet
 	if i.PrivateKey().IsSet() {
-		if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
+		if err := pd.sendPeerDescription(pdiscproto.PeerDescriptionChange_ADD, nil); err != nil {
 			pd.logger.Error("Failed to send peer description", zap.Error(err))
 		}
 	}
@@ -82,7 +82,7 @@ func (i *Interface) Start() error {
 }
 
 func (i *Interface) Close() error {
-	if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_REMOVE, nil); err != nil {
+	if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_REMOVE, nil); err != nil {
 		i.logger.Error("Failed to send peer description", zap.Error(err))
 	}
 
@@ -165,7 +165,7 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 	}
 
 	if pkOld != nil {
-		if d.Change != pdiscproto.PeerDescriptionChange_PEER_UPDATE {
+		if d.Change != pdiscproto.PeerDescriptionChange_UPDATE {
 			return errFailedUpdatePublicKey
 		}
 

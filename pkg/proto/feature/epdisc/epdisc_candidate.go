@@ -49,7 +49,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 
 	var ic ice.Candidate
 	switch c.Type {
-	case CandidateType_CANDIDATE_TYPE_HOST:
+	case CandidateType_HOST:
 		ic, err = ice.NewCandidateHost(&ice.CandidateHostConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -59,7 +59,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Foundation: c.Foundation,
 			TCPType:    ice.TCPType(c.TcpType),
 		})
-	case CandidateType_CANDIDATE_TYPE_SERVER_REFLEXIVE:
+	case CandidateType_SERVER_REFLEXIVE:
 		ic, err = ice.NewCandidateServerReflexive(&ice.CandidateServerReflexiveConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -70,7 +70,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			RelAddr:    relAddr,
 			RelPort:    relPort,
 		})
-	case CandidateType_CANDIDATE_TYPE_PEER_REFLEXIVE:
+	case CandidateType_PEER_REFLEXIVE:
 		ic, err = ice.NewCandidatePeerReflexive(&ice.CandidatePeerReflexiveConfig{
 			Network:    nw.String(),
 			Address:    c.Address,
@@ -82,7 +82,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			RelPort:    relPort,
 		})
 
-	case CandidateType_CANDIDATE_TYPE_RELAY:
+	case CandidateType_RELAY:
 		ic, err = ice.NewCandidateRelay(&ice.CandidateRelayConfig{
 			Network:       nw.String(),
 			Address:       c.Address,
@@ -178,15 +178,15 @@ func (cp *CandidatePair) ToString() string {
 func (c *Candidate) ToString() string {
 	var addr string
 	switch c.NetworkType {
-	case NetworkType_NETWORK_TYPE_UDP6, NetworkType_NETWORK_TYPE_TCP6:
+	case NetworkType_UDP6, NetworkType_TCP6:
 		addr = fmt.Sprintf("[%s]", c.Address)
-	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
+	case NetworkType_UDP4, NetworkType_TCP4:
 		addr = c.Address
-	case NetworkType_NETWORK_TYPE_UNSPECIFIED:
+	case NetworkType_UNSPECIFIED_NETWORK_TYPE:
 	}
 
 	var nt string
-	if c.Type == CandidateType_CANDIDATE_TYPE_RELAY && c.RelayProtocol != RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED {
+	if c.Type == CandidateType_RELAY && c.RelayProtocol != RelayProtocol_UNSPECIFIED_RELAY_PROTOCOL {
 		nt = fmt.Sprintf("%s->%s",
 			c.RelayProtocol.ToString(),
 			ice.NetworkType(c.NetworkType),
@@ -201,15 +201,15 @@ func (c *Candidate) ToString() string {
 func (cs *CandidateStats) ToString() string {
 	var addr string
 	switch cs.NetworkType {
-	case NetworkType_NETWORK_TYPE_UDP6, NetworkType_NETWORK_TYPE_TCP6:
+	case NetworkType_UDP6, NetworkType_TCP6:
 		addr = fmt.Sprintf("[%s]", cs.Ip)
-	case NetworkType_NETWORK_TYPE_UDP4, NetworkType_NETWORK_TYPE_TCP4:
+	case NetworkType_UDP4, NetworkType_TCP4:
 		addr = cs.Ip
-	case NetworkType_NETWORK_TYPE_UNSPECIFIED:
+	case NetworkType_UNSPECIFIED_NETWORK_TYPE:
 	}
 
 	var nt string
-	if cs.CandidateType == CandidateType_CANDIDATE_TYPE_RELAY && cs.RelayProtocol != RelayProtocol_RELAY_PROTOCOL_UNSPECIFIED {
+	if cs.CandidateType == CandidateType_RELAY && cs.RelayProtocol != RelayProtocol_UNSPECIFIED_RELAY_PROTOCOL {
 		nt = fmt.Sprintf("%s->%s",
 			cs.RelayProtocol.ToString(),
 			ice.NetworkType(cs.NetworkType),

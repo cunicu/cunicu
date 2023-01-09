@@ -470,31 +470,31 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 		icex.ConnectionStateIdle,
 		ice.ConnectionStateChecking,
 		ice.ConnectionStateNew:
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_UNKNOWN
+		return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
 
 	case ice.ConnectionStateClosed,
 		ice.ConnectionStateDisconnected,
 		ice.ConnectionStateFailed:
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+		return coreproto.ReachabilityType_NONE
 
 	case ice.ConnectionStateConnected:
 		cp, err := p.agent.GetSelectedCandidatePair()
 		if err != nil || cp == nil {
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+			return coreproto.ReachabilityType_NONE
 		}
 
 		lc, rc := cp.Local, cp.Remote
 
 		switch {
 		case lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay:
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED_BIDIR
+			return coreproto.ReachabilityType_RELAYED_BIDIR
 		case lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay:
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_RELAYED
+			return coreproto.ReachabilityType_RELAYED
 		default:
-			return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
+			return coreproto.ReachabilityType_DIRECT
 		}
 
 	default:
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+		return coreproto.ReachabilityType_NONE
 	}
 }

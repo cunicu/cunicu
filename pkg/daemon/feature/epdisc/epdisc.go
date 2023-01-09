@@ -134,9 +134,9 @@ func (i *Interface) Marshal() *epdiscproto.Interface {
 	}
 
 	if i.nat == nil {
-		is.NatType = epdiscproto.NATType_NAT_NONE
+		is.NatType = epdiscproto.NATType_NONE
 	} else {
-		is.NatType = epdiscproto.NATType_NAT_NFTABLES
+		is.NatType = epdiscproto.NATType_NFTABLES
 	}
 
 	return is

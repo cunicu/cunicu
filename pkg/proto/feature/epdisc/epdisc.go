@@ -41,7 +41,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 			return err
 		}
 
-		if i.NatType == NATType_NAT_NFTABLES {
+		if i.NatType == NATType_NFTABLES {
 			if _, err := t.FprintKV(wr, "mux ports", fmt.Sprintf("%d, %d", i.MuxPort, i.MuxSrflxPort)); err != nil {
 				return err
 			}

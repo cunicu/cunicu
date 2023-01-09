@@ -28,7 +28,7 @@ func (i *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m co
 			pkOld = &pk
 		}
 
-		if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_UPDATE, pkOld); err != nil {
+		if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_UPDATE, pkOld); err != nil {
 			i.logger.Error("Failed to send peer description", zap.Error(err))
 		}
 	}
@@ -74,16 +74,16 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 	cp := i.Peers[pk]
 
 	switch d.Change {
-	case pdiscproto.PeerDescriptionChange_PEER_ADD:
+	case pdiscproto.PeerDescriptionChange_ADD:
 		if cp != nil {
 			i.logger.Warn("Peer already exists. Updating it instead")
-			d.Change = pdiscproto.PeerDescriptionChange_PEER_UPDATE
+			d.Change = pdiscproto.PeerDescriptionChange_UPDATE
 		}
 
-	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
+	case pdiscproto.PeerDescriptionChange_UPDATE:
 		if cp == nil {
 			i.logger.Warn("Peer does not exist exists yet. Adding it instead")
-			d.Change = pdiscproto.PeerDescriptionChange_PEER_ADD
+			d.Change = pdiscproto.PeerDescriptionChange_ADD
 		}
 
 	default:
@@ -98,12 +98,12 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 	i.descs[pk] = d
 
 	switch d.Change {
-	case pdiscproto.PeerDescriptionChange_PEER_ADD:
+	case pdiscproto.PeerDescriptionChange_ADD:
 		if err := i.AddPeer(&cfg); err != nil {
 			return fmt.Errorf("failed to add peer: %w", err)
 		}
 
-	case pdiscproto.PeerDescriptionChange_PEER_UPDATE:
+	case pdiscproto.PeerDescriptionChange_UPDATE:
 		if d.PublicKeyNew != nil {
 			// Remove old peer
 			if err := i.RemovePeer(pk); err != nil {
@@ -131,7 +131,7 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 			}
 		}
 
-	case pdiscproto.PeerDescriptionChange_PEER_REMOVE:
+	case pdiscproto.PeerDescriptionChange_REMOVE:
 		if err := i.RemovePeer(pk); err != nil {
 			return fmt.Errorf("failed to remove peer: %w", err)
 		}
@@ -141,7 +141,7 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 	if cp == nil {
 		// TODO: Fix the race which requires the delay
 		time.AfterFunc(1*time.Second, func() {
-			if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_PEER_ADD, nil); err != nil {
+			if err := i.sendPeerDescription(pdiscproto.PeerDescriptionChange_ADD, nil); err != nil {
 				i.logger.Error("Failed to send peer description", zap.Error(err))
 			}
 		})

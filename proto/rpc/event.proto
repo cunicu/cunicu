@@ -7,24 +7,22 @@ import "common.proto";
 import "signaling/signaling.proto";
 import "feature/epdisc.proto";
 
-enum EventType {
-    UNKNOWN = 0;
-    
+enum EventType {    
     // Signaling Events
-    BACKEND_READY = 10;
-    SIGNALING_MESSAGE = 11;
+    BACKEND_READY = 0;
+    SIGNALING_MESSAGE = 1;
 
     // Core Events
-    PEER_ADDED = 20;
-    PEER_REMOVED = 21;
-    PEER_MODIFIED = 22;
+    PEER_ADDED = 10;
+    PEER_REMOVED = 11;
+    PEER_MODIFIED = 12;
 
-    INTERFACE_ADDED = 30;
-    INTERFACE_REMOVED = 31;
-    INTERFACE_MODIFIED = 32;
+    INTERFACE_ADDED = 20;
+    INTERFACE_REMOVED = 21;
+    INTERFACE_MODIFIED = 22;
 
     // ICE Events
-    PEER_CONNECTION_STATE_CHANGED = 40;
+    PEER_CONNECTION_STATE_CHANGED = 30;
 }
 
 message Event {

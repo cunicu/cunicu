@@ -67,7 +67,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 		}
 	}
 
-	if p.Reachability != ReachabilityType_REACHABILITY_TYPE_UNSPECIFIED {
+	if p.Reachability != ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE {
 		if _, err := t.FprintKV(wri, "reachability", p.Reachability); err != nil {
 			return err
 		}

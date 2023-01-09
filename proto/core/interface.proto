@@ -9,11 +9,10 @@ import "feature/epdisc.proto";
 
 // Type of the WireGuard interface impelementation
 enum InterfaceType {
-    UNKNOWN = 0;
-    LINUX_KERNEL = 1;
-    OPENBSD_KERNEL = 2;
-    WINDOWS_KERNEL = 3;
-    USERSPACE = 4;
+    KERNEL_LINUX = 0;
+    KERNEL_OPENBSD = 1;
+    KERNEL_WINDOWS = 2;
+    USERSPACE = 3;
 }
 
 // A WireGuard interface

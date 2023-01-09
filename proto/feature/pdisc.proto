@@ -7,9 +7,9 @@ import "common.proto";
 import "core/net.proto";
 
 enum PeerDescriptionChange {
-    PEER_ADD = 0;
-    PEER_REMOVE = 1;
-    PEER_UPDATE = 2;
+    ADD = 0;
+    REMOVE = 1;
+    UPDATE = 2;
 }
 
 message PeerAddresses {
