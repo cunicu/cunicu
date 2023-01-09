@@ -25,15 +25,6 @@ type BSDKernelDevice struct {
 	logger  *zap.Logger
 }
 
-func addressFamily(ip net.IPNet) string {
-	isV4 := ip.IP.To4() != nil
-	if isV4 {
-		return "inet"
-	}
-
-	return "inet6"
-}
-
 func NewKernelDevice(name string) (*BSDKernelDevice, error) {
 	if _, err := run("ifconfig", "wg", "create", "name", name); err != nil {
 		return nil, err
@@ -214,4 +205,13 @@ func run(args ...string) (string, error) {
 	}
 
 	return outStr, nil
+}
+
+func addressFamily(ip net.IPNet) string {
+	isV4 := ip.IP.To4() != nil
+	if isV4 {
+		return "inet"
+	}
+
+	return "inet6"
 }

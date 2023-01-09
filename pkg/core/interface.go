@@ -35,6 +35,35 @@ type Interface struct {
 	logger *zap.Logger
 }
 
+func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, error) {
+	var err error
+
+	i := &Interface{
+		Device: (*wg.Device)(wgDev),
+		client: client,
+		Peers:  map[crypto.Key]*Peer{},
+
+		onModified: []InterfaceModifiedHandler{},
+		onPeer:     []PeerHandler{},
+
+		logger: zap.L().Named("intf").With(
+			zap.String("intf", wgDev.Name),
+		),
+	}
+
+	if i.KernelDevice, err = device.FindDevice(wgDev.Name); err != nil {
+		return nil, fmt.Errorf("failed to find kernel device: %w", err)
+	}
+
+	i.logger.Info("Added interface",
+		zap.Any("pk", i.PublicKey()),
+		zap.Any("type", i.Type),
+		zap.Int("num_peers", len(i.Peers)),
+	)
+
+	return i, nil
+}
+
 func (i *Interface) String() string {
 	return i.Device.Name
 }
@@ -206,35 +235,6 @@ func (i *Interface) Sync(newDev *wgtypes.Device) (InterfaceModifier, []wgtypes.P
 	}
 
 	return mod, peersAdded, peersRemoved
-}
-
-func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, error) {
-	var err error
-
-	i := &Interface{
-		Device: (*wg.Device)(wgDev),
-		client: client,
-		Peers:  map[crypto.Key]*Peer{},
-
-		onModified: []InterfaceModifiedHandler{},
-		onPeer:     []PeerHandler{},
-
-		logger: zap.L().Named("intf").With(
-			zap.String("intf", wgDev.Name),
-		),
-	}
-
-	if i.KernelDevice, err = device.FindDevice(wgDev.Name); err != nil {
-		return nil, fmt.Errorf("failed to find kernel device: %w", err)
-	}
-
-	i.logger.Info("Added interface",
-		zap.Any("pk", i.PublicKey()),
-		zap.Any("type", i.Type),
-		zap.Int("num_peers", len(i.Peers)),
-	)
-
-	return i, nil
 }
 
 func (i *Interface) Marshal() *coreproto.Interface {

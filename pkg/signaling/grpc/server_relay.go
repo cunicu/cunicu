@@ -33,6 +33,46 @@ type RelayInfo struct {
 	Secret string
 }
 
+func NewRelayInfo(arg string) (RelayInfo, error) {
+	u, user, pass, q, err := icex.ParseURL(arg)
+	if err != nil {
+		return RelayInfo{}, fmt.Errorf("invalid URL: %w", err)
+	}
+
+	r := RelayInfo{
+		URL:      u.String(),
+		Secret:   q.Get("secret"),
+		Username: user,
+		Password: pass,
+		TTL:      DefaultRelayTTL,
+	}
+
+	if t := q.Get("ttl"); t != "" {
+		ttl, err := time.ParseDuration(t)
+		if err != nil {
+			return RelayInfo{}, fmt.Errorf("invalid TTL: %w", err)
+		}
+
+		r.TTL = ttl
+	}
+
+	return r, nil
+}
+
+func NewRelayInfos(args []string) ([]RelayInfo, error) {
+	relays := []RelayInfo{}
+	for _, arg := range args {
+		relay, err := NewRelayInfo(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		relays = append(relays, relay)
+	}
+
+	return relays, nil
+}
+
 func (s *RelayInfo) GetCredentials(username string) (string, string, time.Time) {
 	if s.Username != "" && s.Password != "" {
 		return s.Username, s.Password, time.Time{}
@@ -107,44 +147,4 @@ func (s *RelayAPIServer) Close() error {
 	s.Server.GracefulStop()
 
 	return nil
-}
-
-func NewRelayInfo(arg string) (RelayInfo, error) {
-	u, user, pass, q, err := icex.ParseURL(arg)
-	if err != nil {
-		return RelayInfo{}, fmt.Errorf("invalid URL: %w", err)
-	}
-
-	r := RelayInfo{
-		URL:      u.String(),
-		Secret:   q.Get("secret"),
-		Username: user,
-		Password: pass,
-		TTL:      DefaultRelayTTL,
-	}
-
-	if t := q.Get("ttl"); t != "" {
-		ttl, err := time.ParseDuration(t)
-		if err != nil {
-			return RelayInfo{}, fmt.Errorf("invalid TTL: %w", err)
-		}
-
-		r.TTL = ttl
-	}
-
-	return r, nil
-}
-
-func NewRelayInfos(args []string) ([]RelayInfo, error) {
-	relays := []RelayInfo{}
-	for _, arg := range args {
-		relay, err := NewRelayInfo(arg)
-		if err != nil {
-			return nil, err
-		}
-
-		relays = append(relays, relay)
-	}
-
-	return relays, nil
 }

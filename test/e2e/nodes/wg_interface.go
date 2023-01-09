@@ -42,16 +42,6 @@ type WireGuardInterface struct {
 	Agent *Agent
 }
 
-func (i *WireGuardInterface) Apply(a *Agent) {
-	if i.Agent != nil {
-		panic("can not assign interface to more than a single agent")
-	}
-
-	i.Agent = a
-
-	a.WireGuardInterfaces = append(a.WireGuardInterfaces, i)
-}
-
 func NewWireGuardInterface(name string) (*WireGuardInterface, error) {
 	lp := wg.DefaultPort
 	sk, err := crypto.GeneratePrivateKey()
@@ -68,6 +58,16 @@ func NewWireGuardInterface(name string) (*WireGuardInterface, error) {
 			PrivateKey: (*wgtypes.Key)(&sk),
 		},
 	}, nil
+}
+
+func (i *WireGuardInterface) Apply(a *Agent) {
+	if i.Agent != nil {
+		panic("can not assign interface to more than a single agent")
+	}
+
+	i.Agent = a
+
+	a.WireGuardInterfaces = append(a.WireGuardInterfaces, i)
 }
 
 func (i *WireGuardInterface) Create() error {
