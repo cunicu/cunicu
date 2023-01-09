@@ -8,9 +8,7 @@ import (
 )
 
 func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
-	if e.Type != EventType_UNKNOWN {
-		fields = append(fields, zap.String("type", strings.ToLower(e.Type.String())))
-	}
+	fields = append(fields, zap.String("type", strings.ToLower(e.Type.String())))
 
 	if e.Event != nil {
 		fields = append(fields, zap.Any("event", e.Event))

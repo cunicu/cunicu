@@ -324,7 +324,7 @@ func (p *Peer) Marshal() *coreproto.Peer {
 
 func (p *Peer) Reachability() coreproto.ReachabilityType {
 	if p.Endpoint == nil {
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+		return coreproto.ReachabilityType_NONE
 	}
 
 	now := time.Now()
@@ -335,10 +335,10 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 
 	//nolint:gocritic
 	if p.LastHandshakeTime.After(now.Add(-2 * time.Minute)) {
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_DIRECT
+		return coreproto.ReachabilityType_DIRECT
 	} else if lastActivity.After(p.LastHandshakeTime) {
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_NONE
+		return coreproto.ReachabilityType_NONE
 	} else {
-		return coreproto.ReachabilityType_REACHABILITY_TYPE_UNKNOWN
+		return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
 	}
 }

@@ -24,8 +24,8 @@ enum ConnectionState {
 }
 
 enum NATType {
-    NAT_NONE = 0;
-    NAT_NFTABLES = 1;
+    NONE = 0;
+    NFTABLES = 1;
 }
 
 enum ProxyType {
