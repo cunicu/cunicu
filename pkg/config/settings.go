@@ -157,7 +157,7 @@ type InterfaceSettings struct {
 }
 
 type Settings struct {
-	Experimental bool `koanf:"EXPERIMENTAL,omitempty"`
+	Experimental bool `koanf:"experimental,omitempty"`
 
 	WatchInterval time.Duration `koanf:"watch_interval,omitempty"`
 	Backends      []BackendURL  `koanf:"backends,omitempty"`

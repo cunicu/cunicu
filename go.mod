@@ -22,7 +22,7 @@ require (
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20221214185949-378a404a26f0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
-	golang.org/x/exp v0.0.0-20230519143937-03e91628a987
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/sync v0.2.0
 	golang.org/x/sys v0.8.0
 	golang.zx2c4.com/wireguard v0.0.0-20230223181233-21636207a675
@@ -39,14 +39,14 @@ require (
 	github.com/gopacket/gopacket v1.1.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.9.5 // test-only
 	github.com/onsi/gomega v1.27.7 // test-only
-	github.com/stv0g/gont/v2 v2.3.0 // test-only
+	github.com/stv0g/gont/v2 v2.3.2 // test-only
 )
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/go-delve/delve v1.20.1 // indirect
+	github.com/go-delve/delve v1.20.2 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-ping/ping v1.1.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect

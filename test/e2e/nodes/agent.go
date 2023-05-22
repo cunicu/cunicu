@@ -108,6 +108,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	args = append(args,
 		copt.Combined(a.logFile),
 		copt.Dir(dir),
+		copt.EnvVar("CUNICU_EXPERIMENTAL", "1"),
 		// copt.EnvVar("PION_LOG", "info"),
 		copt.EnvVar("GRPC_GO_LOG_SEVERITY_LEVEL", "debug"),
 		copt.EnvVar("GRPC_GO_LOG_VERBOSITY_LEVEL", fmt.Sprintf("%d", 99)),

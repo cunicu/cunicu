@@ -72,7 +72,7 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	You should only be running it if you are testing/developing it.
 	Please set the env var CUNICU_EXPERIMENTAL=1 to bypass this warning.
 	
-	Please feel free to join the developement
+	Please feel free to join the development
 	 - at Github: https://github.com/stv0g/cunicu
 	 - via Slack: #cunicu in the Gophers workspace`)
 	}

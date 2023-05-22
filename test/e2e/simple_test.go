@@ -155,7 +155,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 				})
 			})
 
-			FContext("srflx: Allow only server reflexive candidates", func() {
+			Context("srflx: Allow only server reflexive candidates", func() {
 				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp4")
 				})
