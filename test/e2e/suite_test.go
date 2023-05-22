@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"flag"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -53,6 +54,11 @@ var _ = BeforeSuite(func() {
 
 var _ = ReportAfterSuite("Write report", func(r Report) {
 	r.SpecReports = nil
+
+	if err := os.MkdirAll("logs", 0o755); err != nil {
+		panic(err)
+	}
+
 	if err := reporters.GenerateJSONReport(r, "logs/report.json"); err != nil {
 		panic(err)
 	}

@@ -95,7 +95,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 			scope += `\t`
 		}
 
-		regex := fmt.Sprintf(`\d{2}:\d{2}:\d{2}.\d{3}\t%s\t%s%s`,
+		regex := fmt.Sprintf(`\d{2}:\d{2}:\d{2}.\d{6}\t%s\t%s%s`,
 			regexp.QuoteMeta(tty.Mods(lvl.String(), tty.FgBlue)), scope,
 			regexp.QuoteMeta(msg))
 
