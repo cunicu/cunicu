@@ -111,9 +111,6 @@ func init() { //nolint:gochecknoinits
 }
 
 func onInitialize(opts *options) {
-	// Initialize PRNG
-	util.SetupRand()
-
 	// Handle color output
 	switch opts.colorMode {
 	case "auto":

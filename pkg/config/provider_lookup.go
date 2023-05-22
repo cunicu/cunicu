@@ -232,7 +232,7 @@ func (p *LookupProvider) lookupSRV(_ context.Context) error {
 	}
 
 	urls := []string{}
-	mu := sync.Mutex{}
+	urlsLock := sync.Mutex{}
 
 	g := errgroup.Group{}
 
@@ -248,8 +248,8 @@ func (p *LookupProvider) lookupSRV(_ context.Context) error {
 					return err
 				}
 
-				mu.Lock()
-				defer mu.Unlock()
+				urlsLock.Lock()
+				defer urlsLock.Unlock()
 
 				urls = append(urls, us...)
 

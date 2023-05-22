@@ -1,6 +1,8 @@
 package signaling_test
 
 import (
+	"testing"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -9,6 +11,13 @@ import (
 	"github.com/stv0g/cunicu/test"
 	"google.golang.org/protobuf/proto"
 )
+
+func TestSuite(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Protobuf Suite")
+}
+
+var _ = test.SetupLogging()
 
 var _ = Describe("message encryption", func() {
 	var c epdiscproto.Candidate

@@ -6,6 +6,14 @@ option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
 import "common.proto";
 import "feature/epdisc.proto";
 
+enum PeerState {
+    NEW = 0;          // Peer has been created
+	CONNECTING = 1;   // Peer is connecting
+    CONNECTED = 2;    // Connection to remote has been established
+    FAILED = 3;       // Connection to remote has failed
+    CLOSED = 4;       // Peer has been closed
+}
+
 enum ReachabilityType {
     UNSPECIFIED_REACHABILITY_TYPE = 0;
 	NONE = 1;
@@ -16,33 +24,38 @@ enum ReachabilityType {
 }
 
 message Peer {
+    // A human readable name describing the peer
     string name = 1;
 
+    // The operating state of the peer
+    PeerState state = 2;
+
+    // The reachability of the peer
+    ReachabilityType reachability = 3;
+
     // Public WireGuard X25519 key
-    bytes public_key = 2;
-    bytes preshared_key = 3;
+    bytes public_key = 4;
+    bytes preshared_key = 5;
 
     // List of allowed IPs
-    repeated string allowed_ips = 4;
+    repeated string allowed_ips = 6;
 
-    uint32 persistent_keepalive_interval = 5;
+    uint32 persistent_keepalive_interval = 7;
 
     // Timestamps
-    Timestamp last_handshake_timestamp = 6;
-    Timestamp last_receive_timestamp = 7;
-    Timestamp last_transmit_timestamp = 8;
+    Timestamp last_handshake_timestamp = 8;
+    Timestamp last_receive_timestamp = 9;
+    Timestamp last_transmit_timestamp = 10;
 
     // Trafic counters
-    int64 transmit_bytes = 9;
-    int64 receive_bytes = 10;
+    int64 transmit_bytes = 11;
+    int64 receive_bytes = 12;
 
     // WireGuard endpoint address
-    string endpoint = 11;
+    string endpoint = 13;
 
     // WireGuard protocol version
-    uint32 protocol_version = 12;
+    uint32 protocol_version = 14;
 
-    epdisc.Peer ice = 13;
-
-    ReachabilityType reachability = 14;
+    epdisc.Peer ice = 15;
 }

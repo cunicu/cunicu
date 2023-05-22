@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -18,7 +17,6 @@ import (
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/keepalive"
 )
 
 type Server struct {
@@ -48,6 +46,11 @@ func NewSignalingServer(opts ...grpc.ServerOption) *Server {
 }
 
 func NewServer(opts ...grpc.ServerOption) (*grpc.Server, error) {
+	opts = slices.Clone(opts)
+	opts = append(opts,
+		grpc.MaxConcurrentStreams(10000),
+	)
+
 	if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
 		//#nosec G304 -- Filename is only controlled via env var
 		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
@@ -55,7 +58,6 @@ func NewServer(opts ...grpc.ServerOption) (*grpc.Server, error) {
 			return nil, fmt.Errorf("failed to open SSL keylog file: %w", err)
 		}
 
-		opts = slices.Clone(opts)
 		opts = append(opts,
 			grpc.Creds(
 				credentials.NewTLS(&tls.Config{
@@ -63,9 +65,6 @@ func NewServer(opts ...grpc.ServerOption) (*grpc.Server, error) {
 					KeyLogWriter: wr,
 				}),
 			),
-			grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-				MinTime: 5 * time.Second,
-			}),
 		)
 	}
 
@@ -87,8 +86,11 @@ func (s *Server) Subscribe(params *signalingproto.SubscribeParams, stream signal
 	// has been created. This avoids a race between Subscribe() & Publish() from the
 	// clients view-point.
 	if err := stream.Send(&signalingproto.Envelope{}); err != nil {
-		s.logger.Error("Failed to send sync envelope", zap.Error(err))
+		return fmt.Errorf("failed to send sync envelope: %w", err)
 	}
+
+	s.logger.Debug("Subscription stream opened",
+		zap.Any("recipient", pk))
 
 out:
 	for {
@@ -97,6 +99,10 @@ out:
 			if !ok {
 				break out
 			}
+
+			s.logger.Debug("Sending envelope to subscriber",
+				zap.Any("recipient", env.Recipient),
+				zap.Any("sender", env.Sender))
 
 			if err := stream.Send(env); errors.Is(err, io.EOF) {
 				break out
@@ -108,6 +114,9 @@ out:
 			break out
 		}
 	}
+
+	s.logger.Debug("Subscription stream closed",
+		zap.Any("recipient", pk))
 
 	return nil
 }
@@ -125,6 +134,10 @@ func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*proto.E
 	}
 
 	t := s.getTopic(&pkRecipient)
+
+	s.logger.Debug("Start publishing envelope",
+		zap.Any("recipient", pkRecipient),
+		zap.Any("sender", pkSender))
 
 	t.Publish(env)
 

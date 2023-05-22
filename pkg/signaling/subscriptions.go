@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -97,7 +97,7 @@ func (s *SubscriptionsRegistry) Subscribe(kp *crypto.KeyPair, h MessageHandler) 
 		return false, err
 	}
 
-	sub.OnMessages(&kp.Theirs, h)
+	sub.AddMessageHandler(&kp.Theirs, h)
 
 	return created, nil
 }
@@ -109,7 +109,7 @@ func (s *SubscriptionsRegistry) Unsubscribe(kp *crypto.KeyPair, h MessageHandler
 		return false, err
 	}
 
-	sub.RemoveOnMessages(&kp.Theirs, h)
+	sub.RemoveMessageHandler(&kp.Theirs, h)
 
 	return len(sub.onMessages[kp.Theirs]) == 0, nil
 }
@@ -151,18 +151,20 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 	return nil
 }
 
-func (s *Subscription) OnMessages(pk *crypto.Key, h MessageHandler) {
+func (s *Subscription) AddMessageHandler(pk *crypto.Key, h MessageHandler) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.onMessages[*pk] = append(s.onMessages[*pk], h)
+	if !slices.Contains(s.onMessages[*pk], h) {
+		s.onMessages[*pk] = append(s.onMessages[*pk], h)
+	}
 }
 
-func (s *Subscription) RemoveOnMessages(pk *crypto.Key, h MessageHandler) {
+func (s *Subscription) RemoveMessageHandler(pk *crypto.Key, h MessageHandler) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.onMessages[*pk] = util.SliceFilter(s.onMessages[*pk], func(j MessageHandler) bool {
-		return h != j
-	})
+	if idx := slices.Index(s.onMessages[*pk], h); idx > -1 {
+		s.onMessages[*pk] = slices.Delete(s.onMessages[*pk], idx, idx+1)
+	}
 }

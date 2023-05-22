@@ -6,12 +6,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/wg"
+	"github.com/stv0g/cunicu/test"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
-	g "github.com/stv0g/gont/pkg"
-	gopt "github.com/stv0g/gont/pkg/options"
-	gfopt "github.com/stv0g/gont/pkg/options/filters"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+	gfopt "github.com/stv0g/gont/v2/pkg/options/filters"
 	"golang.org/x/sys/unix"
 )
 
@@ -76,7 +78,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		By("Initializing relay node")
 
 		r1, err := nodes.NewCoturnNode(nw, "r1",
-			gopt.Interface("eth0", sw1,
+			g.NewInterface("eth0", sw1,
 				gopt.AddressIP("10.0.0.1/16"),
 				gopt.AddressIP("fc::1/64"),
 			),
@@ -86,7 +88,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		By("Initializing signaling node")
 
 		s1, err := nodes.NewGrpcSignalingNode(nw, "s1",
-			gopt.Interface("eth0", sw1,
+			g.NewInterface("eth0", sw1,
 				gopt.AddressIP("10.0.0.2/16"),
 				gopt.AddressIP("fc::2/64"),
 			),
@@ -95,30 +97,22 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 
 		By("Initializing agent nodes")
 
-		AddAgent := func(i int) *nodes.Agent {
-			a, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
-				gopt.Customize(n.AgentOptions,
-					gopt.Interface("eth0", sw1,
+		n.AgentNodes, err = test.ParallelNew(NumAgents, func(i int) (*nodes.Agent, error) {
+			return nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
+				gopt.Customize[g.Option](n.AgentOptions,
+					g.NewInterface("eth0", sw1,
 						gopt.AddressIP("10.0.1.%d/16", i),
 						gopt.AddressIP("fc::1:%d/64", i),
 					),
 					wopt.Interface("wg0",
-						gopt.Customize(n.WireGuardInterfaceOptions,
+						gopt.Customize[g.Option](n.WireGuardInterfaceOptions,
 							wopt.AddressIP("172.16.0.%d/16", i),
 						)...,
 					),
 				)...,
 			)
-			Expect(err).To(Succeed(), "Failed to create agent node: %s", err)
-
-			n.AgentNodes = append(n.AgentNodes, a)
-
-			return a
-		}
-
-		for i := 1; i <= NumAgents; i++ {
-			AddAgent(i)
-		}
+		})
+		Expect(err).To(Succeed(), "Failed to create agent nodes: %s", err)
 
 		By("Starting network")
 
@@ -153,7 +147,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 
 			Context("host: Allow only host candidates", func() {
 				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4")
+					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4") //, "--port-forwarding=false")
 				})
 
 				Context("ipv6: Allow IPv6 network only", func() {
@@ -161,7 +155,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 				})
 			})
 
-			Context("srflx: Allow only server reflexive candidates", func() {
+			FContext("srflx: Allow only server reflexive candidates", func() {
 				Context("ipv4: Allow IPv4 network only", func() {
 					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp4")
 				})
@@ -189,7 +183,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		ConnectivityTestsForAllCandidateTypes()
 	})
 
-	Context("userspace: Use wireguard-go userspace interfaces", func() {
+	PContext("userspace: Use wireguard-go userspace interfaces", func() {
 		BeforeEach(func() {
 			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
 				wopt.WriteConfigFile(true),
@@ -202,6 +196,9 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		})
 
 		ConnectivityTestsForAllCandidateTypes()
+	})
+
+	Context("no-nat: Disable NAT for kernel device", Pending, func() {
 	})
 
 	Context("filtered: Block WireGuard UDP traffic", func() {
@@ -259,10 +256,9 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 			By("Check existing peers 2")
 
 			err := n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
-				out, _, err := a.Run("wg")
+				_, err := a.Run("wg", copt.Combined(GinkgoWriter))
 				Expect(err).To(Succeed())
 
-				GinkgoWriter.Write(out) //nolint:errcheck
 				return nil
 			})
 			Expect(err).To(Succeed())

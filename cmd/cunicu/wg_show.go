@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/stv0g/cunicu/pkg/proto/core"
+	proto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -138,7 +138,7 @@ func parseWgShowArgs(args []string) (string, string, string, error) {
 	return intf, mode, field, nil
 }
 
-func showInterfaceList(intfs []*core.Interface) {
+func showInterfaceList(intfs []*proto.Interface) {
 	intfNames := []string{}
 
 	for _, intf := range intfs {
@@ -148,7 +148,7 @@ func showInterfaceList(intfs []*core.Interface) {
 	fmt.Println(strings.Join(intfNames, " "))
 }
 
-func showInterfaceDetails(dev *wg.Device, i int, mode, field string) error {
+func showInterfaceDetails(dev *wg.Interface, i int, mode, field string) error {
 	var prefix string
 
 	if mode == "all" {

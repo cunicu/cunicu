@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
-	g "github.com/stv0g/gont/pkg"
-	gopt "github.com/stv0g/gont/pkg/options"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
 )
 
 var _ = Context("single: A single node to test RPC and watcher", Pending, func() {

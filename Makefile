@@ -39,7 +39,7 @@ tests:
 tests-e2e:
 	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_e2e.out ./test/e2e -- $(GINKGO_ARGS)
 
-coverprofile_merged.out: $(shell find . -name "*.out" -type f)
+coverprofile_merged.out: $(shell find . -type f -name "*.out" -and -not -name "*_merged.out")
 	gocov-merger -o $@ $^
 
 lcov.info: coverprofile_merged.out
@@ -63,7 +63,7 @@ lint:
 install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/onsi/ginkgo/v2/ginkgo@v2.6.0
+	go install github.com/onsi/ginkgo/v2/ginkgo@v2.8.4
 	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest

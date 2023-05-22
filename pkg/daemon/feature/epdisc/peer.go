@@ -6,64 +6,68 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/pion/ice/v2"
 	"github.com/pion/zapion"
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
-	"github.com/stv0g/cunicu/pkg/device"
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/types"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
-	errNoNATorBind          = errors.New("failed tp setup peer. Neither NAT or Bind is configured")
 	errCreateNonClosedAgent = errors.New("failed to create new agent if previous one is not closed")
 	errSwitchToIdle         = errors.New("failed to switch to idle state")
 	errStillIdle            = errors.New("not connected yet")
+	errClosing              = errors.New("already closing")
 )
 
 type Peer struct {
-	*core.Peer
+	*daemon.Peer
 	Interface *Interface
 
-	agent                  *ice.Agent
-	proxy                  proxy.Proxy
-	connectionState        util.AtomicEnum[icex.ConnectionState]
-	lastStateChange        time.Time
-	lastEndpoint           *net.UDPAddr
-	restarts               uint
-	credentials            epdiscproto.Credentials
-	signalingMessages      chan *signaling.Message
-	connectionStateChanges chan icex.ConnectionState
+	connectionState types.AtomicEnum[ConnectionState]
+
+	agent    *ice.Agent
+	proxy    Proxy
+	endpoint *net.UDPAddr
+	restarts atomic.Uint32
+
+	remoteCredentials *epdiscproto.Credentials
+	localCredentials  *epdiscproto.Credentials
+
+	signalingMessages chan *signaling.Message
+	newConnection     chan *ice.Conn
 
 	logger *zap.Logger
 }
 
-func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
-	var err error
-
+func NewPeer(cp *daemon.Peer, e *Interface) (*Peer, error) {
 	p := &Peer{
 		Peer:      cp,
 		Interface: e,
 
-		signalingMessages:      make(chan *signaling.Message, 32),
-		connectionStateChanges: make(chan icex.ConnectionState, 32),
-
+		signalingMessages: make(chan *signaling.Message, 100),
+		newConnection:     make(chan *ice.Conn),
 		logger: e.logger.Named("peer").With(
 			zap.String("peer", cp.String()),
 		),
 	}
 
-	p.connectionState.Store(ice.ConnectionStateClosed)
+	p.connectionState.Store(ConnectionStateClosed)
+
+	e.Bind().AddOpenHandler(p)
 
 	// Initialize signaling channel
 	kp := p.PublicPrivateKeyPair()
@@ -73,27 +77,133 @@ func NewPeer(cp *core.Peer, e *Interface) (*Peer, error) {
 	}
 	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
-	// Setup proxy
-	//nolint:gocritic
-	if dev, ok := e.KernelDevice.(*device.UserDevice); ok {
-		if p.proxy, err = proxy.NewUserBindProxy(dev.Bind); err != nil {
-			return nil, fmt.Errorf("failed to setup proxy: %w", err)
-		}
-	} else if e.nat != nil {
-		if p.proxy, err = proxy.NewKernelProxy(e.nat, cp.Interface.ListenPort); err != nil {
-			return nil, fmt.Errorf("failed to setup proxy: %w", err)
-		}
-	} else {
-		return nil, errNoNATorBind
-	}
-
-	if err = p.createAgentWithBackoff(); err != nil {
-		return nil, fmt.Errorf("failed to create initial agent: %w", err)
-	}
-
+	go p.createAgentWithBackoff()
 	go p.run()
 
 	return p, nil
+}
+
+// Getters
+
+func (p *Peer) ConnectionState() ConnectionState {
+	return p.connectionState.Load()
+}
+
+// Close destroys the peer as well as the ICE agent and proxies
+func (p *Peer) Close() error {
+	p.Interface.Bind().RemoveOpenHandler(p)
+
+	if _, ok := p.connectionState.SetIfNot(ConnectionStateClosing, ConnectionStateClosing); !ok {
+		return errClosing
+	}
+
+	kp := p.PublicPrivateKeyPair()
+	if _, err := p.Interface.Daemon.Backend.Unsubscribe(context.Background(), kp, p); err != nil {
+		return fmt.Errorf("failed to unsubscribe from offers: %w", err)
+	}
+
+	if p.agent != nil {
+		if err := p.agent.Close(); err != nil && !errors.Is(err, ice.ErrClosed) {
+			return fmt.Errorf("failed to close ICE agent: %w", err)
+		}
+	}
+
+	if p.proxy != nil {
+		if err := p.proxy.Close(); err != nil {
+			return fmt.Errorf("failed to close proxy: %w", err)
+		}
+	}
+
+	p.connectionState.SetIf(ConnectionStateClosed, ConnectionStateClosing)
+
+	return nil
+}
+
+// Marshal marshals a description of the peer into a Protobuf description
+func (p *Peer) Marshal() *epdiscproto.Peer {
+	q := &epdiscproto.Peer{
+		Restarts: p.restarts.Load(),
+	}
+
+	if p.proxy == nil {
+		q.ProxyType = epdiscproto.ProxyType_NO_PROXY
+	} else {
+		switch p.proxy.(type) {
+		case *BindProxy:
+			q.ProxyType = epdiscproto.ProxyType_USER_BIND
+		case *KernelConnProxy:
+			q.ProxyType = epdiscproto.ProxyType_KERNEL_CONN
+		case *KernelNATProxy:
+			q.ProxyType = epdiscproto.ProxyType_KERNEL_NAT
+		}
+	}
+
+	if !p.LastStateChangeTime.IsZero() {
+		q.LastStateChangeTimestamp = proto.Time(p.LastStateChangeTime)
+	}
+
+	if p.agent != nil && p.State() != daemon.PeerStateClosed {
+		cp, err := p.agent.GetSelectedCandidatePair()
+		if err == nil && cp != nil {
+			q.SelectedCandidatePair = &epdiscproto.CandidatePair{
+				Local:  epdiscproto.NewCandidate(cp.Local),
+				Remote: epdiscproto.NewCandidate(cp.Remote),
+			}
+		}
+
+		for _, cps := range p.agent.GetCandidatePairsStats() {
+			cps := cps
+			q.CandidatePairStats = append(q.CandidatePairStats, epdiscproto.NewCandidatePairStats(&cps))
+		}
+
+		for _, cs := range p.agent.GetLocalCandidatesStats() {
+			cs := cs
+			q.LocalCandidateStats = append(q.LocalCandidateStats, epdiscproto.NewCandidateStats(&cs))
+		}
+
+		for _, cs := range p.agent.GetRemoteCandidatesStats() {
+			cs := cs
+			q.RemoteCandidateStats = append(q.RemoteCandidateStats, epdiscproto.NewCandidateStats(&cs))
+		}
+	}
+
+	return q
+}
+
+func (p *Peer) Reachability() coreproto.ReachabilityType {
+	switch p.ConnectionState() {
+	case ConnectionStateConnecting,
+		ConnectionStateCreating,
+		ConnectionStateIdle,
+		ConnectionStateChecking,
+		ConnectionStateNew:
+		return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
+
+	case ConnectionStateClosed,
+		ConnectionStateDisconnected,
+		ConnectionStateFailed:
+		return coreproto.ReachabilityType_NONE
+
+	case ConnectionStateConnected:
+		cp, err := p.agent.GetSelectedCandidatePair()
+		if err != nil || cp == nil {
+			return coreproto.ReachabilityType_NONE
+		}
+
+		lc, rc := cp.Local, cp.Remote
+
+		switch {
+		case lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay:
+			return coreproto.ReachabilityType_RELAYED_BIDIR
+		case lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay:
+			return coreproto.ReachabilityType_RELAYED
+		default:
+			return coreproto.ReachabilityType_DIRECT
+		}
+
+	default:
+		return coreproto.ReachabilityType_NONE
+	}
 }
 
 func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
@@ -120,37 +230,14 @@ func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
 	return nil
 }
 
-func (p *Peer) ConnectionState() icex.ConnectionState {
-	return p.connectionState.Load()
-}
-
-func (p *Peer) run() {
-	for {
-		select {
-		case msg := <-p.signalingMessages:
-			p.onSignalingMessage(msg)
-
-		case sc := <-p.connectionStateChanges:
-			p.onConnectionStateChange(sc)
-		}
-	}
-}
-
-// Close destroys the peer as well as the ICE agent and proxies
-func (p *Peer) Close() error {
-	if err := p.agent.Close(); err != nil {
-		return fmt.Errorf("failed to close ICE agent: %w", err)
-	}
-
-	if err := p.proxy.Close(); err != nil {
-		return fmt.Errorf("failed to close proxy: %w", err)
-	}
-
-	return nil
-}
-
 // Restart the ICE agent by creating a new one
 func (p *Peer) Restart() error {
+	invalidRestartStates := []ConnectionState{ConnectionStateClosed, ConnectionStateClosing, ConnectionStateRestarting}
+
+	if prev, ok := p.connectionState.SetIfNot(ConnectionStateRestarting, invalidRestartStates...); !ok {
+		return fmt.Errorf("can not restart agent while in state: %s", strings.ToLower(prev.String()))
+	}
+
 	p.logger.Debug("Restarting ICE session")
 
 	if err := p.agent.Close(); err != nil {
@@ -160,18 +247,25 @@ func (p *Peer) Restart() error {
 	// The new agent will be recreated in the onConnectionStateChange() handler
 	// once the old agent has been properly closed
 
-	p.restarts++
+	p.restarts.Add(1)
 
 	return nil
 }
 
+func (p *Peer) run() {
+	for msg := range p.signalingMessages {
+		p.onSignalingMessage(msg)
+	}
+}
+
 func (p *Peer) sendCredentials(need bool) error {
-	p.credentials.NeedCreds = need
+	p.localCredentials.NeedCreds = need
 
 	msg := &signaling.Message{
-		Credentials: &p.credentials,
+		Credentials: p.localCredentials,
 	}
 
+	// TODO: Is this timeout suitable?
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -201,11 +295,11 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 	return nil
 }
 
-func (p *Peer) createAgentWithBackoff() error {
+func (p *Peer) createAgentWithBackoff() {
 	bo := backoff.NewExponentialBackOff()
 	bo.MaxInterval = 1 * time.Minute
 
-	return backoff.RetryNotify(
+	if err := backoff.RetryNotify(
 		func() error {
 			return p.createAgent()
 		}, bo,
@@ -214,26 +308,24 @@ func (p *Peer) createAgentWithBackoff() error {
 				zap.Error(err),
 				zap.Duration("after", d))
 		},
-	)
+	); err != nil {
+		p.logger.Error("Failed to create agent", zap.Error(err))
+	}
 }
 
 func (p *Peer) createAgent() error {
-	var err error
-
-	if !p.setConnectionStateIf(ice.ConnectionStateClosed, icex.ConnectionStateCreating) {
+	if _, ok := p.connectionState.SetIf(ConnectionStateCreating, ConnectionStateClosed); !ok {
 		return errCreateNonClosedAgent
 	}
 
 	// Reset state to closed if we error-out of this function
-	defer func() {
-		p.setConnectionStateIf(icex.ConnectionStateCreating, ice.ConnectionStateClosed)
-	}()
+	defer p.connectionState.SetIf(ConnectionStateClosed, ConnectionStateCreating)
 
 	p.logger.Info("Creating new agent")
 
 	// Prepare ICE agent configuration
 	pk := p.Interface.PublicKey()
-	acfg, err := p.Interface.Settings.AgentConfig(context.Background(), &pk)
+	acfg, err := p.Interface.Settings.AgentConfig(context.TODO(), &pk)
 	if err != nil {
 		return fmt.Errorf("failed to generate ICE agent configuration: %w", err)
 	}
@@ -244,16 +336,17 @@ func (p *Peer) createAgent() error {
 		return origFilter(name) && p.Interface.Daemon.InterfaceByName(name) == nil
 	}
 
-	acfg.UDPMux = p.Interface.udpMux
-	acfg.UDPMuxSrflx = p.Interface.udpMuxSrflx
+	acfg.UDPMux = p.Interface.mux
+	acfg.UDPMuxSrflx = p.Interface.muxSrflx
 	acfg.LoggerFactory = &zapion.ZapFactory{
-		BaseLogger: p.logger,
+		BaseLogger: p.logger.WithOptions(log.WithVerbose(6)),
 	}
 
-	p.credentials = epdiscproto.NewCredentials()
+	p.localCredentials = epdiscproto.NewCredentials()
+	p.remoteCredentials = nil
 
-	acfg.LocalUfrag = p.credentials.Ufrag
-	acfg.LocalPwd = p.credentials.Pwd
+	acfg.LocalUfrag = p.localCredentials.Ufrag
+	acfg.LocalPwd = p.localCredentials.Pwd
 
 	// Setup new ICE Agent
 	if p.agent, err = ice.NewAgent(acfg); err != nil {
@@ -261,7 +354,7 @@ func (p *Peer) createAgent() error {
 	}
 
 	// When we have gathered a new ICE Candidate send it to the remote peer
-	if err := p.agent.OnCandidate(p.onCandidate); err != nil {
+	if err := p.agent.OnCandidate(p.onLocalCandidate); err != nil {
 		return fmt.Errorf("failed to setup on candidate handler: %w", err)
 	}
 
@@ -271,37 +364,35 @@ func (p *Peer) createAgent() error {
 	}
 
 	// When ICE Connection state has change print to stdout
-	if err := p.agent.OnConnectionStateChange(func(cs ice.ConnectionState) {
-		p.onConnectionStateChange(icex.ConnectionState(cs))
-	}); err != nil {
+	if err := p.agent.OnConnectionStateChange(p.onConnectionStateChange); err != nil {
 		return fmt.Errorf("failed to setup on connection state handler: %w", err)
 	}
 
-	if !p.setConnectionStateIf(icex.ConnectionStateCreating, icex.ConnectionStateIdle) {
+	if _, ok := p.connectionState.SetIf(ConnectionStateIdle, ConnectionStateCreating); !ok {
 		return errSwitchToIdle
 	}
 
 	// Send peer credentials as long as we remain in ConnectionStateIdle
-	go func() {
-		if err := p.sendCredentialsWithBackoff(true); err != nil {
-			p.logger.Error("Failed to send credentials", zap.Error(err))
-		}
-	}()
+	go p.sendCredentialsWhileIdleWithBackoff(true)
 
 	return nil
 }
 
-func (p *Peer) sendCredentialsWithBackoff(need bool) error {
+func (p *Peer) sendCredentialsWhileIdleWithBackoff(need bool) {
 	bo := backoff.NewExponentialBackOff()
 	bo.MaxInterval = 1 * time.Minute
 
-	return backoff.RetryNotify(
+	if err := backoff.RetryNotify(
 		func() error {
+			if s := p.connectionState.Load(); s == ConnectionStateClosed || s == ConnectionStateClosing {
+				return nil
+			}
+
 			if err := p.sendCredentials(need); err != nil {
 				return err
 			}
 
-			if p.ConnectionState() == icex.ConnectionStateIdle {
+			if s := p.connectionState.Load(); s == ConnectionStateIdle {
 				return errStillIdle
 			}
 
@@ -309,192 +400,101 @@ func (p *Peer) sendCredentialsWithBackoff(need bool) error {
 		}, bo,
 		func(err error, d time.Duration) {
 			if errors.Is(err, errStillIdle) {
+				p.logger.Info("Resending peer credentials while waiting for remote peer",
+					zap.Error(err),
+					zap.Duration("after", d))
+			} else if sts := status.Code(err); sts != codes.Canceled {
 				p.logger.Error("Failed to send peer credentials",
 					zap.Error(err),
 					zap.Duration("after", d))
 			}
 		},
-	)
+	); err != nil {
+		p.logger.Error("Failed to send credentials", zap.Error(err))
+	}
 }
 
 // isSessionRestart checks if a received offer should restart the
 // ICE session by comparing ufrag & pwd with previously used values.
 func (p *Peer) isSessionRestart(c *epdiscproto.Credentials) bool {
-	ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
-	if err != nil {
-		p.logger.Error("Failed to get local credentials", zap.Error(err))
-	}
+	r := p.remoteCredentials
 
-	credsChanged := (ufrag != "" && pwd != "") && (c.Ufrag != "" && c.Pwd != "") && (ufrag != c.Ufrag || pwd != c.Pwd)
-
-	return p.ConnectionState() != ice.ConnectionStateClosed && credsChanged
+	return (r != nil) &&
+		(r.Ufrag != "" && r.Pwd != "") &&
+		(c.Ufrag != "" && c.Pwd != "") &&
+		(r.Ufrag != c.Ufrag || r.Pwd != c.Pwd)
 }
 
-func (p *Peer) addRemoteCandidate(c *epdiscproto.Candidate) error {
-	ic, err := c.ICECandidate()
-	if err != nil {
-		return fmt.Errorf("failed to remote candidate: %w", err)
-	}
-
-	if err := p.agent.AddRemoteCandidate(ic); err != nil {
-		return fmt.Errorf("failed to add remote candidate: %w", err)
-	}
-
-	p.logger.Debug("Add remote candidate", zap.Any("candidate", c))
-
-	return nil
-}
-
-func (p *Peer) connect(ufrag, pwd string) error {
-	var err error
-	var conn *ice.Conn
-
-	// TODO: use proper context
+func (p *Peer) connect(ufrag, pwd string) {
+	var connect func(context.Context, string, string) (*ice.Conn, error)
 	if p.IsControlling() {
 		p.logger.Debug("Dialing...")
-		conn, err = p.agent.Dial(context.Background(), ufrag, pwd)
+		connect = p.agent.Dial
 	} else {
 		p.logger.Debug("Accepting...")
-		conn, err = p.agent.Accept(context.Background(), ufrag, pwd)
-	}
-	if err != nil {
-		return err
+		connect = p.agent.Accept
 	}
 
-	cp, err := p.agent.GetSelectedCandidatePair()
+	if conn, err := connect(context.TODO(), ufrag, pwd); err == nil {
+		p.newConnection <- conn
+	} else {
+		p.logger.Error("Failed to connect", zap.Error(err))
+	}
+}
+
+func (p *Peer) updateProxy(cp *ice.CandidatePair, conn *ice.Conn) error {
+	var err error
+	var oldProxy, newProxy Proxy
+	var newEndpoint *net.UDPAddr
+
+	bind := p.Interface.Bind()
+
+	// Create new proxy
+	switch {
+	case p.Interface.IsUserspace():
+		p.logger.Debug("Forwarding via in-process bind proxy")
+		newProxy, newEndpoint, err = NewBindProxy(bind, cp, conn, p.logger)
+	case p.Interface.nat != nil && CandidatePairCanBeNATted(cp):
+		p.logger.Debug("Forwarding via kernel port-forwarding")
+		newProxy, newEndpoint, err = NewKernelNATProxy(cp, p.Interface.nat, p.Interface.ListenPort, p.logger)
+	default:
+		p.logger.Debug("Forwarding via kernel connection proxy")
+		newProxy, newEndpoint, err = NewKernelConnProxy(bind, cp, conn, p.Interface.ListenPort, p.logger)
+	}
 	if err != nil {
-		return fmt.Errorf("failed to get selected candidate pair: %w", err)
+		return fmt.Errorf("failed to setup proxy: %w", err)
 	}
 
-	ep, err := p.proxy.UpdateCandidatePair(cp, conn)
-	if err != nil {
-		return fmt.Errorf("failed to update proxy: %w", err)
+	// Check if we need to update the bind
+	updateBind := false
+
+	// Close old proxy
+	if oldProxy = p.proxy; oldProxy != nil {
+		if err := oldProxy.Close(); err != nil {
+			return fmt.Errorf("failed to close old proxy: %w", err)
+		}
+
+		if _, ok := oldProxy.(wg.BindConn); ok {
+			updateBind = true
+		}
 	}
 
-	if err := p.SetEndpoint(ep); err != nil {
+	if _, ok := newProxy.(wg.BindConn); ok {
+		updateBind = true
+	}
+
+	p.endpoint = newEndpoint
+	p.proxy = newProxy
+
+	if updateBind {
+		if err := p.Interface.Device.BindUpdate(); err != nil {
+			return fmt.Errorf("failed to update bind: %w", err)
+		}
+	}
+
+	if err := p.SetEndpoint(p.endpoint); err != nil {
 		return fmt.Errorf("failed to update endpoint: %w", err)
 	}
 
-	p.lastEndpoint = ep
-
 	return nil
-}
-
-// setConnectionState updates the connection state of the peer and invokes registered handlers.
-// It returns the previous connection state.
-func (p *Peer) setConnectionState(newState icex.ConnectionState) icex.ConnectionState { //nolint:unparam
-	prevState := p.connectionState.Swap(newState)
-
-	p.lastStateChange = time.Now()
-
-	p.logger.Info("Connection state changed",
-		zap.String("new", strings.ToLower(newState.String())),
-		zap.String("previous", strings.ToLower(prevState.String())))
-
-	for _, h := range p.Interface.onConnectionStateChange {
-		h.OnConnectionStateChange(p, newState, prevState)
-	}
-
-	return prevState
-}
-
-// setConnectionStateIf updates the connection state of the peer if the previous state matches the one supplied.
-// It returns true if the state has been changed.
-func (p *Peer) setConnectionStateIf(prevState, newState icex.ConnectionState) bool {
-	swapped := p.connectionState.CompareAndSwap(prevState, newState)
-	if swapped {
-		p.lastStateChange = time.Now()
-
-		p.logger.Info("Connection state changed",
-			zap.String("new", strings.ToLower(newState.String())),
-			zap.String("previous", strings.ToLower(prevState.String())))
-
-		for _, h := range p.Interface.onConnectionStateChange {
-			h.OnConnectionStateChange(p, newState, prevState)
-		}
-	}
-
-	return swapped
-}
-
-// Marshal marshals a description of the peer into a Protobuf description
-func (p *Peer) Marshal() *epdiscproto.Peer {
-	cs := p.ConnectionState()
-
-	q := &epdiscproto.Peer{
-		State:    epdiscproto.NewConnectionState(cs),
-		Restarts: uint32(p.restarts),
-	}
-
-	if p.proxy != nil {
-		q.ProxyType = p.proxy.Type()
-	}
-
-	if !p.lastStateChange.IsZero() {
-		q.LastStateChangeTimestamp = proto.Time(p.lastStateChange)
-	}
-
-	if p.agent != nil && cs != ice.ConnectionStateClosed {
-		cp, err := p.agent.GetSelectedCandidatePair()
-		if err == nil && cp != nil {
-			q.SelectedCandidatePair = &epdiscproto.CandidatePair{
-				Local:  epdiscproto.NewCandidate(cp.Local),
-				Remote: epdiscproto.NewCandidate(cp.Remote),
-			}
-		}
-
-		for _, cps := range p.agent.GetCandidatePairsStats() {
-			cps := cps
-			q.CandidatePairStats = append(q.CandidatePairStats, epdiscproto.NewCandidatePairStats(&cps))
-		}
-
-		for _, cs := range p.agent.GetLocalCandidatesStats() {
-			cs := cs
-			q.LocalCandidateStats = append(q.LocalCandidateStats, epdiscproto.NewCandidateStats(&cs))
-		}
-
-		for _, cs := range p.agent.GetRemoteCandidatesStats() {
-			cs := cs
-			q.RemoteCandidateStats = append(q.RemoteCandidateStats, epdiscproto.NewCandidateStats(&cs))
-		}
-	}
-
-	return q
-}
-
-func (p *Peer) Reachability() coreproto.ReachabilityType {
-	cs := p.connectionState.Load()
-	switch cs {
-	case icex.ConnectionStateConnecting,
-		icex.ConnectionStateCreating,
-		icex.ConnectionStateIdle,
-		ice.ConnectionStateChecking,
-		ice.ConnectionStateNew:
-		return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
-
-	case ice.ConnectionStateClosed,
-		ice.ConnectionStateDisconnected,
-		ice.ConnectionStateFailed:
-		return coreproto.ReachabilityType_NONE
-
-	case ice.ConnectionStateConnected:
-		cp, err := p.agent.GetSelectedCandidatePair()
-		if err != nil || cp == nil {
-			return coreproto.ReachabilityType_NONE
-		}
-
-		lc, rc := cp.Local, cp.Remote
-
-		switch {
-		case lc.Type() == ice.CandidateTypeRelay && rc.Type() == ice.CandidateTypeRelay:
-			return coreproto.ReachabilityType_RELAYED_BIDIR
-		case lc.Type() == ice.CandidateTypeRelay || rc.Type() == ice.CandidateTypeRelay:
-			return coreproto.ReachabilityType_RELAYED
-		default:
-			return coreproto.ReachabilityType_DIRECT
-		}
-
-	default:
-		return coreproto.ReachabilityType_NONE
-	}
 }

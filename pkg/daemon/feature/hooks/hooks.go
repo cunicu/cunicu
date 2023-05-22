@@ -2,19 +2,15 @@ package hooks
 
 import (
 	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
 	"go.uber.org/zap"
 )
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("hooks", "Hooks", New, 70)
-}
+var Get = daemon.RegisterFeature(New, 70) //nolint:gochecknoglobals
 
 type Hook interface {
-	core.AllHandler
-	epdisc.OnConnectionStateHandler
+	daemon.AllHandler
+	daemon.PeerStateChangedHandler
 }
 
 type Interface struct {
@@ -25,9 +21,9 @@ type Interface struct {
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	if len(i.Settings.Hooks) == 0 {
-		return nil, nil
+		return nil, daemon.ErrFeatureDeactivated
 	}
 
 	h := &Interface{
@@ -44,14 +40,9 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 			hk = h.NewWebHook(hks)
 		}
 
-		h.OnModified(hk)
-		h.OnPeer(hk)
-
-		if f, ok := h.Features["epdisc"]; ok {
-			if ep, ok := f.(*epdisc.Interface); ok {
-				ep.OnConnectionStateChange(hk)
-			}
-		}
+		h.AddModifiedHandler(hk)
+		h.AddPeerHandler(hk)
+		h.AddPeerStateChangeHandler(hk)
 
 		h.hooks = append(h.hooks, hk)
 	}
@@ -63,7 +54,7 @@ func (i *Interface) Start() error {
 	i.logger.Info("Started hooks")
 
 	for _, hk := range i.hooks {
-		hk.OnInterfaceAdded(i.Interface.Interface)
+		hk.OnInterfaceAdded(i.Interface)
 	}
 
 	return nil
@@ -71,7 +62,7 @@ func (i *Interface) Start() error {
 
 func (i *Interface) Close() error {
 	for _, hk := range i.hooks {
-		hk.OnInterfaceRemoved(i.Interface.Interface)
+		hk.OnInterfaceRemoved(i.Interface)
 	}
 
 	return nil

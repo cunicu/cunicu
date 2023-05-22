@@ -2,9 +2,11 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/proto"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"go.uber.org/zap"
@@ -41,11 +43,26 @@ func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Bac
 		return nil, fmt.Errorf("failed to parse backend configuration: %w", err)
 	}
 
+	// TODO: Use DialWithContext
 	if b.conn, err = grpc.Dial(b.config.Target, b.config.Options...); err != nil {
 		return nil, fmt.Errorf("failed to connect to gRPC server: %w", err)
 	}
 
 	b.client = signalingproto.NewSignalingClient(b.conn)
+
+	bi, err := b.client.GetBuildInfo(context.Background(), &proto.Empty{}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to GRPC signaling server: %w", err)
+	}
+
+	b.logger.Debug("Connected to GRPC signaling server",
+		zap.String("server_arch", bi.Arch),
+		zap.String("server_version", bi.Version),
+		zap.String("server_commit", bi.Commit),
+		zap.String("server_tag", bi.Tag),
+		zap.String("server_branch", bi.Branch),
+		zap.String("server_os", bi.Os),
+	)
 
 	for _, h := range cfg.OnReady {
 		h.OnSignalingBackendReady(b)
@@ -89,7 +106,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 		return fmt.Errorf("failed to encrypt message: %w", err)
 	}
 
-	if _, err = b.client.Publish(ctx, env); err != nil {
+	if _, err = b.client.Publish(ctx, env, grpc.WaitForReady(true)); err != nil {
 		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
@@ -129,7 +146,7 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 			if err != nil {
 				b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
 
-				if err := b.subscribeFromServer(ctx, pk); err != nil {
+				if err := b.subscribeFromServer(ctx, pk); err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
 					b.logger.Error("Failed to resubscribe", zap.Error(err))
 				}
 

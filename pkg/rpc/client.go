@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -12,20 +11,22 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
-var (
-	errTimeout       = errors.New("timed out")
-	errChannelClosed = errors.New("event channel closed")
-)
+var errTimeout = errors.New("timed out")
+
+type EventHandler interface {
+	OnEvent(*rpcproto.Event)
+}
 
 type Client struct {
 	io.Closer
@@ -34,14 +35,13 @@ type Client struct {
 	rpcproto.SignalingClient
 	rpcproto.DaemonClient
 
-	conn   *grpc.ClientConn
-	logger *zap.Logger
+	conn    *grpc.ClientConn
+	logger  *zap.Logger
+	onEvent []EventHandler
 
-	connectionStates     map[crypto.Key]icex.ConnectionState
-	connectionStatesLock sync.Mutex
-	connectionStatesCond *sync.Cond
-
-	Events chan *rpcproto.Event
+	peerStates     map[crypto.Key]daemon.PeerState
+	peerStatesLock sync.Mutex
+	peerStatesCond *sync.Cond
 }
 
 func DaemonRunning(path string) bool {
@@ -75,29 +75,28 @@ func Connect(path string) (*Client, error) {
 		return nil, err
 	}
 
-	client := &Client{
+	c := &Client{
 		EndpointDiscoverySocketClient: rpcproto.NewEndpointDiscoverySocketClient(conn),
 		SignalingClient:               rpcproto.NewSignalingClient(conn),
 		DaemonClient:                  rpcproto.NewDaemonClient(conn),
 
-		conn:             conn,
-		logger:           zap.L().Named("rpc.client").With(zap.String("path", path)),
-		connectionStates: make(map[crypto.Key]icex.ConnectionState),
+		conn:       conn,
+		logger:     zap.L().Named("rpc.client").With(zap.String("path", path)),
+		peerStates: make(map[crypto.Key]daemon.PeerState),
 	}
-	client.connectionStatesCond = sync.NewCond(&client.connectionStatesLock)
+	c.peerStatesCond = sync.NewCond(&c.peerStatesLock)
 
-	go client.streamEvents()
+	c.AddEventHandler(c)
 
-	return client, nil
+	go c.streamEvents()
+
+	return c, nil
 }
 
 func (c *Client) Close() error {
-	if err := c.conn.Close(); err != nil {
+	if err := c.conn.Close(); err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
 		return fmt.Errorf("failed to close gRPC client connection: %w", err)
 	}
-
-	// Wait until event channel is closed
-	<-c.Events
 
 	c.logger.Debug("Closed")
 
@@ -105,9 +104,6 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) streamEvents() {
-	c.Events = make(chan *rpcproto.Event, 100)
-	defer close(c.Events)
-
 	stream, err := c.StreamEvents(context.Background(), &proto.Empty{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
@@ -117,54 +113,58 @@ func (c *Client) streamEvents() {
 	for {
 		e, err := stream.Recv()
 		if err != nil {
-			if sts, ok := status.FromError(err); !ok || (sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable) {
+			if sts, ok := status.FromError(err); ok && sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable {
+				c.logger.Error("Failed to receive event", zap.Any("code", sts.Code()), zap.String("msg", sts.Message()))
+			} else if !ok && !errors.Is(err, io.EOF) {
 				c.logger.Error("Failed to receive event", zap.Error(err))
 			}
 
 			break
 		}
 
-		if e.Type == rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED {
-			if pcs, ok := e.Event.(*rpcproto.Event_PeerConnectionStateChange); ok {
-				pk, err := crypto.ParseKeyBytes(e.Peer)
-				if err != nil {
-					c.logger.Error("Invalid key", zap.Error(err))
-					continue
-				}
-
-				cs := pcs.PeerConnectionStateChange.NewState.ConnectionState()
-
-				c.connectionStatesLock.Lock()
-				c.connectionStates[pk] = cs
-				c.connectionStatesCond.Broadcast()
-				c.connectionStatesLock.Unlock()
-			}
+		for _, h := range c.onEvent {
+			h.OnEvent(e)
 		}
+	}
+}
 
-		c.Events <- e
+type waitHandler struct {
+	event chan *rpcproto.Event
+
+	typ  rpcproto.EventType
+	intf string
+	peer crypto.Key
+}
+
+func (h *waitHandler) OnEvent(e *rpcproto.Event) {
+	peer, err := crypto.ParseKeyBytes(e.Peer)
+	if err != nil {
+		panic(err)
+	}
+
+	if (e.Type != h.typ) ||
+		(h.intf != "" && h.intf != e.Interface) ||
+		(h.peer.IsSet() && h.peer != peer) {
+		return
 	}
 }
 
 func (c *Client) WaitForEvent(ctx context.Context, t rpcproto.EventType, intf string, peer crypto.Key) (*rpcproto.Event, error) {
+	h := &waitHandler{
+		event: make(chan *rpcproto.Event),
+
+		typ:  t,
+		intf: intf,
+		peer: peer,
+	}
+
+	c.AddEventHandler(h)
+	defer c.RemoveEventHandler(h)
+	defer close(h.event)
+
 	for {
 		select {
-		case e, ok := <-c.Events:
-			if !ok {
-				return nil, errChannelClosed
-			}
-
-			if e.Type != t {
-				continue
-			}
-
-			if intf != "" && intf != e.Interface {
-				continue
-			}
-
-			if peer.IsSet() && !bytes.Equal(peer.Bytes(), e.Peer) {
-				continue
-			}
-
+		case e := <-h.event:
 			return e, nil
 
 		case <-ctx.Done():
@@ -185,30 +185,30 @@ func (c *Client) WaitForPeerHandshake(ctx context.Context, peer crypto.Key) erro
 			continue
 		}
 
-		mod := core.PeerModifier(ee.PeerModified.Modified)
-		if mod.Is(core.PeerModifiedHandshakeTime) {
+		mod := daemon.PeerModifier(ee.PeerModified.Modified)
+		if mod.Is(daemon.PeerModifiedHandshakeTime) {
 			return nil
 		}
 	}
 }
 
-func (c *Client) WaitForPeerConnectionState(ctx context.Context, peer crypto.Key, csd icex.ConnectionState) error {
+func (c *Client) WaitForPeerState(ctx context.Context, peer crypto.Key, csd daemon.PeerState) error {
 	go func() {
 		if ch := ctx.Done(); ch != nil {
 			<-ch
-			c.connectionStatesCond.Broadcast()
+			c.peerStatesCond.Broadcast()
 		}
 	}()
 
-	c.connectionStatesLock.Lock()
-	defer c.connectionStatesLock.Unlock()
+	c.peerStatesLock.Lock()
+	defer c.peerStatesLock.Unlock()
 
 	for ctx.Err() == nil {
-		if cs, ok := c.connectionStates[peer]; ok && cs == csd {
+		if cs, ok := c.peerStates[peer]; ok && cs == csd {
 			return nil
 		}
 
-		c.connectionStatesCond.Wait()
+		c.peerStatesCond.Wait()
 	}
 
 	return ctx.Err()
@@ -230,4 +230,33 @@ func (c *Client) Unwait() error {
 	}
 
 	return nil
+}
+
+func (c *Client) OnEvent(e *rpcproto.Event) {
+	if e.Type == rpcproto.EventType_PEER_STATE_CHANGED {
+		if psc, ok := e.Event.(*rpcproto.Event_PeerStateChange); ok {
+			pk, err := crypto.ParseKeyBytes(e.Peer)
+			if err != nil {
+				c.logger.Error("Invalid key", zap.Error(err))
+				return
+			}
+
+			c.peerStatesLock.Lock()
+			c.peerStates[pk] = psc.PeerStateChange.NewState
+			c.peerStatesCond.Broadcast()
+			c.peerStatesLock.Unlock()
+		}
+	}
+}
+
+func (c *Client) AddEventHandler(h EventHandler) {
+	if !slices.Contains(c.onEvent, h) {
+		c.onEvent = append(c.onEvent, h)
+	}
+}
+
+func (c *Client) RemoveEventHandler(h EventHandler) {
+	if idx := slices.Index(c.onEvent, h); idx > -1 {
+		c.onEvent = slices.Delete(c.onEvent, idx, idx+1)
+	}
 }

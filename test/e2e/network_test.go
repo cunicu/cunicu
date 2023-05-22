@@ -6,16 +6,16 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/util"
+	osx "github.com/stv0g/cunicu/pkg/os"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/test"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
-	g "github.com/stv0g/gont/pkg"
-	gopt "github.com/stv0g/gont/pkg/options"
-	copt "github.com/stv0g/gont/pkg/options/capture"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
+	copt "github.com/stv0g/gont/v2/pkg/options/capture"
 	"go.uber.org/zap"
 )
 
@@ -26,7 +26,7 @@ type Network struct {
 
 	Name string
 
-	NetworkOptions            []g.Option
+	NetworkOptions            []g.NetworkOption
 	AgentOptions              []g.Option
 	WireGuardInterfaceOptions []g.Option
 
@@ -166,7 +166,7 @@ func (n *Network) WriteSpecReport() {
 	reportJSON, err := report.MarshalJSON()
 	Expect(err).To(Succeed(), "Failed to marshal report: %s", err)
 
-	reportJSON, err = util.ReIndentJSON(reportJSON, "", "  ")
+	reportJSON, err = tty.ReIndentJSON(reportJSON, "", "  ")
 	Expect(err).To(Succeed(), "Failed to indent report: %s", err)
 
 	reportFileName := filepath.Join(n.BasePath, "report.json")
@@ -181,16 +181,18 @@ func (n *Network) ConnectivityTests() {
 	It("", func() {
 		By("Waiting until all peers are connected")
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), options.timeout)
 		defer cancel()
 
 		err := n.AgentNodes.WaitConnectionsReady(ctx)
 		Expect(err).To(Succeed(), "Failed to wait for peers to connect: %s", err)
 
-		By("Ping between all peers")
+		By("Ping between all peers started")
 
 		err = n.AgentNodes.PingPeers(ctx)
 		Expect(err).To(Succeed(), "Failed to ping peers: %s", err)
+
+		By("Ping between all peers succeeded")
 	})
 }
 
@@ -206,13 +208,16 @@ func (n *Network) Init() {
 
 	By("Tweaking sysctls for large Gont networks")
 
-	err := util.SetSysctlMap(map[string]any{
+	err := osx.SetSysctlMap(map[string]any{
 		"net.ipv4.neigh.default.gc_thresh1": 10000,
 		"net.ipv4.neigh.default.gc_thresh2": 15000,
 		"net.ipv4.neigh.default.gc_thresh3": 20000,
 		"net.ipv6.neigh.default.gc_thresh1": 10000,
 		"net.ipv6.neigh.default.gc_thresh2": 15000,
 		"net.ipv6.neigh.default.gc_thresh3": 20000,
+		"net.core.rmem_max":                 32 << 20,
+		"net.core.wmem_max":                 32 << 20,
+		"net.core.rmem_default":             32 << 20,
 	})
 	Expect(err).To(Succeed(), "Failed to set sysctls: %s", err)
 
@@ -230,7 +235,7 @@ func (n *Network) Init() {
 	logger = test.SetupLoggingWithFile(logFilename, true)
 
 	n.AgentOptions = append(n.AgentOptions,
-		gopt.LogToDebug(false),
+		gopt.RedirectToLog(false),
 	)
 
 	n.NetworkOptions = append(n.NetworkOptions,
@@ -239,7 +244,7 @@ func (n *Network) Init() {
 
 	if options.capture {
 		n.NetworkOptions = append(n.NetworkOptions,
-			gopt.CaptureAll(
+			g.NewCapture(
 				copt.Filename(pcapFilename),
 				copt.LogKeys(true),
 			),

@@ -10,8 +10,8 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/link"
+	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -19,9 +19,7 @@ import (
 
 var errMTUTooSmall = errors.New("MTU too small")
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("autocfg", "Auto configuration", New, 10)
-}
+var Get = daemon.RegisterFeature(New, 10) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
@@ -29,14 +27,14 @@ type Interface struct {
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	a := &Interface{
 		Interface: i,
 		logger:    zap.L().Named("autocfg").With(zap.String("intf", i.Name())),
 	}
 
-	i.OnModified(a)
-	i.OnPeer(a)
+	i.AddModifiedHandler(a)
+	i.AddPeerHandler(a)
 
 	return a, nil
 }
@@ -63,14 +61,14 @@ func (i *Interface) Start() error {
 		if mtu, err = i.DetectMTU(); err != nil {
 			i.logger.Error("Failed to detect MTU", zap.Error(err))
 		} else {
-			if err := i.KernelDevice.SetMTU(mtu); err != nil {
+			if err := i.SetMTU(mtu); err != nil {
 				i.logger.Error("Failed to set MTU", zap.Error(err), zap.Int("mtu", i.Settings.MTU))
 			}
 		}
 	}
 
 	// Set link up
-	if err := i.KernelDevice.SetUp(); err != nil {
+	if err := i.SetUp(); err != nil {
 		i.logger.Error("Failed to bring link up", zap.Error(err))
 	}
 
@@ -92,7 +90,7 @@ func (i *Interface) ConfigureWireGuard() error {
 	if !i.PrivateKey().IsSet() || (i.Settings.PrivateKey.IsSet() && i.Settings.PrivateKey != i.PrivateKey()) {
 		sk := i.Settings.PrivateKey
 		if !sk.IsSet() {
-			i.logger.Warn("Device has no private key. Setting a random one.")
+			i.logger.Warn("Device has no private key. Generating a new key.")
 
 			sk, err = crypto.GeneratePrivateKey()
 			if err != nil {
@@ -105,14 +103,10 @@ func (i *Interface) ConfigureWireGuard() error {
 
 	// Listen port
 	if i.ListenPort == 0 || (i.Settings.ListenPort != nil && i.ListenPort != *i.Settings.ListenPort) {
-		if i.ListenPort == 0 {
-			i.logger.Warn("Device has no listen port. Setting a random one.")
-		}
-
 		if i.Settings.ListenPort != nil {
 			cfg.ListenPort = i.Settings.ListenPort
 		} else {
-			port, err := util.FindNextPortToListen("udp",
+			port, err := netx.FindNextPortToListen("udp",
 				i.Settings.ListenPortRange.Min,
 				i.Settings.ListenPortRange.Max,
 			)
@@ -121,6 +115,10 @@ func (i *Interface) ConfigureWireGuard() error {
 			}
 
 			cfg.ListenPort = &port
+		}
+
+		if i.ListenPort == 0 {
+			i.logger.Warn("Device has no listen port. Assigning one.", zap.Int("listen_port", *cfg.ListenPort))
 		}
 	}
 
@@ -142,7 +140,7 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	mtu = math.MaxInt
 	for _, p := range i.Peers {
 		if p.Endpoint != nil {
-			if pmtu, err := device.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {
+			if pmtu, err := link.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {
 				return -1, err
 			} else if pmtu < mtu {
 				mtu = pmtu
@@ -151,7 +149,7 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 	}
 
 	if mtu == math.MaxInt {
-		if mtu, err = device.DetectDefaultMTU(i.FirewallMark); err != nil {
+		if mtu, err = link.DetectDefaultMTU(i.FirewallMark); err != nil {
 			return -1, err
 		}
 	}
@@ -166,20 +164,20 @@ func (i *Interface) DetectMTU() (mtu int, err error) {
 func (i *Interface) RemoveAddresses(pk crypto.Key) error {
 	for _, pfx := range i.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
-		if err := i.KernelDevice.DeleteAddress(addr); err != nil {
+		if err := i.Device.DeleteAddress(addr); err != nil {
 			return err
 		}
 
 		// On Darwin systems, the utun interfaces are point-to-point
 		// links which are only configured a source/destination address
 		// pair. Hence we need to setup dedicated routes.
-		if i.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+		if i.Device.Flags()&net.FlagPointToPoint != 0 {
 			rte := net.IPNet{
 				IP:   addr.IP.Mask(addr.Mask),
 				Mask: addr.Mask,
 			}
 
-			if err := i.KernelDevice.DeleteRoute(rte, i.Settings.RoutingTable); err != nil {
+			if err := i.Device.DeleteRoute(rte, i.Settings.RoutingTable); err != nil {
 				return err
 			}
 		}
@@ -191,20 +189,20 @@ func (i *Interface) RemoveAddresses(pk crypto.Key) error {
 func (i *Interface) AddAddresses(pk crypto.Key) error {
 	for _, pfx := range i.Settings.Prefixes {
 		addr := pk.IPAddress(pfx)
-		if err := i.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
+		if err := i.Device.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return err
 		}
 
 		// On Darwin systems, the utun interfaces are point-to-point
 		// links which are only configured a source/destination address
 		// pair. Hence we need to setup dedicated routes.
-		if i.KernelDevice.Flags()&net.FlagPointToPoint != 0 {
+		if i.Device.Flags()&net.FlagPointToPoint != 0 {
 			rte := net.IPNet{
 				IP:   addr.IP.Mask(addr.Mask),
 				Mask: addr.Mask,
 			}
 
-			if err := i.KernelDevice.AddRoute(rte, nil, i.Settings.RoutingTable); err != nil {
+			if err := i.Device.AddRoute(rte, nil, i.Settings.RoutingTable); err != nil {
 				return err
 			}
 		}

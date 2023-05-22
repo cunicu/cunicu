@@ -8,13 +8,11 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 )
 
 var errInvalidServerHostname = errors.New("missing gRPC server url")
@@ -71,9 +69,6 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	opts = append(opts,
 		grpc.WithTransportCredentials(creds),
 		grpc.WithUserAgent(buildinfo.UserAgent()),
-		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time: 10 * time.Second,
-		}),
 	)
 
 	if u.Host == "" {

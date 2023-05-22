@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/util"
+	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -17,9 +17,7 @@ const (
 	hostsPath          = "/etc/hosts"
 )
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("hsync", "Hosts synchronization", New, 200)
-}
+var Get = daemon.RegisterFeature(New, 200) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
@@ -27,9 +25,9 @@ type Interface struct {
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	if !i.Settings.SyncHosts {
-		return nil, nil
+		return nil, daemon.ErrFeatureDeactivated
 	}
 
 	hs := &Interface{
@@ -37,7 +35,7 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		logger:    zap.L().Named("hsync").With(zap.String("intf", i.Name())),
 	}
 
-	i.OnPeer(hs)
+	i.AddPeerHandler(hs)
 
 	return hs, nil
 }
@@ -65,7 +63,7 @@ func (i *Interface) Hosts() []Host {
 
 		for name, addrs := range p.Hosts {
 			for _, a := range addrs {
-				// TODO: validate that the addresses are covered by the peers AllowedIPs
+				// TODO: Validate that the addresses are covered by the peers AllowedIPs
 				addr, ok := netip.AddrFromSlice(a)
 				if !ok {
 					continue
@@ -80,8 +78,8 @@ func (i *Interface) Hosts() []Host {
 				Names: names,
 				IP:    addr.AsSlice(),
 				Comment: fmt.Sprintf("%s: ifname=%s, ifindex=%d, pk=%s", hostsCommentPrefix,
-					p.Interface.KernelDevice.Name(),
-					p.Interface.KernelDevice.Index(),
+					p.Interface.Name(),
+					p.Interface.Index(),
 					p.PublicKey()),
 			}
 
@@ -99,9 +97,9 @@ func (i *Interface) Update(hosts []Host) error {
 	}
 
 	// Filter out lines not added by cunīcu
-	lines = util.SliceFilter(lines, func(line string) bool {
+	lines = slicesx.Filter(lines, func(line string) bool {
 		h, err := ParseHost(line)
-		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", i.KernelDevice.Index()))
+		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", i.Index()))
 	})
 
 	// Add new hosts

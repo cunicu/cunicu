@@ -1,18 +1,19 @@
 package nodes
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"path/filepath"
-	"time"
+	"sync"
 
-	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/wg"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -40,10 +41,11 @@ type WireGuardInterface struct {
 	PeerSelector         WireGuardPeerSelectorFunc
 
 	Agent *Agent
+
+	configLock sync.Mutex
 }
 
 func NewWireGuardInterface(name string) (*WireGuardInterface, error) {
-	lp := wg.DefaultPort
 	sk, err := crypto.GeneratePrivateKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate private key: %w", err)
@@ -54,10 +56,13 @@ func NewWireGuardInterface(name string) (*WireGuardInterface, error) {
 		SetupKernelInterface: true,
 		WriteConfigFile:      false,
 		Config: wgtypes.Config{
-			ListenPort: &lp,
 			PrivateKey: (*wgtypes.Key)(&sk),
 		},
 	}, nil
+}
+
+func (i *WireGuardInterface) String() string {
+	return fmt.Sprintf("%s/%s", i.Agent.Name(), i.Name)
 }
 
 func (i *WireGuardInterface) Apply(a *Agent) {
@@ -154,6 +159,9 @@ func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) {
 		})
 	}
 
+	i.configLock.Lock()
+	defer i.configLock.Unlock()
+
 	i.Peers = append(i.Peers, wgtypes.PeerConfig{
 		PublicKey:  peer.PrivateKey.PublicKey(),
 		AllowedIPs: aIPs,
@@ -161,45 +169,19 @@ func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) {
 }
 
 func (i *WireGuardInterface) PingPeer(ctx context.Context, peer *WireGuardInterface) error {
-	env := []string{"LC_ALL=C"} // fix issues with parsing of -W and -i options
-
 	if len(peer.Addresses) < 1 {
 		return errNoTunnelAddr
 	}
 
-	stdout, stderr, cmd, err := i.Agent.Host.StartWith("ping", env, "", "-c", 1, "-i", 0.2, "-w", time.Hour.Seconds(), peer.Addresses[0].IP)
-	if err != nil {
-		return fmt.Errorf("failed to start ping process: %w", err)
+	out := &bytes.Buffer{}
+	if cmd, err := i.Agent.Host.Run("ping", "-v", "-c", 1, "-i", 0.1, "-w", 120, peer.Addresses[0].IP,
+		copt.Combined(out),
+		copt.EnvVar("LC_ALL", "C"),
+		copt.Context{Context: ctx}); err != nil {
+		return fmt.Errorf("ping failed with exit code %d: %w\n%s", cmd.ProcessState.ExitCode(), err, out.String())
 	}
 
-	out := []byte{}
-	errs := make(chan error)
-	go func() {
-		combined := io.MultiReader(stdout, stderr)
-		out, _ = io.ReadAll(combined)
-
-		errs <- cmd.Wait()
-	}()
-
-	select {
-	case <-ctx.Done():
-		if err := cmd.Process.Kill(); err != nil {
-			return err
-		}
-
-		return ctx.Err()
-	case err := <-errs:
-		if err != nil {
-			return fmt.Errorf("ping failed with exit code %d: %w\n%s", cmd.ProcessState.ExitCode(), err, out)
-		}
-
-		i.Agent.logger.Info("Pinged successfully",
-			zap.String("intf", i.Name),
-			zap.String("peer", peer.Agent.Name()),
-			zap.String("peer_intf", peer.Name))
-
-		return nil
-	}
+	return nil
 }
 
 func (i *WireGuardInterface) GetConfig() *wg.Config {
@@ -209,10 +191,10 @@ func (i *WireGuardInterface) GetConfig() *wg.Config {
 	}
 }
 
-func (i *WireGuardInterface) WaitConnectionReady(ctx context.Context, p *WireGuardInterface) error {
+func (i *WireGuardInterface) WaitConnectionEstablished(ctx context.Context, p *WireGuardInterface) error {
 	sk := crypto.Key(*p.PrivateKey)
 
-	return i.Agent.Client.WaitForPeerConnectionState(ctx, sk.PublicKey(), ice.ConnectionStateConnected)
+	return i.Agent.Client.WaitForPeerState(ctx, sk.PublicKey(), daemon.PeerStateConnected)
 }
 
 func (i *WireGuardInterface) Configure(cfg wgtypes.Config) error {

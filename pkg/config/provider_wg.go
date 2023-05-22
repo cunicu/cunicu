@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/link"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -134,7 +134,7 @@ func NewInterfaceSettingsFromConfig(c *wg.Config) (*InterfaceSettings, error) {
 	if c.Table != nil && *c.Table != "off" {
 		var err error
 
-		s.RoutingTable, err = device.Table(*c.Table)
+		s.RoutingTable, err = link.Table(*c.Table)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse routing table '%s': %w", *c.Table, err)
 		}

@@ -2,15 +2,15 @@ package e2e_test
 
 import (
 	"flag"
-	"math/rand"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/ginkgo/v2/reporters"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
-	"github.com/stv0g/cunicu/pkg/util"
+	osx "github.com/stv0g/cunicu/pkg/os"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 )
 
 //nolint:gochecknoglobals
@@ -20,6 +20,8 @@ type testOptions struct {
 	setup   bool
 	persist bool
 	capture bool
+	debug   bool
+	timeout time.Duration
 }
 
 // Register your flags in an init function.  This ensures they are registered _before_ `go test` calls flag.Parse().
@@ -27,21 +29,26 @@ func init() { //nolint:gochecknoinits
 	flag.BoolVar(&options.setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
 	flag.BoolVar(&options.persist, "persist", false, "Do not tear-down virtual network")
 	flag.BoolVar(&options.capture, "capture", false, "Captures network-traffic to PCAPng file")
+	flag.BoolVar(&options.debug, "debug", false, "Start debugging agents and signaling servers")
+	flag.DurationVar(&options.timeout, "timeout", 10*time.Minute, "Timeout for connectivity tests")
 }
 
 func TestSuite(t *testing.T) {
-	rand.Seed(GinkgoRandomSeed() + int64(GinkgoParallelProcess()))
-
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Test Suite")
 }
 
 var _ = BeforeSuite(func() {
-	if !util.HasAdminPrivileges() {
+	if !osx.HasAdminPrivileges() {
 		Skip("Insufficient privileges")
 	}
 
-	DeferCleanup(gexec.CleanupBuildArtifacts)
+	if options.setup && !options.persist {
+		GinkgoT().Log("Persisting Gont network as --setup was requested")
+		options.persist = true
+	}
+
+	DeferCleanup(nodes.CleanupBinary)
 })
 
 var _ = ReportAfterSuite("Write report", func(r Report) {

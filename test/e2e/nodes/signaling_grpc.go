@@ -2,12 +2,14 @@ package nodes
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/url"
-	"os/exec"
+	"os"
 	"time"
 
-	g "github.com/stv0g/gont/pkg"
+	g "github.com/stv0g/gont/v2/pkg"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 )
 
@@ -16,9 +18,10 @@ type GrpcSignalingNode struct {
 
 	port int
 
-	Command *exec.Cmd
+	Command *g.Cmd
 
-	logger *zap.Logger
+	logFile io.WriteCloser
+	logger  *zap.Logger
 }
 
 func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (*GrpcSignalingNode, error) {
@@ -37,25 +40,37 @@ func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (*GrpcSig
 }
 
 func (s *GrpcSignalingNode) Start(_, dir string, extraArgs ...any) error {
-	var err error
+	logPath := fmt.Sprintf("%s/%s.log", dir, s.Name())
 
-	logPath := fmt.Sprintf("%s.log", s.Name())
-
-	binary, profileArgs, err := BuildTestBinary(s.Name())
+	binary, profileArgs, err := BuildBinary(s.Name())
 	if err != nil {
 		return fmt.Errorf("failed to build: %w", err)
+	}
+
+	//#nosec G304 -- Test code is not controllable by attackers
+	//#nosec G302 -- Log file should be readable by user
+	s.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
 	args := profileArgs
 	args = append(args,
 		"signal",
 		"--log-level", "debug",
-		"--log-file", logPath,
 		"--listen", fmt.Sprintf(":%d", s.port),
 	)
 	args = append(args, extraArgs...)
+	args = append(args,
+		copt.Dir(dir),
+		copt.Combined(s.logFile),
+		// copt.EnvVar("GOMAXPROCS", "10"),
+		copt.EnvVar("GRPC_GO_LOG_SEVERITY_LEVEL", "debug"),
+		copt.EnvVar("GRPC_GO_LOG_VERBOSITY_LEVEL", "99"),
+		copt.EnvVar("GORACE", fmt.Sprintf("log_path=%s-race.log", s.Name())),
+	)
 
-	if _, _, s.Command, err = s.StartWith(binary, nil, dir, args...); err != nil {
+	if s.Command, err = s.Host.Start(binary, args...); err != nil {
 		s.logger.Error("Failed to start", zap.Error(err))
 	}
 
@@ -73,7 +88,15 @@ func (s *GrpcSignalingNode) Stop() error {
 
 	s.logger.Info("Stopping signaling node")
 
-	return GracefullyTerminate(s.Command)
+	if err := GracefullyTerminate(s.Command); err != nil {
+		return err
+	}
+
+	if err := s.logFile.Close(); err != nil {
+		return fmt.Errorf("failed to close log file: %w", err)
+	}
+
+	return nil
 }
 
 func (s *GrpcSignalingNode) Close() error {

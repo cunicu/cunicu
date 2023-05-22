@@ -90,27 +90,3 @@ func (t NetworkType) MarshalText() ([]byte, error) {
 
 	return []byte(t.String()), nil
 }
-
-const (
-	ConnectionStateCreating ConnectionState = 100 + iota
-	ConnectionStateIdle
-	ConnectionStateConnecting
-	ConnectionStateClosing
-)
-
-type ConnectionState ice.ConnectionState
-
-func (cs ConnectionState) String() string {
-	switch cs {
-	case ConnectionStateCreating:
-		return "Creating"
-	case ConnectionStateIdle:
-		return "Idle"
-	case ConnectionStateConnecting:
-		return "Connecting"
-	case ConnectionStateClosing:
-		return "Closing"
-	default:
-		return ice.ConnectionState(cs).String()
-	}
-}

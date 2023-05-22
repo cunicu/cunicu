@@ -3,77 +3,151 @@ package wg
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/netip"
 	"sync"
 
+	"github.com/pion/ice/v2"
+	netx "github.com/stv0g/cunicu/pkg/net"
 	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/conn"
+	"golang.org/x/exp/slices"
+	wgconn "golang.zx2c4.com/wireguard/conn"
 )
 
-var (
-	errIncompleteWrite   = errors.New("incomplete write")
-	errNoEndpointFound   = errors.New("failed to find endpoint")
-	errFailedToParseAddr = errors.New("failed to parse addr from slice")
-)
+var ErrNoConn = errors.New("no connection for endpoint")
 
-type userPacket struct {
-	endpoint *UserEndpoint
-	buffer   []byte
+type BindConn interface {
+	Receive(buf []byte) (int, wgconn.Endpoint, error)
+	Send(buf []byte, ep wgconn.Endpoint) (int, error)
+
+	ListenPort() (uint16, bool)
+	SetMark(mark uint32) error
+
+	BindClose() error
 }
 
-type UserEndpoint struct {
-	conn.StdNetEndpoint
+// BindKernelConn is a BindConn which is consumed by a Kernel WireGuard interface
+type BindKernelConn interface {
+	BindConn
 
-	conn net.Conn
+	WriteKernel([]byte) (int, error)
 }
 
-type UserBind struct {
-	packets chan userPacket
+type BindHandler interface {
+	OnBindOpen(b *Bind, port uint16)
+}
 
-	endpointsLock sync.RWMutex
-	endpoints     map[netip.AddrPort]*UserEndpoint
+// Compile-time assertion
+var _ (wgconn.Bind) = (*Bind)(nil)
+
+type Bind struct {
+	Conns []BindConn
+
+	onOpen   []BindHandler
+	onPacket []netx.PacketHandler
+
+	endpoints sync.Map
 
 	logger *zap.Logger
 }
 
-func NewUserBind() *UserBind {
-	return &UserBind{
-		endpoints: make(map[netip.AddrPort]*UserEndpoint),
-		logger:    zap.L().Named("ice.bind"),
+func NewBind(logger *zap.Logger) *Bind {
+	return &Bind{
+		logger: logger.Named("bind"),
 	}
 }
 
 // Open puts the Bind into a listening state on a given port and reports the actual
 // port that it bound to. Passing zero results in a random selection.
 // fns is the set of functions that will be called to receive packets.
-func (b *UserBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
-	// b.logger.Debug("Open", zap.Uint16("port", port))
+func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
+	b.Conns = nil
 
-	b.packets = make(chan userPacket)
+	for _, h := range b.onOpen {
+		h.OnBindOpen(b, port)
+	}
 
-	return []conn.ReceiveFunc{b.receive}, port, nil
+	// Add a fallback conn in case no other connections have been registered
+	if len(b.Conns) == 0 {
+		if err := b.addFallbackConnection(port); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	rcvFns := []wgconn.ReceiveFunc{}
+	for _, c := range b.Conns {
+		conn := c
+
+		rcvFn := func(buf []byte) (n int, cep wgconn.Endpoint, err error) {
+			n, cep, err = conn.Receive(buf)
+			if err != nil {
+				if errors.Is(err, io.EOF) || errors.Is(err, ice.ErrClosed) || errors.Is(err, net.ErrClosed) {
+					err = net.ErrClosed
+				} else {
+					b.logger.Error("Failed to receive packet", zap.Error(err))
+				}
+
+				return -1, nil, err
+			}
+
+			ep := cep.(*BindEndpoint) //nolint:forcetypeassert
+
+			// Update endpoint map
+			if ep.Conn == nil {
+				ep.Conn = conn
+			}
+
+			// Call handlers
+			for _, h := range b.onPacket {
+				if abort, err := h.OnPacketRead(buf[:n], ep.DstUDPAddr()); err != nil {
+					return -1, nil, fmt.Errorf("failed to call handler: %w", err)
+				} else if abort {
+					return 0, nil, nil
+				}
+			}
+
+			if n > 0 {
+				b.logger.Debug("Received packet from bind",
+					zap.Int("len", n),
+					zap.String("ep", ep.DstToString()),
+					zap.Binary("data", buf[:n]))
+			}
+
+			return n, ep, err
+		}
+
+		rcvFns = append(rcvFns, rcvFn)
+	}
+
+	b.logger.Debug("Opened bind",
+		zap.Uint16("port", port),
+		zap.Int("#conns", len(b.Conns)))
+
+	return rcvFns, port, nil
 }
 
 // Close closes the Bind listener.
 // All fns returned by Open must return net.ErrClosed after a call to Close.
-func (b *UserBind) Close() error {
-	// b.logger.Debug("Close")
-
-	if b.packets != nil {
-		close(b.packets)
+func (b *Bind) Close() error {
+	for _, c := range b.Conns {
+		if err := c.BindClose(); err != nil {
+			return fmt.Errorf("failed to close connection: %w", err)
+		}
 	}
+
+	b.logger.Debug("Closed bind")
 
 	return nil
 }
 
 // SetMark sets the mark for each packet sent through this Bind.
 // This mark is passed to the kernel as the socket option SO_MARK.
-func (b *UserBind) SetMark(mark uint32) error {
-	// b.logger.Debug("SetMark", zap.Uint32("mark", mark))
+func (b *Bind) SetMark(mark uint32) error {
+	b.logger.Debug("Set mark", zap.Uint32("mark", mark))
 
-	for _, conn := range b.conns {
-		if err := SetMark(conn.UDPConn, mark); err != nil {
+	for _, c := range b.Conns {
+		if err := c.SetMark(mark); err != nil {
 			return err
 		}
 	}
@@ -82,101 +156,77 @@ func (b *UserBind) SetMark(mark uint32) error {
 }
 
 // Send writes a packet b to address ep.
-func (b *UserBind) Send(buf []byte, ep conn.Endpoint) error {
-	uep, ok := ep.(*UserEndpoint)
-	if !ok {
-		panic("invalid endpoint type")
+func (b *Bind) Send(buf []byte, cep wgconn.Endpoint) error {
+	ep := cep.(*BindEndpoint) //nolint:forcetypeassert
+
+	if ep.Conn == nil {
+		return fmt.Errorf("%w: %s", ErrNoConn, ep.DstToString())
 	}
 
-	// b.logger.Debug("Send",
-	// 	zap.Int("len", len(buf)),
-	// 	zap.Any("ep", uep),
-	// 	zap.String("data", hex.EncodeToString(buf)))
+	b.logger.Debug("Send packet",
+		zap.Int("len", len(buf)),
+		zap.Any("ep", ep.DstToString()),
+		zap.Binary("data", buf))
 
-	if n, err := uep.conn.Write(buf); err != nil {
-		return fmt.Errorf("failed to write: %w", err)
-	} else if n != len(buf) {
-		return fmt.Errorf("%w: %d != %d", errIncompleteWrite, n, len(buf))
-	}
+	_, err := ep.Conn.Send(buf, ep)
+	return err
+}
 
-	return nil
+// Endpoint returns an Endpoint containing ap.
+func (b *Bind) Endpoint(ap netip.AddrPort) *BindEndpoint {
+	ep, _ := b.endpoints.LoadOrStore(ap, &BindEndpoint{
+		AddrPort: ap,
+	})
+
+	return ep.(*BindEndpoint) //nolint:forcetypeassert
 }
 
 // ParseEndpoint creates a new endpoint from a string.
-func (b *UserBind) ParseEndpoint(s string) (ep conn.Endpoint, err error) {
-	// b.logger.Debug("ParseEndpoint", zap.String("ep", s))
+// Implements wgconn.Bind
+func (b *Bind) ParseEndpoint(s string) (ep wgconn.Endpoint, err error) {
+	b.logger.Debug("Parse endpoint", zap.String("ep", s))
 
-	ap, err := netip.ParseAddrPort(s)
+	e, err := netip.ParseAddrPort(s)
+	return b.Endpoint(e), err
+}
+
+func (b *Bind) AddOpenHandler(h BindHandler) {
+	if !slices.Contains(b.onOpen, h) {
+		b.onOpen = append(b.onOpen, h)
+	}
+}
+
+func (b *Bind) RemoveOpenHandler(h BindHandler) {
+	if idx := slices.Index(b.onOpen, h); idx > -1 {
+		b.onOpen = slices.Delete(b.onOpen, idx, idx+1)
+	}
+}
+
+func (b *Bind) AddPacketHandler(h netx.PacketHandler) {
+	if !slices.Contains(b.onPacket, h) {
+		b.onPacket = append(b.onPacket, h)
+	}
+}
+
+func (b *Bind) RemovePacketHandler(h netx.PacketHandler) {
+	if idx := slices.Index(b.onPacket, h); idx > -1 {
+		b.onPacket = slices.Delete(b.onPacket, idx, idx+1)
+	}
+}
+
+func (b *Bind) addFallbackConnection(port uint16) error {
+	udpConn, err := net.ListenUDP("udp", &net.UDPAddr{
+		Port: int(port),
+	})
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to listen: %w", err)
 	}
 
-	b.endpointsLock.RLock()
-	defer b.endpointsLock.RUnlock()
+	logger := b.logger.Named("conn")
+	filteredConn := netx.NewFilteredConn(udpConn, logger)
+	bindConn := NewBindPacketConn(b, filteredConn, logger)
 
-	ep, ok := b.endpoints[ap]
-	if !ok {
-		return nil, errNoEndpointFound
-	}
-
-	return ep, nil
-}
-
-func (b *UserBind) UpdateEndpoint(ep *net.UDPAddr, c net.Conn) (*UserEndpoint, error) {
-	// b.logger.Debug("UpdateEndpoint", zap.Any("ep", ep))
-
-	// Remove v4-in-v6 prefix
-	epIP := ep.IP
-	if epIPv4 := epIP.To4(); epIPv4 != nil {
-		epIP = epIPv4
-	}
-
-	a, ok := netip.AddrFromSlice(epIP)
-	if !ok {
-		return nil, errFailedToParseAddr
-	}
-
-	ap := netip.AddrPortFrom(a, uint16(ep.Port))
-
-	uEP := &UserEndpoint{
-		StdNetEndpoint: conn.StdNetEndpoint(ap),
-		conn:           c,
-	}
-
-	b.endpointsLock.Lock()
-	defer b.endpointsLock.Unlock()
-
-	// TODO: Remove old endpoints
-	b.endpoints[ap] = uEP
-
-	return uEP, nil
-}
-
-func (b *UserBind) receive(buf []byte) (int, conn.Endpoint, error) {
-	pkt, ok := <-b.packets
-	if !ok {
-		return -1, nil, net.ErrClosed
-	}
-
-	n := copy(buf, pkt.buffer)
-
-	// b.logger.Debug("Receive",
-	// 	zap.Int("len", n),
-	// 	zap.Any("ep", pkt.endpoint),
-	// 	zap.String("data", hex.EncodeToString(buf[:n])))
-
-	return n, pkt.endpoint, nil
-}
-
-func (b *UserBind) OnData(buf []byte, ep *UserEndpoint) error {
-	b.packets <- userPacket{
-		endpoint: ep,
-		buffer:   buf,
-	}
+	b.Conns = append(b.Conns, bindConn)
 
 	return nil
-}
-
-func (ep *UserEndpoint) String() string {
-	return ep.DstToString()
 }

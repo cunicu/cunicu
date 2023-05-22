@@ -1,48 +1,59 @@
 package epdisc
 
 import (
-	"errors"
+	"strings"
 
 	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
+	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 )
 
 // onConnectionStateChange is a callback which gets called by the ICE agent
 // whenever the state of the ICE connection has changed
-func (p *Peer) onConnectionStateChange(newState icex.ConnectionState) {
-	if p.ConnectionState() == icex.ConnectionStateClosing {
-		p.logger.Debug("Ignoring state transition as we are closing the session")
-		return
-	}
+// It is started as goroutine from pion/ice.Agent.
+func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
+	cs := ConnectionState(epdiscproto.NewConnectionState(ics))
 
-	p.setConnectionState(newState)
-
-	if newState == ice.ConnectionStateFailed || newState == ice.ConnectionStateDisconnected {
+	switch cs {
+	case ConnectionStateFailed, ConnectionStateDisconnected:
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
-	} else if newState == ice.ConnectionStateClosed {
-		go func() {
-			if err := p.createAgentWithBackoff(); err != nil {
-				p.logger.Error("Failed to connect", zap.Error(err))
-			}
-		}()
-	}
-}
 
-// onCandidate is a callback which gets called for each discovered local ICE candidate
-func (p *Peer) onCandidate(c ice.Candidate) {
-	if c == nil {
-		p.logger.Info("Candidate gathering completed")
-	} else {
-		p.logger.Debug("Found new local candidate", zap.Any("candidate", c))
+	case ConnectionStateClosed:
+		if _, ok := p.connectionState.SetIf(ConnectionStateClosed, ConnectionStateClosing); ok {
+			// Peer is now closed
+			// TODO: Stop run() goroutine?
+			break
+		} else if _, ok := p.connectionState.SetIf(ConnectionStateClosed, ConnectionStateRestarting); ok {
+			go p.createAgentWithBackoff()
+		}
 
-		if err := p.sendCandidate(c); err != nil {
-			p.logger.Error("Failed to send candidate", zap.Error(err))
+	case ConnectionStateConnected:
+		if _, ok := p.connectionState.SetIf(ConnectionStateConnected, ConnectionStateConnecting); !ok {
+			p.logger.Error("Invalid state transition",
+				zap.Any("peer_state", p.State()),
+				zap.Any("ice_state", cs))
+		}
+
+		cp, err := p.agent.GetSelectedCandidatePair()
+		if err != nil {
+			p.logger.Error("Failed to get selected candidate pair", zap.Error(err))
+			break
+		}
+
+		if err := p.updateProxy(cp, <-p.newConnection); err != nil {
+			p.logger.Error("Failed to update proxy", zap.Error(err))
+			break
+		}
+
+		// Signal to daemon that we are now connected
+		if _, ok := p.SetStateIf(daemon.PeerStateConnected, daemon.PeerStateConnecting); !ok {
+			p.logger.Error("Failed to change peer state to connected", zap.String("prev_state", strings.ToLower(p.State().String())))
 		}
 	}
 }
@@ -57,63 +68,76 @@ func (p *Peer) onSelectedCandidatePairChange(local, remote ice.Candidate) {
 }
 
 // onRemoteCredentials is a handler called for each received pair of remote Ufrag/Pwd via the signaling channel
-func (p *Peer) onRemoteCredentials(c *epdiscproto.Credentials) {
-	logger := p.logger.With(zap.Any("creds", c))
+func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
+	logger := p.logger.With(zap.Any("creds", creds))
 	logger.Info("Received remote credentials")
 
-	if p.isSessionRestart(c) {
+	if p.isSessionRestart(creds) {
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
 	} else {
-		if c.NeedCreds {
+		if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateIdle); !ok {
+			p.logger.Debug("Ignoring duplicated credentials")
+			return
+		}
+
+		p.SetStateIf(daemon.PeerStateConnecting, daemon.PeerStateClosed, daemon.PeerStateFailed, daemon.PeerStateNew)
+
+		p.remoteCredentials = creds
+
+		// Return our own credentials if requested
+		if creds.NeedCreds {
 			if err := p.sendCredentials(false); err != nil {
 				p.logger.Error("Failed to send credentials", zap.Error(err))
 				return
 			}
 		}
 
-		if p.setConnectionStateIf(icex.ConnectionStateIdle, ice.ConnectionStateNew) {
-			if err := p.agent.SetRemoteCredentials(c.Ufrag, c.Pwd); err != nil {
-				p.logger.Error("Failed to set remote credentials", zap.Error(err))
-				return
-			}
-
-			if err := p.agent.GatherCandidates(); err != nil {
-				p.logger.Error("Failed to gather candidates", zap.Error(err))
-				return
-			}
-			p.logger.Info("Started gathering local ICE candidates")
+		// Start gathering candidates
+		if err := p.agent.GatherCandidates(); err != nil {
+			p.logger.Error("failed to gather candidates", zap.Error(err))
+			return
 		}
+
+		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
 	}
 }
 
 // onRemoteCandidate is a handler called for each received candidate via the signaling channel
 func (p *Peer) onRemoteCandidate(c *epdiscproto.Candidate) {
 	logger := p.logger.With(zap.Any("candidate", c))
-	logger.Debug("Received remote candidate")
 
-	if err := p.addRemoteCandidate(c); err != nil {
-		p.logger.Error("Failed to add candidates", zap.Error(err))
+	ic, err := c.ICECandidate()
+	if err != nil {
+		logger.Error("Failed to remote candidate", zap.Error(err))
 		return
 	}
 
-	if p.setConnectionStateIf(ice.ConnectionStateNew, icex.ConnectionStateConnecting) {
-		ufrag, pwd, err := p.agent.GetRemoteUserCredentials()
-		if err != nil {
-			p.logger.Error("Failed to get remote credentials", zap.Error(err))
-			return
-		}
+	if err := p.agent.AddRemoteCandidate(ic); err != nil {
+		logger.Error("Failed to add remote candidate", zap.Error(err))
+		return
+	}
 
-		go func() {
-			if err := p.connect(ufrag, pwd); err != nil && !errors.Is(err, ice.ErrClosed) {
-				p.logger.Error("Failed to connect", zap.Error(err))
-				return
-			}
-		}()
+	logger.Debug("Added remote candidate to agent")
+}
+
+// onLocalCandidate is a callback which gets called for each discovered local ICE candidate
+func (p *Peer) onLocalCandidate(c ice.Candidate) {
+	if c == nil {
+		p.logger.Info("Candidate gathering completed")
+	} else {
+		logger := p.logger.With(zap.Any("candidate", c))
+
+		logger.Debug("Added local candidate to agent")
+
+		if err := p.sendCandidate(c); err != nil {
+			logger.Error("Failed to send candidate", zap.Error(err))
+		}
 	}
 }
 
+// onSignalingMessage is invoked for every message received via the signaling backend
 func (p *Peer) onSignalingMessage(msg *signaling.Message) {
 	if msg.Credentials != nil {
 		p.onRemoteCredentials(msg.Credentials)
@@ -127,4 +151,10 @@ func (p *Peer) onSignalingMessage(msg *signaling.Message) {
 // OnSignalingMessage is invoked for every message received via the signaling backend
 func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
 	p.signalingMessages <- msg
+}
+
+func (p *Peer) OnBindOpen(b *wg.Bind, port uint16) {
+	if conn, ok := p.proxy.(wg.BindConn); ok {
+		b.Conns = append(b.Conns, conn)
+	}
 }

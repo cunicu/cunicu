@@ -3,7 +3,7 @@ package config
 import (
 	"reflect"
 
-	"github.com/stv0g/cunicu/pkg/util"
+	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"golang.org/x/exp/maps"
 )
 
@@ -20,7 +20,7 @@ func DiffSettings(oldSettings, newSettings *Settings) map[string]Change {
 }
 
 func diff(oldSettings, newSettings map[string]any) map[string]Change {
-	added, removed, kept := util.SliceDiff(
+	added, removed, kept := slicesx.Diff(
 		maps.Keys(oldSettings),
 		maps.Keys(newSettings),
 	)
@@ -48,8 +48,8 @@ func diff(oldSettings, newSettings map[string]any) map[string]Change {
 		newStruct, newIsStruct := newSettings[key].(map[string]any)
 
 		if oldIsStruct && newIsStruct {
-			for skey, chg := range diff(oldStruct, newStruct) {
-				changes[key+"."+skey] = chg
+			for sKey, chg := range diff(oldStruct, newStruct) {
+				changes[key+"."+sKey] = chg
 			}
 		} else if !reflect.DeepEqual(oldSettings[key], newSettings[key]) {
 			changes[key] = Change{

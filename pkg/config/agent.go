@@ -11,7 +11,7 @@ import (
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/types/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -44,6 +44,7 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 			iceURLs = append(iceURLs, iu)
 
 		case "grpc":
+			u := u
 			g.Go(func() error {
 				name, opts, err := grpcx.ParseURL(u.String())
 				if err != nil {
@@ -119,7 +120,7 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 			}
 
 			// Filter URLs
-			cfg.Urls = util.SliceFilter(cfg.Urls, func(u *ice.URL) bool {
+			cfg.Urls = slices.Filter(cfg.Urls, func(u *ice.URL) bool {
 				if isRelay := u.Scheme == ice.SchemeTypeTURN || u.Scheme == ice.SchemeTypeTURNS; isRelay {
 					if c.ICE.RelayTCP != nil && *c.ICE.RelayTCP && u.Proto == ice.ProtoTypeUDP {
 						return false

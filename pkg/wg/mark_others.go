@@ -8,6 +8,6 @@ import (
 
 const fwmarkIoctl = 0
 
-func SetMark(conn *net.UDPConn, mark uint32) error {
+func SetMark(conn net.PacketConn, mark uint32) error {
 	return errNotSupported
 }

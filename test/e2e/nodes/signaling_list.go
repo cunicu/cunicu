@@ -4,7 +4,7 @@ package nodes
 import (
 	"fmt"
 
-	g "github.com/stv0g/gont/pkg"
+	g "github.com/stv0g/gont/v2/pkg"
 )
 
 type SignalingList []SignalingNode

@@ -20,15 +20,15 @@ func NewVerbosityLevelAt(l int) VerbosityLevel {
 	return a //nolint:govet
 }
 
-func (lvl VerbosityLevel) Enabled(l int) bool { //nolint:govet
+func (lvl *VerbosityLevel) Enabled(l int) bool {
 	return lvl.Level() >= l || l == 0
 }
 
-func (lvl VerbosityLevel) Level() int { //nolint:govet
+func (lvl *VerbosityLevel) Level() int {
 	return int(lvl.l.Load())
 }
 
 // SetLevel alters the logging level.
-func (lvl VerbosityLevel) SetLevel(l int) { //nolint:govet
+func (lvl *VerbosityLevel) SetLevel(l int) {
 	lvl.l.Store(int32(l))
 }

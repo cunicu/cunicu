@@ -3,29 +3,29 @@ package rpc
 import (
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func (s *Server) OnInterfaceAdded(i *core.Interface) {
+func (s *Server) OnInterfaceAdded(i *daemon.Interface) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_INTERFACE_ADDED,
 		Interface: i.Name(),
 	})
 }
 
-func (s *Server) OnInterfaceRemoved(i *core.Interface) {
+func (s *Server) OnInterfaceRemoved(i *daemon.Interface) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_INTERFACE_REMOVED,
 		Interface: i.Name(),
 	})
 }
 
-func (s *Server) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core.InterfaceModifier) {
+func (s *Server) OnInterfaceModified(i *daemon.Interface, old *wg.Interface, mod daemon.InterfaceModifier) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_INTERFACE_MODIFIED,
 		Interface: i.Name(),
@@ -37,7 +37,7 @@ func (s *Server) OnInterfaceModified(i *core.Interface, old *wg.Device, mod core
 	})
 }
 
-func (s *Server) OnPeerAdded(p *core.Peer) {
+func (s *Server) OnPeerAdded(p *daemon.Peer) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_PEER_ADDED,
 		Interface: p.Interface.Name(),
@@ -45,7 +45,7 @@ func (s *Server) OnPeerAdded(p *core.Peer) {
 	})
 }
 
-func (s *Server) OnPeerRemoved(p *core.Peer) {
+func (s *Server) OnPeerRemoved(p *daemon.Peer) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_PEER_REMOVED,
 		Interface: p.Interface.Name(),
@@ -53,7 +53,7 @@ func (s *Server) OnPeerRemoved(p *core.Peer) {
 	})
 }
 
-func (s *Server) OnPeerModified(p *core.Peer, old *wgtypes.Peer, mod core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (s *Server) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, mod daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_PEER_MODIFIED,
 		Interface: p.Interface.Name(),

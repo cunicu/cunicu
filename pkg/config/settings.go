@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 )
@@ -52,6 +53,26 @@ type ICESettings struct {
 
 	Username string `koanf:"username,omitempty"`
 	Password string `koanf:"password,omitempty"`
+}
+
+func (s *ICESettings) HasCandidateType(ct ice.CandidateType) bool {
+	for _, c := range s.CandidateTypes {
+		if ct == c.CandidateType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *ICESettings) HasNetworkType(nt ice.NetworkType) bool {
+	for _, n := range s.NetworkTypes {
+		if nt == n.NetworkType {
+			return true
+		}
+	}
+
+	return false
 }
 
 type RPCSettings struct {
@@ -107,7 +128,8 @@ type InterfaceSettings struct {
 	Blacklist []crypto.Key         `koanf:"blacklist,omitempty"`
 
 	// Endpoint discovery
-	ICE ICESettings `koanf:"ice,omitempty"`
+	ICE            ICESettings `koanf:"ice,omitempty"`
+	PortForwarding bool        `koanf:"port_forwarding,omitempty"`
 
 	// Route sync
 	RoutingTable int `koanf:"routing_table,omitempty"`

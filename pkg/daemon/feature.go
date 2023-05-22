@@ -6,46 +6,41 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	features       = map[string]*FeaturePlugin{}
-	featuresSorted []*FeaturePlugin
+	features = []*Feature{}
 )
 
-type FeaturePlugin struct {
-	Name        string
-	Description string
-
-	New   func(i *Interface) (Feature, error)
-	Order int
+type Feature struct {
+	New   func(i *Interface) (FeatureInterface, error)
+	order int
 }
 
-type SyncableFeature interface {
+type SyncableFeatureInterface interface {
 	Sync() error
 }
 
-type Feature interface {
+type FeatureInterface interface {
 	Start() error
 	Close() error
 }
 
-func RegisterFeature(name, desc string, ctor func(i *Interface) (Feature, error), order int) {
-	features[name] = &FeaturePlugin{
-		Name:        name,
-		Description: desc,
-		New:         ctor,
-		Order:       order,
+func RegisterFeature[I FeatureInterface](ctor func(i *Interface) (I, error), order int,
+) func(*Interface) I {
+	feature := &Feature{
+		New: func(i *Interface) (FeatureInterface, error) {
+			return ctor(i)
+		},
+		order: order,
 	}
-}
 
-func SortedFeatures() []*FeaturePlugin {
-	if featuresSorted == nil {
-		for _, feat := range features {
-			featuresSorted = append(featuresSorted, feat)
+	features = append(features, feature)
+	slices.SortFunc(features, func(a, b *Feature) bool { return a.order < b.order })
+
+	return func(i *Interface) (q I) {
+		if j, ok := i.features[feature]; ok {
+			if p, ok := j.(I); ok {
+				q = p
+			}
 		}
+		return
 	}
-
-	slices.SortFunc(featuresSorted, func(a, b *FeaturePlugin) bool {
-		return a.Order < b.Order
-	})
-
-	return featuresSorted
 }

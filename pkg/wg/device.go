@@ -7,15 +7,14 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/util"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-type Device wgtypes.Device
+type Interface wgtypes.Device
 
-func (d *Device) DumpEnv(wr io.Writer) error {
+func (d *Interface) DumpEnv(wr io.Writer) error {
 	var color, hideKeys bool
 
 	switch os.Getenv("WG_COLOR_MODE") {
@@ -45,7 +44,7 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	return d.Dump(wr, hideKeys)
 }
 
-func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
+func (d *Interface) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	wri := tty.NewIndenter(wr, "  ")
 
 	fmt.Fprintf(wr, tty.Mods("interface", tty.Bold, tty.FgGreen)+": "+tty.Mods("%s", tty.FgGreen)+"\n", d.Name)
@@ -141,7 +140,7 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	return nil
 }
 
-func (d *Device) Config() *Config {
+func (d *Interface) Config() *Config {
 	cfg := &Config{}
 
 	if crypto.Key(d.PrivateKey).IsSet() {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/daemon"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/types"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -24,14 +24,14 @@ type Server struct {
 	waitGroup sync.WaitGroup
 	waitOnce  sync.Once
 
-	events *util.FanOut[*rpcproto.Event]
+	events *types.FanOut[*rpcproto.Event]
 
 	logger *zap.Logger
 }
 
 func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 	s := &Server{
-		events: util.NewFanOut[*rpcproto.Event](1),
+		events: types.NewFanOut[*rpcproto.Event](1),
 		logger: zap.L().Named("rpc.server"),
 	}
 
