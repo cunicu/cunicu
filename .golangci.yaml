@@ -3,9 +3,6 @@ run:
   - ".*\\.pb\\.go$"
   - ".*_grpc\\.pb\\.go$"
 
-  skip-dirs:
-  - pkg/signaling/k8s/apis/cunicu/v1
-
 issues:
   exclude-rules:
   - path: '(.+)_test\.go'

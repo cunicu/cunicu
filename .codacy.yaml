@@ -2,4 +2,3 @@
 exclude_paths:
 - docs/usage/**
 - pkg/pb/*.pb.go
-- pkg/signaling/k8s/client/**

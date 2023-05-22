@@ -17,7 +17,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
-	"k8s.io/klog/v2"
 )
 
 func TestSuite(t *testing.T) {
@@ -76,11 +75,6 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		It("can log via gRPC logger", func() {
 			scope = "grpc"
 			grpclog.Info(msg)
-		})
-
-		It("can log via k8s logger", func() {
-			scope = "backend.k8s"
-			klog.Info(msg)
 		})
 	})
 

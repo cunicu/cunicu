@@ -64,7 +64,6 @@ install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go install github.com/onsi/ginkgo/v2/ginkgo@v2.8.4
-	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 	go install github.com/amobe/gocov-merger@latest
 	go install github.com/jandelgado/gcov2lcov@latest
 	go install github.com/goreleaser/goreleaser@latest
