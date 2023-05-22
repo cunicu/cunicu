@@ -39,7 +39,7 @@ require (
 	github.com/gopacket/gopacket v1.1.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.9.5 // test-only
 	github.com/onsi/gomega v1.27.7 // test-only
-	github.com/stv0g/gont/v2 v2.3.2 // test-only
+	github.com/stv0g/gont/v2 v2.3.3 // test-only
 )
 
 require (

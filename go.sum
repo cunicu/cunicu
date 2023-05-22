@@ -435,6 +435,8 @@ github.com/stretchr/testify v1.8.3 h1:RP3t2pwF7cMEbC1dqtB6poj3niw/9gnV4Cjg5oW5gt
 github.com/stretchr/testify v1.8.3/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stv0g/gont/v2 v2.3.2 h1:Q/SfaImvUOLQrYbfMuAI2aMz6ufjQlqdhtwOrKMpY6k=
 github.com/stv0g/gont/v2 v2.3.2/go.mod h1:Wht6gpBFcdm0dzgrdc7vSH1dpCdGe0yM4D/Mv8KdJjA=
+github.com/stv0g/gont/v2 v2.3.3 h1:kV6pgyuXnnMBlx3OVLE91JzbcBUUKZ/uB090TMDZ+fQ=
+github.com/stv0g/gont/v2 v2.3.3/go.mod h1:Wht6gpBFcdm0dzgrdc7vSH1dpCdGe0yM4D/Mv8KdJjA=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/vishvananda/netlink v1.2.1-beta.2.0.20221214185949-378a404a26f0 h1:CmIQLx2ltHYW5WpfV0x3rCS3SBXFBkzI3xKpSILlWzs=
