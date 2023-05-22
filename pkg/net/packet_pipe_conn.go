@@ -31,7 +31,7 @@ func (c *PacketPipeConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 	return c.rx.ReadFrom(p)
 }
 
-func (c *PacketPipeConn) WriteTo(p []byte, addr net.Addr) (n int, err error) {
+func (c *PacketPipeConn) WriteTo(p []byte, _ net.Addr) (n int, err error) {
 	return c.tx.WriteFrom(p, c.rx.LocalAddr())
 }
 
@@ -40,11 +40,7 @@ func (c *PacketPipeConn) Close() error {
 		return err
 	}
 
-	if err := c.tx.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.tx.Close()
 }
 
 func (c *PacketPipeConn) LocalAddr() net.Addr {
@@ -56,11 +52,7 @@ func (c *PacketPipeConn) SetDeadline(t time.Time) error {
 		return err
 	}
 
-	if err := c.tx.SetWriteDeadline(t); err != nil {
-		return err
-	}
-
-	return nil
+	return c.tx.SetWriteDeadline(t)
 }
 
 func (c *PacketPipeConn) SetReadDeadline(t time.Time) error {

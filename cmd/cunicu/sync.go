@@ -20,7 +20,7 @@ func init() { //nolint:gochecknoinits
 	addClientCommand(rootCmd, cmd)
 }
 
-func sync(cmd *cobra.Command, args []string) error {
+func sync(_ *cobra.Command, _ []string) error {
 	_, err := rpcClient.Sync(context.Background(), &proto.Empty{})
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)

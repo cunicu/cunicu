@@ -25,7 +25,7 @@ func init() { //nolint:gochecknoinits
 	addClientCommand(wgCmd, cmd)
 }
 
-func wgShowConf(cmd *cobra.Command, args []string) error {
+func wgShowConf(_ *cobra.Command, args []string) error {
 	intfName := args[0]
 
 	sts, err := rpcClient.GetStatus(context.Background(), &rpcproto.GetStatusParams{

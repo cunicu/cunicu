@@ -152,4 +152,4 @@ func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 	i.ApplyDescription(p)
 }
 
-func (i *Interface) OnPeerRemoved(p *daemon.Peer) {}
+func (i *Interface) OnPeerRemoved(_ *daemon.Peer) {}

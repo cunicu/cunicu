@@ -13,7 +13,7 @@ type readyHandler struct {
 	ready chan any
 }
 
-func (h *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
+func (h *readyHandler) OnSignalingBackendReady(_ signaling.Backend) {
 	close(h.ready)
 }
 

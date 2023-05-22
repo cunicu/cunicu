@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
@@ -18,8 +19,8 @@ import (
 
 var errInvalidURLScheme = errors.New("invalid ICE URL scheme")
 
-func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*ice.URL, error) { //nolint:gocognit
-	iceURLs := []*ice.URL{}
+func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*stun.URI, error) { //nolint:gocognit
+	iceURLs := []*stun.URI{}
 
 	g := errgroup.Group{}
 
@@ -68,7 +69,7 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*i
 				}
 
 				for _, svr := range resp.Relays {
-					u, err := ice.ParseURL(svr.Url)
+					u, err := stun.ParseURI(svr.Url)
 					if err != nil {
 						return fmt.Errorf("failed to parse STUN/TURN URL '%s': %w", u, err)
 					}
@@ -120,13 +121,13 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 			}
 
 			// Filter URLs
-			cfg.Urls = slices.Filter(cfg.Urls, func(u *ice.URL) bool {
-				if isRelay := u.Scheme == ice.SchemeTypeTURN || u.Scheme == ice.SchemeTypeTURNS; isRelay {
-					if c.ICE.RelayTCP != nil && *c.ICE.RelayTCP && u.Proto == ice.ProtoTypeUDP {
+			cfg.Urls = slices.Filter(cfg.Urls, func(u *stun.URI) bool {
+				if isRelay := u.Scheme == stun.SchemeTypeTURN || u.Scheme == stun.SchemeTypeTURNS; isRelay {
+					if c.ICE.RelayTCP != nil && *c.ICE.RelayTCP && u.Proto == stun.ProtoTypeUDP {
 						return false
 					}
 
-					if c.ICE.RelayTLS != nil && *c.ICE.RelayTLS && u.Scheme == ice.SchemeTypeTURN {
+					if c.ICE.RelayTLS != nil && *c.ICE.RelayTLS && u.Scheme == stun.SchemeTypeTURN {
 						return false
 					}
 				}

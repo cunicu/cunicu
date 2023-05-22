@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
@@ -38,33 +39,33 @@ var _ = Describe("Agent config", func() {
 			switch exp := exp.(type) {
 			case string:
 				Expect(err).To(MatchError(exp))
-			case *ice.URL:
+			case *stun.URI:
 				Expect(err).To(Succeed())
 				Expect(aCfg.Urls).To(HaveLen(1))
 				Expect(aCfg.Urls).To(ContainElements(exp))
 			}
 		},
-		Entry("url1", []string{"--ice-url", "stun:server1", "--ice-username", "user1", "--ice-password", "pass1"}, &ice.URL{
-			Scheme:   ice.SchemeTypeSTUN,
+		Entry("url1", []string{"--ice-url", "stun:server1", "--ice-username", "user1", "--ice-password", "pass1"}, &stun.URI{
+			Scheme:   stun.SchemeTypeSTUN,
 			Host:     "server1",
 			Port:     3478,
-			Proto:    ice.ProtoTypeUDP,
+			Proto:    stun.ProtoTypeUDP,
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url2", []string{"--ice-url", "turn:server2:1234?transport=tcp", "--ice-username", "user1", "--ice-password", "pass1"}, &ice.URL{
-			Scheme:   ice.SchemeTypeTURN,
+		Entry("url2", []string{"--ice-url", "turn:server2:1234?transport=tcp", "--ice-username", "user1", "--ice-password", "pass1"}, &stun.URI{
+			Scheme:   stun.SchemeTypeTURN,
 			Host:     "server2",
 			Port:     1234,
-			Proto:    ice.ProtoTypeTCP,
+			Proto:    stun.ProtoTypeTCP,
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url3", []string{"--ice-url", "turn:user3:pass3@server3:1234?transport=tcp", "--ice-password", "pass3"}, &ice.URL{
-			Scheme:   ice.SchemeTypeTURN,
+		Entry("url3", []string{"--ice-url", "turn:user3:pass3@server3:1234?transport=tcp", "--ice-password", "pass3"}, &stun.URI{
+			Scheme:   stun.SchemeTypeTURN,
 			Host:     "server3",
 			Port:     1234,
-			Proto:    ice.ProtoTypeTCP,
+			Proto:    stun.ProtoTypeTCP,
 			Username: "user3",
 			Password: "pass3",
 		}),
@@ -132,12 +133,12 @@ var _ = Describe("Agent config", func() {
 			Expect(urls).To(HaveLen(2))
 			for _, u := range urls {
 				switch u.Scheme {
-				case ice.SchemeTypeSTUN:
+				case stun.SchemeTypeSTUN:
 					Expect(u.String()).To(Equal(stunRelay.URL))
 					Expect(u.Username).To(BeEmpty())
 					Expect(u.Password).To(BeEmpty())
 
-				case ice.SchemeTypeTURN:
+				case stun.SchemeTypeTURN:
 					Expect(u.String()).To(Equal(turnRelay.URL))
 
 					user, pass, exp := turnRelay.GetCredentials(pk.String())
@@ -148,7 +149,7 @@ var _ = Describe("Agent config", func() {
 					}))
 					Expect(u.Password).To(Equal(pass))
 
-				case ice.SchemeTypeSTUNS, ice.SchemeTypeTURNS:
+				case stun.SchemeTypeSTUNS, stun.SchemeTypeTURNS, stun.SchemeTypeUnknown:
 				}
 			}
 		})

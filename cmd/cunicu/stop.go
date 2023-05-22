@@ -19,7 +19,7 @@ func init() { //nolint:gochecknoinits
 	addClientCommand(rootCmd, cmd)
 }
 
-func stop(cmd *cobra.Command, args []string) error {
+func stop(_ *cobra.Command, _ []string) error {
 	if _, err := rpcClient.Stop(context.Background(), &proto.Empty{}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}

@@ -53,4 +53,4 @@ func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 	}
 }
 
-func (i *Interface) OnPeerRemoved(p *daemon.Peer) {}
+func (i *Interface) OnPeerRemoved(_ *daemon.Peer) {}

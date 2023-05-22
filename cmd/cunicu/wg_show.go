@@ -42,7 +42,7 @@ Subsequent lines are printed for each peer and contain in order separated by tab
 	addClientCommand(wgCmd, cmd)
 }
 
-func wgShowValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func wgShowValidArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 	comps := []string{}
 
 	if len(args) == 0 {
@@ -68,7 +68,7 @@ func wgShowValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]st
 	return comps, cobra.ShellCompDirectiveNoFileComp
 }
 
-func wgShow(cmd *cobra.Command, args []string) error {
+func wgShow(_ *cobra.Command, args []string) error {
 	intf, mode, field, err := parseWgShowArgs(args)
 	if err != nil {
 		return fmt.Errorf("failed to parse arguments: %w", err)

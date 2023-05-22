@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 )
 
 var (
@@ -17,7 +18,7 @@ type URL struct {
 }
 
 func (u *URL) UnmarshalText(text []byte) error {
-	up, err := ice.ParseURL(string(text))
+	up, err := stun.ParseURI(string(text))
 	if err != nil {
 		return err
 	}

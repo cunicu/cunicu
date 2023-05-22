@@ -46,4 +46,4 @@ func (h *peerHandler) OnInterfaceAdded(i *Interface) {
 	i.AddPeerHandler(h)
 }
 
-func (h *peerHandler) OnInterfaceRemoved(i *Interface) {}
+func (h *peerHandler) OnInterfaceRemoved(_ *Interface) {}

@@ -369,7 +369,7 @@ func (i *Interface) ForEachFeature(cb func(fi FeatureInterface) error) error {
 	return nil
 }
 
-func (i *Interface) OnInterfaceModified(_ *Interface, old *wg.Interface, mod InterfaceModifier) {
+func (i *Interface) OnInterfaceModified(_ *Interface, _ *wg.Interface, mod InterfaceModifier) {
 	if mod&InterfaceModifiedListenPort == 0 {
 		return
 	}

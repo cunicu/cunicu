@@ -54,7 +54,7 @@ func (i *Interface) OnPeerRemoved(p *daemon.Peer) {
 	}
 }
 
-func (i *Interface) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, _ daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	pk := p.PublicKey()
 
 	// Determine peer gateway address by using the first IPv4 and IPv6 prefix

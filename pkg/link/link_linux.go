@@ -187,7 +187,7 @@ func (d *LinuxLink) DeleteRoute(dst net.IPNet, table int) error {
 	return netlink.RouteDel(route)
 }
 
-func DetectMTU(ip net.IP, fwmark int) (int, error) {
+func DetectMTU(ip net.IP, _ int) (int, error) {
 	// TODO: How do we use the correct fwmark here?
 	rts, err := netlink.RouteGet(ip)
 	if err != nil {
@@ -197,7 +197,7 @@ func DetectMTU(ip net.IP, fwmark int) (int, error) {
 	return mtuFromRoutes(rts)
 }
 
-func DetectDefaultMTU(fwmark int) (int, error) {
+func DetectDefaultMTU(_ int) (int, error) {
 	// TODO: How do we use the correct fwmark here?
 	flt := &netlink.Route{
 		Dst: nil,

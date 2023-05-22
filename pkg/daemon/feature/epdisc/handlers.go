@@ -32,7 +32,7 @@ func (i *Interface) OnPeerRemoved(cp *daemon.Peer) {
 	delete(i.Peers, cp)
 }
 
-func (i *Interface) OnPeerModified(cp *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(cp *daemon.Peer, _ *wgtypes.Peer, m daemon.PeerModifier, _, _ []net.IPNet) {
 	p := i.Peers[cp]
 
 	if m.Is(daemon.PeerModifiedEndpoint) {
@@ -46,7 +46,7 @@ func (i *Interface) OnPeerModified(cp *daemon.Peer, old *wgtypes.Peer, m daemon.
 	}
 }
 
-func (i *Interface) OnBindOpen(b *wg.Bind, port uint16) {
+func (i *Interface) OnBindOpen(b *wg.Bind, _ uint16) {
 	logger := i.logger.Named("bind_conn")
 
 	for _, muxConn := range i.muxConns {

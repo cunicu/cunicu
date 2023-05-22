@@ -46,11 +46,7 @@ func (c *SplitConn) Close() error {
 		return err
 	}
 
-	if err := c.send.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.send.Close()
 }
 
 func (c *SplitConn) LocalAddr() net.Addr {
@@ -62,11 +58,7 @@ func (c *SplitConn) SetDeadline(t time.Time) error {
 		return err
 	}
 
-	if err := c.send.SetWriteDeadline(t); err != nil {
-		return err
-	}
-
-	return nil
+	return c.send.SetWriteDeadline(t)
 }
 
 func (c *SplitConn) SetReadDeadline(t time.Time) error {

@@ -95,6 +95,6 @@ func (p *BindProxy) ListenPort() (uint16, bool) {
 	return 0, false
 }
 
-func (p *BindProxy) SetMark(mark uint32) error {
+func (p *BindProxy) SetMark(_ uint32) error {
 	return errNotSupported
 }

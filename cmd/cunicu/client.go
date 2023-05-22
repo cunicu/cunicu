@@ -23,7 +23,7 @@ func addClientCommand(rcmd, cmd *cobra.Command) {
 	rcmd.AddCommand(cmd)
 }
 
-func rpcConnect(cmd *cobra.Command, args []string) error {
+func rpcConnect(_ *cobra.Command, _ []string) error {
 	var err error
 
 	if rpcClient, err = rpc.Connect(rpcSockPath); err != nil {
@@ -33,6 +33,6 @@ func rpcConnect(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func rpcDisconnect(cmd *cobra.Command, args []string) error {
+func rpcDisconnect(_ *cobra.Command, _ []string) error {
 	return rpcClient.Close()
 }
