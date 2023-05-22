@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
@@ -54,45 +55,45 @@ var _ = Describe("Marshaling of ICE types", func() {
 
 	Context("URL", func() {
 		t := []TableEntry{
-			Entry("stun", "stun:cunicu.0l.de:1234", ice.URL{
-				Scheme: ice.SchemeTypeSTUN,
+			Entry("stun", "stun:cunicu.0l.de:1234", stun.URI{
+				Scheme: stun.SchemeTypeSTUN,
 				Host:   "cunicu.0l.de",
 				Port:   1234,
-				Proto:  ice.ProtoTypeUDP,
+				Proto:  stun.ProtoTypeUDP,
 			}),
-			Entry("stuns", "stuns:cunicu.0l.de:1234", ice.URL{
-				Scheme: ice.SchemeTypeSTUNS,
+			Entry("stuns", "stuns:cunicu.0l.de:1234", stun.URI{
+				Scheme: stun.SchemeTypeSTUNS,
 				Host:   "cunicu.0l.de",
 				Port:   1234,
-				Proto:  ice.ProtoTypeTCP,
+				Proto:  stun.ProtoTypeTCP,
 			}),
-			Entry("turn-udp", "turn:cunicu.0l.de:1234?transport=udp", ice.URL{
-				Scheme: ice.SchemeTypeTURN,
+			Entry("turn-udp", "turn:cunicu.0l.de:1234?transport=udp", stun.URI{
+				Scheme: stun.SchemeTypeTURN,
 				Host:   "cunicu.0l.de",
 				Port:   1234,
-				Proto:  ice.ProtoTypeUDP,
+				Proto:  stun.ProtoTypeUDP,
 			}),
-			Entry("turn-tcp", "turn:cunicu.0l.de:1234?transport=tcp", ice.URL{
-				Scheme: ice.SchemeTypeTURN,
+			Entry("turn-tcp", "turn:cunicu.0l.de:1234?transport=tcp", stun.URI{
+				Scheme: stun.SchemeTypeTURN,
 				Host:   "cunicu.0l.de",
 				Port:   1234,
-				Proto:  ice.ProtoTypeTCP,
+				Proto:  stun.ProtoTypeTCP,
 			}),
-			Entry("turns", "turns:cunicu.0l.de:1234?transport=tcp", ice.URL{
-				Scheme: ice.SchemeTypeTURNS,
+			Entry("turns", "turns:cunicu.0l.de:1234?transport=tcp", stun.URI{
+				Scheme: stun.SchemeTypeTURNS,
 				Host:   "cunicu.0l.de",
 				Port:   1234,
-				Proto:  ice.ProtoTypeTCP,
+				Proto:  stun.ProtoTypeTCP,
 			}),
 		}
 
-		DescribeTable("Unmarshal", func(urlStr string, url ice.URL) {
+		DescribeTable("Unmarshal", func(urlStr string, url stun.URI) {
 			var u icex.URL
 			Expect(u.UnmarshalText([]byte(urlStr))).To(Succeed())
 			Expect(u.URL).To(Equal(url))
 		}, t)
 
-		DescribeTable("Marshal", func(urlStr string, url ice.URL) {
+		DescribeTable("Marshal", func(urlStr string, url stun.URI) {
 			u := icex.URL{url}
 			m, err := u.MarshalText()
 			Expect(err).To(Succeed())

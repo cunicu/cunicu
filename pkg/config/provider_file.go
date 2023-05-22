@@ -132,7 +132,7 @@ func (p *RemoteFileProvider) hasChanged() (bool, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("%s %s: %w", errFailedToFetch, p.url, err)
+		return false, fmt.Errorf("%w %s: %w", errFailedToFetch, p.url, err)
 	} else if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("%w: %s: %s", errFailedToFetch, p.url, resp.Status)
 	}

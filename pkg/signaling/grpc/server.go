@@ -121,7 +121,7 @@ out:
 	return nil
 }
 
-func (s *Server) Publish(ctx context.Context, env *signaling.Envelope) (*proto.Empty, error) {
+func (s *Server) Publish(_ context.Context, env *signaling.Envelope) (*proto.Empty, error) {
 	var err error
 	var pkRecipient, pkSender crypto.Key
 

@@ -18,7 +18,7 @@ type readyHandler struct {
 	Count atomic.Uint32
 }
 
-func (r *readyHandler) OnSignalingBackendReady(b signaling.Backend) {
+func (r *readyHandler) OnSignalingBackendReady(_ signaling.Backend) {
 	r.Count.Add(1)
 }
 

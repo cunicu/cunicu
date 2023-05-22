@@ -103,11 +103,7 @@ func FindUserDevice(name string) (Device, error) {
 func (d *UserDevice) Close() error {
 	d.Device.Close()
 
-	if err := d.apiListener.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return d.apiListener.Close()
 }
 
 func (d *UserDevice) Bind() *wg.Bind {

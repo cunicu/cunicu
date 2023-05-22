@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 )
 
-func ParseURL(urlStr string) (*ice.URL, string, string, url.Values, error) {
+func ParseURL(urlStr string) (*stun.URI, string, string, url.Values, error) {
 	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, "", "", nil, err
@@ -37,7 +37,7 @@ func ParseURL(urlStr string) (*ice.URL, string, string, url.Values, error) {
 		u.RawQuery = ""
 	}
 
-	iu, err := ice.ParseURL(u.String())
+	iu, err := stun.ParseURI(u.String())
 	if err != nil {
 		return nil, "", "", nil, err
 	}

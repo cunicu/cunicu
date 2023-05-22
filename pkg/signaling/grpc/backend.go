@@ -162,7 +162,7 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 	return nil
 }
 
-func (b *Backend) unsubscribeFromServer(ctx context.Context, pk *crypto.Key) error {
+func (b *Backend) unsubscribeFromServer(_ context.Context, _ *crypto.Key) error {
 	// TODO: Cancel subscription stream
 
 	return nil

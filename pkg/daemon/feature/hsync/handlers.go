@@ -16,13 +16,13 @@ func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 	p.AddModifiedHandler(i)
 }
 
-func (i *Interface) OnPeerRemoved(p *daemon.Peer) {
+func (i *Interface) OnPeerRemoved(_ *daemon.Peer) {
 	if err := i.Sync(); err != nil {
 		i.logger.Error("Failed to update hosts file", zap.Error(err))
 	}
 }
 
-func (i *Interface) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(_ *daemon.Peer, _ *wgtypes.Peer, m daemon.PeerModifier, _, _ []net.IPNet) {
 	// Only update if the name has changed
 	if m.Is(daemon.PeerModifiedName) {
 		if err := i.Sync(); err != nil {

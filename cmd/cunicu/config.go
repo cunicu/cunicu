@@ -92,7 +92,7 @@ func getCompletions(typ reflect.Type, haveCompleted, toComplete string) ([]strin
 	return comps, flags
 }
 
-func validConfigSettings(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func validConfigSettings(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) > 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -102,7 +102,7 @@ func validConfigSettings(cmd *cobra.Command, args []string, toComplete string) (
 	return getCompletions(t, "", toComplete)
 }
 
-func set(cmd *cobra.Command, args []string) {
+func set(_ *cobra.Command, args []string) {
 	settings := map[string]string{
 		args[0]: args[1],
 	}
@@ -114,7 +114,7 @@ func set(cmd *cobra.Command, args []string) {
 	}
 }
 
-func get(cmd *cobra.Command, args []string) {
+func get(_ *cobra.Command, args []string) {
 	params := &rpcproto.GetConfigParams{}
 
 	if len(args) > 0 {
@@ -134,7 +134,7 @@ func get(cmd *cobra.Command, args []string) {
 	}
 }
 
-func reload(cmd *cobra.Command, args []string) error {
+func reload(_ *cobra.Command, _ []string) error {
 	if _, err := rpcClient.ReloadConfig(context.Background(), &proto.Empty{}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}

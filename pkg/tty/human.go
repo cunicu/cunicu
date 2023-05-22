@@ -69,7 +69,7 @@ func PrettyBytes(b int64) string {
 	var f float32
 	var i int
 
-	for i, f = 0, float32(b); i < len(suffices) && f >= 1024; i, f = i+1, f/1024 {
+	for i, f = 0, float32(b); i < len(suffices) && f >= 1024; i, f = i+1, f/1024 { //nolint:revive
 	}
 
 	if i == 0 {

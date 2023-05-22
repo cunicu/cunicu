@@ -91,7 +91,7 @@ func (h *WebHook) OnInterfaceRemoved(i *daemon.Interface) {
 	})
 }
 
-func (h *WebHook) OnInterfaceModified(i *daemon.Interface, old *wg.Interface, m daemon.InterfaceModifier) {
+func (h *WebHook) OnInterfaceModified(i *daemon.Interface, _ *wg.Interface, m daemon.InterfaceModifier) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:      rpcproto.EventType_INTERFACE_MODIFIED,
 		Interface: marshalRedactedInterface(i),
@@ -113,7 +113,7 @@ func (h *WebHook) OnPeerRemoved(p *daemon.Peer) {
 	})
 }
 
-func (h *WebHook) OnPeerModified(p *daemon.Peer, oldPeer *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (h *WebHook) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, m daemon.PeerModifier, _, _ []net.IPNet) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:     rpcproto.EventType_PEER_MODIFIED,
 		Peer:     p.Marshal().Redact(),
@@ -121,7 +121,7 @@ func (h *WebHook) OnPeerModified(p *daemon.Peer, oldPeer *wgtypes.Peer, m daemon
 	})
 }
 
-func (h *WebHook) OnPeerStateChanged(p *daemon.Peer, newState, prevState daemon.PeerState) {
+func (h *WebHook) OnPeerStateChanged(p *daemon.Peer, _, _ daemon.PeerState) {
 	pm := p.Marshal().Redact()
 
 	if epi := epdisc.Get(p.Interface); epi != nil {

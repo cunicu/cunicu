@@ -32,9 +32,9 @@ func NftablesUserDataGet(udata []byte, styp NftablesUserDataType) []byte {
 
 		if len(udata) < 2+length {
 			break
-		} else {
-			udata = udata[2+length:]
 		}
+
+		udata = udata[2+length:]
 	}
 
 	return nil

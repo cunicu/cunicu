@@ -13,7 +13,7 @@ import (
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/maps"
 	"github.com/miekg/dns"
-	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
@@ -276,11 +276,11 @@ func lookupICEUrlSRV(name, svc, proto string) ([]string, error) {
 
 	urls := []string{}
 	for _, addr := range addrs {
-		url := ice.URL{
-			Scheme: ice.NewSchemeType(svc),
+		url := stun.URI{
+			Scheme: stun.NewSchemeType(svc),
 			Host:   addr.Target,
 			Port:   int(addr.Port),
-			Proto:  ice.NewProtoType(proto),
+			Proto:  stun.NewProtoType(proto),
 		}
 		urls = append(urls, url.String())
 	}

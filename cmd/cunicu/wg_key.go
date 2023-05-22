@@ -40,7 +40,7 @@ $ wg genkey | tee private.key | wg pubkey > public.key`,
 	wgCmd.AddCommand(pubKeyCmd)
 }
 
-func wgGenKey(cmd *cobra.Command, args []string) error {
+func wgGenKey(_ *cobra.Command, _ []string) error {
 	key, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
 		os.Exit(1)
@@ -51,7 +51,7 @@ func wgGenKey(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func wgPubKey(cmd *cobra.Command, args []string) error {
+func wgPubKey(_ *cobra.Command, _ []string) error {
 	privKeyStrBytes, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return fmt.Errorf("failed to read from stdin: %w", err)

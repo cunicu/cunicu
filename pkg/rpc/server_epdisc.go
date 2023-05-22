@@ -27,7 +27,7 @@ func NewEndpointDiscoveryServer(s *Server) *EndpointDiscoveryServer {
 	return eps
 }
 
-func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcproto.RestartPeerParams) (*proto.Empty, error) {
+func (s *EndpointDiscoveryServer) RestartPeer(_ context.Context, params *rpcproto.RestartPeerParams) (*proto.Empty, error) {
 	di := s.daemon.InterfaceByName(params.Intf)
 	if di == nil {
 		return nil, status.Errorf(codes.NotFound, "unknown interface %s", params.Intf)

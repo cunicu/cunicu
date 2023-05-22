@@ -16,7 +16,7 @@ import (
 // whenever the state of the ICE connection has changed
 // It is started as goroutine from pion/ice.Agent.
 func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
-	cs := ConnectionState(epdiscproto.NewConnectionState(ics))
+	cs := epdiscproto.NewConnectionState(ics)
 
 	switch cs {
 	case ConnectionStateFailed, ConnectionStateDisconnected:
@@ -55,6 +55,8 @@ func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
 		if _, ok := p.SetStateIf(daemon.PeerStateConnected, daemon.PeerStateConnecting); !ok {
 			p.logger.Error("Failed to change peer state to connected", zap.String("prev_state", strings.ToLower(p.State().String())))
 		}
+
+	default:
 	}
 }
 
@@ -149,11 +151,11 @@ func (p *Peer) onSignalingMessage(msg *signaling.Message) {
 }
 
 // OnSignalingMessage is invoked for every message received via the signaling backend
-func (p *Peer) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
+func (p *Peer) OnSignalingMessage(_ *crypto.PublicKeyPair, msg *signaling.Message) {
 	p.signalingMessages <- msg
 }
 
-func (p *Peer) OnBindOpen(b *wg.Bind, port uint16) {
+func (p *Peer) OnBindOpen(b *wg.Bind, _ uint16) {
 	if conn, ok := p.proxy.(wg.BindConn); ok {
 		b.Conns = append(b.Conns, conn)
 	}

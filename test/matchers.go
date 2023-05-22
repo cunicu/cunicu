@@ -69,10 +69,10 @@ func (matcher *eventMatcher[E]) Match(actual any) (success bool, err error) {
 	}
 }
 
-func (matcher *eventMatcher[E]) FailureMessage(actual any) (message string) {
+func (matcher *eventMatcher[E]) FailureMessage(_ any) (message string) {
 	return "Did not receive expected event"
 }
 
-func (matcher *eventMatcher[E]) NegatedFailureMessage(actual any) (message string) {
+func (matcher *eventMatcher[E]) NegatedFailureMessage(_ any) (message string) {
 	return "Received event unexpectedly"
 }

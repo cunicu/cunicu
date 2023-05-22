@@ -54,7 +54,7 @@ func NewDaemonServer(s *Server, d *daemon.Daemon) *DaemonServer {
 	return ds
 }
 
-func (s *DaemonServer) StreamEvents(params *proto.Empty, stream rpcproto.Daemon_StreamEventsServer) error {
+func (s *DaemonServer) StreamEvents(_ *proto.Empty, stream rpcproto.Daemon_StreamEventsServer) error {
 	// Send initial connection state of all peers
 	s.SendPeerStates(stream)
 
@@ -87,7 +87,7 @@ func (s *DaemonServer) GetBuildInfo(context.Context, *proto.Empty) (*proto.Build
 	return buildinfo.BuildInfo(), nil
 }
 
-func (s *DaemonServer) UnWait(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+func (s *DaemonServer) UnWait(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
 	err := status.Error(codes.AlreadyExists, "RPC socket has already been unwaited")
 
 	s.waitOnce.Do(func() {
@@ -98,13 +98,13 @@ func (s *DaemonServer) UnWait(ctx context.Context, params *proto.Empty) (*proto.
 	return &proto.Empty{}, err
 }
 
-func (s *DaemonServer) Stop(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+func (s *DaemonServer) Stop(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
 	s.Daemon.Stop()
 
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+func (s *DaemonServer) Restart(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
 	if osx.ReexecSelfSupported {
 		s.Daemon.Restart()
 	} else {
@@ -114,7 +114,7 @@ func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+func (s *DaemonServer) Sync(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
 	if err := s.Daemon.Sync(); err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to sync: %s", err)
 	}
@@ -122,7 +122,7 @@ func (s *DaemonServer) Sync(ctx context.Context, params *proto.Empty) (*proto.Em
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) { //nolint:gocognit
+func (s *DaemonServer) GetStatus(_ context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) { //nolint:gocognit
 	var err error
 	var pk crypto.Key
 
@@ -178,7 +178,7 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 	}, nil
 }
 
-func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParams) (*proto.Empty, error) {
+func (s *DaemonServer) SetConfig(_ context.Context, p *rpcproto.SetConfigParams) (*proto.Empty, error) {
 	errs := []error{}
 	settings := map[string]any{}
 
@@ -240,7 +240,7 @@ func (s *DaemonServer) SetConfig(ctx context.Context, p *rpcproto.SetConfigParam
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParams) (*rpcproto.GetConfigResp, error) {
+func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams) (*rpcproto.GetConfigResp, error) {
 	settings := map[string]string{}
 
 	match := func(key string) bool {
@@ -271,7 +271,7 @@ func (s *DaemonServer) GetConfig(ctx context.Context, p *rpcproto.GetConfigParam
 	}, nil
 }
 
-func (s *DaemonServer) ReloadConfig(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
+func (s *DaemonServer) ReloadConfig(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
 	if _, err := s.Config.Reload(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to reload configuration: %s", err)
 	}
@@ -279,7 +279,7 @@ func (s *DaemonServer) ReloadConfig(ctx context.Context, params *proto.Empty) (*
 	return &proto.Empty{}, nil
 }
 
-func (s *DaemonServer) AddPeer(ctx context.Context, params *rpcproto.AddPeerParams) (*rpcproto.AddPeerResp, error) {
+func (s *DaemonServer) AddPeer(_ context.Context, params *rpcproto.AddPeerParams) (*rpcproto.AddPeerResp, error) {
 	i := s.InterfaceByName(params.Interface)
 	if i == nil {
 		return nil, status.Errorf(codes.NotFound, "Interface %s does not exist", params.Interface)
@@ -335,7 +335,7 @@ func (s *DaemonServer) OnInterfaceAdded(i *daemon.Interface) {
 	i.AddPeerStateChangeHandler(s)
 }
 
-func (s *DaemonServer) OnInterfaceRemoved(i *daemon.Interface) {
+func (s *DaemonServer) OnInterfaceRemoved(_ *daemon.Interface) {
 }
 
 func (s *DaemonServer) SendPeerStates(stream rpcproto.Daemon_StreamEventsServer) {

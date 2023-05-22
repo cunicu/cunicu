@@ -25,7 +25,7 @@ func (s *Server) OnInterfaceRemoved(i *daemon.Interface) {
 	})
 }
 
-func (s *Server) OnInterfaceModified(i *daemon.Interface, old *wg.Interface, mod daemon.InterfaceModifier) {
+func (s *Server) OnInterfaceModified(i *daemon.Interface, _ *wg.Interface, mod daemon.InterfaceModifier) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_INTERFACE_MODIFIED,
 		Interface: i.Name(),
@@ -53,7 +53,7 @@ func (s *Server) OnPeerRemoved(p *daemon.Peer) {
 	})
 }
 
-func (s *Server) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, mod daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (s *Server) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, mod daemon.PeerModifier, _, _ []net.IPNet) {
 	s.events.Send(&rpcproto.Event{
 		Type:      rpcproto.EventType_PEER_MODIFIED,
 		Interface: p.Interface.Name(),
@@ -79,5 +79,5 @@ func (s *Server) OnSignalingBackendReady(b signaling.Backend) {
 	})
 }
 
-func (s *Server) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.Message) {
+func (s *Server) OnSignalingMessage(_ *crypto.PublicKeyPair, _ *signaling.Message) {
 }

@@ -118,7 +118,7 @@ func NewRelayAPIServer(relays []RelayInfo, opts ...grpc.ServerOption) (*RelayAPI
 	return s, nil
 }
 
-func (s *RelayAPIServer) GetRelays(ctx context.Context, params *signalingproto.GetRelaysParams) (*signalingproto.GetRelaysResp, error) {
+func (s *RelayAPIServer) GetRelays(_ context.Context, params *signalingproto.GetRelaysParams) (*signalingproto.GetRelaysResp, error) {
 	resp := &signalingproto.GetRelaysResp{}
 
 	pk, err := crypto.ParseKeyBytes(params.PublicKey)
