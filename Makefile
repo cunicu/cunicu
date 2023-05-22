@@ -14,7 +14,8 @@ ifeq ($(GOOS),linux)
     PKGS += ./test/e2e/...
 endif
 
-GINKGO_OPTS =  --compilers=2 \
+ifeq ($(CI),true)
+	GINKGO_OPTS += \
 			   --keep-going \
 			   --timeout=15m \
 			   --trace \
@@ -22,8 +23,9 @@ GINKGO_OPTS =  --compilers=2 \
 			   --coverpkg=./... \
 			   --keep-separate-coverprofiles \
 			   --randomize-all \
-			   --randomize-suites \
-			   $(GINKGO_EXTRA_OPTS)
+			   --randomize-suites
+endif
+
 
 all: cunicu
 
@@ -32,10 +34,10 @@ cunicu:
 	go build -o $@ -ldflags="$(LDFLAGS)" ./cmd/cunicu
 
 tests:
-	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/...
+	ginkgo run $(GINKGO_OPTS) --coverprofile=coverprofile.out ./pkg/... -- $(GINKGO_ARGS)
 
 tests-e2e:
-	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_e2e.out ./test/e2e
+	ginkgo run $(GINKGO_OPTS) --output-dir=./test/e2e/logs --coverprofile=coverprofile_e2e.out ./test/e2e -- $(GINKGO_ARGS)
 
 coverprofile_merged.out: $(shell find . -name "*.out" -type f)
 	gocov-merger -o $@ $^
