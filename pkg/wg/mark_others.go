@@ -6,8 +6,6 @@ import (
 	"net"
 )
 
-const fwmarkIoctl = 0
-
-func SetMark(conn net.PacketConn, mark uint32) error {
+func SetMark(_ net.PacketConn, _ uint32) error {
 	return errNotSupported
 }

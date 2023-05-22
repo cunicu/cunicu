@@ -11,15 +11,15 @@ type (
 	NAT     struct{}
 )
 
-func NewNAT(ident string) (*NAT, error) {
+func NewNAT(_ string) (*NAT, error) {
 	return nil, errNotSupported
 }
 
-func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NATRule, error) {
+func (n *NAT) MasqueradeSourcePort(_, _ int, _ *net.UDPAddr) (*NATRule, error) {
 	return nil, errNotSupported
 }
 
-func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
+func (n *NAT) RedirectNonSTUN(_, _ int) (*NATRule, error) {
 	return nil, errNotSupported
 }
 

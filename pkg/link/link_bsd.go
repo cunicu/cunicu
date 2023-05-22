@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	errNotSupported         = errors.New("not supported")
 	errInvalidCommandOutput = errors.New("invalid command output")
 	errFailedToExecute      = errors.New("failed to run")
 )
+
+var _ Link = (*BSDLink)(nil)
 
 type BSDLink struct {
 	created bool
@@ -103,6 +104,10 @@ func (d *BSDLink) Flags() net.Flags {
 	return i.Flags
 }
 
+func (d *BSDLink) Type() string {
+	return "" // TODO: Is this supported?
+}
+
 var mtuRegex = regexp.MustCompile(`(?m)mtu (\d+)`)
 
 func (d *BSDLink) MTU() int {
@@ -164,11 +169,11 @@ func Table(str string) (int, error) {
 	return i, nil
 }
 
-func DetectMTU(ip net.IP, fwmark int) (int, error) {
+func DetectMTU(ip net.IP, _ int) (int, error) {
 	return getRouteMTU(ip)
 }
 
-func DetectDefaultMTU(fwmark int) (int, error) {
+func DetectDefaultMTU(_ int) (int, error) {
 	return getRouteMTU(nil)
 }
 

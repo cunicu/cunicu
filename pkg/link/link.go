@@ -1,6 +1,9 @@
 package link
 
-import "net"
+import (
+	"errors"
+	"net"
+)
 
 const (
 	EthernetMTU = 1500
@@ -9,6 +12,8 @@ const (
 const (
 	TypeWireGuard = "wireguard"
 )
+
+var errNotSupported = errors.New("not supported") //nolint:unused
 
 type Link interface {
 	Close() error

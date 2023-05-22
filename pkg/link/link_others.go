@@ -2,10 +2,10 @@
 
 package link
 
-func FindKernelDevice(name string) (Device, error) {
+func CreateWireGuardLink(_ string) (Link, error) {
 	return nil, errNotSupported
 }
 
-func NewKernelDevice(name string) (Device, error) {
+func FindLink(_ string) (Link, error) {
 	return nil, errNotSupported
 }

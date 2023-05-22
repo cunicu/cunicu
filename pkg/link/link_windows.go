@@ -19,7 +19,7 @@ func (d *WindowsLink) AddAddress(ip net.IPNet) error {
 	return errNotSupported
 }
 
-func (d *WindowsLink) AddRoute(dst net.IPNet, gw net.IP, table int) error {
+func (d *WindowsLink) AddRoute(dst net.IPNet, gw net.IP, _ int) error {
 	d.logger.Debug("Add route",
 		zap.String("dst", dst.String()),
 		zap.String("gw", gw.String()))
@@ -33,7 +33,7 @@ func (d *WindowsLink) DeleteAddress(ip net.IPNet) error {
 	return errNotSupported
 }
 
-func (d *WindowsLink) DeleteRoute(dst net.IPNet, table int) error {
+func (d *WindowsLink) DeleteRoute(dst net.IPNet, _ int) error {
 	d.logger.Debug("Delete route",
 		zap.String("dst", dst.String()))
 
@@ -51,6 +51,10 @@ func (d *WindowsLink) Flags() net.Flags {
 	}
 
 	return i.Flags
+}
+
+func (d *WindowsLink) Type() string {
+	return "" // TODO: Is this supported?
 }
 
 func (d *WindowsLink) MTU() int {
@@ -83,12 +87,12 @@ func (d *WindowsLink) Close() error {
 	return nil
 }
 
-func DetectMTU(ip net.IP, fwmark int) (int, error) {
+func DetectMTU(_ net.IP, _ int) (int, error) {
 	// TODO: Thats just a guess
 	return EthernetMTU, nil
 }
 
-func DetectDefaultMTU(fwmark int) (int, error) {
+func DetectDefaultMTU(_ int) (int, error) {
 	// TODO: Thats just a guess
 	return EthernetMTU, nil
 }

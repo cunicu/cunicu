@@ -8,7 +8,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/link"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/conn"
+	wgconn "golang.zx2c4.com/wireguard/conn"
 	wgdevice "golang.zx2c4.com/wireguard/device"
 )
 
@@ -90,13 +90,18 @@ func (d *KernelDevice) BindUpdate() error {
 	return nil
 }
 
-func (d *KernelDevice) doReceive(rcvFn conn.ReceiveFunc) {
+func (d *KernelDevice) doReceive(rcvFn wgconn.ReceiveFunc) {
 	d.logger.Debug("Receive worker started")
 
-	buf := make([]byte, wgdevice.MaxMessageSize)
+	batchSize := 1
+	packets := make([][]byte, batchSize)
+	sizes := make([]int, batchSize)
+	eps := make([]wgconn.Endpoint, batchSize)
+
+	packets[0] = make([]byte, wgdevice.MaxMessageSize)
 
 	for {
-		n, cep, err := rcvFn(buf)
+		n, err := rcvFn(packets, sizes, eps)
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				break
@@ -104,18 +109,18 @@ func (d *KernelDevice) doReceive(rcvFn conn.ReceiveFunc) {
 
 			d.logger.Error("Failed to receive from bind", zap.Error(err))
 			continue
-		} else if n == 0 {
+		} else if n == 0 || sizes[0] == 0 {
 			continue
 		}
 
-		ep := cep.(*wg.BindEndpoint) //nolint:forcetypeassert
+		ep := eps[0].(*wg.BindEndpoint) //nolint:forcetypeassert
 		kc, ok := ep.Conn.(wg.BindKernelConn)
 		if !ok {
 			d.logger.Error("No kernel connection found", zap.String("ep", ep.DstToString()))
 			continue
 		}
 
-		if _, err := kc.WriteKernel(buf[:n]); err != nil {
+		if _, err := kc.WriteKernel(packets[0][:sizes[0]]); err != nil {
 			d.logger.Error("Failed to write to kernel", zap.Error(err))
 		}
 	}
