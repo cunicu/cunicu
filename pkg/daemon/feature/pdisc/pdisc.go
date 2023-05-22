@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	proto "github.com/stv0g/cunicu/pkg/proto/core"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 )
 

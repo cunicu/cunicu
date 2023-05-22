@@ -65,12 +65,12 @@ builds:
   ldflags:
   - -s
   - -w
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Version=v{{.Version}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Commit={{.Commit}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.DateStr={{.Date}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Tag={{.Tag}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.Branch={{.Branch}}
-  - -X github.com/stv0g/cunicu/pkg/util/buildinfo.BuiltBy=goreleaser
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.Version=v{{.Version}}
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.Commit={{.Commit}}
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.DateStr={{.Date}}
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.Tag={{.Tag}}
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.Branch={{.Branch}}
+  - -X github.com/stv0g/cunicu/pkg/buildinfo.BuiltBy=goreleaser
 
 archives:
 - id: cunicu

@@ -20,7 +20,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"go.uber.org/zap"
 )
 
