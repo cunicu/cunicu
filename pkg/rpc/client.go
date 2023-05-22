@@ -94,7 +94,7 @@ func Connect(path string) (*Client, error) {
 }
 
 func (c *Client) Close() error {
-	if err := c.conn.Close(); err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+	if err := c.conn.Close(); err != nil && status.Code(err) != codes.Canceled {
 		return fmt.Errorf("failed to close gRPC client connection: %w", err)
 	}
 

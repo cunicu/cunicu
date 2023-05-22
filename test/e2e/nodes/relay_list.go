@@ -9,7 +9,7 @@ import (
 
 type RelayList []RelayNode
 
-func AddRelayNodes(n *g.Network, numNodes int, opts ...g.Option) (RelayList, error) {
+func AddRelayNodes(n *g.Network, numNodes int, _ ...g.Option) (RelayList, error) {
 	ns := RelayList{}
 
 	for i := 1; i <= numNodes; i++ {

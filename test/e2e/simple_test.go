@@ -147,7 +147,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 
 			Context("host: Allow only host candidates", func() {
 				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4") //, "--port-forwarding=false")
+					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4") // , "--port-forwarding=false")
 				})
 
 				Context("ipv6: Allow IPv6 network only", func() {

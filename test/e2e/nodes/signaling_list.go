@@ -9,7 +9,7 @@ import (
 
 type SignalingList []SignalingNode
 
-func AddSignalingNodes(n *g.Network, numNodes int, opts ...g.Option) (SignalingList, error) {
+func AddSignalingNodes(n *g.Network, numNodes int, _ ...g.Option) (SignalingList, error) {
 	ns := SignalingList{}
 
 	for i := 1; i <= numNodes; i++ {

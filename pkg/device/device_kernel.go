@@ -12,6 +12,8 @@ import (
 	wgdevice "golang.zx2c4.com/wireguard/device"
 )
 
+var errNotWireGuardLink = errors.New("link is not a WireGuard link")
+
 type KernelDevice struct {
 	link.Link
 
@@ -52,7 +54,7 @@ func FindKernelDevice(name string) (*KernelDevice, error) {
 
 	// TODO: Is this portable?
 	if lnk.Type() != link.TypeWireGuard {
-		return nil, fmt.Errorf("link '%s' is not a WireGuard link", lnk.Name())
+		return nil, fmt.Errorf("%w: %s", errNotWireGuardLink, lnk.Name())
 	}
 
 	return &KernelDevice{

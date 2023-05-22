@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -11,6 +10,8 @@ import (
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func init() { //nolint:gochecknoinits
@@ -146,7 +147,7 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 			if err != nil {
 				b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
 
-				if err := b.subscribeFromServer(ctx, pk); err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+				if err := b.subscribeFromServer(ctx, pk); err != nil && status.Code(err) != codes.Canceled {
 					b.logger.Error("Failed to resubscribe", zap.Error(err))
 				}
 
