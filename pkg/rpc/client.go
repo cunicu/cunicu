@@ -10,12 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

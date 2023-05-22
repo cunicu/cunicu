@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
@@ -21,7 +21,6 @@ import (
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"

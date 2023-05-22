@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/util/buildinfo"
+	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
