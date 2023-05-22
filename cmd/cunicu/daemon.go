@@ -65,6 +65,18 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
 	}
 
+	// Require experimental env var
+	if !cfg.Experimental {
+		logger.Fatal(`cunicu is currently under development.
+
+	You should only be running it if you are testing/developing it.
+	Please set the env var CUNICU_EXPERIMENTAL=1 to bypass this warning.
+	
+	Please feel free to join the developement
+	 - at Github: https://github.com/stv0g/cunicu
+	 - via Slack: #cunicu in the Gophers workspace`)
+	}
+
 	if logger.Core().Enabled(zap.DebugLevel) {
 		logger.Debug("Loaded configuration:")
 		wr := tty.NewIndenter(&zapio.Writer{
