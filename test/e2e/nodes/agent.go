@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/rpc"
-	g "github.com/stv0g/gont/pkg"
+	g "github.com/stv0g/gont/v2/pkg"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 )
@@ -28,7 +28,7 @@ type AgentOption interface {
 type Agent struct {
 	*g.Host
 
-	Command *exec.Cmd
+	Command *g.Cmd
 	Client  *rpc.Client
 
 	WireGuardClient *wgctrl.Client
@@ -49,9 +49,6 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 
 	a := &Agent{
 		Host: h,
-
-		WireGuardInterfaces: []*WireGuardInterface{},
-		ExtraArgs:           []any{},
 
 		logger: zap.L().Named("node.agent").With(zap.String("node", name)),
 	}
@@ -76,7 +73,6 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 
 func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	var err error
-	var stdout, stderr io.Reader
 	rpcSockPath := fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
 	logPath := fmt.Sprintf("%s/%s.log", dir, a.Name())
 
@@ -87,9 +83,16 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		return fmt.Errorf("failed to remove old socket: %w", err)
 	}
 
-	binary, profileArgs, err := BuildTestBinary(a.Name())
+	binary, profileArgs, err := BuildBinary(a.Name())
 	if err != nil {
 		return fmt.Errorf("failed to build: %w", err)
+	}
+
+	//#nosec G304 -- Test code is not controllable by attackers
+	//#nosec G302 -- Log file should be readable by user
+	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
 	args := profileArgs
@@ -102,30 +105,23 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 	)
 	args = append(args, a.ExtraArgs...)
 	args = append(args, extraArgs...)
+	args = append(args,
+		copt.Combined(a.logFile),
+		copt.Dir(dir),
+		// copt.EnvVar("PION_LOG", "info"),
+		copt.EnvVar("GRPC_GO_LOG_SEVERITY_LEVEL", "debug"),
+		copt.EnvVar("GRPC_GO_LOG_VERBOSITY_LEVEL", fmt.Sprintf("%d", 99)),
+	)
 
-	env := []string{
-		// "PION_LOG=debug",
-		fmt.Sprintf("GORACE=log_path=%s-race.log", a.Name()),
-	}
-
-	if stdout, stderr, a.Command, err = a.StartWith(binary, env, dir, args...); err != nil {
+	if a.Command, err = a.Host.Start(binary, args...); err != nil {
 		return fmt.Errorf("failed to start: %w", err)
 	}
-
-	multi := io.MultiReader(stdout, stderr)
-
-	//#nosec G304 -- Test code is not controllable by attackers
-	//#nosec G302 -- Log file should be readable by user
-	a.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
-		return fmt.Errorf("failed to open log file: %w", err)
-	}
-
-	go io.Copy(a.logFile, multi) //nolint:errcheck
 
 	if a.Client, err = rpc.Connect(rpcSockPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
+
+	a.Client.AddEventHandler(a)
 
 	if err := a.Client.Unwait(); err != nil {
 		return fmt.Errorf("failed to unwait agent: %w", err)
@@ -147,6 +143,10 @@ func (a *Agent) Stop() error {
 
 	if err := a.logFile.Close(); err != nil {
 		return fmt.Errorf("failed to close log file: %w", err)
+	}
+
+	if err := a.Client.Close(); err != nil {
+		return fmt.Errorf("failed to close RPC connection: %w", err)
 	}
 
 	return nil
@@ -186,4 +186,12 @@ func (a *Agent) Shadowed(path string) string {
 	}
 
 	return path
+}
+
+func (a *Agent) OnEvent(e *rpcproto.Event) {
+	if e.Type == rpcproto.EventType_PEER_STATE_CHANGED {
+		return // be less verbose
+	}
+
+	a.logger.Info("New event", zap.Any("event", e))
 }

@@ -5,39 +5,36 @@ import (
 	"errors"
 	"net/netip"
 
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"go.uber.org/zap"
 )
 
 var errNotSupported = errors.New("not supported on this platform")
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("rtsync", "Route synchronization", New, 30)
-}
+var Get = daemon.RegisterFeature(New, 30) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
 
-	gwMap map[netip.Addr]*core.Peer
+	gwMap map[netip.Addr]*daemon.Peer
 	stop  chan struct{}
 
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	if !i.Settings.SyncRoutes {
-		return nil, nil
+		return nil, daemon.ErrFeatureDeactivated
 	}
 
 	rs := &Interface{
 		Interface: i,
-		gwMap:     map[netip.Addr]*core.Peer{},
+		gwMap:     map[netip.Addr]*daemon.Peer{},
 		stop:      make(chan struct{}),
 		logger:    zap.L().Named("rtsync").With(zap.String("intf", i.Name())),
 	}
 
-	i.OnPeer(rs)
+	i.AddPeerHandler(rs)
 
 	return rs, nil
 }

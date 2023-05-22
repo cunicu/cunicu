@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/exp/slices"
 )
 
 const delim = "."
@@ -86,9 +87,9 @@ func (m *Meta) lookup(key []string) *Meta {
 	return nil
 }
 
-func (m *Meta) OnChanged(key string, h ChangedHandler) {
-	if n := m.Lookup(key); n != nil {
-		n.onChanged = append(n.onChanged, h)
+func (m *Meta) AddChangedHandler(key string, h ChangedHandler) {
+	if n := m.Lookup(key); n != nil && !slices.Contains(n.onChanged, h) {
+		m.onChanged = append(m.onChanged, h)
 	}
 }
 

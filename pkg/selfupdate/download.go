@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 )
 
@@ -73,7 +73,7 @@ func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, 
 		return fmt.Errorf("failed to extract file: %w", err)
 	}
 
-	logger.Info("Extraction succeeded", zap.String("size", util.PrettyBytes(n)))
+	logger.Info("Extraction succeeded", zap.String("size", tty.PrettyBytes(n)))
 
 	return nil
 }

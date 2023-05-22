@@ -13,15 +13,13 @@ import (
 	proto "github.com/stv0g/cunicu/pkg/proto/core"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/types/slices"
 	"go.uber.org/zap"
 )
 
 var errFailedUpdatePublicKey = errors.New("can not change public key in non-update message")
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("pdisc", "Peer discovery", New, 60)
-}
+var Get = daemon.RegisterFeature(New, 60) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
@@ -32,9 +30,9 @@ type Interface struct {
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	if !i.Settings.DiscoverPeers || !crypto.Key(i.Settings.Community).IsSet() {
-		return nil, nil
+		return nil, daemon.ErrFeatureDeactivated
 	}
 
 	pd := &Interface{
@@ -59,8 +57,8 @@ func New(i *daemon.Interface) (daemon.Feature, error) {
 		}
 	}
 
-	i.OnModified(pd)
-	i.OnPeer(pd)
+	i.AddModifiedHandler(pd)
+	i.AddPeerHandler(pd)
 
 	return pd, nil
 }
@@ -88,7 +86,7 @@ func (i *Interface) Close() error {
 	return nil
 }
 
-func (i *Interface) Description(cp *core.Peer) *pdiscproto.PeerDescription {
+func (i *Interface) Description(cp *daemon.Peer) *pdiscproto.PeerDescription {
 	if d, ok := i.descs[cp.PublicKey()]; ok {
 		return d
 	}
@@ -133,7 +131,7 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 	d := &pdiscproto.PeerDescription{
 		Change:     chg,
 		Name:       i.Settings.HostName,
-		AllowedIps: util.SliceString(allowedIPs),
+		AllowedIps: slices.String(allowedIPs),
 		BuildInfo:  buildinfo.BuildInfo(),
 		Hosts:      map[string]*pdiscproto.PeerAddresses{},
 	}
@@ -200,7 +198,7 @@ func (i *Interface) isAccepted(pk crypto.Key) bool {
 	return true
 }
 
-func (i *Interface) ApplyDescription(cp *core.Peer) {
+func (i *Interface) ApplyDescription(cp *daemon.Peer) {
 	if d, ok := i.descs[cp.PublicKey()]; ok {
 		cp.Name = d.Name
 

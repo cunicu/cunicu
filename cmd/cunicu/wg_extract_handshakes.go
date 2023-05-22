@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/stv0g/cunicu/pkg/util"
+	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/wg/tracer"
 	"go.uber.org/zap"
 )
@@ -36,7 +36,7 @@ func wgExtractHandshakes(cmd *cobra.Command, args []string) error {
 		logger.Fatal("Failed to create tracer", zap.Error(err))
 	}
 
-	sigs := util.SetupSignals()
+	sigs := osx.SetupSignals()
 
 out:
 	for {

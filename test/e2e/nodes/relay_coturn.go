@@ -11,7 +11,8 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
-	g "github.com/stv0g/gont/pkg"
+	g "github.com/stv0g/gont/v2/pkg"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +21,7 @@ var errTimeout = errors.New("timed out")
 type CoturnNode struct {
 	*g.Host
 
-	Command *exec.Cmd
+	Command *g.Cmd
 
 	Config map[string]string
 
@@ -72,6 +73,7 @@ func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
 	_ = os.Remove(c.Config["log-file"])
 
 	args := []any{
+		copt.Dir(dir),
 		"-n",
 	}
 	args = append(args, extraArgs...)
@@ -85,7 +87,7 @@ func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
 		args = append(args, opt)
 	}
 
-	if _, _, c.Command, err = c.StartWith("turnserver", nil, dir, args...); err != nil {
+	if c.Command, err = c.Host.Start("turnserver", args...); err != nil {
 		return fmt.Errorf("failed to start turnserver: %w", err)
 	}
 

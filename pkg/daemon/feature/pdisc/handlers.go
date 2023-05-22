@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/hsync"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (i *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+func (i *Interface) OnInterfaceModified(ci *daemon.Interface, old *wg.Interface, m daemon.InterfaceModifier) {
 	// Ignore interface which do not have a private key yet
 	if !ci.PrivateKey().IsSet() {
 		return
@@ -21,7 +21,7 @@ func (i *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m co
 
 	// Only send an update if the private key changed.
 	// There are currently no other attributes which would need to be re-announced
-	if m.Is(core.InterfaceModifiedPrivateKey) {
+	if m.Is(daemon.InterfaceModifiedPrivateKey) {
 		var pkOld *crypto.Key
 		if skOld := crypto.Key(old.PrivateKey); skOld.IsSet() {
 			pk := skOld.PublicKey()
@@ -122,11 +122,9 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 			i.ApplyDescription(cp)
 
 			// Update hostname if it has been changed
-			if f, ok := i.Features["hsync"]; ok {
-				if hs, ok := f.(*hsync.Interface); ok {
-					if err := hs.Sync(); err != nil {
-						return fmt.Errorf("failed to sync hosts: %w", err)
-					}
+			if hs := hsync.Get(i.Interface); hs != nil {
+				if err := hs.Sync(); err != nil {
+					return fmt.Errorf("failed to sync hosts: %w", err)
 				}
 			}
 		}
@@ -150,8 +148,8 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 	return nil
 }
 
-func (i *Interface) OnPeerAdded(p *core.Peer) {
+func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 	i.ApplyDescription(p)
 }
 
-func (i *Interface) OnPeerRemoved(p *core.Peer) {}
+func (i *Interface) OnPeerRemoved(p *daemon.Peer) {}

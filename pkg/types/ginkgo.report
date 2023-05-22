@@ -1,0 +1,1270 @@
+[
+  {
+    "SuitePath": "/home/stv0g/workspace/cunicu/pkg/types",
+    "SuiteDescription": "Types Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": true,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 9,
+      "SpecsThatWillRun": 5
+    },
+    "StartTime": "2023-02-07T18:55:48.89058451+01:00",
+    "EndTime": "2023-02-07T18:55:48.89092451+01:00",
+    "RunTime": 339958,
+    "SuiteConfig": {
+      "RandomSeed": 1675792547,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": [
+        "AtomicEnum"
+      ],
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": false,
+      "FailFast": false,
+      "FlakeAttempts": 0,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3598764627588,
+      "EmitSpecProgress": false,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": [
+          "FanOut"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+          "LineNumber": 10
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "works with no channel",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:48.890691177+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "FanOut"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+          "LineNumber": 18
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "works with a single channel",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:48.890703885+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "FanOut"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+          "LineNumber": 29
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "works with two channels",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:48.890711094+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "FanOut"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/fan_out_test.go",
+          "LineNumber": 43
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "works with two channels after one has been removed",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:48.890717594+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "AtomicEnum"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+          "LineNumber": 24
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "is zero initialized",
+        "State": "passed",
+        "StartTime": "2023-02-07T18:55:48.890723177+01:00",
+        "EndTime": "2023-02-07T18:55:48.890799719+01:00",
+        "RunTime": 76541,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 1,
+              "Time": "2023-02-07T18:55:48.890740594+01:00"
+            },
+            "Message": "AtomicEnum",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 3,
+              "Time": "2023-02-07T18:55:48.89075251+01:00"
+            },
+            "Message": "AtomicEnum",
+            "Duration": 11958,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 4,
+              "Time": "2023-02-07T18:55:48.890754052+01:00"
+            },
+            "Message": "is zero initialized",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 6,
+              "Time": "2023-02-07T18:55:48.89079826+01:00"
+            },
+            "Message": "is zero initialized",
+            "Duration": 44250,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "AtomicEnum"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+          "LineNumber": 28
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "can store",
+        "State": "passed",
+        "StartTime": "2023-02-07T18:55:48.890813177+01:00",
+        "EndTime": "2023-02-07T18:55:48.890828719+01:00",
+        "RunTime": 15541,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 7,
+              "Time": "2023-02-07T18:55:48.890813927+01:00"
+            },
+            "Message": "AtomicEnum",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 9,
+              "Time": "2023-02-07T18:55:48.890821344+01:00"
+            },
+            "Message": "AtomicEnum",
+            "Duration": 7416,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 28
+            },
+            "TimelineLocation": {
+              "Order": 10,
+              "Time": "2023-02-07T18:55:48.89082176+01:00"
+            },
+            "Message": "can store",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 28
+            },
+            "TimelineLocation": {
+              "Order": 12,
+              "Time": "2023-02-07T18:55:48.890828094+01:00"
+            },
+            "Message": "can store",
+            "Duration": 6292,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "AtomicEnum"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+          "LineNumber": 33
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "can compare and swap 1",
+        "State": "passed",
+        "StartTime": "2023-02-07T18:55:48.89083901+01:00",
+        "EndTime": "2023-02-07T18:55:48.890856052+01:00",
+        "RunTime": 17084,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 13,
+              "Time": "2023-02-07T18:55:48.890840719+01:00"
+            },
+            "Message": "AtomicEnum",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 15,
+              "Time": "2023-02-07T18:55:48.890846344+01:00"
+            },
+            "Message": "AtomicEnum",
+            "Duration": 5625,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 16,
+              "Time": "2023-02-07T18:55:48.89084676+01:00"
+            },
+            "Message": "can compare and swap 1",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 18,
+              "Time": "2023-02-07T18:55:48.890855427+01:00"
+            },
+            "Message": "can compare and swap 1",
+            "Duration": 8667,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "AtomicEnum"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+          "LineNumber": 39
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "can compare and swap 2",
+        "State": "passed",
+        "StartTime": "2023-02-07T18:55:48.890863927+01:00",
+        "EndTime": "2023-02-07T18:55:48.890875302+01:00",
+        "RunTime": 11333,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 19,
+              "Time": "2023-02-07T18:55:48.890864635+01:00"
+            },
+            "Message": "AtomicEnum",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 21,
+              "Time": "2023-02-07T18:55:48.89086976+01:00"
+            },
+            "Message": "AtomicEnum",
+            "Duration": 5125,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 39
+            },
+            "TimelineLocation": {
+              "Order": 22,
+              "Time": "2023-02-07T18:55:48.890870177+01:00"
+            },
+            "Message": "can compare and swap 2",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 39
+            },
+            "TimelineLocation": {
+              "Order": 24,
+              "Time": "2023-02-07T18:55:48.89087476+01:00"
+            },
+            "Message": "can compare and swap 2",
+            "Duration": 4541,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "AtomicEnum"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+            "LineNumber": 9
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+          "LineNumber": 45
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "can swap",
+        "State": "passed",
+        "StartTime": "2023-02-07T18:55:48.890881094+01:00",
+        "EndTime": "2023-02-07T18:55:48.890891927+01:00",
+        "RunTime": 10792,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 25,
+              "Time": "2023-02-07T18:55:48.89088251+01:00"
+            },
+            "Message": "AtomicEnum",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 27,
+              "Time": "2023-02-07T18:55:48.89088676+01:00"
+            },
+            "Message": "AtomicEnum",
+            "Duration": 4208,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 45
+            },
+            "TimelineLocation": {
+              "Order": 28,
+              "Time": "2023-02-07T18:55:48.890887177+01:00"
+            },
+            "Message": "can swap",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/home/stv0g/workspace/cunicu/pkg/types/atomic_enum_test.go",
+              "LineNumber": 45
+            },
+            "TimelineLocation": {
+              "Order": 30,
+              "Time": "2023-02-07T18:55:48.890891385+01:00"
+            },
+            "Message": "can swap",
+            "Duration": 4250,
+            "NodeType": "It"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "SuitePath": "/home/stv0g/workspace/cunicu/pkg/types/slices",
+    "SuiteDescription": "Slices Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": true,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 17,
+      "SpecsThatWillRun": 0
+    },
+    "StartTime": "2023-02-07T18:55:50.109126752+01:00",
+    "EndTime": "2023-02-07T18:55:50.109328627+01:00",
+    "RunTime": 201833,
+    "SuiteConfig": {
+      "RandomSeed": 1675792547,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": [
+        "AtomicEnum"
+      ],
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": false,
+      "FailFast": false,
+      "FlakeAttempts": 0,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3597545917888,
+      "EmitSpecProgress": false,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": [
+          "slice"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 27
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "map",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109192502+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 31
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "string",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109202002+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 35
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "filter",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109212711+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 40
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "contains",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109220086+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "shuffle"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 45
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 55
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "shuffles properly",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109239127+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 87
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds added elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109249877+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 95
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds removed elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109258961+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 103
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds kept elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109261877+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 111
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds no changes on empty slices",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109265961+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 119
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds added and removed elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109271961+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 136
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 127
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds all changes at once",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109275627+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 87
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds added elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109279211+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 95
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds removed elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109288544+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 103
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds kept elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109291711+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 111
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds no changes on empty slices",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109300794+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 119
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds added and removed elements",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109304002+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "slice",
+          "diff",
+          "no func"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 20
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 66
+          },
+          {
+            "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+            "LineNumber": 148
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/home/stv0g/workspace/cunicu/pkg/types/slices/slices_test.go",
+          "LineNumber": 127
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "finds all changes at once",
+        "State": "skipped",
+        "StartTime": "2023-02-07T18:55:50.109309586+01:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      }
+    ]
+  }
+]

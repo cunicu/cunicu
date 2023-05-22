@@ -15,9 +15,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("cfgsync", "Config synchronization", New, 20)
-}
+var Get = daemon.RegisterFeature(New, 20) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
@@ -25,7 +23,7 @@ type Interface struct {
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
+func New(i *daemon.Interface) (*Interface, error) {
 	c := &Interface{
 		Interface: i,
 		logger:    zap.L().Named("cfgsync").With(zap.String("intf", i.Name())),
@@ -39,14 +37,14 @@ func (i *Interface) Start() error {
 
 	// Assign static addresses
 	for _, addr := range i.Settings.Addresses {
-		if err := i.KernelDevice.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
+		if err := i.Device.AddAddress(addr); err != nil && !errors.Is(err, syscall.EEXIST) {
 			return fmt.Errorf("failed to assign address '%s': %w", addr.String(), err)
 		}
 	}
 
 	// Set MTU
 	if mtu := i.Settings.MTU; mtu != 0 {
-		if err := i.KernelDevice.SetMTU(mtu); err != nil {
+		if err := i.Device.SetMTU(mtu); err != nil {
 			return fmt.Errorf("failed to set MTU: %w", err)
 		}
 	}

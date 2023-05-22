@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/types"
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon"
 )
 
 func BeRandom() types.GomegaMatcher {
@@ -51,7 +51,7 @@ type eventMatcher[E any] struct {
 }
 
 func (matcher *eventMatcher[E]) Match(actual any) (success bool, err error) {
-	events, ok := actual.(chan core.Event)
+	events, ok := actual.(chan daemon.Event)
 	if !ok {
 		return false, errors.New("actual is not an event channel")
 	}

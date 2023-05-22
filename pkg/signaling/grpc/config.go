@@ -18,7 +18,7 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) error {
 	var err error
 
 	c.BackendConfig = *cfg
-	c.Target, c.Options, err = ParseURL(c.URI.String())
+	c.Target, c.Options, err = ParseURL(c.BackendConfig.URI.String())
 	if err != nil {
 		return fmt.Errorf("failed to parse gRPC URL:%w", err)
 	}

@@ -8,9 +8,8 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -71,73 +70,75 @@ func (h *ExecHook) run(msg proto.Message, args ...any) {
 	}
 }
 
-func (h *ExecHook) OnInterfaceAdded(i *core.Interface) {
+func (h *ExecHook) OnInterfaceAdded(i *daemon.Interface) {
 	go h.run(i.MarshalWithPeers(nil), "added", "interface", i.Name())
 }
 
-func (h *ExecHook) OnInterfaceRemoved(i *core.Interface) {
+func (h *ExecHook) OnInterfaceRemoved(i *daemon.Interface) {
 	go h.run(i.MarshalWithPeers(nil), "removed", "interface", i.Name())
 }
 
-func (h *ExecHook) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+func (h *ExecHook) OnInterfaceModified(i *daemon.Interface, oldIntf *wg.Interface, m daemon.InterfaceModifier) {
 	im := i.MarshalWithPeers(nil)
 
-	if m.Is(core.InterfaceModifiedName) {
-		go h.run(im, "modified", "interface", i.Name(), "name", i.Name(), old.Name)
+	newIntf := i.Interface
+
+	if m.Is(daemon.InterfaceModifiedName) {
+		go h.run(im, "modified", "interface", i.Name(), "name", newIntf.Name, oldIntf.Name)
 	}
 
-	if m.Is(core.InterfaceModifiedType) {
-		go h.run(im, "modified", "interface", i.Name(), "type", i.Type, old.Type)
+	if m.Is(daemon.InterfaceModifiedType) {
+		go h.run(im, "modified", "interface", i.Name(), "type", newIntf.Type, oldIntf.Type)
 	}
 
-	if m.Is(core.InterfaceModifiedPrivateKey) {
-		go h.run(im, "modified", "interface", i.Name(), "private-key", i.PrivateKey(), old.PrivateKey)
+	if m.Is(daemon.InterfaceModifiedPrivateKey) {
+		go h.run(im, "modified", "interface", i.Name(), "private-key", newIntf.PrivateKey, oldIntf.PrivateKey)
 	}
 
-	if m.Is(core.InterfaceModifiedListenPort) {
-		go h.run(im, "modified", "interface", i.Name(), "listen-port", i.ListenPort, old.ListenPort)
+	if m.Is(daemon.InterfaceModifiedListenPort) {
+		go h.run(im, "modified", "interface", i.Name(), "listen-port", newIntf.ListenPort, oldIntf.ListenPort)
 	}
 
-	if m.Is(core.InterfaceModifiedFirewallMark) {
-		go h.run(im, "modified", "interface", i.Name(), "fwmark", i.FirewallMark, old.FirewallMark)
+	if m.Is(daemon.InterfaceModifiedFirewallMark) {
+		go h.run(im, "modified", "interface", i.Name(), "fwmark", newIntf.FirewallMark, oldIntf.FirewallMark)
 	}
 
-	if m.Is(core.InterfaceModifiedPeers) {
+	if m.Is(daemon.InterfaceModifiedPeers) {
 		go h.run(im, "modified", "interface", i.Name(), "peers")
 	}
 }
 
-func (h *ExecHook) OnPeerAdded(p *core.Peer) {
+func (h *ExecHook) OnPeerAdded(p *daemon.Peer) {
 	go h.run(p.Marshal(), "added", "peer", p.Interface.Name(), p.PublicKey())
 }
 
-func (h *ExecHook) OnPeerRemoved(p *core.Peer) {
+func (h *ExecHook) OnPeerRemoved(p *daemon.Peer) {
 	go h.run(p.Marshal(), "removed", "peer", p.Interface.Name(), p.PublicKey())
 }
 
-func (h *ExecHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (h *ExecHook) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	pm := p.Marshal()
 
-	if m.Is(core.PeerModifiedPresharedKey) {
+	if m.Is(daemon.PeerModifiedPresharedKey) {
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "preshared-key", p.PresharedKey(), old.PresharedKey)
 	}
 
-	if m.Is(core.PeerModifiedEndpoint) {
+	if m.Is(daemon.PeerModifiedEndpoint) {
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "endpoint", p.Endpoint, old.Endpoint)
 	}
 
-	if m.Is(core.PeerModifiedKeepaliveInterval) {
+	if m.Is(daemon.PeerModifiedKeepaliveInterval) {
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "persistent-keepalive", p.PersistentKeepaliveInterval.Seconds(), old.PersistentKeepaliveInterval.Seconds())
 	}
 
-	if m.Is(core.PeerModifiedHandshakeTime) {
+	if m.Is(daemon.PeerModifiedHandshakeTime) {
 		newTime := fmt.Sprint(p.LastHandshakeTime.UnixMilli())
 		oldTime := fmt.Sprint(old.LastHandshakeTime.UnixMilli())
 
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "last-handshake", newTime, oldTime)
 	}
 
-	if m.Is(core.PeerModifiedAllowedIPs) {
+	if m.Is(daemon.PeerModifiedAllowedIPs) {
 		added := []string{}
 		for _, ip := range ipsAdded {
 			added = append(added, ip.String())
@@ -151,18 +152,22 @@ func (h *ExecHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerMo
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "allowed-ips", strings.Join(added, ","), strings.Join(removed, ","))
 	}
 
-	if m.Is(core.PeerModifiedProtocolVersion) {
+	if m.Is(daemon.PeerModifiedProtocolVersion) {
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "protocol-version", p.ProtocolVersion, old.ProtocolVersion)
 	}
 
-	if m.Is(core.PeerModifiedName) {
+	if m.Is(daemon.PeerModifiedName) {
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "name", p.Name)
 	}
 }
 
-func (h *ExecHook) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
-	m := p.Peer.Marshal()
-	m.Ice = p.Marshal()
+func (h *ExecHook) OnPeerStateChanged(p *daemon.Peer, newState, prevState daemon.PeerState) {
+	pm := p.Marshal().Redact()
 
-	go h.run(m, "changed", "peer", "connection-state", p.Interface.Name(), p.PublicKey(), newState, prevState)
+	if epi := epdisc.Get(p.Interface); epi != nil {
+		epp := epi.Peers[p]
+		pm.Ice = epp.Marshal()
+	}
+
+	go h.run(pm, "changed", "peer", "connection-state", p.Interface.Name(), p.PublicKey(), newState, prevState)
 }

@@ -3,10 +3,10 @@
 package rtsync
 
 import (
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon"
 )
 
-func (i *Interface) removeKernel(p *core.Peer) error {
+func (i *Interface) removeKernel(p *daemon.Peer) error {
 	return errNotSupported
 }
 

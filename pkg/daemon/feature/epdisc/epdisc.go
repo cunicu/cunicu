@@ -8,88 +8,73 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
-	"github.com/stv0g/cunicu/pkg/core"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
-	"github.com/stv0g/cunicu/pkg/device"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"go.uber.org/zap"
 )
 
-var errNotSupported = errors.New("not supported on this platform")
-
-func init() { //nolint:gochecknoinits
-	daemon.RegisterFeature("epdisc", "Endpoint discovery", New, 50)
-}
+var Get = daemon.RegisterFeature(New, 50) //nolint:gochecknoglobals
 
 type Interface struct {
 	*daemon.Interface
 
-	nat *proxy.NAT
+	nat *NAT
 
-	natRule      *proxy.NATRule
-	natRuleSrflx *proxy.NATRule
+	natRule      *NATRule
+	natRuleSrflx *NATRule
 
-	udpMux      ice.UDPMux
-	udpMuxSrflx ice.UniversalUDPMux
+	// muxConns is a list of UDP connections which are used by pion/ice
+	// agents for muxing
+	muxConns []net.PacketConn
 
-	udpMuxPort      int
-	udpMuxSrflxPort int
+	mux      ice.UDPMux
+	muxSrflx ice.UniversalUDPMux
 
-	Peers map[*core.Peer]*Peer
+	muxPort      int
+	muxSrflxPort int
 
-	onConnectionStateChange []OnConnectionStateHandler
+	Peers map[*daemon.Peer]*Peer
 
 	logger *zap.Logger
 }
 
-func New(i *daemon.Interface) (daemon.Feature, error) {
-	if !i.Settings.DiscoverEndpoints {
-		return nil, nil
+func New(di *daemon.Interface) (*Interface, error) {
+	if !di.Settings.DiscoverEndpoints {
+		return nil, daemon.ErrFeatureDeactivated
 	}
 
-	e := &Interface{
-		Interface: i,
-		Peers:     map[*core.Peer]*Peer{},
+	i := &Interface{
+		Interface: di,
+		Peers:     map[*daemon.Peer]*Peer{},
 
-		onConnectionStateChange: []OnConnectionStateHandler{},
-
-		logger: zap.L().Named("epdisc").With(zap.String("intf", i.Name())),
+		logger: zap.L().Named("epdisc").With(zap.String("intf", di.Name())),
 	}
 
-	// Create per-interface UDP Muxes
-	if e.udpMux, e.udpMuxPort, err = proxy.CreateUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
-		return nil, fmt.Errorf("failed to setup host UDP mux: %w", err)
+	i.AddPeerHandler(i)
+	i.Bind().AddOpenHandler(i)
+
+	// Create per-interface UDP muxes
+	if i.Settings.ICE.HasCandidateType(ice.CandidateTypeHost) {
+		if err := i.setupUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
+			return nil, fmt.Errorf("failed to setup host UDP mux: %w", err)
+		}
 	}
 
-	if e.udpMuxSrflx, e.udpMuxSrflxPort, err = proxy.CreateUniversalUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
-		return nil, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
+	if i.Settings.ICE.HasCandidateType(ice.CandidateTypeServerReflexive) {
+		if err := i.setupUniversalUDPMux(); err != nil && !errors.Is(err, errNotSupported) {
+			return nil, fmt.Errorf("failed to setup srflx UDP mux: %w", err)
+		}
 	}
 
-	e.logger.Info("Created UDP muxes",
-		zap.Int("port-host", e.udpMuxPort),
-		zap.Int("port-srflx", e.udpMuxSrflxPort))
-
-	// Setup Netfilter PAT for non-userspace devices
-	if _, ok := i.KernelDevice.(*device.UserDevice); !ok {
-		// Setup NAT
-		ident := fmt.Sprintf("cunicu-if%d", i.KernelDevice.Index())
-		if e.nat, err = proxy.NewNAT(ident); err != nil && !errors.Is(err, errNotSupported) {
+	// Setup Netfilter port forwarding for non-userspace devices
+	if i.Settings.PortForwarding && !i.IsUserspace() {
+		if err := i.setupNAT(); err != nil {
 			return nil, fmt.Errorf("failed to setup NAT: %w", err)
 		}
-
-		// Setup DNAT redirects (STUN ports -> WireGuard listen ports)
-		if err := e.SetupRedirects(); err != nil {
-			return nil, fmt.Errorf("failed to setup redirects: %w", err)
-		}
 	}
 
-	i.OnModified(e)
-	i.OnPeer(e)
-
-	return e, nil
+	return i, nil
 }
 
 func (i *Interface) Start() error {
@@ -99,14 +84,11 @@ func (i *Interface) Start() error {
 }
 
 func (i *Interface) Close() error {
-	// First switch all sessions to closing so they do not get restarted
-	for _, p := range i.Peers {
-		p.setConnectionState(icex.ConnectionStateClosing)
-	}
+	i.Bind().RemoveOpenHandler(i)
 
 	for _, p := range i.Peers {
 		if err := p.Close(); err != nil {
-			return fmt.Errorf("failed to close peer: %w", err)
+			return fmt.Errorf("failed to close peer '%s': %w", p, err)
 		}
 	}
 
@@ -116,21 +98,30 @@ func (i *Interface) Close() error {
 		}
 	}
 
-	if err := i.udpMux.Close(); err != nil {
-		return fmt.Errorf("failed to do-initialize UDP mux: %w", err)
+	if i.mux != nil {
+		if err := i.mux.Close(); err != nil {
+			return fmt.Errorf("failed to do-initialize UDP mux: %w", err)
+		}
 	}
 
-	if err := i.udpMuxSrflx.Close(); err != nil {
-		return fmt.Errorf("failed to do-initialize srflx UDP mux: %w", err)
+	if i.muxSrflx != nil {
+		if err := i.muxSrflx.Close(); err != nil {
+			return fmt.Errorf("failed to do-initialize srflx UDP mux: %w", err)
+		}
 	}
 
 	return nil
 }
 
 func (i *Interface) Marshal() *epdiscproto.Interface {
-	is := &epdiscproto.Interface{
-		MuxPort:      uint32(i.udpMuxPort),
-		MuxSrflxPort: uint32(i.udpMuxSrflxPort),
+	is := &epdiscproto.Interface{}
+
+	if i.mux != nil {
+		is.MuxPort = uint32(i.muxPort)
+	}
+
+	if i.muxSrflx != nil {
+		is.MuxSrflxPort = uint32(i.muxSrflxPort)
 	}
 
 	if i.nat == nil {
@@ -140,43 +131,6 @@ func (i *Interface) Marshal() *epdiscproto.Interface {
 	}
 
 	return is
-}
-
-func (i *Interface) UpdateRedirects() error {
-	// Userspace devices need no redirects
-	if i.nat == nil {
-		return nil
-	}
-
-	// Delete old rules if present
-	if i.natRule != nil {
-		if err := i.natRule.Delete(); err != nil {
-			return fmt.Errorf("failed to delete rule: %w", err)
-		}
-	}
-
-	if i.natRuleSrflx != nil {
-		if err := i.natRuleSrflx.Delete(); err != nil {
-			return fmt.Errorf("failed to delete rule: %w", err)
-		}
-	}
-
-	return i.SetupRedirects()
-}
-
-func (i *Interface) SetupRedirects() error {
-	var err error
-
-	// Redirect non-STUN traffic directed at UDP muxes to WireGuard interface via in-kernel port redirect / NAT
-	if i.natRule, err = i.nat.RedirectNonSTUN(i.udpMuxPort, i.ListenPort); err != nil {
-		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
-	}
-
-	if i.natRuleSrflx, err = i.nat.RedirectNonSTUN(i.udpMuxSrflxPort, i.ListenPort); err != nil {
-		return fmt.Errorf("failed to setup port redirect for server reflexive UDP mux: %w", err)
-	}
-
-	return nil
 }
 
 func (i *Interface) PeerByPublicKey(pk crypto.Key) *Peer {

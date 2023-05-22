@@ -1,0 +1,32 @@
+//go:build !linux
+
+package epdisc
+
+import (
+	"net"
+)
+
+type (
+	NATRule struct{}
+	NAT     struct{}
+)
+
+func NewNAT(ident string) (*NAT, error) {
+	return nil, errNotSupported
+}
+
+func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NATRule, error) {
+	return nil, errNotSupported
+}
+
+func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
+	return nil, errNotSupported
+}
+
+func (n *NAT) Close() error {
+	return errNotSupported
+}
+
+func (nr *NATRule) Delete() error {
+	return errNotSupported
+}

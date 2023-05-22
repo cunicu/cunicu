@@ -7,10 +7,12 @@ import (
 	"math"
 	"math/big"
 	"os"
+	"sync"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
+	"golang.org/x/sync/errgroup"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {
@@ -65,4 +67,33 @@ func Entropy(data []byte) float64 {
 
 func IsCI() bool {
 	return os.Getenv("CI") == "true"
+}
+
+func ParallelNew[T any](cnt int, ctor func(i int) (T, error)) ([]T, error) {
+	ts := []T{}
+	mu := sync.Mutex{}
+
+	eg := errgroup.Group{}
+	for i := 1; i <= cnt; i++ {
+		i := i
+
+		eg.Go(func() error {
+			t, err := ctor(i)
+			if err != nil {
+				return err
+			}
+
+			mu.Lock()
+			ts = append(ts, t)
+			mu.Unlock()
+
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+
+	return ts, nil
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/stv0g/cunicu/pkg/proto"
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 func NewCandidate(ic ice.Candidate) *Candidate {
@@ -222,7 +222,7 @@ func (cs *CandidateStats) ToString() string {
 }
 
 func (cs *CandidateStats) Dump(wr io.Writer) error {
-	if _, err := fmt.Fprintf(wr, t.Mods("candidate", t.Bold, t.FgMagenta)+": "+t.Mods("%s", t.FgMagenta)+"\n", cs.ToString()); err != nil {
+	if _, err := fmt.Fprintf(wr, tty.Mods("candidate", tty.Bold, tty.FgMagenta)+": "+tty.Mods("%s", tty.FgMagenta)+"\n", cs.ToString()); err != nil {
 		return err
 	}
 

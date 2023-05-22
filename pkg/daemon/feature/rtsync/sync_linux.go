@@ -6,10 +6,10 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/core"
-	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/link"
 	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/util"
+	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
@@ -18,10 +18,10 @@ import (
 // removeKernel removes all routes from the kernel which target
 // the peers link local addresses as their destination
 // or have the peers address configured as the gateway.
-func (i *Interface) removeKernel(p *core.Peer) error {
+func (i *Interface) removeKernel(p *daemon.Peer) error {
 	pk := p.PublicKey()
 
-	link, err := netlink.LinkByIndex(i.KernelDevice.Index())
+	link, err := netlink.LinkByIndex(i.Index())
 	if err != nil {
 		return fmt.Errorf("failed to find link: %w", err)
 	}
@@ -67,7 +67,7 @@ func (i *Interface) removeKernel(p *core.Peer) error {
 			continue
 		}
 
-		if err := p.Interface.KernelDevice.DeleteRoute(*rt.Dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
+		if err := p.Interface.DeleteRoute(*rt.Dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
 			i.logger.Error("Failed to delete route", zap.Error(err))
 		}
 	}
@@ -81,7 +81,7 @@ func (i *Interface) syncKernel() error {
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
 		rts, err := netlink.RouteListFiltered(af, &netlink.Route{
 			Table:     i.Settings.RoutingTable,
-			LinkIndex: i.KernelDevice.Index(),
+			LinkIndex: i.Device.Index(),
 		}, netlink.RT_FILTER_TABLE|netlink.RT_FILTER_OIF)
 		if err != nil {
 			return fmt.Errorf("failed to list routes: %w", err)
@@ -141,7 +141,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		return nil
 	}
 
-	if ru.Protocol == device.RouteProtocol {
+	if ru.Protocol == link.RouteProtocol {
 		logger.Debug("Ignoring route which was installed by ourself")
 		return nil
 	}
@@ -164,7 +164,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	logger = logger.With(zap.String("peer", p.String()))
 
-	if ru.LinkIndex != p.Interface.KernelDevice.Index() {
+	if ru.LinkIndex != p.Interface.Device.Index() {
 		logger.Debug("Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
 		return nil
 	}
@@ -172,7 +172,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	for _, aip := range p.AllowedIPs {
 		aip := aip
 
-		if util.ContainsNet(&aip, ru.Dst) {
+		if netx.ContainsNet(&aip, ru.Dst) {
 			logger.Debug("Ignoring route as it is already covered by the current AllowedIPs",
 				zap.Any("allowed_ip", aip),
 				zap.Any("dst", ru.Dst))

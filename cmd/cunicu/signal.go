@@ -4,8 +4,8 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
+	osx "github.com/stv0g/cunicu/pkg/os"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -51,7 +51,7 @@ func signal(_ *cobra.Command, _ []string, opts *signalOptions) {
 	svr := grpcx.NewSignalingServer(svrOpts...)
 
 	go func() {
-		for sig := range util.SetupSignals() {
+		for sig := range osx.SetupSignals() {
 			logger.Debug("Received signal", zap.Any("signal", sig))
 
 			if err := svr.Close(); err != nil {

@@ -2,17 +2,11 @@ package rpc
 
 import (
 	"context"
-	"errors"
-	"io"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/proto"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -30,28 +24,7 @@ func NewEndpointDiscoveryServer(s *Server) *EndpointDiscoveryServer {
 
 	rpcproto.RegisterEndpointDiscoverySocketServer(s.grpc, eps)
 
-	s.daemon.OnInterface(eps)
-
 	return eps
-}
-
-func (s *EndpointDiscoveryServer) Interface(i *daemon.Interface) *epdisc.Interface {
-	if f, ok := i.Features["epdisc"]; ok {
-		if ep, ok := f.(*epdisc.Interface); ok {
-			return ep
-		}
-	}
-
-	return nil
-}
-
-func (s *EndpointDiscoveryServer) OnInterfaceAdded(di *daemon.Interface) {
-	if i := s.Interface(di); i != nil {
-		i.OnConnectionStateChange(s)
-	}
-}
-
-func (s *EndpointDiscoveryServer) OnInterfaceRemoved(di *daemon.Interface) {
 }
 
 func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcproto.RestartPeerParams) (*proto.Empty, error) {
@@ -60,7 +33,7 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 		return nil, status.Errorf(codes.NotFound, "unknown interface %s", params.Intf)
 	}
 
-	i := s.Interface(di)
+	i := epdisc.Get(di)
 	if i == nil {
 		return nil, status.Errorf(codes.NotFound, "interface %s has endpoint discovery not enabled", params.Intf)
 	}
@@ -80,49 +53,4 @@ func (s *EndpointDiscoveryServer) RestartPeer(ctx context.Context, params *rpcpr
 	}
 
 	return &proto.Empty{}, nil
-}
-
-func (s *EndpointDiscoveryServer) SendConnectionStates(stream rpcproto.Daemon_StreamEventsServer) {
-	if err := s.daemon.ForEachInterface(func(di *daemon.Interface) error {
-		i := s.Interface(di)
-
-		for _, p := range i.Peers {
-			e := &rpcproto.Event{
-				Type:      rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
-				Interface: p.Interface.Name(),
-				Peer:      p.Peer.PublicKey().Bytes(),
-				Event: &rpcproto.Event_PeerConnectionStateChange{
-					PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
-						NewState: epdiscproto.NewConnectionState(p.ConnectionState()),
-					},
-				},
-			}
-
-			if err := stream.Send(e); errors.Is(err, io.EOF) {
-				continue
-			} else if err != nil {
-				s.logger.Error("Failed to send connection states", zap.Error(err))
-			}
-		}
-
-		return nil
-	}); err != nil {
-		s.logger.Error("Failed to send connection states", zap.Error(err))
-	}
-}
-
-func (s *EndpointDiscoveryServer) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
-	s.events.Send(&rpcproto.Event{
-		Type: rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
-
-		Interface: p.Interface.Name(),
-		Peer:      p.PublicKey().Bytes(),
-
-		Event: &rpcproto.Event_PeerConnectionStateChange{
-			PeerConnectionStateChange: &rpcproto.PeerConnectionStateChangeEvent{
-				NewState:  epdiscproto.NewConnectionState(newState),
-				PrevState: epdiscproto.NewConnectionState(prevState),
-			},
-		},
-	})
 }

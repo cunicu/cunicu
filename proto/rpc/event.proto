@@ -4,8 +4,8 @@ package cunicu.rpc;
 option go_package = "github.com/stv0g/cunicu/pkg/proto/rpc";
 
 import "common.proto";
+import "core/peer.proto";
 import "signaling/signaling.proto";
-import "feature/epdisc.proto";
 
 enum EventType {    
     // Signaling Events
@@ -16,13 +16,11 @@ enum EventType {
     PEER_ADDED = 10;
     PEER_REMOVED = 11;
     PEER_MODIFIED = 12;
+    PEER_STATE_CHANGED = 13;
 
     INTERFACE_ADDED = 20;
     INTERFACE_REMOVED = 21;
     INTERFACE_MODIFIED = 22;
-
-    // ICE Events
-    PEER_CONNECTION_STATE_CHANGED = 30;
 }
 
 message Event {
@@ -38,7 +36,7 @@ message Event {
     oneof event {
         SignalingBackendReadyEvent backend_ready = 100;
 
-        PeerConnectionStateChangeEvent peer_connection_state_change = 121;
+        PeerStateChangeEvent peer_state_change = 121;
         PeerModifiedEvent peer_modified = 122;
         InterfaceModifiedEvent interface_modified = 123;
     }
@@ -52,9 +50,9 @@ message InterfaceModifiedEvent {
     uint32 modified = 1;
 }
 
-message PeerConnectionStateChangeEvent {
-    epdisc.ConnectionState new_state = 1;
-    epdisc.ConnectionState prev_state = 2;
+message PeerStateChangeEvent {
+    core.PeerState new_state = 1;
+    core.PeerState prev_state = 2;
 }
 
 message SignalingBackendReadyEvent {

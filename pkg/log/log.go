@@ -21,7 +21,7 @@ func SetupLogging(severity zapcore.Level, verbosity int, outputPaths []string, e
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.Level = Severity
-	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.009")
+	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.000000")
 	if color {
 		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
 	} else {

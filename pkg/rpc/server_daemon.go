@@ -17,10 +17,10 @@ import (
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/log"
+	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -49,14 +49,14 @@ func NewDaemonServer(s *Server, d *daemon.Daemon) *DaemonServer {
 
 	rpcproto.RegisterDaemonServer(s.grpc, ds)
 
+	d.AddInterfaceHandler(ds)
+
 	return ds
 }
 
 func (s *DaemonServer) StreamEvents(params *proto.Empty, stream rpcproto.Daemon_StreamEventsServer) error {
 	// Send initial connection state of all peers
-	if s.epdisc != nil {
-		s.epdisc.SendConnectionStates(stream)
-	}
+	s.SendPeerStates(stream)
 
 	events := s.events.Add()
 	defer s.events.Remove(events)
@@ -64,7 +64,11 @@ func (s *DaemonServer) StreamEvents(params *proto.Empty, stream rpcproto.Daemon_
 out:
 	for {
 		select {
-		case event := <-events:
+		case event, ok := <-events:
+			if !ok {
+				break out
+			}
+
 			if err := stream.Send(event); errors.Is(err, io.EOF) {
 				break out
 			} else if err != nil {
@@ -101,7 +105,7 @@ func (s *DaemonServer) Stop(ctx context.Context, params *proto.Empty) (*proto.Em
 }
 
 func (s *DaemonServer) Restart(ctx context.Context, params *proto.Empty) (*proto.Empty, error) {
-	if util.ReexecSelfSupported {
+	if osx.ReexecSelfSupported {
 		s.Daemon.Restart()
 	} else {
 		return nil, status.Error(codes.Unimplemented, "not supported on this platform")
@@ -130,10 +134,10 @@ func (s *DaemonServer) GetStatus(ctx context.Context, p *rpcproto.GetStatusParam
 
 	qis := []*coreproto.Interface{}
 	if err := s.daemon.ForEachInterface(func(i *daemon.Interface) error {
-		epi := s.epdisc.Interface(i)
+		epi := epdisc.Get(i)
 
 		if p.Interface == "" || i.Name() == p.Interface {
-			qi := i.MarshalWithPeers(func(cp *core.Peer) *coreproto.Peer {
+			qi := i.MarshalWithPeers(func(cp *daemon.Peer) *coreproto.Peer {
 				if pk.IsSet() && pk != cp.PublicKey() {
 					return nil
 				}
@@ -306,27 +310,77 @@ func (s *DaemonServer) AddPeer(ctx context.Context, params *rpcproto.AddPeerPara
 	}
 
 	// Detect our own endpoint
-	if f, ok := i.Features["epdisc"]; ok {
-		if epi, ok := f.(*epdisc.Interface); ok {
-			if ep, err := epi.Endpoint(); err != nil {
-				s.logger.Warn("Failed to determine our own endpoint address", zap.Error(err))
-			} else if ep != nil {
-				resp.Invitation.Endpoint = ep.String()
+	if epi := epdisc.Get(i); epi != nil {
+		if ep, err := epi.Endpoint(); err != nil {
+			s.logger.Warn("Failed to determine our own endpoint address", zap.Error(err))
+		} else if ep != nil {
+			resp.Invitation.Endpoint = ep.String()
 
-				// Perform reverse lookup of our own endpoint
-				if names, err := net.LookupAddr(resp.Invitation.Endpoint); err == nil && len(names) >= 1 {
-					epName := names[0]
+			// Perform reverse lookup of our own endpoint
+			if names, err := net.LookupAddr(resp.Invitation.Endpoint); err == nil && len(names) >= 1 {
+				epName := names[0]
 
-					// Do not use auto-generated IPv4 rDNS names
-					if match, _ := regexp.MatchString(`\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}`, epName); !match {
-						resp.Invitation.Endpoint = fmt.Sprintf("%s:%d", epName, ep.Port)
-					}
+				// Do not use auto-generated IPv4 rDNS names
+				if match, _ := regexp.MatchString(`\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}`, epName); !match {
+					resp.Invitation.Endpoint = fmt.Sprintf("%s:%d", epName, ep.Port)
 				}
 			}
 		}
 	}
 
 	return resp, nil
+}
+
+func (s *DaemonServer) OnInterfaceAdded(i *daemon.Interface) {
+	i.AddPeerStateChangeHandler(s)
+}
+
+func (s *DaemonServer) OnInterfaceRemoved(i *daemon.Interface) {
+}
+
+func (s *DaemonServer) SendPeerStates(stream rpcproto.Daemon_StreamEventsServer) {
+	if err := s.daemon.ForEachInterface(func(di *daemon.Interface) error {
+		if i := epdisc.Get(di); i != nil {
+			for _, p := range i.Peers {
+				e := &rpcproto.Event{
+					Type:      rpcproto.EventType_PEER_STATE_CHANGED,
+					Interface: p.Interface.Name(),
+					Peer:      p.Peer.PublicKey().Bytes(),
+					Event: &rpcproto.Event_PeerStateChange{
+						PeerStateChange: &rpcproto.PeerStateChangeEvent{
+							NewState: p.State(),
+						},
+					},
+				}
+
+				if err := stream.Send(e); errors.Is(err, io.EOF) {
+					continue
+				} else if err != nil {
+					s.logger.Error("Failed to send connection states", zap.Error(err))
+				}
+			}
+		}
+
+		return nil
+	}); err != nil {
+		s.logger.Error("Failed to send connection states", zap.Error(err))
+	}
+}
+
+func (s *DaemonServer) OnPeerStateChanged(p *daemon.Peer, newState, prevState daemon.PeerState) {
+	s.events.Send(&rpcproto.Event{
+		Type: rpcproto.EventType_PEER_STATE_CHANGED,
+
+		Interface: p.Interface.Name(),
+		Peer:      p.PublicKey().Bytes(),
+
+		Event: &rpcproto.Event_PeerStateChange{
+			PeerStateChange: &rpcproto.PeerStateChangeEvent{
+				NewState:  newState,
+				PrevState: prevState,
+			},
+		},
+	})
 }
 
 func settingToString(value any) (string, error) {

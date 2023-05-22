@@ -78,7 +78,7 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	}
 
 	// Create daemon
-	d, err := daemon.New(cfg)
+	d, err := daemon.NewDaemon(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create daemon", zap.Error(err))
 	}
@@ -95,15 +95,15 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	}
 
 	// Blocks until stopped
-	if err := d.Run(); err != nil {
+	if err := d.Start(); err != nil {
 		logger.Fatal("Failed start daemon", zap.Error(err))
-	}
-
-	if err := s.Close(); err != nil {
-		logger.Fatal("Failed to close server", zap.Error(err))
 	}
 
 	if err := d.Close(); err != nil {
 		logger.Fatal("Failed to stop daemon", zap.Error(err))
+	}
+
+	if err := s.Close(); err != nil {
+		logger.Fatal("Failed to close server", zap.Error(err))
 	}
 }

@@ -14,7 +14,7 @@ import (
 
 var _ = Context("device", func() {
 	var err error
-	var dev wg.Device
+	var dev wg.Interface
 	var sk, skp1, skp2, psk wgtypes.Key
 
 	BeforeEach(func() {
@@ -32,7 +32,7 @@ var _ = Context("device", func() {
 		psk, err = wgtypes.ParseKey("eZuJ5S7fcYVm5wuRZitib4UsqVpmS81hZiZPt5Ob9SE=")
 		Expect(err).To(Succeed())
 
-		dev = wg.Device{
+		dev = wg.Interface{
 			Name:         "wg0",
 			PrivateKey:   sk,
 			PublicKey:    sk.PublicKey(),

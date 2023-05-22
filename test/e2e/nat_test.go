@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
-	g "github.com/stv0g/gont/pkg"
-	gopt "github.com/stv0g/gont/pkg/options"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
 )
 
 /* Typical wide-area NAT setup
@@ -61,7 +61,7 @@ var _ = Context("nat simple: Simple home-router NAT setup", func() {
 		a, err := nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
 			gopt.DefaultGatewayIP("10.1.0.254"),
 			gopt.DefaultGatewayIP("fc:1::254"),
-			gopt.Interface("eth0", lan,
+			g.NewInterface("eth0", lan,
 				gopt.AddressIP("10.1.0.%d/24", i),
 				gopt.AddressIP("fc:1::%d/64", i),
 			),
@@ -89,7 +89,7 @@ var _ = Context("nat simple: Simple home-router NAT setup", func() {
 		By("Initializing relay node")
 
 		r1, err := nodes.NewCoturnNode(nw, "r1",
-			gopt.Interface("eth0", wan1,
+			g.NewInterface("eth0", wan1,
 				gopt.AddressIP("10.0.0.1/16"),
 				gopt.AddressIP("fc::1/64"),
 			),
@@ -99,7 +99,7 @@ var _ = Context("nat simple: Simple home-router NAT setup", func() {
 		By("Initializing signaling node")
 
 		s1, err := nodes.NewGrpcSignalingNode(nw, "s1",
-			gopt.Interface("eth0", wan1,
+			g.NewInterface("eth0", wan1,
 				gopt.AddressIP("10.0.0.2/16"),
 				gopt.AddressIP("fc::2/64"),
 			),
@@ -115,12 +115,12 @@ var _ = Context("nat simple: Simple home-router NAT setup", func() {
 
 			// NAT router
 			_, err = nw.AddNAT(fmt.Sprintf("nat%d", i),
-				gopt.Interface("eth-nb", wan1,
+				g.NewInterface("eth-nb", wan1,
 					gopt.NorthBound,
 					gopt.AddressIP("10.0.1.%d/16", i),
 					gopt.AddressIP("fc::1:%d/64", i),
 				),
-				gopt.Interface("eth-sb", lan,
+				g.NewInterface("eth-sb", lan,
 					gopt.SouthBound,
 					gopt.AddressIP("10.1.0.254/24"),
 					gopt.AddressIP("fc:1::254/64"),

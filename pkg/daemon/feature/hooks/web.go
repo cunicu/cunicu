@@ -8,9 +8,8 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	hooksproto "github.com/stv0g/cunicu/pkg/proto/feature/hooks"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -78,21 +77,21 @@ func (h *WebHook) run(msg proto.Message) {
 	}
 }
 
-func (h *WebHook) OnInterfaceAdded(i *core.Interface) {
+func (h *WebHook) OnInterfaceAdded(i *daemon.Interface) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:      rpcproto.EventType_INTERFACE_ADDED,
 		Interface: marshalRedactedInterface(i),
 	})
 }
 
-func (h *WebHook) OnInterfaceRemoved(i *core.Interface) {
+func (h *WebHook) OnInterfaceRemoved(i *daemon.Interface) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:      rpcproto.EventType_INTERFACE_REMOVED,
 		Interface: marshalRedactedInterface(i),
 	})
 }
 
-func (h *WebHook) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.InterfaceModifier) {
+func (h *WebHook) OnInterfaceModified(i *daemon.Interface, old *wg.Interface, m daemon.InterfaceModifier) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:      rpcproto.EventType_INTERFACE_MODIFIED,
 		Interface: marshalRedactedInterface(i),
@@ -100,34 +99,38 @@ func (h *WebHook) OnInterfaceModified(i *core.Interface, old *wg.Device, m core.
 	})
 }
 
-func (h *WebHook) OnPeerAdded(p *core.Peer) {
+func (h *WebHook) OnPeerAdded(p *daemon.Peer) {
 	go h.run(&hooksproto.WebHookBody{
 		Type: rpcproto.EventType_PEER_ADDED,
-		Peer: marshalRedactedPeer(p),
+		Peer: p.Marshal().Redact(),
 	})
 }
 
-func (h *WebHook) OnPeerRemoved(p *core.Peer) {
+func (h *WebHook) OnPeerRemoved(p *daemon.Peer) {
 	go h.run(&hooksproto.WebHookBody{
 		Type: rpcproto.EventType_PEER_REMOVED,
-		Peer: marshalRedactedPeer(p),
+		Peer: p.Marshal().Redact(),
 	})
 }
 
-func (h *WebHook) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (h *WebHook) OnPeerModified(p *daemon.Peer, oldPeer *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	go h.run(&hooksproto.WebHookBody{
 		Type:     rpcproto.EventType_PEER_MODIFIED,
-		Peer:     marshalRedactedPeer(p),
+		Peer:     p.Marshal().Redact(),
 		Modified: m.Strings(),
 	})
 }
 
-func (h *WebHook) OnConnectionStateChange(p *epdisc.Peer, newState, prevState icex.ConnectionState) {
-	pm := marshalRedactedPeer(p.Peer)
-	pm.Ice = p.Marshal()
+func (h *WebHook) OnPeerStateChanged(p *daemon.Peer, newState, prevState daemon.PeerState) {
+	pm := p.Marshal().Redact()
+
+	if epi := epdisc.Get(p.Interface); epi != nil {
+		epp := epi.Peers[p]
+		pm.Ice = epp.Marshal()
+	}
 
 	go h.run(&hooksproto.WebHookBody{
-		Type: rpcproto.EventType_PEER_CONNECTION_STATE_CHANGED,
+		Type: rpcproto.EventType_PEER_STATE_CHANGED,
 		Peer: pm,
 	})
 }

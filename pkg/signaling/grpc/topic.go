@@ -2,19 +2,18 @@ package grpc
 
 import (
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/types"
 )
 
 type Topic struct {
-	subs *util.FanOut[*signaling.Envelope]
+	subs *types.FanOut[*signaling.Envelope]
 }
 
 func NewTopic() *Topic {
-	t := &Topic{
-		subs: util.NewFanOut[*signaling.Envelope](128),
+	return &Topic{
+		// TODO: Make smaller again
+		subs: types.NewFanOut[*signaling.Envelope](10000),
 	}
-
-	return t
 }
 
 func (t *Topic) Publish(env *signaling.Envelope) {

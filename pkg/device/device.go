@@ -2,38 +2,15 @@
 package device
 
 import (
-	"errors"
-	"net"
-	"os"
+	"github.com/stv0g/cunicu/pkg/link"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
-
-const (
-	RouteProtocol = 98
-)
-
-var errNotSupported = errors.New("not supported")
 
 type Device interface {
-	Close() error
+	link.Link
 
-	// Getter
-
-	Name() string
-	Index() int
-	MTU() int
-	Flags() net.Flags
-
-	// Setter
-
-	SetMTU(mtu int) error
-	SetUp() error
-	SetDown() error
-
-	AddAddress(ip net.IPNet) error
-	AddRoute(dst net.IPNet, gw net.IP, table int) error
-
-	DeleteAddress(ip net.IPNet) error
-	DeleteRoute(dst net.IPNet, table int) error
+	Bind() *wg.Bind
+	BindUpdate() error
 }
 
 func NewDevice(name string, user bool) (kernelDev Device, err error) {
@@ -47,14 +24,4 @@ func NewDevice(name string, user bool) (kernelDev Device, err error) {
 	}
 
 	return kernelDev, nil
-}
-
-func FindDevice(name string) (Device, error) {
-	if dev, err := FindUserDevice(name); err == nil {
-		return dev, nil
-	} else if dev, err := FindKernelDevice(name); err == nil {
-		return dev, nil
-	}
-
-	return nil, os.ErrNotExist
 }

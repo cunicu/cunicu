@@ -1,18 +1,15 @@
 package device_test
 
 import (
-	"math/rand"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/util"
+	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {
-	rand.Seed(GinkgoRandomSeed())
-
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Device Suite")
 }
@@ -20,7 +17,7 @@ func TestSuite(t *testing.T) {
 var _ = test.SetupLogging()
 
 var _ = BeforeSuite(func() {
-	if !util.HasAdminPrivileges() {
+	if !osx.HasAdminPrivileges() {
 		Skip("Insufficient privileges")
 	}
 })

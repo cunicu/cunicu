@@ -8,14 +8,19 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func SetMark(conn *net.UDPConn, mark uint32) error {
+func SetMark(conn net.PacketConn, mark uint32) error {
 	var operr error
 
 	if fwmarkIoctl == 0 {
 		return errNotSupported
 	}
 
-	rawConn, err := conn.SyscallConn()
+	udpConn, ok := conn.(*net.UDPConn)
+	if !ok {
+		return errNotSupported
+	}
+
+	rawConn, err := udpConn.SyscallConn()
 	if err != nil {
 		return err
 	}

@@ -6,21 +6,15 @@ option go_package = "github.com/stv0g/cunicu/pkg/proto/feature/epdisc";
 import "common.proto";
 import "feature/epdisc_candidate.proto";
 
+// ICE Connection state from pion/ice/ice.go
 enum ConnectionState {
-	// ICE Connection state from pion/ice/ice.go
-	NEW = 0;              // ConnectionStateNew ICE agent is gathering addresses
-	CHECKING = 1;         // ConnectionStateChecking ICE agent has been given local and remote candidates, and is attempting to find a match
-	CONNECTED = 2;        // ConnectionStateConnected ICE agent has a pairing, but is still checking other pairs
-	COMPLETED = 3;        // ConnectionStateCompleted ICE agent has finished
-	FAILED = 4;           // ConnectionStateFailed ICE agent never could successfully connect
-	DISCONNECTED = 5;     // ConnectionStateDisconnected ICE agent connected successfully, but has entered a failed state
-	CLOSED = 6;           // ConnectionStateClosed ICE agent has finished and is no longer handling requests
-
-	// Extended ICE Connection state from cunicu/pkg/ice/types.go
-	CREATING = 100;       // ConnectionStateCreating New ICE agent is currently being created
-	IDLE = 101;           // ConnectionStateIdle ICE agent has been created but is waiting for remote credentials
-	CONNECTING = 102;     // ConnectionStateConnecting ICE agent is now connecting to the remote
-	CLOSING = 103;        // ConnectionStateClosing ICE agent is now closing
+	NEW = 0;           // ICE agent is gathering addresses
+	CHECKING = 1;      // ICE agent has been given local and remote candidates, and is attempting to find a match
+	CONNECTED = 2;     // ICE agent has a pairing, but is still checking other pairs
+	COMPLETED = 3;     // ICE agent has finished
+	FAILED = 4;        // ICE agent never could successfully connect
+	DISCONNECTED = 5;  // ICE agent connected successfully, but has entered a failed state
+	CLOSED = 6;        // ICE agent has finished and is no longer handling requests
 }
 
 enum NATType {
@@ -54,7 +48,6 @@ message Interface {
 
 message Peer {
     ProxyType proxy_type = 1;
-    ConnectionState state = 2;
 
     CandidatePair selected_candidate_pair = 4;
     

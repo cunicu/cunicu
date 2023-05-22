@@ -60,15 +60,17 @@ var (
 		SyncRoutes:        true,
 		WatchRoutes:       true,
 
+		PortForwarding: true,
+
 		ICE: ICESettings{
 			URLs:                DefaultICEURLs,
 			CheckInterval:       200 * time.Millisecond,
 			DisconnectedTimeout: 5 * time.Second,
-			FailedTimeout:       5 * time.Second,
+			FailedTimeout:       30 * time.Second,
 			RestartTimeout:      5 * time.Second,
 			InterfaceFilter:     "*",
-			KeepaliveInterval:   2 * time.Second,
-			MaxBindingRequests:  7,
+			KeepaliveInterval:   5 * time.Second,
+			MaxBindingRequests:  9,
 			PortRange: PortRangeSettings{
 				Min: EphemeralPortMin,
 				Max: EphemeralPortMax,

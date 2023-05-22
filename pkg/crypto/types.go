@@ -1,6 +1,9 @@
 package crypto
 
+// TODO: Remove nolint directive once gci knows the new package
+//nolint:gci
 import (
+	"crypto/ecdh"
 	"encoding/base64"
 	"errors"
 	"math/big"
@@ -8,7 +11,6 @@ import (
 
 	"github.com/dchest/siphash"
 	"golang.org/x/crypto/argon2"
-	"golang.org/x/crypto/curve25519"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
@@ -160,8 +162,10 @@ type KeyPair struct {
 type PublicKeyPair KeyPair
 
 func (kp KeyPair) Shared() Key {
-	// TODO: use new crypto/ecdh package (https://pkg.go.dev/crypto/ecdh#X25519)
-	shared, err := curve25519.X25519(kp.Ours[:], kp.Theirs[:])
+	sk, _ := ecdh.X25519().NewPrivateKey(kp.Ours[:])
+	pk, _ := ecdh.X25519().NewPublicKey(kp.Theirs[:])
+
+	shared, err := sk.ECDH(pk)
 	if err != nil {
 		panic(err)
 	}

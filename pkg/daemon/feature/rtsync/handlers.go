@@ -6,12 +6,12 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/core"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func (i *Interface) OnPeerAdded(p *core.Peer) {
+func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 	pk := p.PublicKey()
 
 	for _, q := range i.Settings.Prefixes {
@@ -29,10 +29,10 @@ func (i *Interface) OnPeerAdded(p *core.Peer) {
 		i.logger.Error("Failed to synchronize kernel routing table", zap.Error(err))
 	}
 
-	p.OnModified(i)
+	p.AddModifiedHandler(i)
 }
 
-func (i *Interface) OnPeerRemoved(p *core.Peer) {
+func (i *Interface) OnPeerRemoved(p *daemon.Peer) {
 	pk := p.PublicKey()
 
 	for _, q := range i.Settings.Prefixes {
@@ -54,7 +54,7 @@ func (i *Interface) OnPeerRemoved(p *core.Peer) {
 	}
 }
 
-func (i *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	pk := p.PublicKey()
 
 	// Determine peer gateway address by using the first IPv4 and IPv6 prefix
@@ -84,7 +84,7 @@ func (i *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerM
 			gw = nil
 		}
 
-		if err := p.Interface.KernelDevice.AddRoute(dst, gw, i.Settings.RoutingTable); err != nil {
+		if err := p.Interface.Device.AddRoute(dst, gw, i.Settings.RoutingTable); err != nil {
 			i.logger.Error("Failed to add route", zap.Error(err))
 			continue
 		}
@@ -97,7 +97,7 @@ func (i *Interface) OnPeerModified(p *core.Peer, old *wgtypes.Peer, m core.PeerM
 	}
 
 	for _, dst := range ipsRemoved {
-		if err := p.Interface.KernelDevice.DeleteRoute(dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
+		if err := p.Interface.Device.DeleteRoute(dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
 			i.logger.Error("Failed to delete route", zap.Error(err))
 			continue
 		}

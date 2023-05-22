@@ -8,21 +8,23 @@ import (
 
 type topicRegistry struct {
 	topics     map[crypto.Key]*Topic
-	topicsLock sync.Mutex
+	topicsLock sync.RWMutex
 }
 
 func (r *topicRegistry) getTopic(pk *crypto.Key) *Topic {
-	r.topicsLock.Lock()
-	defer r.topicsLock.Unlock()
-
+	r.topicsLock.RLock()
 	top, ok := r.topics[*pk]
+	r.topicsLock.RUnlock()
+
 	if ok {
 		return top
 	}
 
 	top = NewTopic()
 
+	r.topicsLock.Lock()
 	r.topics[*pk] = top
+	r.topicsLock.Unlock()
 
 	return top
 }

@@ -1,52 +1,15 @@
 package epdisc
 
 import (
-	"context"
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/core"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc/proxy"
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-type OnConnectionStateHandler interface {
-	OnConnectionStateChange(p *Peer, newState, prevState icex.ConnectionState)
-}
-
-func (i *Interface) OnConnectionStateChange(h OnConnectionStateHandler) {
-	i.onConnectionStateChange = append(i.onConnectionStateChange, h)
-}
-
-func (i *Interface) OnInterfaceModified(ci *core.Interface, old *wg.Device, m core.InterfaceModifier) {
-	if m.Is(core.InterfaceModifiedListenPort) {
-		if err := i.UpdateRedirects(); err != nil {
-			i.logger.Error("Failed to update DPAT redirects", zap.Error(err))
-		}
-	}
-
-	for _, p := range i.Peers {
-		if m.Is(core.InterfaceModifiedListenPort) {
-			if kproxy, ok := p.proxy.(*proxy.KernelProxy); ok {
-				if err := kproxy.UpdateListenPort(ci.ListenPort); err != nil {
-					i.logger.Error("Failed to update SPAT redirect", zap.Error(err))
-				}
-			}
-		}
-
-		if m.Is(core.InterfaceModifiedPrivateKey) {
-			skOld := crypto.Key(old.PrivateKey)
-			if err := p.Resubscribe(context.Background(), skOld); err != nil {
-				i.logger.Error("Failed to update subscription", zap.Error(err))
-			}
-		}
-	}
-}
-
-func (i *Interface) OnPeerAdded(cp *core.Peer) {
+func (i *Interface) OnPeerAdded(cp *daemon.Peer) {
 	p, err := NewPeer(cp, i)
 	if err != nil {
 		i.logger.Error("Failed to initialize ICE peer", zap.Error(err))
@@ -56,7 +19,7 @@ func (i *Interface) OnPeerAdded(cp *core.Peer) {
 	i.Peers[cp] = p
 }
 
-func (i *Interface) OnPeerRemoved(cp *core.Peer) {
+func (i *Interface) OnPeerRemoved(cp *daemon.Peer) {
 	p, ok := i.Peers[cp]
 	if !ok {
 		return
@@ -69,16 +32,25 @@ func (i *Interface) OnPeerRemoved(cp *core.Peer) {
 	delete(i.Peers, cp)
 }
 
-func (i *Interface) OnPeerModified(cp *core.Peer, old *wgtypes.Peer, m core.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
+func (i *Interface) OnPeerModified(cp *daemon.Peer, old *wgtypes.Peer, m daemon.PeerModifier, ipsAdded, ipsRemoved []net.IPNet) {
 	p := i.Peers[cp]
 
-	if m.Is(core.PeerModifiedEndpoint) {
+	if m.Is(daemon.PeerModifiedEndpoint) {
 		// Check if change was external
 		epNew := p.Endpoint
-		epExpected := p.lastEndpoint
+		epExpected := p.endpoint
 
 		if (epExpected != nil && epNew != nil) && (!epNew.IP.Equal(epExpected.IP) || epNew.Port != epExpected.Port) {
 			i.logger.Warn("Endpoint address has been changed externally. This is breaks the connection and is most likely not desired.")
 		}
+	}
+}
+
+func (i *Interface) OnBindOpen(b *wg.Bind, port uint16) {
+	logger := i.logger.Named("bind_conn")
+
+	for _, muxConn := range i.muxConns {
+		bindConn := wg.NewBindPacketConn(b, muxConn, logger)
+		b.Conns = append(b.Conns, bindConn)
 	}
 }
