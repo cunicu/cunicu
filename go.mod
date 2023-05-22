@@ -92,3 +92,5 @@ require (
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.69 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
+
+// replace github.com/stv0g/gont/v2 => ../gont

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
@@ -145,27 +144,27 @@ func (c *CoturnNode) WaitReady() error {
 	return nil
 }
 
-func (c *CoturnNode) URLs() []*ice.URL {
+func (c *CoturnNode) URLs() []*stun.URI {
 	host := c.Name()
 
-	return []*ice.URL{
+	return []*stun.URI{
 		{
-			Scheme: ice.SchemeTypeSTUN,
+			Scheme: stun.SchemeTypeSTUN,
 			Host:   host,
 			Port:   stun.DefaultPort,
-			Proto:  ice.ProtoTypeUDP,
+			Proto:  stun.ProtoTypeUDP,
 		},
 		{
-			Scheme: ice.SchemeTypeTURN,
+			Scheme: stun.SchemeTypeTURN,
 			Host:   host,
 			Port:   stun.DefaultPort,
-			Proto:  ice.ProtoTypeUDP,
+			Proto:  stun.ProtoTypeUDP,
 		},
 		{
-			Scheme: ice.SchemeTypeTURN,
+			Scheme: stun.SchemeTypeTURN,
 			Host:   host,
 			Port:   stun.DefaultPort,
-			Proto:  ice.ProtoTypeTCP,
+			Proto:  stun.ProtoTypeTCP,
 		},
 	}
 }

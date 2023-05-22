@@ -1,7 +1,7 @@
 package nodes
 
 import (
-	"github.com/pion/ice/v2"
+	"github.com/pion/stun"
 	g "github.com/stv0g/gont/v2/pkg"
 )
 
@@ -9,7 +9,7 @@ type RelayNode interface {
 	Node
 
 	WaitReady() error
-	URLs() []*ice.URL
+	URLs() []*stun.URI
 	Username() string
 	Password() string
 

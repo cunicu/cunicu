@@ -27,10 +27,11 @@ import (
 )
 
 var (
-	errCreateNonClosedAgent = errors.New("failed to create new agent if previous one is not closed")
-	errSwitchToIdle         = errors.New("failed to switch to idle state")
-	errStillIdle            = errors.New("not connected yet")
-	errClosing              = errors.New("already closing")
+	errCreateNonClosedAgent             = errors.New("failed to create new agent if previous one is not closed")
+	errSwitchToIdle                     = errors.New("failed to switch to idle state")
+	errStillIdle                        = errors.New("not connected yet")
+	errClosing                          = errors.New("already closing")
+	errInvalidConnectionStateForRestart = errors.New("can not restart agent while in state")
 )
 
 type Peer struct {
@@ -235,7 +236,7 @@ func (p *Peer) Restart() error {
 	invalidRestartStates := []ConnectionState{ConnectionStateClosed, ConnectionStateClosing, ConnectionStateRestarting}
 
 	if prev, ok := p.connectionState.SetIfNot(ConnectionStateRestarting, invalidRestartStates...); !ok {
-		return fmt.Errorf("can not restart agent while in state: %s", strings.ToLower(prev.String()))
+		return fmt.Errorf("%w: %s", errInvalidConnectionStateForRestart, strings.ToLower(prev.String()))
 	}
 
 	p.logger.Debug("Restarting ICE session")
