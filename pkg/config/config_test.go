@@ -52,12 +52,12 @@ var _ = Context("config", func() {
 		})
 
 		It("can parse multiple backends", func() {
-			cfg, err := config.ParseArgs("--backend", "k8s", "--backend", "p2p")
+			cfg, err := config.ParseArgs("--backend", "grpc", "--backend", "inprocess")
 
 			Expect(err).To(Succeed())
 			Expect(cfg.Backends).To(HaveLen(2))
-			Expect(cfg.Backends[0].Scheme).To(Equal("k8s"))
-			Expect(cfg.Backends[1].Scheme).To(Equal("p2p"))
+			Expect(cfg.Backends[0].Scheme).To(Equal("grpc"))
+			Expect(cfg.Backends[1].Scheme).To(Equal("inprocess"))
 		})
 
 		It("parse an interface list", func() {

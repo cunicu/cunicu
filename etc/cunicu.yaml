@@ -10,7 +10,6 @@ watch_interval: 1s
 backends:
 - grpc://signal.cunicu.li:443
 # - grpc://localhost:8080?insecure=true&skip_verify=true
-# - k8s:///path/to/your/kubeconfig.yaml?namespace=default
 
 
 # RPC control socket settings

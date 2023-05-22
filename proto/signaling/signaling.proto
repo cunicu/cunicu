@@ -11,10 +11,8 @@ import "feature/epdisc_candidate.proto";
 
 enum BackendType {
     MULTI = 0;
-    P2P = 1;
-    K8S = 2;
-    GRPC = 3;
-    INPROCESS = 4;
+    GRPC = 1;
+    INPROCESS = 2;
 }
 
 message Envelope {

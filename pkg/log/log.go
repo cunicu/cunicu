@@ -5,7 +5,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
-	"k8s.io/klog/v2"
 )
 
 //nolint:gochecknoglobals
@@ -44,10 +43,6 @@ func SetupLogging(severity zapcore.Level, verbosity int, outputPaths []string, e
 	if err != nil {
 		panic(err)
 	}
-
-	// Redirect Kubernetes log to Zap
-	klogger := logger.Named("backend.k8s")
-	klog.SetLogger(NewK8SLogger(klogger))
 
 	// Redirect gRPC log to Zap
 	glogger := logger.Named("grpc")
