@@ -6,7 +6,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/daemon"
 )
 
-func (i *Interface) removeKernel(p *daemon.Peer) error {
+func (i *Interface) removeKernel(_ *daemon.Peer) error {
 	return errNotSupported
 }
 

@@ -61,7 +61,7 @@ func NewBind(logger *zap.Logger) *Bind {
 // Open puts the Bind into a listening state on a given port and reports the actual
 // port that it bound to. Passing zero results in a random selection.
 // fns is the set of functions that will be called to receive packets.
-func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
+func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolint:gocognit
 	b.Conns = nil
 
 	for _, h := range b.onOpen {
@@ -79,8 +79,14 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
 	for _, c := range b.Conns {
 		conn := c
 
-		rcvFn := func(buf []byte) (n int, cep wgconn.Endpoint, err error) {
-			n, cep, err = conn.Receive(buf)
+		rcvFn := func(packets [][]byte, sizes []int, eps []wgconn.Endpoint) (int, error) {
+			if len(packets) != 1 {
+				panic("batch size not 1?")
+			}
+
+			buf := packets[0]
+
+			n, cep, err := conn.Receive(buf)
 			if err != nil {
 				if errors.Is(err, io.EOF) || errors.Is(err, ice.ErrClosed) || errors.Is(err, net.ErrClosed) {
 					err = net.ErrClosed
@@ -88,10 +94,13 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
 					b.logger.Error("Failed to receive packet", zap.Error(err))
 				}
 
-				return -1, nil, err
+				return -1, err
 			}
 
 			ep := cep.(*BindEndpoint) //nolint:forcetypeassert
+
+			sizes[0] = n
+			eps[0] = ep
 
 			// Update endpoint map
 			if ep.Conn == nil {
@@ -101,9 +110,9 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
 			// Call handlers
 			for _, h := range b.onPacket {
 				if abort, err := h.OnPacketRead(buf[:n], ep.DstUDPAddr()); err != nil {
-					return -1, nil, fmt.Errorf("failed to call handler: %w", err)
+					return -1, fmt.Errorf("failed to call handler: %w", err)
 				} else if abort {
-					return 0, nil, nil
+					return 0, nil
 				}
 			}
 
@@ -114,7 +123,7 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) {
 					zap.Binary("data", buf[:n]))
 			}
 
-			return n, ep, err
+			return 1, err
 		}
 
 		rcvFns = append(rcvFns, rcvFn)
@@ -156,15 +165,20 @@ func (b *Bind) SetMark(mark uint32) error {
 }
 
 // Send writes a packet b to address ep.
-func (b *Bind) Send(buf []byte, cep wgconn.Endpoint) error {
+func (b *Bind) Send(packets [][]byte, cep wgconn.Endpoint) error {
+	if len(packets) != 1 {
+		panic("batch size not 1?")
+	}
+
+	buf := packets[0]
 	ep := cep.(*BindEndpoint) //nolint:forcetypeassert
 
 	if ep.Conn == nil {
 		return fmt.Errorf("%w: %s", ErrNoConn, ep.DstToString())
 	}
 
-	b.logger.Debug("Send packet",
-		zap.Int("len", len(buf)),
+	b.logger.Debug("Send packets",
+		zap.Int("cnt", len(packets)),
 		zap.Any("ep", ep.DstToString()),
 		zap.Binary("data", buf))
 
@@ -188,6 +202,13 @@ func (b *Bind) ParseEndpoint(s string) (ep wgconn.Endpoint, err error) {
 
 	e, err := netip.ParseAddrPort(s)
 	return b.Endpoint(e), err
+}
+
+// BatchSize is the number of buffers expected to be passed to
+// the ReceiveFuncs, and the maximum expected to be passed to SendBatch.
+// Implements wgconn.Bind
+func (b *Bind) BatchSize() int {
+	return 1
 }
 
 func (b *Bind) AddOpenHandler(h BindHandler) {
