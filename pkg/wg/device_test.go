@@ -7,7 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -96,7 +96,7 @@ var _ = Context("device", func() {
 	Context("dump", func() {
 		It("hide keys", func() {
 			buf := &bytes.Buffer{}
-			buf2 := terminal.NewANSIStripper(buf)
+			buf2 := tty.NewANSIStripper(buf)
 
 			err = dev.Dump(buf2, true)
 			Expect(err).To(Succeed())
@@ -123,7 +123,7 @@ peer: Y658qGkT02yrLopsu1pnT2/DdgeJdMK8HxDI2UYSOX4=
 
 		It("show keys", func() {
 			buf := &bytes.Buffer{}
-			buf2 := terminal.NewANSIStripper(buf)
+			buf2 := tty.NewANSIStripper(buf)
 
 			err = dev.Dump(buf2, false)
 			Expect(err).To(Succeed())

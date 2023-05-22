@@ -9,7 +9,7 @@ import (
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/stv0g/cunicu/pkg/log"
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 )
 
@@ -60,7 +60,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
 		}
 
-		ginkgo.GinkgoWriter.TeeTo(t.NewANSIStripper(f))
+		ginkgo.GinkgoWriter.TeeTo(tty.NewANSIStripper(f))
 	}
 
 	return log.SetupLogging(zap.DebugLevel, 10, outputPaths, outputPaths, true)

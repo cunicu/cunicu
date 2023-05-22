@@ -8,8 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/util"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -65,7 +64,7 @@ var (
 	rootCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "cunicu",
 		Short: "cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.",
-		Long: Banner(terminal.IsATTY(os.Stdout)) + `cunīcu is a user-space daemon managing WireGuard® interfaces to
+		Long: Banner(tty.IsATTY(os.Stdout)) + `cunīcu is a user-space daemon managing WireGuard® interfaces to
 establish peer-to-peer connections in harsh network environments.
 
 It relies on the awesome pion/ice package for the interactive
@@ -118,7 +117,7 @@ func onInitialize(opts *options) {
 	// Handle color output
 	switch opts.colorMode {
 	case "auto":
-		color = terminal.IsATTY(os.Stdout)
+		color = tty.IsATTY(os.Stdout)
 	case "always":
 		color = true
 	case "never":
@@ -127,7 +126,7 @@ func onInitialize(opts *options) {
 
 	stdout = os.Stdout
 	if !color {
-		stdout = terminal.NewANSIStripper(stdout)
+		stdout = tty.NewANSIStripper(stdout)
 	}
 
 	// Setup logging

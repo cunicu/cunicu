@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pion/zapion"
 	"github.com/stv0g/cunicu/pkg/log"
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
@@ -25,7 +25,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Logging Suite")
 }
 
-// TODO: This test is currently broken on Windows dues:
+// TODO: This test is currently broken on Windows due:
 // https://github.com/uber-go/zap/issues/621
 var _ = Context("log", Label("broken-on-windows"), func() {
 	var logger *zap.Logger
@@ -36,7 +36,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		tmpDir := GinkgoT().TempDir()
 
 		logPath = filepath.Join(tmpDir, "std.log")
-		msg = fmt.Sprintf("Test message %s", t.Mods("something red", t.FgRed))
+		msg = fmt.Sprintf("Test message %s", tty.Mods("something red", tty.FgRed))
 
 		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", lvl.String())
@@ -102,7 +102,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		}
 
 		regex := fmt.Sprintf(`\d{2}:\d{2}:\d{2}.\d{3}\t%s\t%s%s`,
-			regexp.QuoteMeta(t.Mods(lvl.String(), t.FgBlue)), scope,
+			regexp.QuoteMeta(tty.Mods(lvl.String(), tty.FgBlue)), scope,
 			regexp.QuoteMeta(msg))
 
 		Expect(logContents).To(MatchRegexp(regex), "Log output '%s' does not match regex '%s'", logContents, regex)

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 func Banner(color bool) string {
@@ -15,15 +15,15 @@ func Banner(color bool) string {
 
 	if color && !isDocGen {
 		w = func(s string) string {
-			return t.Mods(s, t.Bold, t.Color(15))
+			return tty.Mods(s, tty.Bold, tty.Color(15))
 		}
 
 		o = func(s string) string {
-			return t.Mods(s, t.Bold, t.Color(214))
+			return tty.Mods(s, tty.Bold, tty.Color(214))
 		}
 
 		d = func(s string) string {
-			return t.Mods(s, t.Bold, t.Color(130))
+			return tty.Mods(s, tty.Bold, tty.Color(130))
 		}
 	}
 

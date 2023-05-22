@@ -1,11 +1,9 @@
-package util
+package tty
 
 import (
 	"fmt"
 	"strings"
 	"time"
-
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
 )
 
 const (
@@ -39,7 +37,7 @@ func PrettyDuration(left time.Duration) string {
 				unit += "s" // plural s
 			}
 
-			out = append(out, fmt.Sprintf("%d "+t.Mods("%s", t.FgCyan), num, unit))
+			out = append(out, fmt.Sprintf("%d "+Mods("%s", FgCyan), num, unit))
 		}
 	}
 
@@ -67,10 +65,6 @@ func Every(d time.Duration) string {
 // PrettyBytes pretty prints a byte count
 // See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L184
 func PrettyBytes(b int64) string {
-	if b < 1024 {
-		return fmt.Sprintf("%d "+t.Mods("B", t.FgCyan), b)
-	}
-
 	suffices := []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
 	var f float32
 	var i int
@@ -79,8 +73,8 @@ func PrettyBytes(b int64) string {
 	}
 
 	if i == 0 {
-		return fmt.Sprintf("%.0f "+t.Mods("B", t.FgCyan), f)
+		return fmt.Sprintf("%.0f "+Mods("B", FgCyan), f)
 	}
 
-	return fmt.Sprintf("%.2f "+t.Mods("%ciB", t.FgCyan), f, suffices[i-1])
+	return fmt.Sprintf("%.2f "+Mods("%ciB", FgCyan), f, suffices[i-1])
 }

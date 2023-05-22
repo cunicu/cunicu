@@ -9,7 +9,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/rpc"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
 )
@@ -67,7 +67,7 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 
 	if logger.Core().Enabled(zap.DebugLevel) {
 		logger.Debug("Loaded configuration:")
-		wr := terminal.NewIndenter(&zapio.Writer{
+		wr := tty.NewIndenter(&zapio.Writer{
 			Log:   logger,
 			Level: zap.DebugLevel,
 		}, "   ")

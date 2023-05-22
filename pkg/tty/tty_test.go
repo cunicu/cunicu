@@ -1,4 +1,4 @@
-package terminal_test
+package tty_test
 
 import (
 	"os"
@@ -7,33 +7,33 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Terminal Suite")
+	RunSpecs(t, "TTY Suite")
 }
 
 var _ = test.SetupLogging()
 
-var _ = Context("tty", func() {
+var _ = Context("IsATTY", func() {
 	if test.IsCI() {
-		It("is false on CI", func() {
-			Expect(terminal.IsATTY(os.Stdout)).To(BeFalse())
+		It("is false in CI runners", func() {
+			Expect(tty.IsATTY(os.Stdout)).To(BeFalse())
 		})
 	} else {
-		It("is true", func() {
-			Expect(terminal.IsATTY(os.Stdout)).To(BeTrue())
+		It("is true outside CI runners", func() {
+			Expect(tty.IsATTY(os.Stdout)).To(BeTrue())
 		})
 	}
 
-	It("is false", func() {
+	It("is false on files", func() {
 		fn := filepath.Join(GinkgoT().TempDir(), "file")
 		f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0o600)
 		Expect(err).To(Succeed())
 
-		Expect(terminal.IsATTY(f)).To(BeFalse())
+		Expect(tty.IsATTY(f)).To(BeFalse())
 	})
 })
