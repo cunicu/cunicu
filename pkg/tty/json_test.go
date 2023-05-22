@@ -1,12 +1,12 @@
-package util_test
+package tty_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/util"
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
-var _ = Context("reindent json", func() {
+var _ = Context("re-indent json", func() {
 	It("works", func() {
 		original := []byte(`{ "a": { "b": { "c": 5 } } }`)
 		indented := []byte(`{
@@ -17,11 +17,11 @@ var _ = Context("reindent json", func() {
   }
 }`)
 
-		Expect(util.ReIndentJSON(original, "", "  ")).To(Equal(indented))
+		Expect(tty.ReIndentJSON(original, "", "  ")).To(Equal(indented))
 	})
 
 	It("fails for invalid json", func() {
-		_, err := util.ReIndentJSON([]byte("{"), "", "  ")
+		_, err := tty.ReIndentJSON([]byte("{"), "", "  ")
 		Expect(err).To(HaveOccurred())
 	})
 })

@@ -1,4 +1,4 @@
-package terminal
+package tty
 
 import (
 	"fmt"
@@ -7,6 +7,11 @@ import (
 	"strings"
 
 	"github.com/mdp/qrterminal/v3"
+)
+
+const (
+	RunesAlpha        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	RunesAlphaNumeric = RunesAlpha + "0123456789"
 )
 
 const (

@@ -1,4 +1,4 @@
-package util
+package tty
 
 import "encoding/json"
 

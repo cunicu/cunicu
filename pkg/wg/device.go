@@ -8,7 +8,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/util"
-	t "github.com/stv0g/cunicu/pkg/util/terminal"
+	"github.com/stv0g/cunicu/pkg/tty"
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -26,11 +26,11 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 	case "auto":
 		fallthrough
 	default:
-		color = t.IsATTY(os.Stdout)
+		color = tty.IsATTY(os.Stdout)
 	}
 
 	if !color {
-		wr = t.NewANSIStripper(wr)
+		wr = tty.NewANSIStripper(wr)
 	}
 
 	switch os.Getenv("WG_HIDE_KEYS") {
@@ -46,32 +46,32 @@ func (d *Device) DumpEnv(wr io.Writer) error {
 }
 
 func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
-	wri := t.NewIndenter(wr, "  ")
+	wri := tty.NewIndenter(wr, "  ")
 
-	fmt.Fprintf(wr, t.Mods("interface", t.Bold, t.FgGreen)+": "+t.Mods("%s", t.FgGreen)+"\n", d.Name)
+	fmt.Fprintf(wr, tty.Mods("interface", tty.Bold, tty.FgGreen)+": "+tty.Mods("%s", tty.FgGreen)+"\n", d.Name)
 
 	if crypto.Key(d.PrivateKey).IsSet() {
-		if _, err := t.FprintKV(wri, "public key", d.PublicKey); err != nil {
+		if _, err := tty.FprintKV(wri, "public key", d.PublicKey); err != nil {
 			return err
 		}
 
 		if hideKeys {
-			if _, err := t.FprintKV(wri, "private key", "(hidden)"); err != nil {
+			if _, err := tty.FprintKV(wri, "private key", "(hidden)"); err != nil {
 				return err
 			}
 		} else {
-			if _, err := t.FprintKV(wri, "private key", d.PrivateKey); err != nil {
+			if _, err := tty.FprintKV(wri, "private key", d.PrivateKey); err != nil {
 				return err
 			}
 		}
 	}
 
-	if _, err := t.FprintKV(wri, "listening port", d.ListenPort); err != nil {
+	if _, err := tty.FprintKV(wri, "listening port", d.ListenPort); err != nil {
 		return err
 	}
 
 	if d.FirewallMark > 0 {
-		if _, err := t.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark)); err != nil {
+		if _, err := tty.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark)); err != nil {
 			return err
 		}
 	}
@@ -82,28 +82,28 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	})
 
 	for _, p := range d.Peers {
-		fmt.Fprintf(wr, "\n"+t.Mods("peer", t.Bold, t.FgYellow)+": "+t.Mods("%s", t.FgYellow)+"\n", p.PublicKey)
+		fmt.Fprintf(wr, "\n"+tty.Mods("peer", tty.Bold, tty.FgYellow)+": "+tty.Mods("%s", tty.FgYellow)+"\n", p.PublicKey)
 
 		if crypto.Key(p.PresharedKey).IsSet() {
 			if hideKeys {
-				if _, err := t.FprintKV(wri, "preshared key", "(hidden)"); err != nil {
+				if _, err := tty.FprintKV(wri, "preshared key", "(hidden)"); err != nil {
 					return err
 				}
 			} else {
-				if _, err := t.FprintKV(wri, "preshared key", p.PresharedKey); err != nil {
+				if _, err := tty.FprintKV(wri, "preshared key", p.PresharedKey); err != nil {
 					return err
 				}
 			}
 		}
 
 		if p.Endpoint != nil {
-			if _, err := t.FprintKV(wri, "endpoint", p.Endpoint); err != nil {
+			if _, err := tty.FprintKV(wri, "endpoint", p.Endpoint); err != nil {
 				return err
 			}
 		}
 
 		if !p.LastHandshakeTime.IsZero() {
-			if _, err := t.FprintKV(wri, "latest handshake", util.Ago(p.LastHandshakeTime)); err != nil {
+			if _, err := tty.FprintKV(wri, "latest handshake", tty.Ago(p.LastHandshakeTime)); err != nil {
 				return err
 			}
 		}
@@ -114,25 +114,25 @@ func (d *Device) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 				allowedIPs = append(allowedIPs, allowedIP.String())
 			}
 
-			if _, err := t.FprintKV(wri, "allowed ips", strings.Join(allowedIPs, ", ")); err != nil {
+			if _, err := tty.FprintKV(wri, "allowed ips", strings.Join(allowedIPs, ", ")); err != nil {
 				return err
 			}
 		} else {
-			if _, err := t.FprintKV(wri, "allowed ips", "(none)"); err != nil {
+			if _, err := tty.FprintKV(wri, "allowed ips", "(none)"); err != nil {
 				return err
 			}
 		}
 
 		if p.ReceiveBytes > 0 || p.TransmitBytes > 0 {
-			if _, err := t.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
-				util.PrettyBytes(p.ReceiveBytes),
-				util.PrettyBytes(p.TransmitBytes))); err != nil {
+			if _, err := tty.FprintKV(wri, "transfer", fmt.Sprintf("%s received, %s sent",
+				tty.PrettyBytes(p.ReceiveBytes),
+				tty.PrettyBytes(p.TransmitBytes))); err != nil {
 				return err
 			}
 		}
 
 		if p.PersistentKeepaliveInterval > 0 {
-			if _, err := t.FprintKV(wri, "persistent keepalive", util.Every(p.PersistentKeepaliveInterval)); err != nil {
+			if _, err := tty.FprintKV(wri, "persistent keepalive", tty.Every(p.PersistentKeepaliveInterval)); err != nil {
 				return err
 			}
 		}
