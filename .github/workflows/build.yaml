@@ -132,7 +132,6 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
-        cache: true
     
     - name: Install build and test dependencies
       env:
