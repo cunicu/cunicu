@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Session Signaling
 
 Lets assume two peers $P_a$ & $P_b$ are seeking to establish a ICE session.

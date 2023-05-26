@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Website
 
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.

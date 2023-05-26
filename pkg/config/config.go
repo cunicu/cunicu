@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-License-Identifier: Apache-2.0
+
 // Package config defines, loads and parses project wide configuration settings from various sources
 package config
 

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
 PKG = $(shell grep module go.mod | cut -f2 -d" ")
 
 export CGO_ENABLED = 0

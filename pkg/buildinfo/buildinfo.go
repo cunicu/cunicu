@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-License-Identifier: Apache-2.0
+
 // Package buildinfo provides access to build-time information such as the build date and version control details
 package buildinfo
 
