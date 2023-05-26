@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine AS builder
+FROM golang:1.20-alpine AS builder
 
 RUN apk add \
     git \
@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 RUN make
 
-FROM alpine:3
+FROM alpine:3.18
 
 COPY --from=builder /app/cunicu /
 
