@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
 # Author: Steffen Vogel <post@steffenvogel.de>
 # License: Apache-2.0
 # Copyright: Institute for Automation of Complex Power Systems, RWTH Aachen University

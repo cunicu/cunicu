@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-License-Identifier: Apache-2.0
+
 import React from 'react';
 import CodeBlock from '@theme/CodeBlock';
 import ExampleConfigSource from '!!raw-loader!../../../../etc/cunicu.yaml';

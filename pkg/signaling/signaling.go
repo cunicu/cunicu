@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-License-Identifier: Apache-2.0
+
 // Package signaling implements various signaling backends to exchange encrypted messages between peers
 package signaling
 
