@@ -309,11 +309,11 @@ var _ = Context("config", func() {
 		})
 
 		It("can parse the example config file", func() {
-			cfg, err := config.ParseArgs("--config", "../../etc/cunicu.yaml")
+			cfg, err := config.ParseArgs("--config", "../../etc/cunicu.advanced.yaml")
 
 			Expect(err).To(Succeed())
 
-			Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.yaml"}))
+			Expect(cfg.Files).To(Equal([]string{"../../etc/cunicu.advanced.yaml"}))
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0", "wg1", "wg2", "wg-work-*", "wg-work-external-*"}))
 			Expect(cfg.InterfaceSettings("wg-work-laptop").Community).To(BeEquivalentTo(crypto.GenerateKeyFromPassword("mysecret-pass")))
 			Expect(cfg.DefaultInterfaceSettings.Hooks).To(HaveLen(2))

@@ -89,6 +89,7 @@ archives:
   - etc/systemd/*
   - completions/*
   - etc/cunicu.yaml
+  - etc/cunicu.advanced.yaml
   - src: docs/usage/man/*
     dst: man/
     strip_parent: true
@@ -122,6 +123,13 @@ nfpms:
     type: config
     file_info:
       mode: 0644
+
+  - src: "./etc/cunicu.advanced.yaml"
+    dst: "/etc/cunicu.advanced-example.yaml"
+    type: config
+    file_info:
+      mode: 0644
+
 
   - src: "./docs/usage/man/*.1"
     dst: "/usr/share/man/man1"
@@ -256,7 +264,7 @@ brews:
 
   install: |-
     bin.install "cunicu"
-    etc.install "etc/cunicu.yaml"
+    etc.install "etc/cunicu.yaml", "etc/cunicu.advanced.yaml"
     bash_completion.install "completions/cunicu.bash" => "cunicu"
     zsh_completion.install "completions/cunicu.zsh" => "_cunicu"
     fish_completion.install "completions/cunicu.fish"    
