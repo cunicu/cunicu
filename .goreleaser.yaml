@@ -98,6 +98,8 @@ archives:
   - goos: windows
     format: zip
 
+  rlcp: true
+
 nfpms:
 - vendor: stv0g
   homepage: https://github.com/stv0g/cunicu/
