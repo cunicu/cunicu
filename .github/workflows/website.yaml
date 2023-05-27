@@ -3,7 +3,7 @@
 
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: Build and deploy website to GitHub Pages
+name: Build and deploy website
 
 on:
   push:
@@ -17,7 +17,7 @@ defaults:
 
 jobs:
   deploy:
-    name: Build and deploy website to GitHub Pages
+    name: Build and deploy website
     runs-on: ubuntu-latest
     environment: release
     steps:
@@ -31,7 +31,7 @@ jobs:
             make
             libpcap-dev
 
-    - name: Setup Go
+    - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version-file: go.mod
@@ -45,15 +45,31 @@ jobs:
       run: make docs
       working-directory: ./
 
-    - name: Setup Node.js
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 20
-        cache: yarn
-        cache-dependency-path: website/yarn.lock
+
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Restore yarn cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: yarn-cache-folder-${{ hashFiles('**/yarn.lock', '.yarnrc.yml') }}
+        restore-keys: |
+          yarn-cache-folder-
+
+    - name: Set up yarn
+      run: |
+        corepack enable
+        corepack prepare yarn@stable --activate
 
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: yarn install --immutable
 
     - name: Build website
       run: yarn build
