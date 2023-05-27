@@ -1,12 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
-SPDX-License-Identifier: Apache-2.0
--->
-
 ---
 title: Welcome
 sidebar_position: 1
 hide_title: true
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
 ---
 
 <p align="center" >
@@ -70,7 +67,7 @@ It has been changed from the former name _wice_ in order to broaden the scope of
 
 ## License
 
-cunīcu is licensed under the [Apache 2.0](https://github.com/stv0g/cunicu/blob/master/LICENSE) license.
+cunīcu is licensed under the [Apache-2.0](https://github.com/stv0g/cunicu/blob/master/LICENSE) license.
 
 Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen University
 

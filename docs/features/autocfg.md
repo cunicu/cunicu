@@ -1,10 +1,6 @@
-<!--
-SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
-SPDX-License-Identifier: Apache-2.0
--->
-
 ---
-title: Auto-configuration
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
 ---
 
 # Auto-configuration

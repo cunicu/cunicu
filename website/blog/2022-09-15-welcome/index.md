@@ -1,8 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
-SPDX-License-Identifier: Apache-2.0
--->
-
 ---
 slug: welcome
 title: Welcome
@@ -10,6 +5,8 @@ authors:
 - stv0g
 tags:
 - hello
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
 ---
 
 Hello, welcome to the first post in the cunīcu project blog!
