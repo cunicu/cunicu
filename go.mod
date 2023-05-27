@@ -13,10 +13,10 @@ require (
 	github.com/google/nftables v0.1.0
 	github.com/imdario/mergo v0.3.15
 	github.com/knadh/koanf v1.5.0
-	github.com/mdp/qrterminal/v3 v3.0.0
+	github.com/mdp/qrterminal/v3 v3.1.1
 	github.com/miekg/dns v1.1.54
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.3.5
+	github.com/pion/ice/v2 v2.3.6
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.6.0
 	github.com/pion/zapion v0.0.0-20220425013423-f29ac63a7069
@@ -39,10 +39,10 @@ require (
 
 require (
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
-	github.com/gopacket/gopacket v1.1.0 // test-only
+	github.com/gopacket/gopacket v1.1.1-0.20230504215803-44b8a6a7a299 // test-only
 	github.com/onsi/ginkgo/v2 v2.9.5 // test-only
 	github.com/onsi/gomega v1.27.7 // test-only
-	github.com/stv0g/gont/v2 v2.3.4 // test-only
+	github.com/stv0g/gont/v2 v2.3.6 // test-only
 )
 
 require (
@@ -89,7 +89,7 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.69 // indirect
