@@ -3,9 +3,8 @@ SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 SPDX-License-Identifier: Apache-2.0
 -->
 
-<p align="center" >
+<div align="center" >
     <img style="width: 40%; margin: 4em 0" src="website/static/img/cunicu_logo.svg" alt="cunīcu logo" />
-</p>
 
 [![GitHub branch checks state](https://img.shields.io/github/checks-status/stv0g/cunicu/master?style=flat-square)](https://github.com/stv0g/cunicu/actions)
 [![goreportcard](https://goreportcard.com/badge/github.com/stv0g/cunicu?style=flat-square)](https://goreportcard.com/report/github.com/stv0g/cunicu)
@@ -14,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 [![License](https://img.shields.io/github/license/stv0g/cunicu?style=flat-square)](https://github.com/stv0g/cunicu/blob/master/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stv0g/cunicu?style=flat-square)
 [![Go Reference](https://pkg.go.dev/badge/github.com/stv0g/cunicu.svg)](https://pkg.go.dev/github.com/stv0g/cunicu)
+</div>
 
 ## 🚧 cunīcu is currently still in an Alpha state and not usable yet
 
