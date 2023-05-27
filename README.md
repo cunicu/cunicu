@@ -37,13 +37,11 @@ cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/do
 
 ## Authors
 
--   Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
+-   Steffen Vogel ([@stv0g](https://github.com/stv0g))
 
 ## License
 
 cunīcu is licensed under the [Apache 2.0](./LICENSE) license.
-
-Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen University
 
 ## Funding acknowledgement
 
