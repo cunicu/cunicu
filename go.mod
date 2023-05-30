@@ -11,7 +11,7 @@ require (
 	github.com/dchest/siphash v1.2.3
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/nftables v0.1.0
-	github.com/imdario/mergo v0.3.15
+	github.com/imdario/mergo v0.3.16
 	github.com/knadh/koanf v1.5.0
 	github.com/mdp/qrterminal/v3 v3.1.1
 	github.com/miekg/dns v1.1.54
