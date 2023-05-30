@@ -19,7 +19,7 @@ require (
 	github.com/pion/ice/v2 v2.3.6
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.6.0
-	github.com/pion/zapion v0.0.0-20220425013423-f29ac63a7069
+	github.com/pion/zapion v0.0.0-20230529023309-3bb052e9490b
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20221214185949-378a404a26f0
