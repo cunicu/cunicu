@@ -12,7 +12,14 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/nftables v0.1.0
 	github.com/imdario/mergo v0.3.16
-	github.com/knadh/koanf v1.5.0
+	github.com/knadh/koanf/maps v0.1.1
+	github.com/knadh/koanf/parsers/yaml v0.1.0
+	github.com/knadh/koanf/providers/confmap v0.1.0
+	github.com/knadh/koanf/providers/env v0.1.0
+	github.com/knadh/koanf/providers/file v0.1.0
+	github.com/knadh/koanf/providers/posflag v0.1.0
+	github.com/knadh/koanf/providers/rawbytes v0.1.0
+	github.com/knadh/koanf/v2 v2.0.1
 	github.com/mdp/qrterminal/v3 v3.1.1
 	github.com/miekg/dns v1.1.54
 	github.com/mitchellh/mapstructure v1.5.0
@@ -67,7 +74,6 @@ require (
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.7 // indirect
