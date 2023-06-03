@@ -43,7 +43,6 @@ linters:
   - bodyclose # checks whether HTTP response body is closed successfully
   - contextcheck # check the function whether use a non-inherited context
   - decorder # check declaration order and count of types, constants, variables and functions
-  - depguard # Go linter that checks if package imports are in a list of acceptable packages
   - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
   - dupl # Tool for code clone detection
   - durationcheck # check for two durations multiplied together
@@ -96,6 +95,7 @@ linters:
   disable:
   - containedctx # containedctx is a linter that detects struct contained context.Context field
   - cyclop # checks function and package cyclomatic complexity
+  - depguard # Go linter that checks if package imports are in a list of acceptable packages
   - exhaustivestruct # Checks if all struct's fields are initialized
   - forbidigo # Forbids identifiers
   - funlen # Tool for detection of long functions
