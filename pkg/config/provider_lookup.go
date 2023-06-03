@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/maps"
+	"github.com/knadh/koanf/v2"
 	"github.com/miekg/dns"
 	"github.com/pion/stun"
 	"go.uber.org/zap"

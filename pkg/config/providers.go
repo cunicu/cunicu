@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 

@@ -4,8 +4,8 @@
 package config
 
 import (
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/providers/posflag"
+	"github.com/knadh/koanf/v2"
 	"github.com/spf13/pflag"
 )
 

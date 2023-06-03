@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/imdario/mergo"
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
