@@ -47,7 +47,7 @@ require (
 require (
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
 	github.com/gopacket/gopacket v1.1.1-0.20230602214333-9e29b47788a3 // test-only
-	github.com/onsi/ginkgo/v2 v2.9.7 // test-only
+	github.com/onsi/ginkgo/v2 v2.10.0 // test-only
 	github.com/onsi/gomega v1.27.7 // test-only
 	github.com/stv0g/gont/v2 v2.3.6 // test-only
 )
@@ -93,7 +93,7 @@ require (
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	golang.org/x/tools v0.9.1 // indirect
+	golang.org/x/tools v0.9.3 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
