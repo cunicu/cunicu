@@ -23,7 +23,7 @@ require (
 	github.com/mdp/qrterminal/v3 v3.1.1
 	github.com/miekg/dns v1.1.54
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.3.6
+	github.com/pion/ice/v2 v2.3.7
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.6.0
 	github.com/pion/zapion v0.0.0-20230529023309-3bb052e9490b
@@ -83,7 +83,7 @@ require (
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.2 // indirect
-	github.com/stretchr/testify v1.8.3 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
