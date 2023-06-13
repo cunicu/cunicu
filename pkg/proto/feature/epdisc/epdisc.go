@@ -87,8 +87,10 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 			return err
 		}
 
-		if _, err := tty.FprintKV(wr, "latest state change", tty.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
-			return err
+		if p.LastStateChangeTimestamp != nil {
+			if _, err := tty.FprintKV(wr, "latest state change", tty.Ago(p.LastStateChangeTimestamp.Time())); err != nil {
+				return err
+			}
 		}
 
 		if p.Restarts > 0 {
