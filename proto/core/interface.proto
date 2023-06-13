@@ -10,12 +10,14 @@ import "common.proto";
 import "core/peer.proto";
 import "feature/epdisc.proto";
 
-// Type of the WireGuard interface impelementation
+// Type of the WireGuard interface implementation
 enum InterfaceType {
-    KERNEL_LINUX = 0;
-    KERNEL_OPENBSD = 1;
-    KERNEL_WINDOWS = 2;
-    USERSPACE = 3;
+    UNSPECIFIED_INTERFACE_TYPE = 0;
+    KERNEL_LINUX = 1;
+    KERNEL_OPENBSD = 2;
+    KERNEL_FREEBSD = 3;
+    KERNEL_WINDOWS = 4;
+    USERSPACE = 5;
 }
 
 // A WireGuard interface
