@@ -69,7 +69,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 		}
 	}
 
-	if _, err := tty.FprintKV(wr, "state", tty.Mods(p.State.String(), tty.Bold, p.State.Color())); err != nil {
+	if _, err := tty.FprintKV(wri, "state", tty.Mods(p.State.String(), tty.Bold, p.State.Color())); err != nil {
 		return err
 	}
 
