@@ -29,13 +29,20 @@ type Interface struct {
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
+	logger := zap.L().Named("hsync").With(zap.String("intf", i.Name()))
+
+	if writable, err := isWritable(hostsPath); err != nil || !writable {
+		logger.Warn("Disabling /etc/hosts synchronization as it is not writable")
+		return nil, daemon.ErrFeatureDeactivated
+	}
+
 	if !i.Settings.SyncHosts {
 		return nil, daemon.ErrFeatureDeactivated
 	}
 
 	hs := &Interface{
 		Interface: i,
-		logger:    zap.L().Named("hsync").With(zap.String("intf", i.Name())),
+		logger:    logger,
 	}
 
 	i.AddPeerHandler(hs)

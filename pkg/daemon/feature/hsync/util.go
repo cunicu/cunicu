@@ -7,7 +7,22 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 )
+
+func isWritable(fn string) (bool, error) {
+	efn, err := filepath.EvalSymlinks(fn)
+	if err != nil {
+		return false, fmt.Errorf("failed to evaluate symlinks: %w", err)
+	}
+
+	fi, err := os.Stat(efn)
+	if err != nil {
+		return false, fmt.Errorf("failed to stat: %w", err)
+	}
+
+	return !fi.IsDir() && fi.Mode()&os.ModePerm == os.ModePerm, nil
+}
 
 func readLines(fn string) ([]string, error) {
 	//#nosec G304 -- Filename is hard coded.
