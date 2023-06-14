@@ -5,23 +5,21 @@ package hsync
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 func isWritable(fn string) (bool, error) {
-	efn, err := filepath.EvalSymlinks(fn)
+	f, err := os.OpenFile(fn, os.O_WRONLY, 0o000)
 	if err != nil {
-		return false, fmt.Errorf("failed to evaluate symlinks: %w", err)
+		if errors.Is(err, os.ErrPermission) || errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
 	}
 
-	fi, err := os.Stat(efn)
-	if err != nil {
-		return false, fmt.Errorf("failed to stat: %w", err)
-	}
-
-	return !fi.IsDir() && fi.Mode()&os.ModePerm == os.ModePerm, nil
+	return true, f.Close()
 }
 
 func readLines(fn string) ([]string, error) {
