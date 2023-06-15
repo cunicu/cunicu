@@ -20,8 +20,6 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-type SignalingState int
-
 type Peer struct {
 	*wgtypes.Peer
 
@@ -35,7 +33,7 @@ type Peer struct {
 	LastStateChangeTime time.Time
 
 	onModified []PeerModifiedHandler
-	state      types.AtomicEnum[coreproto.PeerState]
+	state      types.AtomicEnum[PeerState]
 	client     *wgctrl.Client
 
 	logger *zap.Logger

@@ -28,4 +28,5 @@ const (
 	ConnectionStateCreating
 	ConnectionStateRestarting
 	ConnectionStateIdle
+	ConnectionStateGathering
 )
