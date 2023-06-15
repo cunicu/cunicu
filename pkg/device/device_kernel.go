@@ -73,7 +73,7 @@ func (d *KernelDevice) Bind() *wg.Bind {
 
 func (d *KernelDevice) BindUpdate() error {
 	if d.ListenPort == 0 {
-		d.logger.Warn("Skip bind update as we no listen port yet")
+		d.logger.Debug("Skip bind update as we no listen port yet")
 		return nil
 	}
 

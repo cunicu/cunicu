@@ -75,7 +75,7 @@ func (p *Peer) onSelectedCandidatePairChange(local, remote ice.Candidate) {
 // onRemoteCredentials is a handler called for each received pair of remote Ufrag/Pwd via the signaling channel
 func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
 	logger := p.logger.With(zap.Any("creds", creds))
-	logger.Info("Received remote credentials")
+	logger.Debug("Received remote credentials")
 
 	if p.isSessionRestart(creds) {
 		if err := p.Restart(); err != nil {

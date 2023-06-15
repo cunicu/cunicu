@@ -93,7 +93,7 @@ func (i *Interface) ConfigureWireGuard() error {
 	if !i.PrivateKey().IsSet() || (i.Settings.PrivateKey.IsSet() && i.Settings.PrivateKey != i.PrivateKey()) {
 		sk := i.Settings.PrivateKey
 		if !sk.IsSet() {
-			i.logger.Warn("Device has no private key. Generating a new key.")
+			i.logger.Info("Device has no private key. Generating a new key.")
 
 			sk, err = crypto.GeneratePrivateKey()
 			if err != nil {
@@ -121,7 +121,7 @@ func (i *Interface) ConfigureWireGuard() error {
 		}
 
 		if i.ListenPort == 0 {
-			i.logger.Warn("Device has no listen port. Assigning one.", zap.Int("listen_port", *cfg.ListenPort))
+			i.logger.Info("Device has no listen port. Assigning one.", zap.Int("listen_port", *cfg.ListenPort))
 		}
 	}
 
