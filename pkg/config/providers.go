@@ -96,9 +96,13 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 		case "http", "https":
 			p = NewRemoteFileProvider(u)
 		case "":
-			p = NewLocalFileProvider(u)
+			p = NewLocalFileProvider(u.Path)
 		default:
-			return nil, fmt.Errorf("%w '%s' for config file", errUnsupportedScheme, u.Scheme)
+			if isWindowsDriveLetter(u.Scheme) {
+				p = NewLocalFileProvider(f)
+			} else {
+				return nil, fmt.Errorf("%w '%s' for config file", errUnsupportedScheme, u.Scheme)
+			}
 		}
 
 		ps = append(ps, p)
@@ -107,9 +111,7 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 	// Add a runtime configuration file if it exists
 	if fi, err := os.Stat(RuntimeConfigFile); err == nil && !fi.IsDir() {
 		ps = append(ps,
-			NewLocalFileProvider(&url.URL{
-				Path: RuntimeConfigFile,
-			}),
+			NewLocalFileProvider(RuntimeConfigFile),
 		)
 	}
 

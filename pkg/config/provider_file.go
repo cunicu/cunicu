@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/knadh/koanf/providers/file"
@@ -153,10 +154,10 @@ type LocalFileProvider struct {
 	allowInsecure bool
 }
 
-func NewLocalFileProvider(u *url.URL) *LocalFileProvider {
+func NewLocalFileProvider(path string) *LocalFileProvider {
 	return &LocalFileProvider{
-		File:          file.Provider(u.Path),
-		path:          u.Path,
+		File:          file.Provider(path),
+		path:          path,
 		allowInsecure: os.Getenv("CUNICU_CONFIG_ALLOW_INSECURE") == "true",
 	}
 }
@@ -184,4 +185,10 @@ func (p *LocalFileProvider) ReadBytes() ([]byte, error) {
 
 func (p *LocalFileProvider) Order() []string {
 	return p.order
+}
+
+var windowsDriveLetterRegexp = regexp.MustCompile(`(?i)^[a-z]$`)
+
+func isWindowsDriveLetter(s string) bool {
+	return windowsDriveLetterRegexp.MatchString(s)
 }
