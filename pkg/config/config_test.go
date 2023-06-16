@@ -174,14 +174,21 @@ var _ = Context("config", func() {
 				})
 			})
 
-			Describe("non-existent files", func() {
-				It("fails on loading an non-existent local file", func() {
+			Describe("non-existing files", func() {
+				It("fails on loading an non-existing local file paths", func() {
+					var errSuffix string
+					if runtime.GOOS == "windows" {
+						errSuffix = "The system cannot find the path specified."
+					} else {
+						errSuffix = "no such file or directory"
+					}
+
 					_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
 
-					Expect(err).To(MatchError(MatchRegexp("no such file or directory$")))
+					Expect(err).To(MatchError(HaveSuffix(errSuffix)))
 				})
 
-				It("fails on loading an non-existent remote file", func() {
+				It("fails on loading an non-existing remote file paths", func() {
 					_, err := config.ParseArgs("--config", "https://domain.invalid/config.yaml")
 
 					Expect(err).To(MatchError(MatchRegexp(`^failed to load config: failed to fetch https://domain\.invalid/config\.yaml`)))
@@ -328,18 +335,6 @@ var _ = Context("config", func() {
 	It("throws an error on an invalid config file path", func() {
 		_, err := config.ParseArgs("--config", "_:")
 		Expect(err).To(MatchError(HavePrefix("ignoring config file with invalid name")))
-	})
-
-	It("throws an error on an non-existing config file path", func() {
-		var errSuffix string
-		if runtime.GOOS == "windows" {
-			errSuffix = "The system cannot find the path specified."
-		} else {
-			errSuffix = "no such file or directory"
-		}
-
-		_, err := config.ParseArgs("--config", "/this/file/does/not/exist.yaml")
-		Expect(err).To(MatchError(HaveSuffix(errSuffix)))
 	})
 
 	It("throws an error on an invalid config file URL schema", func() {
