@@ -120,9 +120,9 @@ func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
 	var err error
 	var conn *dns.Conn
 
-	cfg, err := dns.ClientConfigFromFile("/etc/resolv.conf")
+	cfg, err := dnsClientConfig()
 	if err != nil {
-		return -1, fmt.Errorf("failed to load resolver configuration: %w", err)
+		return -1, fmt.Errorf("failed to load DNS client config: %w", err)
 	}
 
 	addr := net.JoinHostPort(cfg.Servers[0], cfg.Port)
