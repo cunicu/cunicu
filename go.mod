@@ -29,6 +29,7 @@ require (
 	github.com/pion/zapion v0.0.0-20230529023309-3bb052e9490b
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.8.4
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20221214185949-378a404a26f0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.10.0
@@ -83,7 +84,6 @@ require (
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.2 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
