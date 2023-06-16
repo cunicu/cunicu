@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2023 Philipp Jungkamp <p.jungkamp@gmx.net>
+# SPDX-License-Identifier: Apache-2.0
 
-file=./dist/nix/cunicu.nix
+file=./nix/cunicu.nix
 
 printf '%s\n' 'Faking the hash'
 
@@ -9,7 +11,7 @@ sed -i 's|vendorHash.*;$|vendorHash = lib.fakeHash;|' "$file"
 printf '%s\n' 'Evaluating the derivation'
 
 output="$(
-  nix build ./dist/nix#cunicu.go-modules \
+  nix build ./nix#cunicu.go-modules \
     --extra-experimental-features 'nix-command flakes' \
     --refresh \
     --no-link \
@@ -29,7 +31,7 @@ printf '%s\n' "Set hash to $correct_hash"
 
 sed -i "s|vendorHash.*;$|vendorHash = \"$correct_hash\";|" "$file"
 
-nix build ./dist/nix#cunicu \
+nix build ./nix#cunicu \
   --extra-experimental-features 'nix-command flakes' \
   --no-link
 
