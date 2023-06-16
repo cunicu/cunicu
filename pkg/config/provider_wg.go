@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -55,8 +54,8 @@ func (p *WireGuardProvider) Read() (map[string]interface{}, error) {
 
 	for _, de := range des {
 		cfg := filepath.Join(p.path, de.Name())
-		filename := path.Base(cfg)
-		extension := path.Ext(filename)
+		filename := filepath.Base(cfg)
+		extension := filepath.Ext(filename)
 		name := strings.TrimSuffix(filename, extension)
 
 		if extension != ".conf" {

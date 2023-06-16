@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -53,7 +52,7 @@ func BuildBinary(name string) (string, []any, error) {
 // You should call CleanupBinary before your test ends to clean up any temporary artifacts.
 func CleanupBinary() {
 	cacheDir := os.Getenv("GINKGO_CACHE_DIR")
-	if dir := path.Dir(binaryPath); dir != "" && dir != cacheDir {
+	if dir := filepath.Dir(binaryPath); dir != "" && dir != cacheDir {
 		os.RemoveAll(dir)
 	}
 }
@@ -156,7 +155,7 @@ func newExecutablePath(packagePath string) (string, error) {
 		return "", err
 	}
 
-	executable := filepath.Join(tmpDir, path.Base(packagePath))
+	executable := filepath.Join(tmpDir, filepath.Base(packagePath))
 
 	if runtime.GOOS == "windows" {
 		executable += ".exe"
