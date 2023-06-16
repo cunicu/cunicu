@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/onsi/ginkgo/v2"
@@ -46,7 +46,7 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 
 	if fn != "" {
 		// Create parent directories for log file
-		if path := path.Dir(fn); path != "" {
+		if path := filepath.Dir(fn); path != "" {
 			if err := os.MkdirAll(path, 0o750); err != nil {
 				panic(fmt.Errorf("failed to directory of log file: %w", err))
 			}

@@ -6,7 +6,7 @@ package daemon
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
@@ -15,7 +15,7 @@ import (
 )
 
 func normalizeSocketName(name string) string {
-	name = path.Base(name)
+	name = filepath.Base(name)
 	return strings.TrimSuffix(name, ".sock")
 }
 

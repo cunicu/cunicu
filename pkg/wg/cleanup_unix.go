@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 
 	"go.uber.org/zap"
@@ -33,7 +32,7 @@ func CleanupUserSockets() error {
 	for _, de := range des {
 		p := filepath.Join(SocketPath, de.Name())
 
-		if path.Ext(p) == ".sock" {
+		if filepath.Ext(p) == ".sock" {
 			if c, err := net.Dial("unix", p); err == nil {
 				if err := c.Close(); err != nil {
 					return fmt.Errorf("failed to close socket: %w", err)

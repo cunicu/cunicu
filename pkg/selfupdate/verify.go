@@ -11,7 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path"
+	"path/filepath"
 
 	"github.com/stv0g/cunicu/pkg/proto"
 	pgp "golang.org/x/crypto/openpgp" //nolint:staticcheck
@@ -32,7 +32,7 @@ func loadKeyRing() (pgp.EntityList, error) {
 	}
 
 	for _, de := range des {
-		fn := path.Join("keys", de.Name())
+		fn := filepath.Join("keys", de.Name())
 		f, err := keys.Open(fn)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file: %w", err)
