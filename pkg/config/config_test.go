@@ -176,16 +176,16 @@ var _ = Context("config", func() {
 
 			Describe("non-existing files", func() {
 				It("fails on loading an non-existing local file paths", func() {
-					var errSuffix string
+					var errPattern string
 					if runtime.GOOS == "windows" {
-						errSuffix = "The system cannot find the path specified."
+						errPattern = `The system cannot find the (path|file) specified.$`
 					} else {
-						errSuffix = "no such file or directory"
+						errPattern = `no such file or directory$`
 					}
 
 					_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
 
-					Expect(err).To(MatchError(HaveSuffix(errSuffix)))
+					Expect(err).To(MatchError(MatchRegexp(errPattern)))
 				})
 
 				It("fails on loading an non-existing remote file paths", func() {
