@@ -13,3 +13,4 @@ docs/usage/md/*.md
 *.out.*
 lcov.info
 test/e2e/logs/
+dist/
