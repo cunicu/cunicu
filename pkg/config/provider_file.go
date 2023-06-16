@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"runtime"
 	"time"
 
 	"github.com/knadh/koanf/providers/file"
@@ -157,8 +158,8 @@ type LocalFileProvider struct {
 func NewLocalFileProvider(path string) *LocalFileProvider {
 	return &LocalFileProvider{
 		File:          file.Provider(path),
-		path:          path,
-		allowInsecure: os.Getenv("CUNICU_CONFIG_ALLOW_INSECURE") == "true",
+		path:          u.Path,
+		allowInsecure: os.Getenv("CUNICU_CONFIG_ALLOW_INSECURE") == "true" || runtime.GOOS == "windows",
 	}
 }
 
