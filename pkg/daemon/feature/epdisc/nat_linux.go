@@ -92,7 +92,6 @@ func (n *NAT) setupTable(ident string) error {
 	// Ignore any previously existing table
 	n.NFConn.DelTable(&nftables.Table{Name: ident})
 
-	//#nosec G104 -- Errors should be ignored here
 	n.NFConn.Flush()
 
 	n.table = n.NFConn.AddTable(&nftables.Table{

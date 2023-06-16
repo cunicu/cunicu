@@ -181,13 +181,11 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		return -1, fmt.Errorf("failed to remove target file: %w", err)
 	}
 
-	//#nosec G304 -- No file inclusion possible as we are writing only.
 	dest, err := os.OpenFile(target, os.O_CREATE|os.O_EXCL|os.O_WRONLY, mode)
 	if err != nil {
 		return -1, err
 	}
 
-	//#nosec G110 -- We only download from safe locations (GitHub releases)
 	n, err := io.Copy(dest, rd)
 	if err != nil {
 		_ = dest.Close()

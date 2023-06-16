@@ -55,7 +55,6 @@ func NewServer(opts ...grpc.ServerOption) (*grpc.Server, error) {
 	)
 
 	if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
-		//#nosec G304 -- Filename is only controlled via env var
 		wr, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open SSL keylog file: %w", err)

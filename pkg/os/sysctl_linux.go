@@ -14,7 +14,6 @@ func SetSysctl(name string, value any) error {
 	parts := strings.ReplaceAll(name, ".", string(filepath.Separator))
 	path := filepath.Join("/proc/sys", parts)
 
-	//#nosec G304 -- Filename is always under /proc/sys
 	f, err := os.OpenFile(path, os.O_WRONLY, 0o600)
 	if err != nil {
 		return err

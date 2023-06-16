@@ -50,8 +50,6 @@ func (s *GrpcSignalingNode) Start(_, dir string, extraArgs ...any) error {
 		return fmt.Errorf("failed to build: %w", err)
 	}
 
-	//#nosec G304 -- Test code is not controllable by attackers
-	//#nosec G302 -- Log file should be readable by user
 	s.logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)

@@ -60,7 +60,6 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 		if fn := os.Getenv("SSLKEYLOGFILE"); fn != "" {
 			var err error
 
-			//#nosec G304 -- Filename is only controlled by env var
 			if cfg.KeyLogWriter, err = os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600); err != nil {
 				return "", nil, fmt.Errorf("failed to open SSL keylog file: %w", err)
 			}

@@ -149,7 +149,6 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 				args = append(args, svr.String())
 			}
 
-			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd = exec.Command(resolvectl, args...)
 
 			if err := cmd.Run(); err != nil {
@@ -162,7 +161,6 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 			args := []string{"domain", i.Name()}
 			args = append(args, domain...)
 
-			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd = exec.Command(resolvectl, args...)
 
 			if err := cmd.Run(); err != nil {
@@ -171,7 +169,6 @@ func (i *Interface) SetDNS(svrs []net.IPAddr, domain []string) error {
 		}
 	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
 		if len(svrs) > 0 || len(domain) > 0 {
-			//#nosec G204 -- Filename is only influenced by users PATH variable
 			cmd := exec.Command(resolveconf, "-a", i.Name(), "-m", "0", "-x")
 
 			stdin := &bytes.Buffer{}
@@ -200,10 +197,8 @@ func (i *Interface) UnsetDNS() error {
 
 	// Check if SystemD's resolvectl is available
 	if resolvectl, err := exec.LookPath("resolvectl"); err == nil {
-		//#nosec G204 -- Filename is only influenced by users PATH variable
 		cmd = exec.Command(resolvectl, "revert", i.Name())
 	} else if resolveconf, err := exec.LookPath("resolveconf"); err != nil {
-		//#nosec G204 -- Filename is only influenced by users PATH variable
 		cmd = exec.Command(resolveconf, "-d", i.Name())
 	}
 

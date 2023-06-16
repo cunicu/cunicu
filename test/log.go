@@ -57,8 +57,6 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 			fl |= os.O_TRUNC
 		}
 
-		//#nosec G304 -- Test code is not controllable by attackers
-		//#nosec G302 -- Log file should be readable by users
 		f, err := os.OpenFile(fn, fl, 0o644)
 		if err != nil {
 			panic(fmt.Errorf("failed to open log file '%s': %w", fn, err))
