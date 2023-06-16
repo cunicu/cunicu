@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -330,8 +331,15 @@ var _ = Context("config", func() {
 	})
 
 	It("throws an error on an non-existing config file path", func() {
+		var errSuffix string
+		if runtime.GOOS == "windows" {
+			errSuffix = "The system cannot find the path specified."
+		} else {
+			errSuffix = "no such file or directory"
+		}
+
 		_, err := config.ParseArgs("--config", "/this/file/does/not/exist.yaml")
-		Expect(err).To(MatchError(HaveSuffix("no such file or directory")))
+		Expect(err).To(MatchError(HaveSuffix(errSuffix)))
 	})
 
 	It("throws an error on an invalid config file URL schema", func() {
