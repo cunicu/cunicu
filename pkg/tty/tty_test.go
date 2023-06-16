@@ -38,5 +38,8 @@ var _ = Context("IsATTY", func() {
 		Expect(err).To(Succeed())
 
 		Expect(tty.IsATTY(f)).To(BeFalse())
+
+		err = f.Close()
+		Expect(err).To(Succeed())
 	})
 })
