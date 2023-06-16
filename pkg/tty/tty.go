@@ -18,32 +18,52 @@ const (
 )
 
 const (
-	FgBlack     = "\x1b[30m"
-	FgRed       = "\x1b[31m"
-	FgGreen     = "\x1b[32m"
-	FgYellow    = "\x1b[33m"
-	FgBlue      = "\x1b[34m"
-	FgMagenta   = "\x1b[35m"
-	FgCyan      = "\x1b[36m"
-	FgWhite     = "\x1b[37m"
-	FgDefault   = "\x1b[39m"
-	BgBlack     = "\x1b[40m"
-	BgRed       = "\x1b[41m"
-	BgGreen     = "\x1b[42m"
-	BgYellow    = "\x1b[43m"
-	BgBlue      = "\x1b[44m"
-	BgMagenta   = "\x1b[45m"
-	BgCyan      = "\x1b[46m"
-	BgWhite     = "\x1b[47m"
-	BgDefault   = "\x1b[49m"
-	Bold        = "\x1b[1m"
-	NoBold      = "\x1b[22m"
-	Underline   = "\x1b[4m"
-	NoUnderline = "\x1b[24m"
-	Reset       = "\x1b[0m"
+	FgBlack         = "\x1b[30m"
+	FgRed           = "\x1b[31m"
+	FgGreen         = "\x1b[32m"
+	FgYellow        = "\x1b[33m"
+	FgBlue          = "\x1b[34m"
+	FgMagenta       = "\x1b[35m"
+	FgCyan          = "\x1b[36m"
+	FgWhite         = "\x1b[37m"
+	FgDefault       = "\x1b[39m"
+	BgBlack         = "\x1b[40m"
+	BgRed           = "\x1b[41m"
+	BgGreen         = "\x1b[42m"
+	BgYellow        = "\x1b[43m"
+	BgBlue          = "\x1b[44m"
+	BgMagenta       = "\x1b[45m"
+	BgCyan          = "\x1b[46m"
+	BgWhite         = "\x1b[47m"
+	BgDefault       = "\x1b[49m"
+	FgBrightBlack   = "\x1b[90m"
+	FgBrightRed     = "\x1b[91m"
+	FgBrightGreen   = "\x1b[92m"
+	FgBrightYellow  = "\x1b[93m"
+	FgBrightBlue    = "\x1b[94m"
+	FgBrightMagenta = "\x1b[95m"
+	FgBrightCyan    = "\x1b[96m"
+	FgBrightWhite   = "\x1b[97m"
+	BgBrightBlack   = "\x1b[100m"
+	BgBrightRed     = "\x1b[101m"
+	BgBrightGreen   = "\x1b[102m"
+	BgBrightYellow  = "\x1b[103m"
+	BgBrightBlue    = "\x1b[104m"
+	BgBrightMagenta = "\x1b[105m"
+	BgBrightCyan    = "\x1b[106m"
+	BgBrightWhite   = "\x1b[107m"
+	Bold            = "\x1b[1m"
+	NoBold          = "\x1b[22m"
+	Underline       = "\x1b[4m"
+	NoUnderline     = "\x1b[24m"
+	Reset           = "\x1b[0m"
 )
 
-func Color(b byte) string {
+func TrueColor(r, g, b byte) string {
+	return fmt.Sprintf("\x1b[38;2;%d;%d;%dm", r, g, b)
+}
+
+func Color256(b byte) string {
 	return fmt.Sprintf("\x1b[38;5;%dm", b)
 }
 
@@ -77,7 +97,7 @@ func QRCode(buf string) {
 	wr := NewIndenter(os.Stdout, "  ")
 
 	fmt.Println()
-	fmt.Fprint(wr, Color(15))
+	fmt.Fprint(wr, FgBrightWhite)
 
 	qrterminal.GenerateHalfBlock(buf, qrterminal.M, wr)
 

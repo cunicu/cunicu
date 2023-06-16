@@ -18,15 +18,15 @@ func Banner(color bool) string {
 
 	if color && !isDocGen {
 		w = func(s string) string {
-			return tty.Mods(s, tty.Bold, tty.Color(15))
+			return tty.Mods(s, tty.Bold, tty.Color256(15))
 		}
 
 		o = func(s string) string {
-			return tty.Mods(s, tty.Bold, tty.Color(214))
+			return tty.Mods(s, tty.Bold, tty.Color256(214))
 		}
 
 		d = func(s string) string {
-			return tty.Mods(s, tty.Bold, tty.Color(130))
+			return tty.Mods(s, tty.Bold, tty.Color256(130))
 		}
 	}
 
