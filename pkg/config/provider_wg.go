@@ -62,7 +62,6 @@ func (p *WireGuardProvider) Read() (map[string]interface{}, error) {
 			continue
 		}
 
-		//#nosec G304 -- Filename is only controlled by user
 		cfgData, err := os.ReadFile(cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open config file %s: %w", cfg, err)

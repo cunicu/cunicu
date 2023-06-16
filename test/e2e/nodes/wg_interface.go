@@ -99,7 +99,6 @@ func (i *WireGuardInterface) WriteConfig() error {
 
 	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
 
-	//#nosec G304 -- Test code is not controllable by attackers
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %w", err)

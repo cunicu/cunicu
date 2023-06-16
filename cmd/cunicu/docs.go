@@ -71,7 +71,6 @@ func init() { //nolint:gochecknoinits
 func docsMarkdown(_ *cobra.Command, _ []string, opts *docsOptions) error {
 	dir := filepath.Join(opts.outputDir, "md")
 
-	//#nosec G301 -- Doc directories must be world readable
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
@@ -123,7 +122,6 @@ func docsMarkdown(_ *cobra.Command, _ []string, opts *docsOptions) error {
 func docsManpage(_ *cobra.Command, _ []string, opts *docsOptions) error {
 	dir := filepath.Join(opts.outputDir, "man")
 
-	//#nosec G301 -- Doc directories must be world readable
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
