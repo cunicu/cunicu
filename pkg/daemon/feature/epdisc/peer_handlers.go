@@ -39,8 +39,8 @@ func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
 	case ConnectionStateConnected:
 		if _, ok := p.connectionState.SetIf(ConnectionStateConnected, ConnectionStateConnecting); !ok {
 			p.logger.Error("Invalid state transition",
-				zap.Any("peer_state", p.State()),
-				zap.Any("ice_state", cs))
+				zap.Reflect("peer_state", p.State()),
+				zap.Reflect("ice_state", cs))
 		}
 
 		cp, err := p.agent.GetSelectedCandidatePair()
@@ -74,7 +74,7 @@ func (p *Peer) onSelectedCandidatePairChange(local, remote ice.Candidate) {
 
 // onRemoteCredentials is a handler called for each received pair of remote Ufrag/Pwd via the signaling channel
 func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
-	logger := p.logger.With(zap.Any("creds", creds))
+	logger := p.logger.With(zap.Reflect("creds", creds))
 	logger.Debug("Received remote credentials")
 
 	if p.isSessionRestart(creds) {
@@ -132,7 +132,7 @@ func (p *Peer) onLocalCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
 	} else {
-		logger := p.logger.With(zap.Any("candidate", c))
+		logger := p.logger.With(zap.Reflect("candidate", c))
 
 		logger.Debug("Added local candidate to agent")
 

@@ -277,7 +277,7 @@ func (p *Peer) sendCredentials(need bool) error {
 		return err
 	}
 
-	p.logger.Debug("Sent credentials", zap.Any("creds", msg.Credentials))
+	p.logger.Debug("Sent credentials", zap.Reflect("creds", msg.Credentials))
 
 	return nil
 }
@@ -294,7 +294,7 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 		return err
 	}
 
-	p.logger.Debug("Sent candidate", zap.Any("candidate", msg.Candidate))
+	p.logger.Debug("Sent candidate", zap.Reflect("candidate", msg.Candidate))
 
 	return nil
 }
