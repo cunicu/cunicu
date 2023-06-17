@@ -109,7 +109,7 @@ func (i *Interface) setupUniversalUDPMux() error {
 
 	i.muxSrflx = ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: stunConn,
-		Logger:  lf.NewLogger("udpmux-universal"),
+		Logger:  lf.NewLogger("udpmux"),
 	})
 
 	lAddr := udpConn.LocalAddr().(*net.UDPAddr) //nolint:forcetypeassert

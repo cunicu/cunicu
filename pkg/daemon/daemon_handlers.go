@@ -15,7 +15,7 @@ func (d *Daemon) OnInterfaceAdded(i *Interface) {
 
 	i.logger.Info("Added interface",
 		zap.Any("pk", i.PublicKey()),
-		zap.Any("type", i.Device.Type),
+		zap.Any("type", i.Device.Type()),
 		zap.Int("num_peers", len(i.Peers)),
 	)
 

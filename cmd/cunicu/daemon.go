@@ -84,6 +84,8 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	}
 
 	if logger.Core().Enabled(zap.DebugLevel) {
+		logger = logger.Named("config")
+
 		logger.Debug("Loaded configuration:")
 		wr := tty.NewIndenter(&zapio.Writer{
 			Log:   logger,
