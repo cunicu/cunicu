@@ -11,7 +11,7 @@ buildGoModule rec {
   vendorHash = "sha256-KXLKCwV3/9+PRQ1mYCZBvaV914WN68FgJXNWZizOmkA=";
   inherit src;
   CGO_ENABLED = 0;
-  # these packages contain networking dependent tests which fail in the sandbox
+  # These packages contain networking dependent tests which fail in the sandbox
   excludedPackages = ["pkg/config" "pkg/selfupdate" "pkg/tty"];
   postBuild = ''
     cunicu=$GOPATH/bin/cunicu

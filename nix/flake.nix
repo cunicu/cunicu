@@ -12,7 +12,7 @@
     pkgsFor = system: nixpkgs.legacyPackages.${system};
     packagesWith = pkgs: {
       cunicu = pkgs.callPackage ./cunicu.nix {
-        src = ../..;
+        src = ./..;
       };
     };
   in {

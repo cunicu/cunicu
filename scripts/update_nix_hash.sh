@@ -2,34 +2,33 @@
 # SPDX-FileCopyrightText: 2023 Philipp Jungkamp <p.jungkamp@gmx.net>
 # SPDX-License-Identifier: Apache-2.0
 
-file=./nix/cunicu.nix
+FILE=./nix/cunicu.nix
 
-printf '%s\n' 'Faking the hash'
+echo 'Faking the hash'
 
-sed -i 's|vendorHash.*;$|vendorHash = lib.fakeHash;|' "$file"
+sed -i 's|vendorHash.*;$|vendorHash = lib.fakeHash;|' "${FILE}"
 
-printf '%s\n' 'Evaluating the derivation'
+echo "Evaluating the derivation"
 
-output="$(
-  nix build ./nix#cunicu.go-modules \
+OUTPUT="$(nix build ./nix#cunicu.go-modules \
     --extra-experimental-features 'nix-command flakes' \
     --refresh \
     --no-link \
-    2>&1
-)"
+    2>&1)"
 
-printf '%s\n' 'Extract correct hash'
 
-correct_hash="$(sed -n '$s|^\s*got:\s*||p' <<<"$output")"
+echo "Extract correct hash"
 
-if [ -z "$correct_hash" ]; then
-	printf '%s\n' 'Error!' "$output"
+CORRECT_HASH=$(sed -n 's|^\s*got:\s*||p' <<<"${OUTPUT}")
+
+if [ -z "${CORRECT_HASH}" ]; then
+	echo -e "Error!\n${OUTPUT}"
 	exit 1
 fi
 
-printf '%s\n' "Set hash to $correct_hash"
+echo "Set hash to ${CORRECT_HASH}"
 
-sed -i "s|vendorHash.*;$|vendorHash = \"$correct_hash\";|" "$file"
+sed -i "s|vendorHash.*|vendorHash = \"${CORRECT_HASH}\";|" "${FILE}"
 
 nix build ./nix#cunicu \
   --extra-experimental-features 'nix-command flakes' \
