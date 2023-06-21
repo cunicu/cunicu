@@ -13,8 +13,7 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "WireGuard Suite")
 }
-
-var _ = test.SetupLogging()

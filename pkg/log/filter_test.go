@@ -80,7 +80,7 @@ var _ = Describe("filter", func() {
 			defer logger.Sync() //nolint:errcheck
 
 			rule := new(log.AtomicFilterRule)
-			rule.Store(log.NewFilterRule(log.MustParseRules("demo*")))
+			rule.Store(log.NewFilterRule(log.MustParseRules("*:demo*")))
 
 			logger = logger.WithOptions(zap.WrapCore(func(c zapcore.Core) zapcore.Core {
 				return log.NewFilteredCore(c, rule)
@@ -96,7 +96,7 @@ var _ = Describe("filter", func() {
 		})
 
 		It("new logger", func() {
-			logger, logs := makeLogger(log.MustParseRules("demo*"))
+			logger, logs := makeLogger(log.MustParseRules("*:demo*"))
 			defer logger.Sync() //nolint:errcheck
 
 			logger.Debug("hello world!")
@@ -141,8 +141,8 @@ var _ = Describe("filter", func() {
 			logger.Debug("hello multiverse!")
 
 			Expect(logs.All()).To(HaveExactElements(
-				MatchEntry(zapcore.Entry{Message: "hello city!"}),
-				MatchEntry(zapcore.Entry{Message: "hello solar system!"}),
+				MatchEntry(zapcore.Entry{Message: "hello planet!"}),
+				MatchEntry(zapcore.Entry{Message: "hello multiverse!"}),
 			))
 		})
 
@@ -396,29 +396,27 @@ var _ = Describe("filter", func() {
 		},
 		Entry("empty", "", "", nil),
 		Entry("everything", "*", everything, nil),
-		Entry("debug+", "debug+:*", everything, nil),
-		Entry("all-debug", "debug:*", allDebug, nil),
-		Entry("all-info", "info:*", allInfo, nil),
-		Entry("all-warn", "warn:*", allWarn, nil),
-		Entry("all-error", "error:*", allError, nil),
-		Entry("all-info-and-warn-1", "info,warn:*", "bcfgjknorsvwz034", nil),
-		Entry("all-info-and-warn-2", "info:* warn:*", "bcfgjknorsvwz034", nil),
-		Entry("warn+", "warn+:*", "cdghklopstwx0145", nil),
-		Entry("redundant-1", "info,info:* info:*", allInfo, nil),
-		Entry("redundant-2", "* *:* info:*", everything, nil),
-		Entry("foo-ns", "foo", "efgh", nil),
-		Entry("foo-ns-wildcard", "*:foo", "efgh", nil),
-		Entry("foo-ns-debug,info", "debug,info:foo", "ef", nil),
-		Entry("foo.star-ns", "foo.*", "qrstuvwx", nil),
-		Entry("foo.star-ns-wildcard", "*:foo.*", "qrstuvwx", nil),
-		Entry("foo.star-ns-debug,info", "debug,info:foo.*", "qruv", nil),
-		Entry("all-in-one", "*:foo debug:foo.* info,warn:bar error:*", "defghjklpqtux15", nil),
-		Entry("exclude-1", "info:test,foo*,-foo.foo", "fr", nil),
-		Entry("exclude-2", "info:test,foo*,-*.foo", "fr", nil),
-		Entry("exclude-3", "test,*.foo,-foo.*", "yz012345", nil),
-		Entry("exclude-4", "*,-foo,-bar", "abcdmnopqrstuvwxyz012345", nil),
-		Entry("exclude-5", "foo*,bar*,-foo.foo,-bar.foo", "efghijklqrst", nil),
-		Entry("exclude-6", "foo*,-foo.foo,bar*,-bar.foo", "efghijklqrst", nil),
+		Entry("debug+", "debug:*", everything, nil),
+		Entry("all-debug", "=debug:*", allDebug, nil),
+		Entry("all-info", "=info:*", allInfo, nil),
+		Entry("all-warn", "=warn:*", allWarn, nil),
+		Entry("all-error", "=error:*", allError, nil),
+		Entry("all-info-and-warn-1", "=info,=warn:*", "bcfgjknorsvwz034", nil),
+		Entry("all-info-and-warn-2", "=info:* =warn:*", "bcfgjknorsvwz034", nil),
+		Entry("warn+", "warn:*", "cdghklopstwx0145", nil),
+		Entry("redundant-1", "=info,=info:* =info:*", allInfo, nil),
+		Entry("redundant-2", "* *:* =info:*", everything, nil),
+		Entry("foo-ns", "*:foo", "efgh", nil),
+		Entry("foo-ns-debug,info", "=debug,=info:foo", "ef", nil),
+		Entry("foo.star-ns", "*:foo.*", "qrstuvwx", nil),
+		Entry("foo.star-ns-debug,info", "=debug,=info:foo.*", "qruv", nil),
+		Entry("all-in-one", "*:foo =debug:foo.* =info,=warn:bar error:*", "defghjklpqtux15", nil),
+		Entry("exclude-1", "=info:test,foo*,-foo.foo", "fr", nil),
+		Entry("exclude-2", "=info:test,foo*,-*.foo", "fr", nil),
+		Entry("exclude-3", "*:test,*.foo,-foo.*", "yz012345", nil),
+		Entry("exclude-4", "*:*,-foo,-bar", "abcdmnopqrstuvwxyz012345", nil),
+		Entry("exclude-5", "*:foo*,bar*,-foo.foo,-bar.foo", "efghijklqrst", nil),
+		Entry("exclude-6", "*:foo*,-foo.foo,bar*,-bar.foo", "efghijklqrst", nil),
 		Entry("invalid-left", "invalid:*", "", log.ErrUnsupportedKeyword),
 		Entry("missing-left", ":*", "", log.ErrBadSyntax),
 		Entry("missing-right", ":*", "", log.ErrBadSyntax),
@@ -451,35 +449,35 @@ var _ = Describe("filter", func() {
 					Expect(entry).To(BeNil())
 				}
 			},
-			Entry(nil, "", "", false),
-			Entry(nil, "", "foo", false),
-			Entry(nil, "*", "", true),
-			Entry(nil, "*", "foo", true),
-			Entry(nil, "*:foo", "", false),
-			Entry(nil, "*:foo", "foo", true),
-			Entry(nil, "*:foo", "bar", false),
+			Entry("1", "", "", false),
+			Entry("2", "", "foo", false),
+			Entry("3", "*", "", true),
+			Entry("4", "*", "foo", true),
+			Entry("5", "*:foo", "", false),
+			Entry("6", "*:foo", "foo", true),
+			Entry("7", "*:foo", "bar", false),
 		)
 
 		DescribeTable("any level",
 			func(name string, expected bool) {
-				logger, _ := makeLogger(log.MustParseRules("debug:*.* info:demo*"))
+				logger, _ := makeLogger(log.MustParseRules("=debug:*.* =info:demo*"))
 				if name != "" {
 					logger = logger.Named(name)
 				}
 
 				Expect(log.CheckAnyLevel(logger)).To(Equal(expected))
 			},
-			Entry(nil, "", false),
-			Entry(nil, "demo", true),
-			Entry(nil, "blahdemo", false),
-			Entry(nil, "demoblah", true),
-			Entry(nil, "blah", false),
-			Entry(nil, "blah.blah", true),
+			Entry("1", "", false),
+			Entry("2", "demo", true),
+			Entry("3", "blahdemo", false),
+			Entry("4", "demoblah", true),
+			Entry("5", "blah", false),
+			Entry("6", "blah.blah", true),
 		)
 
 		DescribeTable("level",
 			func(name string, lvl zapcore.Level, expected bool) {
-				logger, _ := makeLogger(log.MustParseRules("debug:*.* info:demo*"))
+				logger, _ := makeLogger(log.MustParseRules("=debug:*.* =info:demo*"))
 
 				if name != "" {
 					logger = logger.Named(name)
@@ -487,18 +485,18 @@ var _ = Describe("filter", func() {
 
 				Expect(log.CheckLevel(logger, lvl)).To(Equal(expected))
 			},
-			Entry(nil, "", zap.DebugLevel, false),
-			Entry(nil, "demo", zap.DebugLevel, false),
-			Entry(nil, "blahdemo", zap.DebugLevel, false),
-			Entry(nil, "demoblah", zap.DebugLevel, false),
-			Entry(nil, "blah", zap.DebugLevel, false),
-			Entry(nil, "blah.blah", zap.DebugLevel, true),
-			Entry(nil, "", zap.InfoLevel, false),
-			Entry(nil, "demo", zap.InfoLevel, true),
-			Entry(nil, "blahdemo", zap.InfoLevel, false),
-			Entry(nil, "demoblah", zap.InfoLevel, true),
-			Entry(nil, "blah", zap.InfoLevel, false),
-			Entry(nil, "blah.blah", zap.InfoLevel, false),
+			Entry("1", "", zap.DebugLevel, false),
+			Entry("2", "demo", zap.DebugLevel, false),
+			Entry("3", "blahdemo", zap.DebugLevel, false),
+			Entry("4", "demoblah", zap.DebugLevel, false),
+			Entry("5", "blah", zap.DebugLevel, false),
+			Entry("6", "blah.blah", zap.DebugLevel, true),
+			Entry("7", "", zap.InfoLevel, false),
+			Entry("8", "demo", zap.InfoLevel, true),
+			Entry("9", "blahdemo", zap.InfoLevel, false),
+			Entry("10", "demoblah", zap.InfoLevel, true),
+			Entry("11", "blah", zap.InfoLevel, false),
+			Entry("12", "blah.blah", zap.InfoLevel, false),
 		)
 	})
 
@@ -524,7 +522,7 @@ var _ = Describe("filter", func() {
 	})
 
 	It("Check", func() {
-		logger, logs := makeLogger(log.MustParseRules("debug:* info:demo*"))
+		logger, logs := makeLogger(log.MustParseRules("=debug:* =info:demo*"))
 		defer logger.Sync() //nolint:errcheck
 
 		ce := logger.Check(zap.DebugLevel, "a")

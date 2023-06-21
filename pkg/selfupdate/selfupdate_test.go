@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/selfupdate"
 	"github.com/stv0g/cunicu/test"
 
@@ -16,14 +17,13 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Self-update Suite")
 }
 
-var logger = test.SetupLogging()
-
 var _ = It("self-update", Pending, func() {
-	logger := logger.Named("self-update")
+	logger := log.Global.Named("self-update")
 
 	output := filepath.Join(GinkgoT().TempDir(), "cunicu")
 

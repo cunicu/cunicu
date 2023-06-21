@@ -15,6 +15,8 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 var (
@@ -204,7 +206,7 @@ func getRouteMTU(ip net.IP) (int, error) {
 }
 
 func run(args ...string) (string, error) {
-	cmd := exec.Command(args[0], args[1:]...)
+	cmd := exec.Command(args[0], args[1:]...) //nolint:gosec
 
 	out, err := cmd.CombinedOutput()
 	outStr := string(out)

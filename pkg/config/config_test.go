@@ -27,11 +27,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Config Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Context("config", func() {
 	mkTempFile := func(contents string) *os.File {

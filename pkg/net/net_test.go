@@ -15,11 +15,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Network Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Context("endpoint comparisons", func() {
 	It("to be equal", func() {

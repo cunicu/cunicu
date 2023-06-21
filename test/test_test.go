@@ -14,11 +14,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Test Helper Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Describe("entropy", func() {
 	Specify("that the entropy of an empty slice is zero", func() {

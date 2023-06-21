@@ -14,11 +14,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Device Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = BeforeSuite(func() {
 	if !osx.HasAdminPrivileges() {

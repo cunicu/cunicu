@@ -18,11 +18,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Protobuf Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Describe("message encryption", func() {
 	var c epdiscproto.Candidate

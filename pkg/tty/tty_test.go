@@ -16,11 +16,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "TTY Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Context("IsATTY", func() {
 	if test.IsCI() {
