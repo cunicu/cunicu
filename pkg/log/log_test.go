@@ -4,7 +4,6 @@
 package log_test
 
 import (
-	"fmt"
 	"io"
 	stdlog "log"
 	"os"
@@ -17,7 +16,6 @@ import (
 	"github.com/pion/zapion"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 )
@@ -30,15 +28,15 @@ func TestSuite(t *testing.T) {
 // TODO: This test is currently broken on Windows due:
 // https://github.com/uber-go/zap/issues/621
 var _ = Context("log", Label("broken-on-windows"), func() {
-	var logger *zap.Logger
+	var logger *log.Logger
 	var lvl zapcore.Level
-	var logPath, msg, scope string
+	var logPath, msg, name string
 
 	BeforeEach(func() {
 		tmpDir := GinkgoT().TempDir()
 
 		logPath = filepath.Join(tmpDir, "std.log")
-		msg = fmt.Sprintf("Test message %s", tty.Mods("something red", tty.FgRed))
+		msg = "Test message"
 
 		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", lvl.String())
@@ -46,37 +44,39 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 	})
 
 	JustBeforeEach(func() {
-		logger = log.SetupLogging(lvl, 0, []string{logPath}, nil, true)
+		var err error
+		logger, err = log.SetupLogging("", []string{logPath}, true)
+		Expect(err).To(Succeed())
 	})
 
 	Context("simple", func() {
 		It("can log via created logger", func() {
-			scope = ""
+			name = ""
 			logger.Info(msg)
 		})
 
 		It("can log via std logger", func() {
-			scope = ""
+			name = ""
 			stdlog.Print(msg)
 		})
 
 		It("can log via global logger", func() {
-			scope = ""
-			zap.L().Info(msg)
+			name = ""
+			log.Global.Info(msg)
 		})
 
 		It("can log via pion logger", func() {
 			lf := zapion.ZapFactory{
-				BaseLogger: logger.Named("ice"),
+				BaseLogger: logger.Named("ice").Logger,
 			}
 			logger := lf.NewLogger("myscope")
 
-			scope = "ice.myscope"
+			name = "ice.myscope"
 			logger.Info(msg)
 		})
 
 		It("can log via gRPC logger", func() {
-			scope = "grpc"
+			name = "grpc"
 			grpclog.Info(msg)
 		})
 	})
@@ -94,14 +94,25 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		Expect(err).To(Succeed(), "Failed to read standard log contents: %s", err)
 		Expect(logContents).NotTo(BeEmpty())
 
-		if scope != "" {
-			scope += `\t`
+		regexTime := regexpQuoteColor(`\d{2}:\d{2}:\d{2}.\d{6}`, log.ColorTime) + " "
+		regexLevel := regexpQuoteColor(lvl.String(), log.ColorLevel(lvl)) + " "
+		regexName := regexpQuoteColor(name, log.ColorName) + " "
+
+		var regex string
+		if name != "" {
+			regex = regexTime + regexLevel + regexName + msg
+		} else {
+			regex = regexTime + regexLevel + msg
 		}
 
-		regex := fmt.Sprintf(`\d{2}:\d{2}:\d{2}.\d{6}\t%s\t%s%s`,
-			regexp.QuoteMeta(tty.Mods(lvl.String(), tty.FgBlue)), scope,
-			regexp.QuoteMeta(msg))
-
-		Expect(logContents).To(MatchRegexp(regex), "Log output '%s' does not match regex '%s'", logContents, regex)
+		Expect(string(logContents)).To(MatchRegexp(regex), "Log output '%s' does not match regex '%s'", logContents, regex)
 	})
 })
+
+func regexpQuoteColor(str, color string) string {
+	if color == "" {
+		return str
+	}
+
+	return regexp.QuoteMeta(color) + str + regexp.QuoteMeta(tty.Reset)
+}

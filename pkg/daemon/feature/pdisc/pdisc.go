@@ -13,6 +13,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	proto "github.com/stv0g/cunicu/pkg/proto/core"
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -30,7 +31,7 @@ type Interface struct {
 	filter map[crypto.Key]bool
 	descs  map[crypto.Key]*pdiscproto.PeerDescription
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
@@ -42,7 +43,7 @@ func New(i *daemon.Interface) (*Interface, error) {
 		Interface: i,
 		filter:    map[crypto.Key]bool{},
 		descs:     map[crypto.Key]*pdiscproto.PeerDescription{},
-		logger:    zap.L().Named("pdisc").With(zap.String("intf", i.Name())),
+		logger:    log.Global.Named("pdisc").With(zap.String("intf", i.Name())),
 	}
 
 	for _, k := range pd.Settings.Whitelist {
@@ -188,7 +189,7 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 		return err
 	}
 
-	i.logger.Debug("Send peer description", zap.Any("description", d))
+	i.logger.Debug("Send peer description", zap.Reflect("description", d))
 
 	return nil
 }

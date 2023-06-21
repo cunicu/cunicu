@@ -11,6 +11,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/log"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
@@ -42,7 +43,7 @@ type Interface struct {
 
 	features map[*Feature]FeatureInterface
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, error) {
@@ -59,7 +60,7 @@ func NewInterface(wgDev *wgtypes.Device, client *wgctrl.Client) (*Interface, err
 
 		features: map[*Feature]FeatureInterface{},
 
-		logger: zap.L().Named("intf").With(
+		logger: log.Global.Named("intf").With(
 			zap.String("intf", wgDev.Name),
 		),
 	}

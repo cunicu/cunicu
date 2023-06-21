@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -32,10 +33,10 @@ type Backend struct {
 
 	config BackendConfig
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Backend, error) {
 	var err error
 
 	b := &Backend{

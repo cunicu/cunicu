@@ -7,9 +7,9 @@ import (
 	"context"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"go.uber.org/zap"
 )
 
 //nolint:gochecknoglobals
@@ -23,10 +23,10 @@ func init() { //nolint:gochecknoinits
 }
 
 type Backend struct {
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewBackend(cfg *signaling.BackendConfig, logger *zap.Logger) (signaling.Backend, error) {
+func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Backend, error) {
 	b := &Backend{
 		logger: logger,
 	}

@@ -27,7 +27,7 @@ var _ Link = (*BSDLink)(nil)
 type BSDLink struct {
 	created bool
 	index   int
-	logger  *zap.Logger
+	logger  *log.Logger
 }
 
 func CreateWireGuardLink(name string) (*BSDLink, error) {
@@ -47,7 +47,7 @@ func FindLink(name string) (*BSDLink, error) {
 	return &BSDLink{
 		created: false,
 		index:   i.Index,
-		logger: zap.L().Named("dev").With(
+		logger: log.Global.Named("dev").With(
 			zap.String("dev", name),
 			zap.String("type", "kernel")),
 	}, nil

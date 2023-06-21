@@ -13,6 +13,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/log"
 	hooksproto "github.com/stv0g/cunicu/pkg/proto/feature/hooks"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -25,7 +26,7 @@ import (
 type WebHook struct {
 	*config.WebHookSetting
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func (i *Interface) NewWebHook(cfg *config.WebHookSetting) *WebHook {

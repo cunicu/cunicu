@@ -9,6 +9,7 @@ import (
 	"net/netip"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +23,7 @@ type Interface struct {
 	gwMap map[netip.Addr]*daemon.Peer
 	stop  chan struct{}
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
@@ -34,7 +35,7 @@ func New(i *daemon.Interface) (*Interface, error) {
 		Interface: i,
 		gwMap:     map[netip.Addr]*daemon.Peer{},
 		stop:      make(chan struct{}),
-		logger:    zap.L().Named("rtsync").With(zap.String("intf", i.Name())),
+		logger:    log.Global.Named("rtsync").With(zap.String("intf", i.Name())),
 	}
 
 	i.AddPeerHandler(rs)

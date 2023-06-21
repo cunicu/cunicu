@@ -25,6 +25,26 @@ func (a *ansiStripper) Write(p []byte) (int, error) {
 	return a.Writer.Write(line)
 }
 
+type WriteSyncer interface {
+	io.Writer
+	Sync() error
+}
+
+type ansiStripperSynced struct {
+	WriteSyncer
+}
+
+func NewANSIStripperSynced(wr WriteSyncer) WriteSyncer {
+	return &ansiStripperSynced{
+		WriteSyncer: wr,
+	}
+}
+
+func (a *ansiStripperSynced) Write(p []byte) (int, error) {
+	line := stripANSI.ReplaceAll(p, []byte{})
+	return a.WriteSyncer.Write(line)
+}
+
 func StripANSI(s string) string {
 	return stripANSI.ReplaceAllString(s, "")
 }

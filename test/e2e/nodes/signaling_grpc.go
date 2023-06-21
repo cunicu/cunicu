@@ -11,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
@@ -24,7 +25,7 @@ type GrpcSignalingNode struct {
 	Command *g.Cmd
 
 	logFile io.WriteCloser
-	logger  *zap.Logger
+	logger  *log.Logger
 }
 
 func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (*GrpcSignalingNode, error) {
@@ -36,7 +37,7 @@ func NewGrpcSignalingNode(n *g.Network, name string, opts ...g.Option) (*GrpcSig
 	t := &GrpcSignalingNode{
 		Host:   h,
 		port:   8080,
-		logger: zap.L().Named("node.signal").With(zap.String("node", name)),
+		logger: log.Global.Named("node.signal").With(zap.String("node", name)),
 	}
 
 	return t, nil

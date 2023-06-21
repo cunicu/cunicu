@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -25,11 +26,11 @@ var Get = daemon.RegisterFeature(New, 200) //nolint:gochecknoglobals
 type Interface struct {
 	*daemon.Interface
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
-	logger := zap.L().Named("hsync").With(zap.String("intf", i.Name()))
+	logger := log.Global.Named("hsync").With(zap.String("intf", i.Name()))
 
 	if writable, err := isWritable(hostsPath); err != nil || !writable {
 		logger.Warn("Disabling /etc/hosts synchronization as it is not writable")

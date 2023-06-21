@@ -12,12 +12,13 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 )
 
 func CleanupUserSockets() error {
-	logger := zap.L().Named("wg")
+	logger := log.Global.Named("wg")
 
 	// Ignore non-existing dir
 	if _, err := os.Stat(SocketPath); err != nil && errors.Is(err, os.ErrNotExist) {

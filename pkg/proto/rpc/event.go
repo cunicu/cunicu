@@ -7,10 +7,11 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
-func (e *Event) Log(l *zap.Logger, msg string, fields ...zap.Field) {
+func (e *Event) Log(l *log.Logger, msg string, fields ...zap.Field) {
 	fields = append(fields, zap.String("type", strings.ToLower(e.Type.String())))
 
 	if e.Event != nil {

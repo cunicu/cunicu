@@ -9,11 +9,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -53,14 +50,13 @@ Code & Issues:
 )
 
 type options struct {
-	logLevel       config.Level
-	verbosityLevel int
-	logFile        string
-	colorMode      string
+	logFilter string
+	logFile   string
+	colorMode string
 }
 
 var (
-	logger *zap.Logger //nolint:gochecknoglobals
+	logger *log.Logger //nolint:gochecknoglobals
 	color  bool        //nolint:gochecknoglobals
 	stdout io.Writer   //nolint:gochecknoglobals
 
@@ -83,11 +79,7 @@ in which WireGuard kernel support has not landed yet.`,
 )
 
 func init() { //nolint:gochecknoinits
-	opts := &options{
-		logLevel: config.Level{
-			Level: zapcore.InfoLevel,
-		},
-	}
+	opts := &options{}
 
 	rootCmd.SetUsageTemplate(usageTemplate)
 
@@ -99,8 +91,7 @@ func init() { //nolint:gochecknoinits
 	f.SortFlags = false
 
 	pf := rootCmd.PersistentFlags()
-	pf.IntVarP(&opts.verbosityLevel, "verbose", "v", 0, "verbosity level")
-	pf.VarP(&opts.logLevel, "log-level", "d", "log level (one of: debug, info, warn, error, dpanic, panic, and fatal)")
+	pf.StringVarP(&opts.logFilter, "log-level", "d", "info", "log level filter rule (one of: debug, info, warn, error, dpanic, panic, and fatal)")
 	pf.StringVarP(&opts.logFile, "log-file", "l", "", "path of a file to write logs to")
 	pf.StringVarP(&opts.colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
 
@@ -131,14 +122,16 @@ func onInitialize(opts *options) {
 
 	// Setup logging
 	outputPaths := []string{"stdout"}
-	errOutputPaths := []string{"stderr"}
 
 	if opts.logFile != "" {
 		outputPaths = append(outputPaths, opts.logFile)
-		errOutputPaths = append(errOutputPaths, opts.logFile)
 	}
 
-	logger = log.SetupLogging(opts.logLevel.Level, opts.verbosityLevel, outputPaths, errOutputPaths, color)
+	var err error
+	logger, err = log.SetupLogging(opts.logFilter, outputPaths, color)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {

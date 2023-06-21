@@ -13,6 +13,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
@@ -29,11 +30,11 @@ type Server struct {
 
 	*grpc.Server
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewSignalingServer(opts ...grpc.ServerOption) *Server {
-	logger := zap.L().Named("grpc.server")
+	logger := log.Global.Named("grpc.server")
 
 	s := &Server{
 		topicRegistry: topicRegistry{

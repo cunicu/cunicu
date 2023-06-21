@@ -29,11 +29,16 @@ func (w *writerWrapper) Sync() error {
 	return nil
 }
 
-func SetupLogging() *zap.Logger {
-	return SetupLoggingWithFile("", false)
+func SetupLogging() *log.Logger {
+	logger, err := SetupLoggingWithFile("", false)
+	if err != nil {
+		panic(err)
+	}
+
+	return logger
 }
 
-func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
+func SetupLoggingWithFile(fn string, truncate bool) (*log.Logger, error) {
 	if err := zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
 		return &writerWrapper{
 			GinkgoWriterInterface: ginkgo.GinkgoWriter,
@@ -65,5 +70,5 @@ func SetupLoggingWithFile(fn string, truncate bool) *zap.Logger {
 		ginkgo.GinkgoWriter.TeeTo(tty.NewANSIStripper(f))
 	}
 
-	return log.SetupLogging(zap.DebugLevel, 10, outputPaths, outputPaths, true)
+	return log.SetupLogging("", outputPaths, true)
 }

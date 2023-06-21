@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-
-	"go.uber.org/zap/zapcore"
 )
 
 type BackendURL struct {
@@ -102,13 +100,5 @@ func (f *OutputFormat) Set(str string) error {
 }
 
 func (f *OutputFormat) Type() string {
-	return "string"
-}
-
-type Level struct {
-	zapcore.Level
-}
-
-func (l *Level) Type() string {
 	return "string"
 }

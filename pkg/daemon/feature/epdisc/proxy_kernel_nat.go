@@ -10,6 +10,8 @@ import (
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 const (
@@ -32,10 +34,10 @@ var (
 type KernelNATProxy struct {
 	rule *NATRule
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewKernelNATProxy(cp *ice.CandidatePair, nat *NAT, listenPort int, logger *zap.Logger) (*KernelNATProxy, *net.UDPAddr, error) {
+func NewKernelNATProxy(cp *ice.CandidatePair, nat *NAT, listenPort int, logger *log.Logger) (*KernelNATProxy, *net.UDPAddr, error) {
 	var err error
 
 	if !CandidatePairCanBeNATted(cp) {

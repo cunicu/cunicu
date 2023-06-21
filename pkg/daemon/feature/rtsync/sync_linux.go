@@ -11,7 +11,6 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
@@ -135,22 +134,20 @@ func (i *Interface) watchKernel() error {
 }
 
 func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
-	logger := i.logger.WithOptions(log.WithVerbose(10))
-
-	logger.Debug("Received netlink route update", zap.Any("update", ru))
+	i.logger.DebugV(10, "Received netlink route update", zap.Reflect("update", ru))
 
 	if ru.Table != i.Settings.RoutingTable {
-		logger.Debug("Ignore route from another table")
+		i.logger.DebugV(10, "Ignore route from another table")
 		return nil
 	}
 
 	if ru.Protocol == link.RouteProtocol {
-		logger.Debug("Ignoring route which was installed by ourself")
+		i.logger.DebugV(10, "Ignoring route which was installed by ourself")
 		return nil
 	}
 
 	if ru.Gw == nil {
-		logger.Debug("Ignoring route with missing gateway")
+		i.logger.DebugV(10, "Ignoring route with missing gateway")
 		return nil
 	}
 
@@ -161,14 +158,14 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	p, ok := i.gwMap[gw]
 	if !ok {
-		logger.Debug("Ignoring unknown gateway", zap.Any("gw", ru.Gw))
+		i.logger.DebugV(10, "Ignoring unknown gateway", zap.Any("gw", ru.Gw))
 		return nil
 	}
 
-	logger = logger.With(zap.String("peer", p.String()))
+	logger := i.logger.With(zap.String("peer", p.String()))
 
 	if ru.LinkIndex != p.Interface.Device.Index() {
-		logger.Debug("Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
+		logger.DebugV(10, "Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
 		return nil
 	}
 
@@ -176,7 +173,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 		aip := aip
 
 		if netx.ContainsNet(&aip, ru.Dst) {
-			logger.Debug("Ignoring route as it is already covered by the current AllowedIPs",
+			logger.DebugV(10, "Ignoring route as it is already covered by the current AllowedIPs",
 				zap.Any("allowed_ip", aip),
 				zap.Any("dst", ru.Dst))
 			return nil

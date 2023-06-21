@@ -8,10 +8,12 @@ import (
 
 	"github.com/pion/stun"
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 type STUNPacketHandler struct {
-	Logger *zap.Logger
+	Logger *log.Logger
 }
 
 func (ph *STUNPacketHandler) OnPacketRead(buf []byte, rAddr net.Addr) (bool, error) {
@@ -25,14 +27,14 @@ func (ph *STUNPacketHandler) OnPacketRead(buf []byte, rAddr net.Addr) (bool, err
 		}
 
 		if err := msg.Decode(); err == nil {
-			ph.Logger.Debug("Received STUN message",
+			ph.Logger.DebugV(6, "Received STUN message",
 				zap.String("addr", rAddr.String()),
 				zap.Any("type", msg.Type),
 				zap.Binary("id", msg.TransactionID[:]),
 				zap.Int("#attrs", len(msg.Attributes)),
 				zap.Int("len", int(msg.Length)))
 		} else {
-			ph.Logger.Debug("Received invalid STUN message",
+			ph.Logger.DebugV(6, "Received invalid STUN message",
 				zap.String("addr", rAddr.String()),
 				zap.Int("len", len(buf)),
 				zap.Binary("msg", buf))

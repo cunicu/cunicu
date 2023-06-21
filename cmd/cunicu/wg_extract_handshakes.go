@@ -32,7 +32,7 @@ See: https://wiki.wireshark.org/WireGuard#key-log-format
 }
 
 func wgExtractHandshakes(cmd *cobra.Command, args []string) error {
-	logger := zap.L().Named("tracer")
+	logger := log.Global.Named("tracer")
 
 	ht, err := tracer.NewHandshakeTracer()
 	if err != nil {

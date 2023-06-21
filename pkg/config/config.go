@@ -17,6 +17,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/pflag"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -39,7 +40,7 @@ type Config struct {
 	onInterfaceChanged map[string]*Meta
 
 	flags  *pflag.FlagSet
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 // ParseArgs creates a new configuration instance and loads all configuration
@@ -66,7 +67,6 @@ func New(flags *pflag.FlagSet) *Config {
 		Runtime:            koanf.New("."),
 		onInterfaceChanged: map[string]*Meta{},
 		flags:              flags,
-		logger:             zap.L().Named("config"),
 	}
 
 	// Feature flags
@@ -119,7 +119,7 @@ func (c *Config) Init(args []string) error {
 	// We recreate the logger here, as the logger created
 	// in New() was created in init() before the logging system
 	// was initialized.
-	c.logger = zap.L().Named("config")
+	c.logger = log.Global.Named("config")
 
 	// Initialize some defaults configuration settings at runtime
 	if err := InitDefaults(); err != nil {

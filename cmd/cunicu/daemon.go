@@ -88,8 +88,8 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 
 		logger.Debug("Loaded configuration:")
 		wr := tty.NewIndenter(&zapio.Writer{
-			Log:   logger,
-			Level: zap.DebugLevel,
+			Log:   logger.Logger,
+			Level: zap.DebugLevel - 1,
 		}, "   ")
 
 		if err := cfg.Marshal(wr); err != nil {

@@ -12,7 +12,6 @@ import (
 	"net"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
@@ -25,17 +24,12 @@ import (
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-var (
-	errInvalidVerbosityLevel = errors.New("invalid verbosity level (must be between 0 and 10 inclusive)")
-	errInvalidSeverityLevel  = errors.New("invalid severity level")
-	errNoSettingChanged      = errors.New("no setting was changed")
-)
+var errNoSettingChanged = errors.New("no setting was changed")
 
 type DaemonServer struct {
 	rpcproto.UnimplementedDaemonServer
@@ -185,31 +179,17 @@ func (s *DaemonServer) SetConfig(_ context.Context, p *rpcproto.SetConfigParams)
 	errs := []error{}
 	settings := map[string]any{}
 
+	numChanges := 0
+
 	for key, value := range p.Settings {
 		switch key {
-		case "log.verbosity":
-			level, err := strconv.Atoi(value)
+		case "log.level":
+			rule, err := log.ParseFilterRule(value)
 			if err != nil {
-				errs = append(errs, fmt.Errorf("invalid level: %w", err))
-				break
-			} else if level > 10 || level < 0 {
-				errs = append(errs, errInvalidVerbosityLevel)
-				break
+				errs = append(errs, err)
 			}
-
-			log.Verbosity.SetLevel(level)
-
-		case "log.severity":
-			level, err := zapcore.ParseLevel(value)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("invalid level: %w", err))
-				break
-			} else if level < zapcore.DebugLevel || level > zapcore.FatalLevel {
-				errs = append(errs, errInvalidSeverityLevel)
-				break
-			}
-
-			log.Severity.SetLevel(level)
+			log.Rule.Store(rule)
+			numChanges++
 
 		default:
 			if value == "" { // Unset value
@@ -223,7 +203,10 @@ func (s *DaemonServer) SetConfig(_ context.Context, p *rpcproto.SetConfigParams)
 	changes, err := s.Config.Update(settings)
 	if err != nil {
 		errs = append(errs, err)
-	} else if len(changes) == 0 {
+	}
+
+	numChanges += len(changes)
+	if numChanges == 0 {
 		errs = append(errs, errNoSettingChanged)
 	}
 
@@ -250,12 +233,8 @@ func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams)
 		return p.KeyFilter == "" || strings.HasPrefix(key, p.KeyFilter)
 	}
 
-	if match("log.verbosity") {
-		settings["log.verbosity"] = fmt.Sprint(log.Verbosity.Level())
-	}
-
-	if match("log.severity") {
-		settings["log.severity"] = log.Severity.String()
+	if match("log.level") {
+		settings["log.level"] = log.Rule.Load().Expression
 	}
 
 	for key, value := range s.Config.All() {

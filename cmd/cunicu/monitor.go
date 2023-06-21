@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
@@ -39,7 +40,7 @@ func init() { //nolint:gochecknoinits
 type monitorEventHandler struct {
 	opts   *monitorOptions
 	mo     *protojson.MarshalOptions
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func (h *monitorEventHandler) OnEvent(e *rpcproto.Event) {

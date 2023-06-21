@@ -13,8 +13,8 @@ import (
 
 	"github.com/pion/ice/v2"
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
 )
 
 const (
@@ -102,7 +102,7 @@ var (
 )
 
 func InitDefaults() error {
-	logger := zap.L().Named("config")
+	logger := log.Global.Named("config")
 
 	s := &DefaultSettings.DefaultInterfaceSettings
 

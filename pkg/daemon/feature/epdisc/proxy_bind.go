@@ -11,9 +11,11 @@ import (
 	"time"
 
 	"github.com/pion/ice/v2"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
+
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 // Compile-time assertions
@@ -27,10 +29,10 @@ type BindProxy struct {
 
 	iceConn *ice.Conn
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewBindProxy(bind *wg.Bind, cp *ice.CandidatePair, conn *ice.Conn, logger *zap.Logger) (*BindProxy, *net.UDPAddr, error) {
+func NewBindProxy(bind *wg.Bind, cp *ice.CandidatePair, conn *ice.Conn, logger *log.Logger) (*BindProxy, *net.UDPAddr, error) {
 	p := &BindProxy{
 		iceConn: conn,
 

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/rpc"
 	g "github.com/stv0g/gont/v2/pkg"
@@ -41,7 +42,7 @@ type Agent struct {
 
 	logFile io.WriteCloser
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
@@ -53,7 +54,7 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	a := &Agent{
 		Host: h,
 
-		logger: zap.L().Named("node.agent").With(zap.String("node", name)),
+		logger: log.Global.Named("node.agent").With(zap.String("node", name)),
 	}
 
 	// Apply agent options

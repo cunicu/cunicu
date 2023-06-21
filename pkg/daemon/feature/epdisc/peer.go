@@ -54,7 +54,7 @@ type Peer struct {
 	signalingMessages chan *signaling.Message
 	newConnection     chan *ice.Conn
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewPeer(cp *daemon.Peer, e *Interface) (*Peer, error) {
@@ -343,7 +343,7 @@ func (p *Peer) createAgent() error {
 	acfg.UDPMux = p.Interface.mux
 	acfg.UDPMuxSrflx = p.Interface.muxSrflx
 	acfg.LoggerFactory = &zapion.ZapFactory{
-		BaseLogger: p.logger.WithOptions(log.WithVerbose(6)),
+		BaseLogger: p.logger.Named("ice").Logger,
 	}
 
 	p.localCredentials = epdiscproto.NewCredentials()

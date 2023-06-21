@@ -9,6 +9,7 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	wgdevice "golang.zx2c4.com/wireguard/device"
@@ -27,10 +28,10 @@ type KernelConnProxy struct {
 
 	kernelConn *net.UDPConn
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewKernelConnProxy(bind *wg.Bind, cp *ice.CandidatePair, conn *ice.Conn, listenPort int, logger *zap.Logger) (*KernelConnProxy, *net.UDPAddr, error) {
+func NewKernelConnProxy(bind *wg.Bind, cp *ice.CandidatePair, conn *ice.Conn, listenPort int, logger *log.Logger) (*KernelConnProxy, *net.UDPAddr, error) {
 	bp, _, err := NewBindProxy(bind, cp, conn, logger)
 	if err != nil {
 		return nil, nil, err

@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/test"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -128,7 +128,7 @@ func (al AgentList) ForEachInterfacePairOneDir(cb func(a, b *WireGuardInterface)
 
 func (al AgentList) WaitConnectionsReady(ctx context.Context) error {
 	handler := &test.DefaultProgressHandler{
-		Logger: zap.L().Named("wait-conns"),
+		Logger: log.Global.Named("wait-conns"),
 	}
 
 	return test.WithProgress(ctx, func(started, completed chan string) error {
@@ -146,7 +146,7 @@ func (al AgentList) WaitConnectionsReady(ctx context.Context) error {
 
 func (al AgentList) PingPeers(ctx context.Context) error {
 	handler := &test.DefaultProgressHandler{
-		Logger: zap.L().Named("ping"),
+		Logger: log.Global.Named("ping"),
 	}
 
 	return test.WithProgress(ctx, func(started, completed chan string) error {

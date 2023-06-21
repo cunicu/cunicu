@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -134,7 +135,7 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 		return err
 	}
 
-	zap.L().Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("pkp", pkp))
+	log.Global.Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("pkp", pkp))
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()

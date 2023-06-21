@@ -12,6 +12,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/test"
@@ -19,10 +20,9 @@ import (
 	g "github.com/stv0g/gont/v2/pkg"
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 	copt "github.com/stv0g/gont/v2/pkg/options/capture"
-	"go.uber.org/zap"
 )
 
-var logger *zap.Logger
+var logger *log.Logger
 
 type Network struct {
 	*g.Network
@@ -235,7 +235,8 @@ func (n *Network) Init() {
 	Expect(err).To(Succeed(), "Failed to create test case result directory: %s", err)
 
 	// Ginkgo log
-	logger = test.SetupLoggingWithFile(logFilename, true)
+	logger, err = test.SetupLoggingWithFile(logFilename, true)
+	Expect(err).To(Succeed())
 
 	n.AgentOptions = append(n.AgentOptions,
 		gopt.RedirectToLog(false),

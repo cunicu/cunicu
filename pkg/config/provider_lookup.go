@@ -17,6 +17,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/miekg/dns"
 	"github.com/pion/stun"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
@@ -33,11 +34,11 @@ type LookupProvider struct {
 	settings   map[string]any
 
 	mu     sync.Mutex
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewLookupProvider(domain string) *LookupProvider {
-	logger := zap.L().Named("lookup")
+	logger := log.Global.Named("lookup")
 
 	return &LookupProvider{
 		domain: domain,

@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/stv0g/cunicu/pkg/link"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/device"
@@ -32,13 +33,13 @@ type UserDevice struct {
 
 	apiListener net.Listener
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewUserDevice(name string) (*UserDevice, error) {
 	var err error
 
-	logger := zap.L().Named("dev").With(
+	logger := log.Global.Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "user"),
 	)

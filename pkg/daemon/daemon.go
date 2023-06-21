@@ -11,6 +11,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/device"
+	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
@@ -35,7 +36,7 @@ type Daemon struct {
 	stop          chan any
 	reexecOnClose bool
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewDaemon(cfg *config.Config) (*Daemon, error) {
@@ -50,7 +51,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Config:  cfg,
 		devices: []device.Device{},
 		stop:    make(chan any),
-		logger:  zap.L().Named("daemon"),
+		logger:  log.Global.Named("daemon"),
 	}
 
 	// Create WireGuard netlink socket
