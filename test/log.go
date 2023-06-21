@@ -6,29 +6,14 @@ package test
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/onsi/ginkgo/v2"
-	"go.uber.org/zap"
 
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 )
-
-type writerWrapper struct {
-	ginkgo.GinkgoWriterInterface
-}
-
-func (w *writerWrapper) Close() error {
-	return nil
-}
-
-func (w *writerWrapper) Sync() error {
-	return nil
-}
 
 func SetupLogging() *log.Logger {
 	logger, err := SetupLoggingWithFile("", false)
@@ -40,15 +25,7 @@ func SetupLogging() *log.Logger {
 }
 
 func SetupLoggingWithFile(fn string, truncate bool) (*log.Logger, error) {
-	if err := zap.RegisterSink("ginkgo", func(u *url.URL) (zap.Sink, error) {
-		return &writerWrapper{
-			GinkgoWriterInterface: ginkgo.GinkgoWriter,
-		}, nil
-	}); err != nil && !strings.Contains(err.Error(), "already registered") {
-		panic(err)
-	}
-
-	outputPaths := []string{"ginkgo:"}
+	outputPaths := []string{"ginkgo"}
 
 	if fn != "" {
 		// Create parent directories for log file

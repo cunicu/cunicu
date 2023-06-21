@@ -8,6 +8,8 @@ import (
 	"strconv"
 
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 type WindowsLink struct {

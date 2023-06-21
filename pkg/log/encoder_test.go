@@ -38,6 +38,10 @@ func (j jsonMarshaler) MarshalJSON() ([]byte, error)   { return []byte(j), nil }
 func (t failedMarshaler) MarshalText() ([]byte, error) { return []byte(t), errWelp }
 
 var _ = Context("encoder", func() {
+	BeforeEach(func() {
+		ResetWidths()
+	})
+
 	DescribeTable("key",
 		func(
 			key string,
@@ -177,7 +181,7 @@ var _ = Context("encoder", func() {
 			},
 			Entry("nil", "<nil>", nil),
 			Entry("error", "welp", errWelp),
-			Entry("bytes", "bytes", []byte("bytes")),
+			Entry("bytes", "Ynl0ZXM=", []byte("bytes")),
 			Entry("stringer", "my-stringer", stringer("my-stringer")),
 			Entry("text marshaler", "marshaled-text", textMarshaler("marshaled-text")),
 			Entry("json marshaler", `{"json":"data"}`, jsonMarshaler(`{"json":"data"}`)),
@@ -413,8 +417,10 @@ var _ = Context("encoder", func() {
 	})
 
 	Describe("EncodeEntry", func() {
-		It("empty config with field", func() {
-			enc := newEncoder(encoderConfig{})
+		DescribeTable("empty config with field", func(color, expected string) {
+			enc := newEncoder(encoderConfig{
+				ColorContext: color,
+			})
 
 			enc.AddString("x", "y")
 
@@ -427,8 +433,11 @@ var _ = Context("encoder", func() {
 			)
 
 			Expect(err).To(Succeed())
-			Expect(buf.String()).To(Equal(tty.Mods("x=y a=b c=d", ColorContext) + "\n"))
-		})
+			Expect(buf.String()).To(Equal(expected))
+		},
+			Entry("with color", ColorContext, tty.Mods("x=y a=b c=d", ColorContext)+"\n"),
+			Entry("without color", "", "x=y a=b c=d\n"),
+		)
 
 		DescribeTable("with config",
 			func(
@@ -468,61 +477,109 @@ var _ = Context("encoder", func() {
 			},
 			Entry("empty",
 				"",
-				zapcore.EncoderConfig{},
+				encoderConfig{},
 				nil,
 				nil,
 			),
 			Entry("empty with fields",
+				"key=value",
+				encoderConfig{},
+				nil,
+				[]zapcore.Field{zap.String("key", "value")},
+			),
+			Entry("empty with fields and color",
 				tty.Mods("key=value", ColorContext),
-				zapcore.EncoderConfig{},
+				encoderConfig{ColorContext: ColorContext},
 				nil,
 				[]zapcore.Field{zap.String("key", "value")},
 			),
 			Entry("empty with context",
+				"message\tcontext=value field=value",
+				encoderConfig{Message: true},
+				func(enc zapcore.Encoder) { enc.AddString("context", "value") },
+				[]zapcore.Field{zap.String("field", "value")},
+			),
+			Entry("empty with context and color",
 				"message\t"+tty.Mods("context=value field=value", ColorContext),
-				zapcore.EncoderConfig{MessageKey: "M"},
+				encoderConfig{Message: true, ColorContext: ColorContext},
 				func(enc zapcore.Encoder) { enc.AddString("context", "value") },
 				[]zapcore.Field{zap.String("field", "value")},
 			),
 			Entry("EncodeTime",
+				"1000000001",
+				encoderConfig{Time: true, EncodeTime: zapcore.EpochNanosTimeEncoder},
+				nil,
+				nil,
+			),
+			Entry("EncodeTime with color",
 				tty.Mods("1000000001", ColorTime),
-				zapcore.EncoderConfig{TimeKey: "T", EncodeTime: zapcore.EpochNanosTimeEncoder},
+				encoderConfig{Time: true, EncodeTime: zapcore.EpochNanosTimeEncoder, ColorTime: ColorTime},
 				nil,
 				nil,
 			),
 			Entry("EncodeLevel",
+				"debug",
+				encoderConfig{Level: true, EncodeLevel: zapcore.LowercaseLevelEncoder},
+				nil,
+				nil,
+			),
+			Entry("EncodeLevel with color",
 				tty.Mods("debug", ColorLevels[zapcore.DebugLevel]),
-				zapcore.EncoderConfig{LevelKey: "L", EncodeLevel: zapcore.LowercaseLevelEncoder},
+				encoderConfig{Level: true, EncodeLevel: zapcore.LowercaseLevelEncoder, ColorLevel: ColorLevel},
 				nil,
 				nil,
 			),
 			Entry("EncodeName",
+				"test",
+				encoderConfig{Name: true, EncodeName: zapcore.FullNameEncoder},
+				nil,
+				nil,
+			),
+			Entry("EncodeName with color",
 				tty.Mods("test", ColorName),
-				zapcore.EncoderConfig{NameKey: "N", EncodeName: zapcore.FullNameEncoder},
+				encoderConfig{Name: true, EncodeName: zapcore.FullNameEncoder, ColorName: ColorName},
 				nil,
 				nil,
 			),
 			Entry("EncodeCaller",
+				"arthur/philip/dent/h2g2.go:42",
+				encoderConfig{Caller: true, EncodeCaller: zapcore.FullCallerEncoder},
+				nil,
+				nil,
+			),
+			Entry("EncodeCalle with color",
 				tty.Mods("arthur/philip/dent/h2g2.go:42", ColorCaller),
-				zapcore.EncoderConfig{CallerKey: "C", EncodeCaller: zapcore.FullCallerEncoder},
+				encoderConfig{Caller: true, EncodeCaller: zapcore.FullCallerEncoder, ColorCaller: ColorCaller},
 				nil,
 				nil,
 			),
 			Entry("EncodeMessage",
 				"message",
-				zapcore.EncoderConfig{MessageKey: "M"},
+				encoderConfig{Message: true},
 				nil,
 				nil,
 			),
-			Entry("StracktraceKey",
+			Entry("EncodeMessage with color",
+				"message",
+				encoderConfig{Message: true},
+				nil,
+				nil,
+			),
+			Entry("Stracktrace",
+				"stacktrace\nwith multiple lines\n\tand tabs\n",
+				encoderConfig{Stacktrace: true},
+				nil,
+				nil,
+			),
+			Entry("Stracktrace with color",
 				tty.Mods("stacktrace\nwith multiple lines\n\tand tabs\n", ColorStacktrace),
-				zapcore.EncoderConfig{StacktraceKey: "S"},
+				encoderConfig{Stacktrace: true, ColorStacktrace: ColorStacktrace},
 				nil,
 				nil,
 			),
 			Entry("LineEnding",
 				"",
-				zapcore.EncoderConfig{LineEnding: "<EOL>"},
+				encoderConfig{LineEnding: "<EOL>"},
 				nil,
 				nil,
 			),
@@ -536,7 +593,7 @@ var _ = Context("encoder", func() {
 			expected string,
 			timeEncoder zapcore.TimeEncoder,
 		) {
-			enc := newEncoder(encoderConfig{EncoderConfig: zapcore.EncoderConfig{EncodeTime: timeEncoder}})
+			enc := newEncoder(encoderConfig{EncodeTime: timeEncoder})
 			enc.quote = '"'
 
 			enc.AddTime("ts", ts)
@@ -555,7 +612,7 @@ var _ = Context("encoder", func() {
 			expected string,
 			durationEncoder zapcore.DurationEncoder,
 		) {
-			enc := newEncoder(encoderConfig{EncoderConfig: zapcore.EncoderConfig{EncodeDuration: durationEncoder}})
+			enc := newEncoder(encoderConfig{EncodeDuration: durationEncoder})
 			enc.quote = '"'
 
 			enc.AddDuration("duration", duration)

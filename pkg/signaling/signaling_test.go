@@ -13,8 +13,7 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Signaling Suite")
 }
-
-var _ = test.SetupLogging()

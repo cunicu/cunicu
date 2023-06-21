@@ -14,11 +14,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Crypto Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Describe("nonce", func() {
 	It("can generate a valid nonce", func() {

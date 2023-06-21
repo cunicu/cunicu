@@ -8,7 +8,6 @@ import (
 	stdlog "log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"testing"
 
 	"github.com/pion/zapion"
@@ -16,7 +15,6 @@ import (
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -43,11 +41,13 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", lvl.String())
 		os.Setenv("PION_LOG", lvl.String())
+
+		log.ResetWidths()
 	})
 
 	JustBeforeEach(func() {
 		var err error
-		logger, err = log.SetupLogging("", []string{logPath}, true)
+		logger, err = log.SetupLogging("", []string{logPath}, false)
 		Expect(err).To(Succeed())
 	})
 
@@ -96,9 +96,9 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		Expect(err).To(Succeed(), "Failed to read standard log contents: %s", err)
 		Expect(logContents).NotTo(BeEmpty())
 
-		regexTime := regexpQuoteColor(`\d{2}:\d{2}:\d{2}.\d{6}`, log.ColorTime) + " "
-		regexLevel := regexpQuoteColor(lvl.String(), log.ColorLevel(lvl)) + " "
-		regexName := regexpQuoteColor(name, log.ColorName) + " "
+		regexTime := `\d{2}:\d{2}:\d{2}.\d{6} `
+		regexLevel := lvl.String() + " "
+		regexName := name + " "
 
 		var regex string
 		if name != "" {
@@ -110,11 +110,3 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		Expect(string(logContents)).To(MatchRegexp(regex), "Log output '%s' does not match regex '%s'", logContents, regex)
 	})
 })
-
-func regexpQuoteColor(str, color string) string {
-	if color == "" {
-		return str
-	}
-
-	return regexp.QuoteMeta(color) + str + regexp.QuoteMeta(tty.Reset)
-}

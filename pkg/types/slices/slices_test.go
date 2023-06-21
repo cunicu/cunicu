@@ -16,11 +16,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Slices Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Context("slice", func() {
 	var s []int

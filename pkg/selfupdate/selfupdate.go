@@ -188,7 +188,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 		return -1, err
 	}
 
-	n, err := io.Copy(dest, rd)
+	n, err := io.Copy(dest, rd) //nolint:gosec
 	if err != nil {
 		_ = dest.Close()
 		_ = os.Remove(dest.Name())

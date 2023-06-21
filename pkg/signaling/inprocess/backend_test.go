@@ -16,11 +16,10 @@ import (
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "In-Process Backend Suite")
 }
-
-var _ = test.SetupLogging()
 
 var _ = Describe("inprocess backend", func() {
 	u := url.URL{

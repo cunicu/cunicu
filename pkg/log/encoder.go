@@ -63,6 +63,11 @@ var (
 	}
 )
 
+func ResetWidths() {
+	widthLevel.Store(0)
+	widthName.Store(0)
+}
+
 func ColorLevel(l zapcore.Level) string {
 	if color, ok := ColorLevels[l]; ok {
 		return color
@@ -74,14 +79,39 @@ func ColorLevel(l zapcore.Level) string {
 }
 
 type encoderConfig struct {
-	zapcore.EncoderConfig
-
 	ColorTime       string
 	ColorContext    string
 	ColorStacktrace string
 	ColorName       string
 	ColorCaller     string
 	ColorLevel      func(lvl zapcore.Level) string
+
+	Function   bool
+	Message    bool
+	Time       bool
+	Context    bool
+	Stacktrace bool
+	Name       bool
+	Caller     bool
+	Level      bool
+
+	// Configure the primitive representations of common complex types. For
+	// example, some users may want all time.Times serialized as floating-point
+	// seconds since epoch, while others may prefer ISO8601 strings.
+	EncodeLevel    zapcore.LevelEncoder
+	EncodeTime     zapcore.TimeEncoder
+	EncodeDuration zapcore.DurationEncoder
+	EncodeCaller   zapcore.CallerEncoder
+
+	// Unlike the other primitive type encoders, EncodeName is optional. The
+	// zero value falls back to FullNameEncoder.
+	EncodeName zapcore.NameEncoder
+
+	// Configures the field separator used by the console encoder. Defaults
+	// to tab.
+	ConsoleSeparator string
+
+	LineEnding string
 }
 
 type encoder struct {
@@ -434,7 +464,7 @@ func (e *encoder) appendReflection(value any) error {
 	rvalue := reflect.ValueOf(value)
 	switch rvalue.Kind() {
 	case reflect.Chan, reflect.Func:
-		e.AppendString(fmt.Sprintf("%s(%d)", rvalue.Type(), rvalue.Pointer()))
+		e.AppendString(fmt.Sprintf("%T(%p)", value, value))
 	case reflect.Struct:
 		return e.appendReflectedStruct(rvalue)
 	case reflect.Map:
@@ -613,7 +643,7 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	defer putEncoder(f)
 
 	// Time
-	if f.TimeKey != "" && f.EncodeTime != nil {
+	if f.Time && f.EncodeTime != nil {
 		f.addSeparator(e.fieldSeparator)
 		f.colored(e.ColorTime, func() {
 			f.EncodeTime(ent.Time, f)
@@ -621,17 +651,24 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	}
 
 	// Level
-	if f.LevelKey != "" && f.EncodeLevel != nil {
-		f.addSeparator(e.fieldSeparator)
-		f.colored(e.ColorLevel(ent.Level), func() {
+	if f.Level && f.EncodeLevel != nil {
+		cb := func() {
 			f.aligned(&widthLevel, func() {
 				f.EncodeLevel(ent.Level, f)
 			})
-		})
+		}
+
+		f.addSeparator(e.fieldSeparator)
+
+		if e.ColorLevel != nil {
+			f.colored(e.ColorLevel(ent.Level), cb)
+		} else {
+			cb()
+		}
 	}
 
 	// Name
-	if ent.LoggerName != "" && f.NameKey != "" {
+	if f.Name && ent.LoggerName != "" {
 		nameEncoder := f.EncodeName
 		if nameEncoder == nil {
 			// Fall back to FullNameEncoder for backward compatibility.
@@ -647,14 +684,14 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	}
 
 	if ent.Caller.Defined {
-		if f.CallerKey != "" && f.EncodeCaller != nil {
+		if f.Caller && f.EncodeCaller != nil {
 			f.addSeparator(e.fieldSeparator)
 			f.colored(e.ColorCaller, func() {
 				f.EncodeCaller(ent.Caller, f)
 			})
 		}
 
-		if f.FunctionKey != "" {
+		if f.Function {
 			f.addSeparator(e.fieldSeparator)
 			f.colored(e.ColorCaller, func() {
 				f.AppendString(ent.Caller.Function)
@@ -663,7 +700,7 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	}
 
 	// Add the message itself.
-	if f.MessageKey != "" {
+	if f.Message {
 		f.addSeparator(e.fieldSeparator)
 		f.AppendString(ent.Message)
 	}
@@ -688,7 +725,7 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 		})
 	}
 
-	if f.StacktraceKey != "" && ent.Stack != "" {
+	if f.Stacktrace && ent.Stack != "" {
 		f.addSeparator(e.fieldSeparator)
 		f.colored(e.ColorStacktrace, func() {
 			f.buf.AppendString(ent.Stack)

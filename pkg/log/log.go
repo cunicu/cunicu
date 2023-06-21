@@ -7,6 +7,7 @@ package log
 import (
 	"os"
 
+	"github.com/onsi/ginkgo/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
@@ -25,10 +26,13 @@ func DebugLevel(verbosity int) Level {
 }
 
 func openSink(path string) zapcore.WriteSyncer {
-	if path == "stdout" {
+	switch path {
+	case "stdout":
 		return os.Stdout
-	} else if path == "stderr" {
+	case "stderr":
 		return os.Stderr
+	case "ginkgo":
+		return &ginkgoSyncWriter{ginkgo.GinkgoWriter}
 	}
 
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
@@ -45,21 +49,20 @@ func (e *alwaysEnabled) Enabled(zapcore.Level) bool { return true }
 
 func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err error) {
 	cfg := encoderConfig{
-		EncoderConfig: zapcore.EncoderConfig{
-			TimeKey:          "T",
-			LevelKey:         "L",
-			NameKey:          "N",
-			CallerKey:        "C",
-			FunctionKey:      zapcore.OmitKey,
-			MessageKey:       "M",
-			StacktraceKey:    "S",
-			ConsoleSeparator: " ",
-			LineEnding:       zapcore.DefaultLineEnding,
-			EncodeTime:       zapcore.TimeEncoderOfLayout("15:04:05.000000"),
-			EncodeDuration:   zapcore.StringDurationEncoder,
-			EncodeCaller:     zapcore.ShortCallerEncoder,
-			EncodeLevel:      levelEncoder,
-		},
+		Time:             true,
+		Level:            true,
+		Name:             true,
+		Message:          true,
+		ConsoleSeparator: " ",
+		LineEnding:       zapcore.DefaultLineEnding,
+		EncodeTime:       zapcore.TimeEncoderOfLayout("15:04:05.000000"),
+		EncodeDuration:   zapcore.StringDurationEncoder,
+		EncodeCaller:     zapcore.ShortCallerEncoder,
+		EncodeLevel:      levelEncoder,
+	}
+
+	if rule == "" {
+		rule = "*"
 	}
 
 	if color {
@@ -69,10 +72,6 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 		cfg.ColorName = ColorName
 		cfg.ColorCaller = ColorCaller
 		cfg.ColorLevel = ColorLevel
-	} else {
-		cfg.ColorLevel = func(lvl zapcore.Level) string {
-			return ""
-		}
 	}
 
 	wss := []zapcore.WriteSyncer{}
@@ -88,10 +87,6 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 	ws := zapcore.NewMultiWriteSyncer(wss...)
 	enc := newEncoder(cfg)
 	core := zapcore.NewCore(enc, ws, &alwaysEnabled{})
-
-	if rule == "" {
-		rule = "*"
-	}
 
 	filterRule, err := ParseFilterRule(rule)
 	if err != nil {
