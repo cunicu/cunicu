@@ -8,12 +8,13 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/proto"
 	"github.com/stv0g/cunicu/pkg/rpc"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type versionOptions struct {

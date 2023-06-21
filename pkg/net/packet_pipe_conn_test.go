@@ -7,9 +7,10 @@ import (
 	"crypto/rand"
 	"net"
 
+	netx "github.com/stv0g/cunicu/pkg/net"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	netx "github.com/stv0g/cunicu/pkg/net"
 )
 
 var _ = Context("PacketPipeConn", func() {

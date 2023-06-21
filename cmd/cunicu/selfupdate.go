@@ -11,8 +11,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/stv0g/cunicu/pkg/selfupdate"
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/selfupdate"
 )
 
 type selfUpdateOptions struct {

@@ -12,11 +12,12 @@ import (
 	"strings"
 	"syscall"
 
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 var Get = daemon.RegisterFeature(New, 20) //nolint:gochecknoglobals

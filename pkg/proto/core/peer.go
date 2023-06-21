@@ -11,8 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/tty"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 func (p *Peer) Peer() wgtypes.Peer {

@@ -4,8 +4,9 @@
 package daemon
 
 import (
-	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 type InterfaceModifiedHandler interface {

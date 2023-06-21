@@ -8,6 +8,10 @@ import (
 	"io"
 	"time"
 
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/device"
@@ -16,9 +20,6 @@ import (
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type Interface struct {

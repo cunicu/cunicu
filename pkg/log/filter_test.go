@@ -10,13 +10,15 @@ import (
 	"math/rand"
 	"strings"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gcustom"
-	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
+
+	"github.com/stv0g/cunicu/pkg/log"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var (

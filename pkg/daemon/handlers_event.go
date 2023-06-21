@@ -6,8 +6,9 @@ package daemon
 import (
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 type Event any

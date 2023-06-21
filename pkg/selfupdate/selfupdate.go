@@ -23,9 +23,10 @@ import (
 	"strings"
 	"syscall"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/log"
-	"go.uber.org/zap"
 )
 
 const (

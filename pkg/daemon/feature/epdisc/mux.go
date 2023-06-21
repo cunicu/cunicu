@@ -11,13 +11,14 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/zapion"
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/link"
 	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
 )
 
 func (i *Interface) setupUDPMux() error {

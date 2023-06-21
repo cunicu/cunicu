@@ -12,18 +12,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/proto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+
+	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/proto"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 var errTimeout = errors.New("timed out")

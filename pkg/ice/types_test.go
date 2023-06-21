@@ -4,11 +4,13 @@
 package ice_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
+
 	icex "github.com/stv0g/cunicu/pkg/ice"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Marshaling of ICE types", func() {

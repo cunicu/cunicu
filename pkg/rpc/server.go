@@ -10,12 +10,13 @@ import (
 	"os"
 	"sync"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/types"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type Server struct {

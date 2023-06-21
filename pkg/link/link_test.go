@@ -6,9 +6,10 @@ package link_test
 import (
 	"testing"
 
+	osx "github.com/stv0g/cunicu/pkg/os"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	osx "github.com/stv0g/cunicu/pkg/os"
 )
 
 func TestSuite(t *testing.T) {

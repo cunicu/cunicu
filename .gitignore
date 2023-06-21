@@ -8,6 +8,7 @@ dist/
 docs/usage/man/*.1
 docs/usage/md/*.md
 /cunicu
+ginkgo.report
 *.log
 *.out
 *.test

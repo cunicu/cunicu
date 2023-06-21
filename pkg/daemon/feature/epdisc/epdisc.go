@@ -11,11 +11,12 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	"go.uber.org/zap"
 )
 
 var Get = daemon.RegisterFeature(New, 50) //nolint:gochecknoglobals

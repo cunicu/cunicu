@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 

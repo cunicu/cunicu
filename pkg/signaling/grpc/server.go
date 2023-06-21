@@ -11,16 +11,17 @@ import (
 	"io"
 	"os"
 
+	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 type Server struct {

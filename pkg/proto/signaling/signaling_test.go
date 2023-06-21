@@ -6,13 +6,15 @@ package signaling_test
 import (
 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/test"
-	"google.golang.org/protobuf/proto"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 func TestSuite(t *testing.T) {

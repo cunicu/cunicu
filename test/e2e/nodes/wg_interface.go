@@ -13,13 +13,14 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/wg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 var errNoTunnelAddr = errors.New("no WireGuard tunnel address configured")

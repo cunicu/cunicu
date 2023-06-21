@@ -6,13 +6,14 @@ package rpc
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type SignalingServer struct {

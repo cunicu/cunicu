@@ -4,10 +4,11 @@
 package hooks
 
 import (
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
-	"go.uber.org/zap"
 )
 
 var Get = daemon.RegisterFeature(New, 70) //nolint:gochecknoglobals

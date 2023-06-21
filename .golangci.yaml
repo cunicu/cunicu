@@ -36,6 +36,16 @@ linters-settings:
         yaml: snake
         xml: snake
 
+  gci:
+    sections:
+    - standard
+    - default
+    - prefix(github.com/stv0g/cunicu)
+    - blank
+    - dot
+
+    custom-order: true
+
 linters:
   enable:
   - asciicheck # Simple linter to check that your code does not contain non-ASCII identifiers

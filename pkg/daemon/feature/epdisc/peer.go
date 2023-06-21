@@ -15,6 +15,10 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/pion/ice/v2"
 	"github.com/pion/zapion"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
@@ -24,9 +28,6 @@ import (
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/types"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var (

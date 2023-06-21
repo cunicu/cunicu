@@ -9,14 +9,15 @@ import (
 	"net/url"
 	"strings"
 
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/device"
 	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl"
 )
 
 var (

@@ -9,10 +9,11 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	wgdevice "golang.zx2c4.com/wireguard/device"
+
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 // Compile-time assertions

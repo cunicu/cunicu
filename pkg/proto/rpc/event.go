@@ -6,9 +6,10 @@ package rpc
 import (
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/log"
-	"go.uber.org/zap"
 )
 
 func (e *Event) Log(l *log.Logger, msg string, fields ...zap.Field) {

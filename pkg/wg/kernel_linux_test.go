@@ -4,10 +4,11 @@
 package wg_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/wg"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = It("detects the kernel module", func() {

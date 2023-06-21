@@ -6,9 +6,10 @@ package grpc_test
 import (
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/signaling/grpc"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/signaling/grpc"
 )
 
 var _ = Context("relay server", func() {

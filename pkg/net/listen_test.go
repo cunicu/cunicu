@@ -6,10 +6,11 @@ package net_test
 import (
 	"net"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/stv0g/cunicu/pkg/config"
 	netx "github.com/stv0g/cunicu/pkg/net"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("find bindable port in range", func() {

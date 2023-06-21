@@ -6,12 +6,13 @@ package rpc
 import (
 	"net"
 
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func (s *Server) OnInterfaceAdded(i *daemon.Interface) {

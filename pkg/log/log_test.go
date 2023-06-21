@@ -11,13 +11,15 @@ import (
 	"regexp"
 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/pion/zapion"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
+
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/tty"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 func TestSuite(t *testing.T) {

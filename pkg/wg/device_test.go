@@ -8,11 +8,13 @@ import (
 	"net"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Context("device", func() {

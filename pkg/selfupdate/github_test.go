@@ -7,9 +7,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/selfupdate"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/selfupdate"
 )
 
 var _ = Context("github", func() {

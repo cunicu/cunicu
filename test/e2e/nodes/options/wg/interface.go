@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
 	g "github.com/stv0g/gont/v2/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/test/e2e/nodes"
 )
 
 type PrivateKey crypto.Key

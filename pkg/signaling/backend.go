@@ -11,10 +11,11 @@ import (
 	"net/url"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/log"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"go.uber.org/zap"
 )
 
 var (

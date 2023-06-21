@@ -9,10 +9,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/tty"
 	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 type Interface wgtypes.Device

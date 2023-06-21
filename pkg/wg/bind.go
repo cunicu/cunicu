@@ -12,11 +12,12 @@ import (
 	"sync"
 
 	"github.com/pion/ice/v2"
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	wgconn "golang.zx2c4.com/wireguard/conn"
+
+	"github.com/stv0g/cunicu/pkg/log"
+	netx "github.com/stv0g/cunicu/pkg/net"
 )
 
 var ErrNoConn = errors.New("no connection for endpoint")

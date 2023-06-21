@@ -6,8 +6,9 @@ package config
 import (
 	"reflect"
 
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"golang.org/x/exp/maps"
+
+	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 )
 
 type Change struct {

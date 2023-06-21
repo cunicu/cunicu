@@ -11,14 +11,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/rpc"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
+
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
+	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/rpc"
 )
 
 type AgentOption interface {

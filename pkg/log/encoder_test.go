@@ -14,11 +14,13 @@ import (
 	"time"
 	"unicode/utf8"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/stv0g/cunicu/pkg/tty"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var errWelp = errors.New("welp")

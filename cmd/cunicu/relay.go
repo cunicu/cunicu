@@ -7,11 +7,12 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
-	osx "github.com/stv0g/cunicu/pkg/os"
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	osx "github.com/stv0g/cunicu/pkg/os"
+	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 )
 
 type relayOptions struct {

@@ -14,9 +14,10 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/test"
-	"go.uber.org/zap"
 )
 
 // We implement our own functions for building the binary-under-test

@@ -6,11 +6,13 @@ package config_test
 import (
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/pion/ice/v2"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	icex "github.com/stv0g/cunicu/pkg/ice"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = It("map", func() {

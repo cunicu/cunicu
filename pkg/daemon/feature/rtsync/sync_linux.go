@@ -9,12 +9,13 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/link"
-	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
+
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/link"
+	netx "github.com/stv0g/cunicu/pkg/net"
 )
 
 // removeKernel removes all routes from the kernel which target
