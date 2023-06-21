@@ -26,7 +26,7 @@ func FindRandomPortToListen(network string, min, max int) (int, error) {
 	}
 
 	for attempts := 100; attempts > 0; attempts-- {
-		port := min + rand.Intn(max-min+1)
+		port := min + rand.Intn(max-min+1) //nolint:gosec
 		if canListenOnPort(network, port) {
 			return port, nil
 		}

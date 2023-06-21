@@ -412,8 +412,6 @@ func (e *encoder) AppendReflected(value any) (err error) {
 }
 
 func doString(value any) bool {
-	return false
-
 	rtype := reflect.TypeOf(value)
 	for rtype.Kind() == reflect.Interface || rtype.Kind() == reflect.Pointer {
 		rtype = rtype.Elem()
