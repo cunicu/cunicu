@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"net"
 
-	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 var ErrFiltered = errors.New("packet has been filtered")
@@ -24,10 +25,10 @@ type FilteredConn struct {
 	net.PacketConn
 
 	onPacket []PacketHandler
-	logger   *zap.Logger
+	logger   *log.Logger
 }
 
-func NewFilteredConn(c net.PacketConn, logger *zap.Logger) *FilteredConn {
+func NewFilteredConn(c net.PacketConn, logger *log.Logger) *FilteredConn {
 	return &FilteredConn{
 		PacketConn: c,
 		logger:     logger,

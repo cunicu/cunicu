@@ -9,6 +9,7 @@ import (
 	"net"
 
 	"github.com/stv0g/cunicu/pkg/link"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
@@ -23,11 +24,11 @@ type KernelDevice struct {
 	ListenPort int
 	bind       *wg.Bind
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewKernelDevice(name string) (*KernelDevice, error) {
-	logger := zap.L().Named("dev").With(
+	logger := log.Global.Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "kernel"),
 	)
@@ -45,7 +46,7 @@ func NewKernelDevice(name string) (*KernelDevice, error) {
 }
 
 func FindKernelDevice(name string) (*KernelDevice, error) {
-	logger := zap.L().Named("dev").With(
+	logger := log.Global.Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "kernel"),
 	)

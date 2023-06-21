@@ -50,10 +50,8 @@ func (i *Interface) OnPeerModified(cp *daemon.Peer, _ *wgtypes.Peer, m daemon.Pe
 }
 
 func (i *Interface) OnBindOpen(b *wg.Bind, _ uint16) {
-	logger := i.logger.Named("bind_conn")
-
 	for _, muxConn := range i.muxConns {
-		bindConn := wg.NewBindPacketConn(b, muxConn, logger)
+		bindConn := wg.NewBindPacketConn(b, muxConn, i.logger)
 		b.Conns = append(b.Conns, bindConn)
 	}
 }

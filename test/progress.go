@@ -10,6 +10,8 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 type ProgressHandler interface {
@@ -84,7 +86,7 @@ func WithProgress(ctx context.Context, run func(started, completed chan string) 
 var _ ProgressHandler = (*DefaultProgressHandler)(nil)
 
 type DefaultProgressHandler struct {
-	Logger *zap.Logger
+	Logger *log.Logger
 }
 
 func (ph *DefaultProgressHandler) OnProgress(cntStarted, cntCompleted, cntFailed uint, durElapsed, durRemaining time.Duration, idsMissing []string) {
@@ -108,7 +110,7 @@ func (ph *DefaultProgressHandler) OnProgress(cntStarted, cntCompleted, cntFailed
 
 func (ph *DefaultProgressHandler) OnStart() {
 	if ph.Logger == nil {
-		ph.Logger = zap.L().Named("progress")
+		ph.Logger = log.Global.Named("progress")
 	}
 
 	ph.Logger.Info("Started")

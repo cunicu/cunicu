@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pion/stun"
+	"github.com/stv0g/cunicu/pkg/log"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
@@ -27,7 +28,7 @@ type CoturnNode struct {
 
 	Config map[string]string
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, error) {
@@ -52,7 +53,7 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, er
 			"realm":          "cunicu",
 			"cli-password":   "cunicu",
 		},
-		logger: zap.L().Named("node.relay").With(zap.String("node", name)),
+		logger: log.Global.Named("node.relay").With(zap.String("node", name)),
 	}
 
 	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username(), t.Password())

@@ -13,7 +13,7 @@ import (
 type WindowsLink struct {
 	index int
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func (d *WindowsLink) AddAddress(ip net.IPNet) error {

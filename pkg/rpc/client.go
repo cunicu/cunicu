@@ -15,6 +15,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
@@ -39,7 +40,7 @@ type Client struct {
 	rpcproto.DaemonClient
 
 	conn    *grpc.ClientConn
-	logger  *zap.Logger
+	logger  *log.Logger
 	onEvent []EventHandler
 
 	peerStates     map[crypto.Key]daemon.PeerState
@@ -84,7 +85,7 @@ func Connect(path string) (*Client, error) {
 		DaemonClient:                  rpcproto.NewDaemonClient(conn),
 
 		conn:       conn,
-		logger:     zap.L().Named("rpc.client").With(zap.String("path", path)),
+		logger:     log.Global.Named("rpc.client").With(zap.String("path", path)),
 		peerStates: make(map[crypto.Key]daemon.PeerState),
 	}
 	c.peerStatesCond = sync.NewCond(&c.peerStatesLock)

@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pion/stun"
+	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
-	"go.uber.org/zap"
 )
 
 var _ = Context("STUNPacketHandler", func() {
@@ -34,7 +34,7 @@ var _ = Context("STUNPacketHandler", func() {
 
 		ppc1, ppc2 = netx.NewPacketPipeConn(l1, l2, 128)
 
-		fc = netx.NewFilteredConn(ppc2, zap.L())
+		fc = netx.NewFilteredConn(ppc2, log.Global)
 	})
 
 	AfterEach(func() {
@@ -50,7 +50,7 @@ var _ = Context("STUNPacketHandler", func() {
 
 	It("can handle STUN", func() {
 		fc.AddPacketReadHandler(&netx.STUNPacketHandler{
-			Logger: zap.L(),
+			Logger: log.Global,
 		})
 
 		m := stun.New()
@@ -71,7 +71,7 @@ var _ = Context("STUNPacketHandler", func() {
 
 	It("can handle STUN with conn", func() {
 		stunConn := fc.AddPacketReadHandlerConn(&netx.STUNPacketHandler{
-			Logger: zap.L(),
+			Logger: log.Global,
 		})
 
 		m := stun.New()

@@ -13,6 +13,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -23,7 +24,7 @@ import (
 type ExecHook struct {
 	*config.ExecHookSetting
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func (i *Interface) NewExecHook(cfg *config.ExecHookSetting) *ExecHook {

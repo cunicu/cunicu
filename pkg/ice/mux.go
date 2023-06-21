@@ -8,7 +8,7 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/zapion"
-	"go.uber.org/zap"
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 type PacketListener interface{}
@@ -38,7 +38,7 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 	}
 
 	lf := zapion.ZapFactory{
-		BaseLogger: zap.L().Named("ice"),
+		BaseLogger: log.Global.Named("ice").Logger,
 	}
 
 	muxes := make([]ice.UDPMux, 0, len(conns))

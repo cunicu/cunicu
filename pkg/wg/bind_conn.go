@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 )
@@ -21,10 +22,10 @@ type BindPacketConn struct {
 	net.PacketConn
 
 	bind   *Bind
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewBindPacketConn(bind *Bind, conn net.PacketConn, logger *zap.Logger) *BindPacketConn {
+func NewBindPacketConn(bind *Bind, conn net.PacketConn, logger *log.Logger) *BindPacketConn {
 	return &BindPacketConn{
 		PacketConn: conn,
 		bind:       bind,

@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -52,10 +53,10 @@ type Bind struct {
 
 	endpoints sync.Map
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
-func NewBind(logger *zap.Logger) *Bind {
+func NewBind(logger *log.Logger) *Bind {
 	return &Bind{
 		logger: logger.Named("bind"),
 	}

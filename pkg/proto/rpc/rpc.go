@@ -6,9 +6,11 @@ package rpc
 import (
 	"fmt"
 	"io"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
-func (s *GetStatusResp) Dump(wr io.Writer, verbosity int) error {
+func (s *GetStatusResp) Dump(wr io.Writer, level log.Level) error {
 	for k, i := range s.Interfaces {
 		if k > 0 {
 			if _, err := fmt.Fprintln(wr); err != nil {
@@ -16,7 +18,7 @@ func (s *GetStatusResp) Dump(wr io.Writer, verbosity int) error {
 			}
 		}
 
-		if err := i.Dump(wr, verbosity); err != nil {
+		if err := i.Dump(wr, level); err != nil {
 			return err
 		}
 	}

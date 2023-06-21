@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	"go.uber.org/zap"
 )
@@ -24,7 +25,7 @@ var (
 
 type BackendType string // URL schemes
 
-type BackendFactory func(*BackendConfig, *zap.Logger) (Backend, error)
+type BackendFactory func(*BackendConfig, *log.Logger) (Backend, error)
 
 type BackendPlugin struct {
 	New         BackendFactory
@@ -71,7 +72,7 @@ func NewBackend(cfg *BackendConfig) (Backend, error) {
 	}
 
 	loggerName := fmt.Sprintf("backend.%s", typ)
-	logger := zap.L().Named(loggerName).With(zap.Any("backend", cfg.URI))
+	logger := log.Global.Named(loggerName).With(zap.Any("backend", cfg.URI))
 
 	be, err := p.New(cfg, logger)
 	if err != nil {

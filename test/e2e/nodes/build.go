@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/test"
 	"go.uber.org/zap"
 )
@@ -93,7 +94,7 @@ func buildBinary(packagePath string) (string, []string, error) {
 		}
 	}
 
-	logger := zap.L().Named("builder")
+	logger := log.Global.Named("builder")
 
 	var cmdArgs []string
 	var test bool

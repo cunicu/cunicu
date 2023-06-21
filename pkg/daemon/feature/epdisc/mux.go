@@ -39,13 +39,8 @@ func (i *Interface) setupUDPMux() error {
 
 		i.muxConns = append(i.muxConns, filteredConn)
 
-		var stunLogger *zap.Logger
-		if i.logger.Core().Enabled(zap.DebugLevel) {
-			stunLogger = i.logger.Named("stun_conn").WithOptions(log.WithVerbose(5))
-		}
-
 		stunConn := filteredConn.AddPacketReadHandlerConn(&netx.STUNPacketHandler{
-			Logger: stunLogger,
+			Logger: i.logger.Named("stun_conn"),
 		})
 
 		return stunConn, nil
@@ -95,10 +90,10 @@ func (i *Interface) setupUniversalUDPMux() error {
 	i.muxConns = append(i.muxConns, filteredConn)
 
 	lf := zapion.ZapFactory{
-		BaseLogger: zap.L().Named("ice"),
+		BaseLogger: log.Global.Named("ice").Logger,
 	}
 
-	var stunLogger *zap.Logger
+	var stunLogger *log.Logger
 	if i.logger.Core().Enabled(zap.DebugLevel) {
 		stunLogger = i.logger.Named("stun_conn")
 	}

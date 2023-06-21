@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
@@ -31,11 +32,11 @@ const (
 type LinuxLink struct {
 	link netlink.Link
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func CreateWireGuardLink(name string) (*LinuxLink, error) {
-	logger := zap.L().Named("dev").With(
+	logger := log.Global.Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "kernel"),
 	)
@@ -56,7 +57,7 @@ func CreateWireGuardLink(name string) (*LinuxLink, error) {
 }
 
 func FindLink(name string) (*LinuxLink, error) {
-	logger := zap.L().Named("dev").With(
+	logger := log.Global.Named("dev").With(
 		zap.String("dev", name),
 		zap.String("type", "kernel"),
 	)

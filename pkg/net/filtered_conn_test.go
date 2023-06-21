@@ -10,8 +10,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
-	"go.uber.org/zap"
 )
 
 var _ = Context("FilteredConn", func() {
@@ -33,7 +33,7 @@ var _ = Context("FilteredConn", func() {
 
 		ppc1, ppc2 = netx.NewPacketPipeConn(l1, l2, 128)
 
-		fc = netx.NewFilteredConn(ppc2, zap.L())
+		fc = netx.NewFilteredConn(ppc2, log.Global)
 	})
 
 	AfterEach(func() {

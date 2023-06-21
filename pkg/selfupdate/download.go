@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 )
@@ -23,7 +24,7 @@ var (
 // DownloadAndVerifyRelease downloads a released version of
 // cunīcu and saves it to target. It returns the version string for the newest
 // version. The function printf is used to print progress information.
-func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, logger *zap.Logger) error {
+func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, logger *log.Logger) error {
 	fn, sha256sums, err := getGithubDataFile(ctx, rel.Assets, checksumsFile)
 	if err != nil {
 		return err

@@ -13,9 +13,9 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/proto"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -106,14 +106,14 @@ type RelayAPIServer struct {
 
 	*grpc.Server
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewRelayAPIServer(relays []RelayInfo, opts ...grpc.ServerOption) (*RelayAPIServer, error) {
 	s := &RelayAPIServer{
 		relays: relays,
 		Server: grpc.NewServer(opts...),
-		logger: zap.L().Named("grpc.relay"),
+		logger: log.Global.Named("grpc.relay"),
 	}
 
 	signalingproto.RegisterRelayRegistryServer(s, s)

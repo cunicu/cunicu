@@ -14,6 +14,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -23,13 +24,13 @@ var Get = daemon.RegisterFeature(New, 20) //nolint:gochecknoglobals
 type Interface struct {
 	*daemon.Interface
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
 	c := &Interface{
 		Interface: i,
-		logger:    zap.L().Named("cfgsync").With(zap.String("intf", i.Name())),
+		logger:    log.Global.Named("cfgsync").With(zap.String("intf", i.Name())),
 	}
 
 	return c, nil

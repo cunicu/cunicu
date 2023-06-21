@@ -13,6 +13,7 @@ import (
 	"github.com/pion/stun"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"go.uber.org/zap"
 )
@@ -39,7 +40,7 @@ type Interface struct {
 
 	Peers map[*daemon.Peer]*Peer
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(di *daemon.Interface) (*Interface, error) {
@@ -51,7 +52,7 @@ func New(di *daemon.Interface) (*Interface, error) {
 		Interface: di,
 		Peers:     map[*daemon.Peer]*Peer{},
 
-		logger: zap.L().Named("epdisc").With(zap.String("intf", di.Name())),
+		logger: log.Global.Named("epdisc").With(zap.String("intf", di.Name())),
 	}
 
 	i.AddPeerHandler(i)

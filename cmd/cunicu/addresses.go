@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -45,7 +46,7 @@ fc2f:9a4d:777f:7a97:8197:4a5d:1d1b:ed79
 }
 
 func addresses(_ *cobra.Command, args []string, opts *addressesOptions) {
-	logger := zap.L()
+	logger := log.Global
 
 	keyB64, err := io.ReadAll(os.Stdin)
 	if err != nil {

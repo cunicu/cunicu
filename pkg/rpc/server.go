@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/types"
 	"go.uber.org/zap"
@@ -29,13 +30,13 @@ type Server struct {
 
 	events *types.FanOut[*rpcproto.Event]
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 	s := &Server{
 		events: types.NewFanOut[*rpcproto.Event](1),
-		logger: zap.L().Named("rpc.server"),
+		logger: log.Global.Named("rpc.server"),
 	}
 
 	s.waitGroup.Add(1)
@@ -92,8 +93,8 @@ func (s *Server) unaryInterceptor(ctx context.Context, req any, info *grpc.Unary
 	} else {
 		s.logger.Debug("Handling RPC request",
 			zap.String("method", info.FullMethod),
-			zap.Any("request", req),
-			zap.Any("response", resp),
+			zap.Reflect("request", req),
+			zap.Reflect("response", resp),
 		)
 	}
 

@@ -12,8 +12,8 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/link"
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
@@ -22,7 +22,7 @@ var errNotSupported = errors.New("not supported on this platform")
 type WireGuardProvider struct {
 	path   string
 	order  []string
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func NewWireGuardProvider() *WireGuardProvider {
@@ -34,7 +34,7 @@ func NewWireGuardProvider() *WireGuardProvider {
 	return &WireGuardProvider{
 		path: path,
 
-		logger: zap.L().Named("config.wg"),
+		logger: log.Global.Named("config.wg"),
 	}
 }
 

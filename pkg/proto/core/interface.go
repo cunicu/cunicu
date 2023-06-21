@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -32,7 +33,7 @@ func (i *Interface) Device() *wg.Interface {
 
 // Dump writes a human readable version of the interface status to the supplied writer.
 // The format resembles the one used by wg(8).
-func (i *Interface) Dump(wr io.Writer, verbosity int) error {
+func (i *Interface) Dump(wr io.Writer, level log.Level) error {
 	wri := tty.NewIndenter(wr, "  ")
 
 	if _, err := fmt.Fprintf(wr, tty.Mods("interface", tty.Bold, tty.FgGreen)+": "+tty.Mods("%s", tty.FgGreen)+"\n", i.Name); err != nil {
@@ -43,7 +44,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	if verbosity > 5 {
+	if level > log.DebugLevel(5) {
 		if _, err := tty.FprintKV(wri, "private key", base64.StdEncoding.EncodeToString(i.PrivateKey)); err != nil {
 			return err
 		}
@@ -75,12 +76,12 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 		return err
 	}
 
-	if i.Ice != nil && verbosity > 3 {
+	if i.Ice != nil && level.Verbosity() > 3 {
 		if _, err := fmt.Fprintln(wr); err != nil {
 			return err
 		}
 
-		if err := i.Ice.Dump(wri, verbosity); err != nil {
+		if err := i.Ice.Dump(wri, level.Verbosity()); err != nil {
 			return err
 		}
 	}
@@ -90,7 +91,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 			return err
 		}
 
-		if err := p.Dump(wri, verbosity); err != nil {
+		if err := p.Dump(wri, level.Verbosity()); err != nil {
 			return err
 		}
 	}

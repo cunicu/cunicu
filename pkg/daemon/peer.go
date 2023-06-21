@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	proto "github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
@@ -36,7 +37,7 @@ type Peer struct {
 	state      types.AtomicEnum[PeerState]
 	client     *wgctrl.Client
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 // NewPeer creates a peer and initiates a new ICE agent
@@ -52,7 +53,7 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 
 	p.state.Store(PeerStateNew)
 
-	p.logger = zap.L().Named("peer").With(
+	p.logger = log.Global.Named("peer").With(
 		zap.String("intf", i.Name()),
 		zap.String("peer", p.String()),
 	)

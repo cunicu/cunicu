@@ -5,6 +5,9 @@
 package log
 
 import (
+	"os"
+
+	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
@@ -12,73 +15,116 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	Verbosity VerbosityLevel
-	Severity  zap.AtomicLevel
+	Rule   AtomicFilterRule
+	Global *Logger
 )
 
-func SetupLogging(severity zapcore.Level, verbosity int, outputPaths []string, errOutputPaths []string, color bool) *zap.Logger {
-	Severity = zap.NewAtomicLevelAt(severity)
-	Verbosity = NewVerbosityLevelAt(verbosity)
+func DebugLevel(verbosity int) Level {
+	return Level(zapcore.DebugLevel) - Level(verbosity)
+}
 
-	cfg := zap.NewDevelopmentConfig()
-
-	cfg.Level = Severity
-	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05.000000")
-	if color {
-		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
-	} else {
-		cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
-	}
-	cfg.DisableCaller = true
-	cfg.DisableStacktrace = true
-	cfg.OutputPaths = outputPaths
-	cfg.ErrorOutputPaths = errOutputPaths
-
-	if len(cfg.OutputPaths) == 0 {
-		cfg.OutputPaths = []string{"stdout"}
+func openSink(path string) zapcore.WriteSyncer {
+	if path == "stdout" {
+		return os.Stdout
+	} else if path == "stderr" {
+		return os.Stderr
 	}
 
-	if len(cfg.ErrorOutputPaths) == 0 {
-		cfg.ErrorOutputPaths = []string{"stderr"}
-	}
-
-	logger, err := cfg.Build()
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		panic(err)
 	}
 
-	// Redirect gRPC log to Zap
-	glogger := logger.Named("grpc")
-	grpclog.SetLoggerV2(NewGRPCLogger(glogger, verbosity))
-
-	zap.RedirectStdLog(logger)
-	zap.ReplaceGlobals(logger)
-
-	return logger
+	return tty.NewANSIStripperSynced(f)
 }
 
-func WithVerbose(verbose int) zap.Option {
-	return zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-		return &verbosityCore{
-			Core:    core,
-			verbose: verbose,
-		}
-	})
-}
+type alwaysEnabled struct{}
 
-type verbosityCore struct {
-	zapcore.Core
-	verbose int
-}
+func (e *alwaysEnabled) Enabled(zapcore.Level) bool { return true }
 
-func (c *verbosityCore) Enabled(lvl zapcore.Level) bool {
-	return c.Core.Enabled(lvl) && (lvl != zap.DebugLevel || Verbosity.Enabled(c.verbose))
-}
-
-func (c *verbosityCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
-	if c.Enabled(ent.Level) {
-		return ce.AddCore(ent, c)
+func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err error) {
+	cfg := encoderConfig{
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:          "T",
+			LevelKey:         "L",
+			NameKey:          "N",
+			CallerKey:        "C",
+			FunctionKey:      zapcore.OmitKey,
+			MessageKey:       "M",
+			StacktraceKey:    "S",
+			ConsoleSeparator: " ",
+			LineEnding:       zapcore.DefaultLineEnding,
+			EncodeTime:       zapcore.TimeEncoderOfLayout("15:04:05.000000"),
+			EncodeDuration:   zapcore.StringDurationEncoder,
+			EncodeCaller:     zapcore.ShortCallerEncoder,
+			EncodeLevel:      levelEncoder,
+		},
 	}
 
-	return ce
+	if color {
+		cfg.ColorTime = ColorTime
+		cfg.ColorContext = ColorContext
+		cfg.ColorStacktrace = ColorStacktrace
+		cfg.ColorName = ColorName
+		cfg.ColorCaller = ColorCaller
+		cfg.ColorLevel = ColorLevel
+	} else {
+		cfg.ColorLevel = func(lvl zapcore.Level) string {
+			return ""
+		}
+	}
+
+	wss := []zapcore.WriteSyncer{}
+
+	for _, path := range paths {
+		wss = append(wss, openSink(path))
+	}
+
+	if len(wss) == 0 {
+		wss = append(wss, os.Stdout)
+	}
+
+	ws := zapcore.NewMultiWriteSyncer(wss...)
+	enc := newEncoder(cfg)
+	core := zapcore.NewCore(enc, ws, &alwaysEnabled{})
+
+	if rule == "" {
+		rule = "*"
+	}
+
+	filterRule, err := ParseFilterRule(rule)
+	if err != nil {
+		return nil, err
+	}
+
+	Rule.Store(filterRule)
+
+	zlogger := zap.New(core,
+		zap.ErrorOutput(ws),
+		zap.WrapCore(func(c zapcore.Core) zapcore.Core {
+			return NewFilteredCore(c, &Rule)
+		}))
+
+	zlogger.Level()
+
+	zap.RedirectStdLog(zlogger)
+	zap.ReplaceGlobals(zlogger)
+
+	logger = &Logger{zlogger}
+
+	Global = logger
+
+	// Redirect gRPC log to Zap
+	glogger := logger.Named("grpc")
+	grpclog.SetLoggerV2(NewGRPCLogger(glogger, Level(zlogger.Level()).Verbosity()))
+
+	return logger, nil
+}
+
+type forceReflect struct {
+	any
+}
+
+func ForceReflect(key string, val any) zapcore.Field {
+	return zapcore.Field{Key: key, Type: zapcore.ReflectType, Interface: forceReflect{val}}
 }

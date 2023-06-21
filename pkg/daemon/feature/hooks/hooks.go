@@ -6,6 +6,7 @@ package hooks
 import (
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +22,7 @@ type Interface struct {
 
 	hooks []Hook
 
-	logger *zap.Logger
+	logger *log.Logger
 }
 
 func New(i *daemon.Interface) (*Interface, error) {
@@ -31,7 +32,7 @@ func New(i *daemon.Interface) (*Interface, error) {
 
 	h := &Interface{
 		Interface: i,
-		logger:    zap.L().Named("hooks").With(zap.String("intf", i.Name())),
+		logger:    log.Global.Named("hooks").With(zap.String("intf", i.Name())),
 	}
 
 	for _, hks := range i.Settings.Hooks {

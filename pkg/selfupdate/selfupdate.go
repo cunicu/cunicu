@@ -24,6 +24,7 @@ import (
 	"syscall"
 
 	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +43,7 @@ var (
 	errArchiveMultipleFiles  = errors.New("archive contains more than one file")
 )
 
-func SelfUpdate(output string, logger *zap.Logger) (*Release, error) {
+func SelfUpdate(output string, logger *log.Logger) (*Release, error) {
 	fi, err := os.Lstat(output)
 	if err != nil {
 		dirname := filepath.Dir(output)

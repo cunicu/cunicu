@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -90,7 +89,7 @@ func status(_ *cobra.Command, args []string, opts *statusOptions) {
 		}
 
 	case config.OutputFormatHuman:
-		if err := sts.Dump(stdout, log.Verbosity.Level()); err != nil {
+		if err := sts.Dump(stdout, logger.Level()); err != nil {
 			logger.Fatal("Failed to write to stdout", zap.Error(err))
 		}
 
