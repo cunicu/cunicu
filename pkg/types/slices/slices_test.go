@@ -6,11 +6,13 @@ package slices_test
 import (
 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"golang.org/x/exp/slices"
+
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"github.com/stv0g/cunicu/test"
-	"golang.org/x/exp/slices"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 func TestSuite(t *testing.T) {

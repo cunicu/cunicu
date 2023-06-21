@@ -11,14 +11,16 @@ import (
 	"net"
 	"syscall"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/device"
 	g "github.com/stv0g/gont/v2/pkg"
 	nl "github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
 	wgdevice "golang.zx2c4.com/wireguard/device"
+
+	"github.com/stv0g/cunicu/pkg/config"
+	"github.com/stv0g/cunicu/pkg/device"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("device", func() {

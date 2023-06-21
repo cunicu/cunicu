@@ -10,16 +10,18 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
+	copt "github.com/stv0g/gont/v2/pkg/options/capture"
+
 	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/test"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
-	copt "github.com/stv0g/gont/v2/pkg/options/capture"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var logger *log.Logger

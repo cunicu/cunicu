@@ -10,8 +10,9 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/randutil"
-	"github.com/stv0g/cunicu/pkg/tty"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 const (

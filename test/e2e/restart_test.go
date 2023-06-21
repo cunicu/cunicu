@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	g "github.com/stv0g/gont/v2/pkg"
+	gopt "github.com/stv0g/gont/v2/pkg/options"
+	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/stv0g/cunicu/pkg/proto"
@@ -17,9 +19,9 @@ import (
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 /* Simple local-area switched topology with 2 agents

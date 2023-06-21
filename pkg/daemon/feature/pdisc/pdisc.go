@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
@@ -18,7 +20,6 @@ import (
 	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
 	"github.com/stv0g/cunicu/pkg/types/slices"
-	"go.uber.org/zap"
 )
 
 var errFailedUpdatePublicKey = errors.New("can not change public key in non-update message")

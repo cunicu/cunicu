@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/crypto"
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 var (

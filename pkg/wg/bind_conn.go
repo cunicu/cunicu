@@ -10,9 +10,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 var _ BindConn = (*BindPacketConn)(nil)

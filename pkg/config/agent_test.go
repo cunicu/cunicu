@@ -10,15 +10,17 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Agent config", func() {

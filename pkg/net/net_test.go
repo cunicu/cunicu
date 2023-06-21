@@ -7,10 +7,11 @@ import (
 	"net"
 	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	netx "github.com/stv0g/cunicu/pkg/net"
 	"github.com/stv0g/cunicu/test"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 func TestSuite(t *testing.T) {

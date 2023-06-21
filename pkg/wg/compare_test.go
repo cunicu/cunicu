@@ -6,10 +6,12 @@ package wg_test
 import (
 	"time"
 
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/wg"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/wg"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 var _ = Context("compare", func() {

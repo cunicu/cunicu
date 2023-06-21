@@ -7,9 +7,10 @@ import (
 	"crypto/rand"
 	"testing"
 
+	"github.com/stv0g/cunicu/test"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {

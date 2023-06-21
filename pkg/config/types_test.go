@@ -6,10 +6,12 @@ package config_test
 import (
 	"net/url"
 
+	"github.com/spf13/pflag"
+
+	"github.com/stv0g/cunicu/pkg/config"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/spf13/pflag"
-	"github.com/stv0g/cunicu/pkg/config"
 )
 
 var _ = Context("types", func() {

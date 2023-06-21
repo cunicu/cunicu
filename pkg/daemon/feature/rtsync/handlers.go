@@ -9,9 +9,10 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/daemon"
 )
 
 func (i *Interface) OnPeerAdded(p *daemon.Peer) {

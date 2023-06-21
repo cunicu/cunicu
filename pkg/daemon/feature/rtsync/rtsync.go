@@ -8,9 +8,10 @@ import (
 	"errors"
 	"net/netip"
 
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
-	"go.uber.org/zap"
 )
 
 var errNotSupported = errors.New("not supported on this platform")

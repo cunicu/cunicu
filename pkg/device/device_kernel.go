@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 	wgdevice "golang.zx2c4.com/wireguard/device"
+
+	"github.com/stv0g/cunicu/pkg/link"
+	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 var errNotWireGuardLink = errors.New("link is not a WireGuard link")

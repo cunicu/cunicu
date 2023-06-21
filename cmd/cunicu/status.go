@@ -7,11 +7,12 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type statusOptions struct {

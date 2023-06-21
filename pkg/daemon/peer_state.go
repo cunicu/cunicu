@@ -7,8 +7,9 @@ import (
 	"strings"
 	"time"
 
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	"go.uber.org/zap"
+
+	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 )
 
 type PeerState = coreproto.PeerState

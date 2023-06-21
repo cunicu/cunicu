@@ -6,9 +6,10 @@ package daemon_test
 import (
 	"math"
 
+	"github.com/stv0g/cunicu/pkg/daemon"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/daemon"
 )
 
 var _ = Context("interface modifier", func() {

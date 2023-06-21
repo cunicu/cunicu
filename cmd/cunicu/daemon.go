@@ -9,12 +9,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
+
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/rpc"
 	"github.com/stv0g/cunicu/pkg/tty"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapio"
 )
 
 func init() { //nolint:gochecknoinits

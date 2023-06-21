@@ -12,10 +12,11 @@ import (
 	"os"
 	"sync"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
 	"github.com/stv0g/cunicu/pkg/signaling"
-	"golang.org/x/sync/errgroup"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {

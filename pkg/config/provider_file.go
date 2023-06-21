@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/knadh/koanf/providers/file"
+
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 )
 

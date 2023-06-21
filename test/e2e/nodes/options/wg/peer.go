@@ -8,9 +8,10 @@ import (
 	"net"
 	"time"
 
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 // PublicKey specifies the public key of this peer.  PublicKey is a

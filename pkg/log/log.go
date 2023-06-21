@@ -7,10 +7,11 @@ package log
 import (
 	"os"
 
-	"github.com/stv0g/cunicu/pkg/tty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
+
+	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 //nolint:gochecknoglobals

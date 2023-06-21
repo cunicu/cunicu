@@ -6,9 +6,10 @@ package proto_test
 import (
 	"time"
 
+	"github.com/stv0g/cunicu/pkg/proto"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/proto"
 )
 
 var _ = Context("common", func() {

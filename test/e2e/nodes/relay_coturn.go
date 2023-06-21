@@ -13,10 +13,11 @@ import (
 	"time"
 
 	"github.com/pion/stun"
-	"github.com/stv0g/cunicu/pkg/log"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 var errTimeout = errors.New("timed out")

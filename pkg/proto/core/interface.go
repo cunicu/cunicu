@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"io"
 
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/pkg/wg"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func (i *Interface) Device() *wg.Interface {

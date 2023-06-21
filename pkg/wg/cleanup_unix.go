@@ -12,9 +12,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
+
+	"github.com/stv0g/cunicu/pkg/log"
 )
 
 func CleanupUserSockets() error {

@@ -9,6 +9,10 @@ import (
 	"net"
 	"time"
 
+	"go.uber.org/zap"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/log"
 	netx "github.com/stv0g/cunicu/pkg/net"
@@ -16,9 +20,6 @@ import (
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	"github.com/stv0g/cunicu/pkg/types"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
-	"go.uber.org/zap"
-	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type Peer struct {

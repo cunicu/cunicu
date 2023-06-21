@@ -4,9 +4,10 @@
 package tty_test
 
 import (
+	"github.com/stv0g/cunicu/pkg/tty"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/tty"
 )
 
 var _ = Context("re-indent json", func() {

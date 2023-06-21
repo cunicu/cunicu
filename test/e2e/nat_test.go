@@ -6,12 +6,14 @@ package e2e_test
 import (
 	"fmt"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
-	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 	g "github.com/stv0g/gont/v2/pkg"
 	gopt "github.com/stv0g/gont/v2/pkg/options"
+
+	"github.com/stv0g/cunicu/test/e2e/nodes"
+	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 /* Typical wide-area NAT setup

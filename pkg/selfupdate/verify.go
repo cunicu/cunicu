@@ -13,9 +13,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/stv0g/cunicu/pkg/proto"
 	pgp "golang.org/x/crypto/openpgp" //nolint:staticcheck
 	"google.golang.org/protobuf/encoding/protojson"
+
+	"github.com/stv0g/cunicu/pkg/proto"
 )
 
 //go:embed keys/*.gpg

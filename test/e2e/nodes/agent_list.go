@@ -7,9 +7,10 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/test"
-	"golang.org/x/sync/errgroup"
 )
 
 type AgentList []*Agent

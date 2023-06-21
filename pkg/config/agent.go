@@ -11,13 +11,14 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 	"github.com/stv0g/cunicu/pkg/types/slices"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 )
 
 var errInvalidURLScheme = errors.New("invalid ICE URL scheme")

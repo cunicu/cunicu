@@ -7,10 +7,12 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/stv0g/cunicu/test"
+
+	_ "github.com/stv0g/cunicu/pkg/signaling/inprocess"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	_ "github.com/stv0g/cunicu/pkg/signaling/inprocess"
-	"github.com/stv0g/cunicu/test"
 )
 
 func TestSuite(t *testing.T) {

@@ -6,10 +6,11 @@ package epdisc
 import (
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/stv0g/cunicu/pkg/daemon"
+	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 func (i *Interface) OnPeerAdded(cp *daemon.Peer) {

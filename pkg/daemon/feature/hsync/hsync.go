@@ -9,11 +9,12 @@ import (
 	"net/netip"
 	"strings"
 
+	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
+
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
-	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 )
 
 const (

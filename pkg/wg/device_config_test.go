@@ -6,9 +6,10 @@ package wg_test
 import (
 	"bytes"
 
+	"github.com/stv0g/cunicu/pkg/wg"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/wg"
 )
 
 var _ = Context("device config", func() {
