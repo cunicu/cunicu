@@ -1,0 +1,59 @@
+
+WireGuard® is an open source project, software project, networking project, cryptography project, and protocol project, but we still need to protect the unique identity and reputation of WireGuard (our "brand"). This ensures that when people see the WireGuard name or logo, they know it is something we, the WireGuard developers, have worked on. We want to help you to make fair use of our name and logo so we have prepared some guidelines that explain which kinds of uses are acceptable and a subset of those which are not.
+
+Jason A. Donenfeld owns the following trademarks:
+
+*   The word "WireGuard", which will be referred to as the WireGuard word mark.
+*   This logo, which will be referred to as the WireGuard logo, in whole or in part:
+
+WireGuard must be written with a capital W and a capital G. The color of the logo is RGB #88171a. Please do not remove the trademark symbol, delete or obscure elements of the logo, reposition elements of the logo, alter the typeface, introduce alternative text, skew the proportional scale, or in any other way otherwise modify the WireGuard logo.
+
+Collectively, these two trademarks will be referred to as The WireGuard Marks.
+
+# A) Fair Use: When _can_ I use The WireGuard Marks?
+
+i) You are entitled to fair use of The WireGuard Marks under trademark law, which permits you to use The WireGuard Marks to identify this project (as available on wireguard.com), so long as such references:
+
+1.  are not likely to cause consumer or public confusion;
+2.  do not misrepresent, mislead, suggest, or otherwise confuse users into believing WireGuard is the source of goods or services not actually made or provided by wireguard.com or its developers;
+3.  comply with these policy guidelines, which Jason Donenfeld may modify from time to time at his sole discretion.
+
+ii) WireGuard is developed by and for the WireGuard community. If you are engaged in community advocacy, you can use The WireGuard Marks in the context of showing support for the open source WireGuard project, provided that:
+
+1.  the WireGuard Marks are used in a manner consistent with this policy;
+2.  there is no commercial purpose behind the use and you are not offering WireGuard or services related to WireGuard commercially under the same display of support, same event, or same domain name;
+3.  there is no suggestion that you are the creator or source of WireGuard, or that your project is approved, sponsored, or affiliated with WireGuard or with the community.
+
+iii) You may use The WireGuard Marks in the context of open source software distribution projects – such as but not limited to Debian, Gentoo, Homebrew, or FreeBSD Ports – provided that The WireGuard Marks are used in conjunction with the software that is available from wireguard.com and not other software.
+
+iv) You may also use The WireGuard Marks if you have received an explicit authorization for a particular use case from the trademark owner, which is easily available by simply sending an ordinary email to wireguard-trademark-usage \[at\] zx2c4.com; in most cases, your request will be trivially approved without debate.
+
+# B) When _can't_ I use The WireGuard Marks?
+
+i) You may not:
+
+1.  Use The WireGuard Marks as part of your company name, company logo, or product name;
+2.  Use a name or logo so similar to The WireGuard Marks that may confuse or mislead people into thinking that your business, products, or services originate from or are associated with WireGuard, Jason Donenfeld, zx2c4, and/or Edge Security LLC, or in a way that will take advantage of WireGuard's brand and/or reputation;
+3.  Use The WireGuard Marks in a way that creates a false impression that your product or business is endorsed, sponsored by, or associated with WireGuard, Jason Donenfeld, zx2c4, and/or Edge Security LLC;
+4.  Manufacture, sell, or give away any items of merchandise bearing the WireGuard marks, such as but not limited to T-shirts, hats, pens, stickers, mugs etc;
+5.  Use The WireGuard Marks to indicate any kind of similarity, compatibility, or relatedness to the WireGuard project or protocols associated with the WireGuard project.
+6.  Use The WireGuard Marks in relation to any software that does not originate from wireguard.com, with the exception of A.iii above.
+7.  Use The WireGuard Marks in any context, manner, or form, except those explicitly allowed for by section A above.
+8.  Use the WireGuard logo in a commercial setting in which goods or services are sold or provided, or as a part of commercial activities, which includes but is not limited to blog posts, social media, marketing web pages, pamphlets, manuals, and application graphics.
+9.  Use the WireGuard Marks in part or in whole as part of advertisements in advertising spaces (such as AdWords) or in/as advertising keywords.
+
+Again, as stated above by A.iv, you may receive an additional authorization to use The WireGuard Marks from the trademark owner, which is easily available by simply sending an ordinary email to wireguard-trademark-usage \[at\] zx2c4.com; in most cases, your request will be trivially approved without debate.
+
+# C) What other restrictions apply to use of The WireGuard Marks?
+
+i) Any use of The WireGuard Marks should be accompanied by the acknowledgment ""WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld."
+
+ii) If you use The WireGuard Marks, they should link to our website at https://www.wireguard.com/ when applicable.
+
+iii) We reserve all of our rights, including the right to take steps to stop any use of The WireGuard Marks, without cause or for causes, which do not comply with the rules set out in the article or which otherwise violate, diminish, or adversely affect our rights. You acknowledge that you will stop or take down your use of The WireGuard Marks if we ask you to do so.
+
+For a third time, as stated above by A.iv, you may receive an additional authorization to use The WireGuard Marks from the trademark owner, which is easily available by simply sending an ordinary email to wireguard-trademark-usage \[at\] zx2c4.com; in most cases, your request will be trivially approved without debate. This policy may be updated, changed, or amended at any time.
+
+© Copyright 2015-2022 Jason A. Donenfeld. All Rights Reserved. "WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld.
+
+Source: https://www.wireguard.com/trademark-policy/
