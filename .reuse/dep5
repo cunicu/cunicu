@@ -7,7 +7,7 @@ Files: website/static/CNAME pkg/selfupdate/keys/09BE3BAE8D55D4CD8579285A9675EAC3
 Copyright: 2023 Steffen Vogel <post@steffenvogel.de>
 License: CC0-1.0
 
-Files: go.sum website/package.json website/yarn.lock nix/flake.lock docs/usage/**
+Files: go.sum website/package.json website/yarn.lock nix/flake.lock docs/usage/** .renovaterc.json *.drawio *.svg
 Copyright: 2023 Steffen Vogel <post@steffenvogel.de>
 License: Apache-2.0
 
