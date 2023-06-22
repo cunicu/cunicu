@@ -91,6 +91,14 @@ packer -S cunicu-bin
 yay cunicu-bin
 ```
 
+## Nix
+
+Building and installing cunīcu via [Nix](https://nix.dev/) is possible with [flakes](https://nixos.wiki/wiki/Flakes):
+
+```bash
+nix --extra-experimental-features "nix-command flakes" profile install github:stv0g/cunicu/nix?dir=nix
+```
+
 ## From Source (all)
 
 Building cunīcu is fairly easy and allows you to install the latest unreleased version.

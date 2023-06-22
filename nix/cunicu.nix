@@ -7,7 +7,7 @@
 }:
 buildGoModule rec {
   pname = "cunicu";
-  version = "0.3.4";
+  version = "0.3.1";
   vendorHash = "sha256-KXLKCwV3/9+PRQ1mYCZBvaV914WN68FgJXNWZizOmkA=";
   inherit src;
   CGO_ENABLED = 0;
