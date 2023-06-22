@@ -73,9 +73,7 @@ Copyright 2022 Institute for Automation of Complex Power Systems, RWTH Aachen Un
 
 ## Funding acknowledgement
 
-![EONERC Logo](/img/eonerc.png)
-
-The project is currently actively developed by Steffen Vogel at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de)
+The project has been initiated by Steffen Vogel while working at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de).
 
 <img alt="European Flag" style={{height: '4em', marginRight: '10px'}} src="/img/flag_of_europe.svg" align="left" /> The development of cunīcu has been supported by the <a href="https://erigrid2.eu">ERIGrid 2.0</a> project of the H2020 Programme under <a href="https://cordis.europa.eu/project/id/870620">Grant Agreement No. 870620</a>
 
