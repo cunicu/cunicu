@@ -44,9 +44,7 @@ cunīcu is licensed under the [Apache 2.0](./LICENSE) license.
 
 ## Funding acknowledgement
 
-![EONERC Logo](website/static/img/eonerc.png)
-
-The project is currently actively developed by Steffen Vogel at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de)
+The project has been initiated by Steffen Vogel while working at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de).
 
 <img alt="European Flag" src="website/static/img/flag_of_europe.svg" align="left" style="height: 4em; margin-right: 10px"/> The development of cunīcu has been supported by the [ERIGrid 2.0][erigrid] project of the H2020 Programme under [Grant Agreement No. 870620](https://cordis.europa.eu/project/id/870620)
 
