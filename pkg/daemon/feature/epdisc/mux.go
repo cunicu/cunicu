@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/pion/ice/v2"
-	"github.com/pion/zapion"
 	"go.uber.org/zap"
 
 	"github.com/stv0g/cunicu/pkg/config"
@@ -69,7 +68,7 @@ func (i *Interface) setupUDPMux() error {
 		return true
 	}
 
-	i.mux, err = icex.NewMultiUDPMuxWithListen(listen, ifFilter, nil, i.Settings.ICE.NetworkTypes, false)
+	i.mux, err = icex.NewMultiUDPMuxWithListen(listen, ifFilter, nil, i.Settings.ICE.NetworkTypes, false, i.logger)
 	if err != nil {
 		return fmt.Errorf("failed to create multi UDP mux: %w", err)
 	}
@@ -90,22 +89,13 @@ func (i *Interface) setupUniversalUDPMux() error {
 
 	i.muxConns = append(i.muxConns, filteredConn)
 
-	lf := zapion.ZapFactory{
-		BaseLogger: log.Global.Named("ice").Logger,
-	}
-
-	var stunLogger *log.Logger
-	if i.logger.Core().Enabled(zap.DebugLevel) {
-		stunLogger = i.logger.Named("stun_conn")
-	}
-
 	stunConn := filteredConn.AddPacketReadHandlerConn(&netx.STUNPacketHandler{
-		Logger: stunLogger,
+		Logger: i.logger.Named("stun_conn"),
 	})
 
 	i.muxSrflx = ice.NewUniversalUDPMuxDefault(ice.UniversalUDPMuxParams{
 		UDPConn: stunConn,
-		Logger:  lf.NewLogger("udpmux"),
+		Logger:  log.NewPionLogger(i.logger, "ice.udpmux"),
 	})
 
 	lAddr := udpConn.LocalAddr().(*net.UDPAddr) //nolint:forcetypeassert

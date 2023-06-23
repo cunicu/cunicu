@@ -5,90 +5,93 @@ package log
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"strconv"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 )
 
-var grpcLogExpr = regexp.MustCompile(`(?m)^\[(\w+)\]$`)
+var grpcLogScope = regexp.MustCompile(`(?m)^\[(\w+)\]$`)
+
+var _ grpclog.LoggerV2 = (*grpcLogger)(nil)
 
 type grpcLogger struct {
 	*zap.SugaredLogger
-	verbosity int
 }
 
-func NewGRPCLogger(logger *Logger, verbosity int) grpclog.LoggerV2 {
-	var level zapcore.Level
-
-	verbosityLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
-	if vl, err := strconv.Atoi(verbosityLevel); err == nil {
-		verbosity = vl
-	}
-
-	severityLevel := os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL")
-	if severityLevel != "" {
-		if err := level.UnmarshalText([]byte(severityLevel)); err != nil {
-			logger.Fatal("Unknown gRPC logger severity level", zap.Error(err), zap.String("level", severityLevel))
-		}
-	} else {
-		level = zap.WarnLevel
-	}
-
-	logger = logger.WithOptions(zap.IncreaseLevel(level))
-
-	return &grpcLogger{
-		SugaredLogger: logger.Logger.Sugar(),
-		verbosity:     verbosity,
-	}
+func (l *grpcLogger) Warning(args ...any) {
+	l.SugaredLogger.Warn(args...)
 }
 
-func (l *grpcLogger) unwrap(args []any) (string, []zap.Field) {
-	fields := []zap.Field{}
+func (l *grpcLogger) Warningln(args ...any) {
+	l.SugaredLogger.Warnln(args...)
+}
+
+func (l *grpcLogger) Warningf(format string, args ...any) {
+	l.SugaredLogger.Warnf(format, args...)
+}
+
+func (l *grpcLogger) Info(args ...any) {
+	l.log(TraceLevel, "", args)
+}
+
+func (l *grpcLogger) Infof(format string, args ...any) {
+	l.log(TraceLevel, format, args)
+}
+
+func (l *grpcLogger) InfoDepth(_ int, args ...any) {
+	l.log(DebugLevel-5, "", args)
+}
+
+func (l *grpcLogger) WarningDepth(_ int, args ...any) {
+	l.log(WarnLevel, "", args)
+}
+
+func (l *grpcLogger) ErrorDepth(_ int, args ...any) {
+	l.log(ErrorLevel, "", args)
+}
+
+func (l *grpcLogger) FatalDepth(_ int, args ...any) {
+	l.log(FatalLevel, "", args)
+}
+
+func (l *grpcLogger) unwrap(args []any) (string, []any) {
+	scope := ""
 
 	if len(args) > 0 {
 		if str, ok := args[0].(string); ok {
-			if m := grpcLogExpr.FindStringSubmatch(str); m != nil {
-				fields = append(fields, zap.String("scope", m[1]))
+			if m := grpcLogScope.FindStringSubmatch(str); m != nil {
+				scope = m[1]
 				args = args[1:]
 			}
 		}
 	}
 
-	return fmt.Sprint(args...), fields
+	return scope, args
 }
 
-func (l *grpcLogger) Warning(args ...any) {
-	l.Warn(args...)
-}
+func (l *grpcLogger) log(lvl Level, format string, args []any) {
+	scope, args := l.unwrap(args)
 
-func (l *grpcLogger) Warningf(format string, args ...any) {
-	l.Warnf(format, args...)
-}
+	d := l.Desugar().Named(scope)
 
-func (l *grpcLogger) Infoln(args ...any) {
-	msg, fields := l.unwrap(args)
-	l.Desugar().Info(msg, fields...)
-}
-
-func (l *grpcLogger) Warningln(args ...any) {
-	msg, fields := l.unwrap(args)
-	l.Desugar().Warn(msg, fields...)
-}
-
-func (l *grpcLogger) Errorln(args ...any) {
-	msg, fields := l.unwrap(args)
-	l.Desugar().Error(msg, fields...)
-}
-
-func (l *grpcLogger) Fatalln(args ...any) {
-	msg, fields := l.unwrap(args)
-	l.Desugar().Fatal(msg, fields...)
+	// We check to avoid an unnecessary call to fmt.Sprint()
+	if d.Check(zapcore.Level(lvl), "") != nil {
+		if format != "" {
+			d.Log(zapcore.Level(lvl), fmt.Sprintf(format, args...))
+		} else {
+			d.Log(zapcore.Level(lvl), fmt.Sprint(args...))
+		}
+	}
 }
 
 func (l *grpcLogger) V(lvl int) bool {
-	return lvl < l.verbosity
+	return lvl >= Level(l.Level()).Verbosity()
+}
+
+func NewGRPCLogger(logger *Logger) grpclog.LoggerV2 {
+	return &grpcLogger{
+		SugaredLogger: logger.Sugar(),
+	}
 }

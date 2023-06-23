@@ -16,7 +16,7 @@ import (
 )
 
 // FilterFunc is used to check whether to filter the given entry and filters out.
-type FilterFunc func(zapcore.Entry, []zapcore.Field) bool
+type FilterFunc func(zapcore.Entry) bool
 
 type FilterRule struct {
 	Filter     FilterFunc
@@ -49,11 +49,11 @@ func ParseFilterRule(expr string) (*FilterRule, error) {
 }
 
 func (f FilterFunc) Level() zapcore.Level {
-	for lvl := LevelMin; lvl <= LevelMax; lvl++ {
+	for l := MinLevel; l <= MaxLevel; l++ {
 		if f(zapcore.Entry{
-			Level: lvl,
-		}, nil) {
-			return lvl
+			Level: zapcore.Level(l),
+		}) {
+			return zapcore.Level(l)
 		}
 	}
 
@@ -90,7 +90,7 @@ func ByNamespaces(input string) FilterFunc { //nolint:gocognit
 
 	var mutex sync.Mutex
 	matchMap := map[string]bool{}
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
+	return func(entry zapcore.Entry) bool {
 		mutex.Lock()
 		defer mutex.Unlock()
 
@@ -117,27 +117,27 @@ func ByNamespaces(input string) FilterFunc { //nolint:gocognit
 }
 
 // ExactLevel filters out entries with an invalid level.
-func ExactLevel(level zapcore.Level) FilterFunc {
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
-		return entry.Level == level
+func ExactLevel(level Level) FilterFunc {
+	return func(entry zapcore.Entry) bool {
+		return Level(entry.Level) == level
 	}
 }
 
 // MinimumLevel filters out entries with a too low level.
-func MinimumLevel(level zapcore.Level) FilterFunc {
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
-		return entry.Level >= level
+func MinimumLevel(level Level) FilterFunc {
+	return func(entry zapcore.Entry) bool {
+		return Level(entry.Level) >= level
 	}
 }
 
 // Any checks if any filter returns true.
 func Any(filters ...FilterFunc) FilterFunc {
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
+	return func(entry zapcore.Entry) bool {
 		for _, filter := range filters {
 			if filter == nil {
 				continue
 			}
-			if filter(entry, fields) {
+			if filter(entry) {
 				return true
 			}
 		}
@@ -147,20 +147,20 @@ func Any(filters ...FilterFunc) FilterFunc {
 
 // Reverse checks is the passed filter returns false.
 func Reverse(filter FilterFunc) FilterFunc {
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
-		return !filter(entry, fields)
+	return func(entry zapcore.Entry) bool {
+		return !filter(entry)
 	}
 }
 
 // All checks if all filters return true.
 func All(filters ...FilterFunc) FilterFunc {
-	return func(entry zapcore.Entry, fields []zapcore.Field) bool {
+	return func(entry zapcore.Entry) bool {
 		var atLeastOneSuccessful bool
 		for _, filter := range filters {
 			if filter == nil {
 				continue
 			}
-			if !filter(entry, fields) {
+			if !filter(entry) {
 				return false
 			}
 			atLeastOneSuccessful = true
@@ -296,7 +296,7 @@ func ByLevels(pattern string) (FilterFunc, error) {
 		}
 	}
 
-	return func(e zapcore.Entry, f []zapcore.Field) bool {
+	return func(e zapcore.Entry) bool {
 		return levelToBit(Level(e.Level))&enabled != 0
 	}, nil
 }
@@ -314,10 +314,10 @@ func MustParseRules(expr string) FilterFunc {
 	return filter
 }
 
-func AlwaysFalseFilter(_ zapcore.Entry, _ []zapcore.Field) bool {
+func AlwaysFalseFilter(_ zapcore.Entry) bool {
 	return false
 }
 
-func AlwaysTrueFilter(_ zapcore.Entry, _ []zapcore.Field) bool {
+func AlwaysTrueFilter(_ zapcore.Entry) bool {
 	return true
 }

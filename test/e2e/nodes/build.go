@@ -130,7 +130,7 @@ func buildBinary(packagePath string) (string, []string, error) {
 		zap.Bool("test", test))
 
 	if output, err := exec.Command("go", cmdArgs...).CombinedOutput(); err != nil {
-		return "", nil, fmt.Errorf("ailed to build %s:\n\nError:\n%s\n\nOutput:\n%s", packagePath, path, string(output))
+		return "", nil, fmt.Errorf("failed to build %s:\n\nError:\n%s\n\nOutput:\n%s", packagePath, path, string(output))
 	}
 
 	logger.Debug("Finished building",
