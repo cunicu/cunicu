@@ -5,7 +5,9 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -113,6 +115,10 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 	}
 
 	if _, err = b.client.Publish(ctx, env, grpc.WaitForReady(true)); err != nil {
+		if status.Code(err) == codes.Canceled {
+			return signaling.ErrClosed
+		}
+
 		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
@@ -150,13 +156,15 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 		for {
 			env, err := stream.Recv()
 			if err != nil {
-				b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
+				if !errors.Is(err, io.EOF) && status.Code(err) != codes.Canceled {
+					b.logger.Error("Subscription stream closed. Re-subscribing..", zap.Error(err))
 
-				if err := b.subscribeFromServer(ctx, pk); err != nil && status.Code(err) != codes.Canceled {
-					b.logger.Error("Failed to resubscribe", zap.Error(err))
+					if err := b.subscribeFromServer(ctx, pk); err != nil && status.Code(err) != codes.Canceled {
+						b.logger.Error("Failed to resubscribe", zap.Error(err))
+					}
 				}
 
-				return
+				break
 			}
 
 			if err := b.SubscriptionsRegistry.NewMessage(env); err != nil {

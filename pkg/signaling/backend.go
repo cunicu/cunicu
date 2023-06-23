@@ -21,7 +21,8 @@ import (
 var (
 	Backends = map[BackendType]*BackendPlugin{} //nolint:gochecknoglobals
 
-	errInvalidBackend = errors.New("unknown backend type")
+	ErrInvalidBackend = errors.New("unknown backend type")
+	ErrClosed         = errors.New("backend is closed")
 )
 
 type BackendType string // URL schemes
@@ -65,7 +66,7 @@ func NewBackend(cfg *BackendConfig) (Backend, error) {
 
 	p, ok := Backends[typ]
 	if !ok {
-		return nil, fmt.Errorf("%w: %s", errInvalidBackend, typ)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidBackend, typ)
 	}
 
 	if len(typs) > 1 {

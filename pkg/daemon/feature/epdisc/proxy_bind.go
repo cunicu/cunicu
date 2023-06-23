@@ -76,7 +76,7 @@ func (p *BindProxy) Receive(buf []byte) (int, wgconn.Endpoint, error) {
 			err = net.ErrClosed
 
 		case errors.Is(err, net.ErrClosed):
-			p.logger.Debug("Connection closed. Returning from receive()")
+			p.logger.DebugV(10, "Connection closed. Returning from receive()")
 
 		default:
 			p.logger.Error("Failed to read", zap.Error(err))

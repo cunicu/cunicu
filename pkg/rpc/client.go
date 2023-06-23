@@ -118,9 +118,7 @@ func (c *Client) streamEvents() {
 	for {
 		e, err := stream.Recv()
 		if err != nil {
-			if sts, ok := status.FromError(err); ok && sts.Code() != codes.Canceled && sts.Code() != codes.Unavailable {
-				c.logger.Error("Failed to receive event", zap.Any("code", sts.Code()), zap.String("msg", sts.Message()))
-			} else if !ok && !errors.Is(err, io.EOF) {
+			if !errors.Is(err, io.EOF) && status.Code(err) != codes.Canceled {
 				c.logger.Error("Failed to receive event", zap.Error(err))
 			}
 
