@@ -70,7 +70,7 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	}
 
 	if tok := os.Getenv("GITHUB_TOKEN"); tok != "" {
-		req.Header.Add("Authorization", "Bearer "+tok)
+		req.Header.Set("Authorization", "Bearer "+tok)
 	}
 
 	// pin API version 3
