@@ -148,10 +148,6 @@ func (d *Daemon) Sync() error {
 }
 
 func (d *Daemon) Close() error {
-	if err := d.Backend.Close(); err != nil {
-		return fmt.Errorf("failed to close signaling backend: %w", err)
-	}
-
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close watcher: %w", err)
 	}
@@ -160,6 +156,10 @@ func (d *Daemon) Close() error {
 		if err := i.Close(); err != nil {
 			return fmt.Errorf("failed to close interface: %w", err)
 		}
+	}
+
+	if err := d.Backend.Close(); err != nil {
+		return fmt.Errorf("failed to close signaling backend: %w", err)
 	}
 
 	for _, dev := range d.devices {

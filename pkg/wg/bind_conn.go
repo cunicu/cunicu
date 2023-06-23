@@ -50,7 +50,7 @@ func (c *BindPacketConn) Receive(buf []byte) (int, wgconn.Endpoint, error) {
 			err = net.ErrClosed
 
 		case errors.Is(err, net.ErrClosed):
-			c.logger.Debug("Connection closed. Returning from receive()")
+			c.logger.DebugV(10, "Connection closed. Returning from receive()")
 
 		default:
 			c.logger.Error("Failed to read", zap.Error(err))
