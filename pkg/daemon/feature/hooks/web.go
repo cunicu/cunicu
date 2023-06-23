@@ -50,11 +50,11 @@ func (h *WebHook) run(msg proto.Message) {
 		Header: http.Header{},
 	}
 
-	req.Header.Add("user-agent", buildinfo.UserAgent())
-	req.Header.Add("content-type", "application/json")
+	req.Header.Set("User-Agent", buildinfo.UserAgent())
+	req.Header.Set("Content-Type", "application/json")
 
 	for key, value := range h.Headers {
-		req.Header.Add(key, value)
+		req.Header.Set(key, value)
 	}
 
 	mo := protojson.MarshalOptions{
