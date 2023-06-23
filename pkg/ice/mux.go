@@ -7,14 +7,13 @@ import (
 	"net"
 
 	"github.com/pion/ice/v2"
-	"github.com/pion/zapion"
 
 	"github.com/stv0g/cunicu/pkg/log"
 )
 
 type PacketListener interface{}
 
-func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool) (*ice.MultiUDPMuxDefault, error) {
+func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool, logger *log.Logger) (*ice.MultiUDPMuxDefault, error) {
 	ips, err := localInterfaces(interfaceFilter, ipFilter, networkTypes, includeLoopback)
 	if err != nil {
 		return nil, err
@@ -38,14 +37,10 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 		return nil, err
 	}
 
-	lf := zapion.ZapFactory{
-		BaseLogger: log.Global.Named("ice").Logger,
-	}
-
 	muxes := make([]ice.UDPMux, 0, len(conns))
 	for _, conn := range conns {
 		mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
-			Logger:  lf.NewLogger("udpmux"),
+			Logger:  log.NewPionLogger(logger, "ice.udpmux"),
 			UDPConn: conn,
 		})
 		muxes = append(muxes, mux)

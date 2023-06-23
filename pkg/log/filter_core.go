@@ -10,7 +10,6 @@ package log
 import (
 	"errors"
 
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -25,24 +24,6 @@ func NewFilteredCore(next zapcore.Core, rule *AtomicFilterRule) zapcore.Core {
 	return &filteringCore{next, rule}
 }
 
-// CheckAnyLevel determines whether at least one log level isn't filtered-out by the logger.
-func CheckAnyLevel(logger *zap.Logger) bool {
-	for lvl := LevelMin; lvl <= LevelMax; lvl++ {
-		if lvl >= zapcore.PanicLevel {
-			continue // Panic and fatal cannot be skipped
-		}
-		if logger.Check(lvl, "") != nil {
-			return true
-		}
-	}
-	return false
-}
-
-// CheckLevel determines whether a specific log level would produce log or not.
-func CheckLevel(logger *zap.Logger, level zapcore.Level) bool {
-	return logger.Check(level, "") != nil
-}
-
 type filteringCore struct {
 	next zapcore.Core
 	rule *AtomicFilterRule
@@ -52,9 +33,7 @@ type filteringCore struct {
 // If the entry should be logged, the filteringCore adds itself to the zapcore.CheckedEntry
 // and returns the results.
 func (core *filteringCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
-	// FIXME: consider calling downstream core.Check too, but need to document how to
-	// properly set logging level.
-	if r := core.rule.Load(); r != nil && r.Filter(entry, nil) {
+	if r := core.rule.Load(); r == nil || r.Filter(entry) {
 		ce = ce.AddCore(entry, core)
 	}
 	return ce
@@ -63,11 +42,7 @@ func (core *filteringCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) 
 // Write determines whether the supplied zapcore.Entry with provided []zapcore.Field should
 // be logged, then calls the wrapped zapcore.Write.
 func (core *filteringCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
-	if r := core.rule.Load(); r != nil && r.Filter(entry, fields) {
-		return core.next.Write(entry, fields)
-	}
-
-	return nil
+	return core.next.Write(entry, fields)
 }
 
 // With adds structured context to the wrapped zapcore.Core.
@@ -80,11 +55,8 @@ func (core *filteringCore) With(fields []zapcore.Field) zapcore.Core {
 
 // Enabled asks the wrapped zapcore.Core to decide whether a given logging level is enabled
 // when logging a message.
-func (core *filteringCore) Enabled(level zapcore.Level) bool {
-	// FIXME: Maybe it's better to always return true and only rely on the Check() func?
-	//        Another way to consider it is to keep the smaller log level configured on
-	//        zapfilter.
-	return core.next.Enabled(level)
+func (core *filteringCore) Enabled(_ zapcore.Level) bool {
+	return true
 }
 
 func (core *filteringCore) Level() zapcore.Level {

@@ -524,7 +524,7 @@ var _ = Context("encoder", func() {
 				nil,
 			),
 			Entry("EncodeLevel with color",
-				tty.Mods("debug", ColorLevels[zapcore.DebugLevel]),
+				tty.Mods("debug", ColorLevels[DebugLevel]),
 				encoderConfig{Level: true, EncodeLevel: zapcore.LowercaseLevelEncoder, ColorLevel: ColorLevel},
 				nil,
 				nil,

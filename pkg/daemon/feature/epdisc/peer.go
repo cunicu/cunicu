@@ -14,7 +14,6 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/pion/ice/v2"
-	"github.com/pion/zapion"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -343,9 +342,7 @@ func (p *Peer) createAgent() error {
 
 	acfg.UDPMux = p.Interface.mux
 	acfg.UDPMuxSrflx = p.Interface.muxSrflx
-	acfg.LoggerFactory = &zapion.ZapFactory{
-		BaseLogger: p.logger.Named("ice").Logger,
-	}
+	acfg.LoggerFactory = log.NewPionLoggerFactory(p.logger)
 
 	p.localCredentials = epdiscproto.NewCredentials()
 	p.remoteCredentials = nil

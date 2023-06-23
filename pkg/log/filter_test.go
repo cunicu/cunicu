@@ -7,7 +7,6 @@ package log_test
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"strings"
 
 	"github.com/onsi/gomega/gcustom"
@@ -28,7 +27,7 @@ var (
 	errMismatchingField      = errors.New("mismatch in context field")
 )
 
-func MatchEntry(expectedEntry zapcore.Entry, expectedFields ...zapcore.Field) OmegaMatcher {
+func matchEntry(expectedEntry zapcore.Entry, expectedFields ...zapcore.Field) OmegaMatcher {
 	return gcustom.MakeMatcher(func(actualEntry observer.LoggedEntry) (bool, error) {
 		if expectedEntry.Message != "" && expectedEntry.Message != actualEntry.Message {
 			return false, fmt.Errorf("%w: %s != %s", errMismatchingLogMessage, expectedEntry.Message, actualEntry.Message)
@@ -72,6 +71,21 @@ func makeLogger(filterFunc log.FilterFunc) (*zap.Logger, *observer.ObservedLogs)
 	return zap.New(filtered), logs
 }
 
+// CheckAnyLevel determines whether at least one log level isn't filtered-out by the logger.
+func checkAnyLevel(logger *zap.Logger) bool {
+	for l := log.MinLevel; l <= log.DPanicLevel; l++ {
+		if checkLevel(logger, l) {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckLevel determines whether a specific log level would produce log or not.
+func checkLevel(logger *zap.Logger, level log.Level) bool {
+	return logger.Check(zapcore.Level(level), "") != nil
+}
+
 var _ = Describe("filter", func() {
 	Describe("NewFilteredCore", func() {
 		It("wrap", func() {
@@ -91,7 +105,7 @@ var _ = Describe("filter", func() {
 			logger.Named("other").Debug("hello universe!")
 
 			Expect(logs.All()).To(HaveExactElements(
-				MatchEntry(zapcore.Entry{Message: "hello earth!"}),
+				matchEntry(zapcore.Entry{Message: "hello earth!"}),
 			))
 		})
 
@@ -104,7 +118,7 @@ var _ = Describe("filter", func() {
 			logger.Named("other").Debug("hello universe!")
 
 			Expect(logs.All()).To(HaveExactElements(
-				MatchEntry(zapcore.Entry{Message: "hello earth!"}),
+				matchEntry(zapcore.Entry{Message: "hello earth!"}),
 			))
 		})
 	})
@@ -120,16 +134,14 @@ var _ = Describe("filter", func() {
 			logger.Named("demo3.frontend").Debug("hello solar system!")
 
 			Expect(logs.All()).To(HaveExactElements(
-				MatchEntry(zapcore.Entry{Message: "hello region!", LoggerName: "demo1.frontend", Level: zapcore.DebugLevel}),
-				MatchEntry(zapcore.Entry{Message: "hello solar system!", LoggerName: "demo3.frontend", Level: zapcore.DebugLevel}),
+				matchEntry(zapcore.Entry{Message: "hello region!", LoggerName: "demo1.frontend", Level: zapcore.DebugLevel}),
+				matchEntry(zapcore.Entry{Message: "hello solar system!", LoggerName: "demo3.frontend", Level: zapcore.DebugLevel}),
 			))
 		})
 
 		It("custom", func() {
-			rand.Seed(42) //nolint:staticcheck
-
-			logger, logs := makeLogger(func(entry zapcore.Entry, fields []zapcore.Field) bool {
-				return rand.Intn(2) == 1 //nolint:gosec
+			logger, logs := makeLogger(func(entry zapcore.Entry) bool {
+				return strings.Contains(entry.Message, "planet")
 			})
 			defer logger.Sync() //nolint:errcheck
 
@@ -141,8 +153,7 @@ var _ = Describe("filter", func() {
 			logger.Debug("hello multiverse!")
 
 			Expect(logs.All()).To(HaveExactElements(
-				MatchEntry(zapcore.Entry{Message: "hello planet!"}),
-				MatchEntry(zapcore.Entry{Message: "hello multiverse!"}),
+				matchEntry(zapcore.Entry{Message: "hello planet!"}),
 			))
 		})
 
@@ -167,83 +178,83 @@ var _ = Describe("filter", func() {
 				Expect(gotLogs).To(Equal(expectedLogs))
 			},
 			Entry("allow-all",
-				func(entry zapcore.Entry, fields []zapcore.Field) bool {
+				func(entry zapcore.Entry) bool {
 					return true
 				},
 				[]string{"a", "b", "c", "d"},
 			),
 			Entry("disallow-all",
-				func(entry zapcore.Entry, fields []zapcore.Field) bool {
+				func(entry zapcore.Entry) bool {
 					return false
 				},
 				[]string{},
 			),
 			Entry("minimum-debug",
-				log.MinimumLevel(zapcore.DebugLevel),
+				log.MinimumLevel(log.DebugLevel),
 				[]string{"a", "b", "c", "d"},
 			),
 			Entry("minimum-info",
-				log.MinimumLevel(zapcore.InfoLevel),
+				log.MinimumLevel(log.InfoLevel),
 				[]string{"b", "c", "d"},
 			),
 			Entry("minimum-warn",
-				log.MinimumLevel(zapcore.WarnLevel),
+				log.MinimumLevel(log.WarnLevel),
 				[]string{"c", "d"},
 			),
 			Entry("minimum-error",
-				log.MinimumLevel(zapcore.ErrorLevel),
+				log.MinimumLevel(log.ErrorLevel),
 				[]string{"d"},
 			),
 			Entry("exact-debug",
-				log.ExactLevel(zapcore.DebugLevel),
+				log.ExactLevel(log.DebugLevel),
 				[]string{"a"},
 			),
 			Entry("exact-info",
-				log.ExactLevel(zapcore.InfoLevel),
+				log.ExactLevel(log.InfoLevel),
 				[]string{"b"},
 			),
 			Entry("exact-warn",
-				log.ExactLevel(zapcore.WarnLevel),
+				log.ExactLevel(log.WarnLevel),
 				[]string{"c"},
 			),
 			Entry("exact-error",
-				log.ExactLevel(zapcore.ErrorLevel),
+				log.ExactLevel(log.ErrorLevel),
 				[]string{"d"},
 			),
 			Entry("all-except-debug",
-				log.Reverse(log.ExactLevel(zapcore.DebugLevel)),
+				log.Reverse(log.ExactLevel(log.DebugLevel)),
 				[]string{"b", "c", "d"},
 			),
 			Entry("all-except-info",
-				log.Reverse(log.ExactLevel(zapcore.InfoLevel)),
+				log.Reverse(log.ExactLevel(log.InfoLevel)),
 				[]string{"a", "c", "d"},
 			),
 			Entry("all-except-warn",
-				log.Reverse(log.ExactLevel(zapcore.WarnLevel)),
+				log.Reverse(log.ExactLevel(log.WarnLevel)),
 				[]string{"a", "b", "d"},
 			),
 			Entry("all-except-error",
-				log.Reverse(log.ExactLevel(zapcore.ErrorLevel)),
+				log.Reverse(log.ExactLevel(log.ErrorLevel)),
 				[]string{"a", "b", "c"},
 			),
 			Entry("any",
 				log.Any(
-					log.ExactLevel(zapcore.DebugLevel),
-					log.ExactLevel(zapcore.WarnLevel),
+					log.ExactLevel(log.DebugLevel),
+					log.ExactLevel(log.WarnLevel),
 				),
 				[]string{"a", "c"},
 			),
 			Entry("all-1",
 				log.All(
-					log.ExactLevel(zapcore.DebugLevel),
-					log.ExactLevel(zapcore.WarnLevel),
+					log.ExactLevel(log.DebugLevel),
+					log.ExactLevel(log.WarnLevel),
 				),
 				[]string{},
 			),
 			Entry("all-2",
 				log.All(
-					log.ExactLevel(zapcore.DebugLevel),
-					log.ExactLevel(zapcore.DebugLevel),
+					log.ExactLevel(log.DebugLevel),
+					log.ExactLevel(log.DebugLevel),
 				),
 				[]string{"a"},
 			),
@@ -270,7 +281,7 @@ var _ = Describe("filter", func() {
 
 		logger.Named("myns").Debug("myns debug") // Matches *:myns
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns debug", LoggerName: "myns", Level: zapcore.DebugLevel}),
+			matchEntry(zapcore.Entry{Message: "myns debug", LoggerName: "myns", Level: zapcore.DebugLevel}),
 		))
 
 		logger.Named("bar").Debug("bar debug") // No match
@@ -284,7 +295,7 @@ var _ = Describe("filter", func() {
 
 		logger.Named("myns").Info("myns info") // Matches *:myns
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns info", LoggerName: "myns", Level: zapcore.InfoLevel}),
+			matchEntry(zapcore.Entry{Message: "myns info", LoggerName: "myns", Level: zapcore.InfoLevel}),
 		))
 
 		logger.Named("bar").Info("bar info") // No match
@@ -292,7 +303,7 @@ var _ = Describe("filter", func() {
 
 		logger.Named("myns").Named("foo").Info("myns.foo info") // Matches info,warn:myns.*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns.foo info", LoggerName: "myns.foo", Level: zapcore.InfoLevel}),
+			matchEntry(zapcore.Entry{Message: "myns.foo info", LoggerName: "myns.foo", Level: zapcore.InfoLevel}),
 		))
 
 		logger.Warn("top warn") // No match
@@ -300,7 +311,7 @@ var _ = Describe("filter", func() {
 
 		logger.Named("myns").Warn("myns warn") // Matches *:myns
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns warn", LoggerName: "myns", Level: zapcore.WarnLevel}),
+			matchEntry(zapcore.Entry{Message: "myns warn", LoggerName: "myns", Level: zapcore.WarnLevel}),
 		))
 
 		logger.Named("bar").Warn("bar warn") // No match
@@ -308,27 +319,27 @@ var _ = Describe("filter", func() {
 
 		logger.Named("myns").Named("foo").Warn("myns.foo warn") // Matches info,warn:myns.*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns.foo warn", LoggerName: "myns.foo", Level: zapcore.WarnLevel}),
+			matchEntry(zapcore.Entry{Message: "myns.foo warn", LoggerName: "myns.foo", Level: zapcore.WarnLevel}),
 		))
 
 		logger.Error("top error") // Matches error:*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "top error", Level: zapcore.ErrorLevel}),
+			matchEntry(zapcore.Entry{Message: "top error", Level: zapcore.ErrorLevel}),
 		))
 
 		logger.Named("myns").Error("myns error") // Matches *:myns and error:*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns error", LoggerName: "myns", Level: zapcore.ErrorLevel}),
+			matchEntry(zapcore.Entry{Message: "myns error", LoggerName: "myns", Level: zapcore.ErrorLevel}),
 		))
 
 		logger.Named("bar").Error("bar error") // Matches error:*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "bar error", LoggerName: "bar", Level: zapcore.ErrorLevel}),
+			matchEntry(zapcore.Entry{Message: "bar error", LoggerName: "bar", Level: zapcore.ErrorLevel}),
 		))
 
 		logger.Named("myns").Named("foo").Error("myns.foo error") // Matches error:*
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "myns.foo error", LoggerName: "myns.foo", Level: zapcore.ErrorLevel}),
+			matchEntry(zapcore.Entry{Message: "myns.foo error", LoggerName: "myns.foo", Level: zapcore.ErrorLevel}),
 		))
 	})
 
@@ -465,7 +476,7 @@ var _ = Describe("filter", func() {
 					logger = logger.Named(name)
 				}
 
-				Expect(log.CheckAnyLevel(logger)).To(Equal(expected))
+				Expect(checkAnyLevel(logger)).To(Equal(expected))
 			},
 			Entry("1", "", false),
 			Entry("2", "demo", true),
@@ -476,27 +487,27 @@ var _ = Describe("filter", func() {
 		)
 
 		DescribeTable("level",
-			func(name string, lvl zapcore.Level, expected bool) {
+			func(name string, lvl log.Level, expected bool) {
 				logger, _ := makeLogger(log.MustParseRules("=debug:*.* =info:demo*"))
 
 				if name != "" {
 					logger = logger.Named(name)
 				}
 
-				Expect(log.CheckLevel(logger, lvl)).To(Equal(expected))
+				Expect(checkLevel(logger, lvl)).To(Equal(expected))
 			},
-			Entry("1", "", zap.DebugLevel, false),
-			Entry("2", "demo", zap.DebugLevel, false),
-			Entry("3", "blahdemo", zap.DebugLevel, false),
-			Entry("4", "demoblah", zap.DebugLevel, false),
-			Entry("5", "blah", zap.DebugLevel, false),
-			Entry("6", "blah.blah", zap.DebugLevel, true),
-			Entry("7", "", zap.InfoLevel, false),
-			Entry("8", "demo", zap.InfoLevel, true),
-			Entry("9", "blahdemo", zap.InfoLevel, false),
-			Entry("10", "demoblah", zap.InfoLevel, true),
-			Entry("11", "blah", zap.InfoLevel, false),
-			Entry("12", "blah.blah", zap.InfoLevel, false),
+			Entry("1", "", log.DebugLevel, false),
+			Entry("2", "demo", log.DebugLevel, false),
+			Entry("3", "blahdemo", log.DebugLevel, false),
+			Entry("4", "demoblah", log.DebugLevel, false),
+			Entry("5", "blah", log.DebugLevel, false),
+			Entry("6", "blah.blah", log.DebugLevel, true),
+			Entry("7", "", log.InfoLevel, false),
+			Entry("8", "demo", log.InfoLevel, true),
+			Entry("9", "blahdemo", log.InfoLevel, false),
+			Entry("10", "demoblah", log.InfoLevel, true),
+			Entry("11", "blah", log.InfoLevel, false),
+			Entry("12", "blah.blah", log.InfoLevel, false),
 		)
 	})
 
@@ -509,7 +520,7 @@ var _ = Describe("filter", func() {
 
 		logger.With(zap.String("lorem", "ipsum")).Named("demo1.frontend").Debug("hello region!")
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "hello region!", LoggerName: "demo1.frontend", Level: zapcore.DebugLevel}, zap.String("lorem", "ipsum")),
+			matchEntry(zapcore.Entry{Message: "hello region!", LoggerName: "demo1.frontend", Level: zapcore.DebugLevel}, zap.String("lorem", "ipsum")),
 		))
 
 		logger.With(zap.String("lorem", "ipsum")).Named("demo2.frontend").Debug("hello planet!")
@@ -517,7 +528,7 @@ var _ = Describe("filter", func() {
 
 		logger.With(zap.String("lorem", "ipsum")).Named("demo3.frontend").Debug("hello solar system!")
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "hello solar system!", LoggerName: "demo3.frontend", Level: zapcore.DebugLevel}, zap.String("lorem", "ipsum")),
+			matchEntry(zapcore.Entry{Message: "hello solar system!", LoggerName: "demo3.frontend", Level: zapcore.DebugLevel}, zap.String("lorem", "ipsum")),
 		))
 	})
 
@@ -529,7 +540,7 @@ var _ = Describe("filter", func() {
 		Expect(ce).NotTo(BeNil())
 		ce.Write()
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "a"}),
+			matchEntry(zapcore.Entry{Message: "a"}),
 		))
 
 		ce = logger.Check(zap.InfoLevel, "b")
@@ -540,7 +551,7 @@ var _ = Describe("filter", func() {
 		Expect(ce).NotTo(BeNil())
 		ce.Write()
 		Expect(logs.TakeAll()).To(HaveExactElements(
-			MatchEntry(zapcore.Entry{Message: "c"}),
+			matchEntry(zapcore.Entry{Message: "c"}),
 		))
 
 		ce = logger.Check(zap.WarnLevel, "d")

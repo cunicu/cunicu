@@ -12,6 +12,7 @@ import (
 	"github.com/pion/randutil"
 	"golang.org/x/exp/slices"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 )
 
@@ -58,8 +59,8 @@ func NewCredentials() *Credentials {
 	}
 }
 
-func (i *Interface) Dump(wr io.Writer, verbosity int) error {
-	if verbosity > 4 {
+func (i *Interface) Dump(wr io.Writer, level log.Level) error {
+	if level.Verbosity() > 4 {
 		if _, err := tty.FprintKV(wr, "nat type", i.NatType); err != nil {
 			return err
 		}
@@ -74,7 +75,7 @@ func (i *Interface) Dump(wr io.Writer, verbosity int) error {
 	return nil
 }
 
-func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
+func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 	var v string
 
 	if p.SelectedCandidatePair != nil {
@@ -83,7 +84,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 		}
 	}
 
-	if verbosity > 4 {
+	if level.Verbosity() > 4 {
 		if _, err := tty.FprintKV(wr, "proxy type", p.ProxyType); err != nil {
 			return err
 		}
@@ -100,7 +101,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 			}
 		}
 
-		if verbosity > 5 && len(p.CandidatePairStats) > 0 {
+		if level.Verbosity() > 5 && len(p.CandidatePairStats) > 0 {
 			cmap := map[string]int{}
 			var cpsNom *CandidatePairStats
 
@@ -157,7 +158,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 				}
 			}
 
-			if len(p.CandidatePairStats) > 0 && verbosity > 6 {
+			if len(p.CandidatePairStats) > 0 && level.Verbosity() > 6 {
 				if _, err := tty.FprintKV(wr, "\npairs"); err != nil {
 					return err
 				}

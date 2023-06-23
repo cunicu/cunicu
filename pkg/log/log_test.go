@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pion/zapion"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/stv0g/cunicu/pkg/log"
@@ -29,7 +27,7 @@ func TestSuite(t *testing.T) {
 // https://github.com/uber-go/zap/issues/621
 var _ = Context("log", Label("broken-on-windows"), func() {
 	var logger *log.Logger
-	var lvl zapcore.Level
+	var lvl log.Level
 	var logPath, msg, name string
 
 	BeforeEach(func() {
@@ -37,10 +35,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 
 		logPath = filepath.Join(tmpDir, "std.log")
 		msg = "Test message"
-
-		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
-		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", lvl.String())
-		os.Setenv("PION_LOG", lvl.String())
+		lvl = log.InfoLevel
 
 		log.ResetWidths()
 	})
@@ -68,10 +63,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 		})
 
 		It("can log via pion logger", func() {
-			lf := zapion.ZapFactory{
-				BaseLogger: logger.Named("ice").Logger,
-			}
-			logger := lf.NewLogger("myscope")
+			logger := log.NewPionLogger(logger, "ice.myscope")
 
 			name = "ice.myscope"
 			logger.Info(msg)
@@ -79,6 +71,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 
 		It("can log via gRPC logger", func() {
 			name = "grpc"
+			lvl = log.DebugLevel - 5
 			grpclog.Info(msg)
 		})
 	})

@@ -21,10 +21,6 @@ var (
 	Global *Logger
 )
 
-func DebugLevel(verbosity int) Level {
-	return Level(zapcore.DebugLevel) - Level(verbosity)
-}
-
 func openSink(path string) zapcore.WriteSyncer {
 	switch path {
 	case "stdout":
@@ -61,10 +57,6 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 		EncodeLevel:      levelEncoder,
 	}
 
-	if rule == "" {
-		rule = "*"
-	}
-
 	if color {
 		cfg.ColorTime = ColorTime
 		cfg.ColorContext = ColorContext
@@ -88,12 +80,14 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 	enc := newEncoder(cfg)
 	core := zapcore.NewCore(enc, ws, &alwaysEnabled{})
 
-	filterRule, err := ParseFilterRule(rule)
-	if err != nil {
-		return nil, err
-	}
+	if rule != "" {
+		filterRule, err := ParseFilterRule(rule)
+		if err != nil {
+			return nil, err
+		}
 
-	Rule.Store(filterRule)
+		Rule.Store(filterRule)
+	}
 
 	zlogger := zap.New(core,
 		zap.ErrorOutput(ws),
@@ -111,16 +105,8 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 	Global = logger
 
 	// Redirect gRPC log to Zap
-	glogger := logger.Named("grpc")
-	grpclog.SetLoggerV2(NewGRPCLogger(glogger, Level(zlogger.Level()).Verbosity()))
+	glogger := NewGRPCLogger(logger.Named("grpc"))
+	grpclog.SetLoggerV2(glogger)
 
 	return logger, nil
-}
-
-type forceReflect struct {
-	any
-}
-
-func ForceReflect(key string, val any) zapcore.Field {
-	return zapcore.Field{Key: key, Type: zapcore.ReflectType, Interface: forceReflect{val}}
 }

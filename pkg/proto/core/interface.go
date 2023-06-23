@@ -45,7 +45,7 @@ func (i *Interface) Dump(wr io.Writer, level log.Level) error {
 		return err
 	}
 
-	if level > log.DebugLevel(5) {
+	if level.Verbosity() > 5 {
 		if _, err := tty.FprintKV(wri, "private key", base64.StdEncoding.EncodeToString(i.PrivateKey)); err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (i *Interface) Dump(wr io.Writer, level log.Level) error {
 			return err
 		}
 
-		if err := i.Ice.Dump(wri, level.Verbosity()); err != nil {
+		if err := i.Ice.Dump(wri, level); err != nil {
 			return err
 		}
 	}
@@ -92,7 +92,7 @@ func (i *Interface) Dump(wr io.Writer, level log.Level) error {
 			return err
 		}
 
-		if err := p.Dump(wri, level.Verbosity()); err != nil {
+		if err := p.Dump(wri, level); err != nil {
 			return err
 		}
 	}

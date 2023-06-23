@@ -52,14 +52,14 @@ var (
 	ColorCaller            = tty.Color256(15)
 	ColorLevelUnknown      = tty.Color256(1)
 	ColorLevelDebugVerbose = tty.Color256(138)
-	ColorLevels            = map[zapcore.Level]string{
-		zapcore.DebugLevel:  tty.Color256(138),
-		zapcore.InfoLevel:   tty.Color256(12),  // Blue
-		zapcore.WarnLevel:   tty.Color256(208), // Yellow
-		zapcore.ErrorLevel:  tty.Color256(124), // Red
-		zapcore.DPanicLevel: tty.Color256(196), // Red
-		zapcore.PanicLevel:  tty.Color256(196), // Red
-		zapcore.FatalLevel:  tty.Color256(196), // Red
+	ColorLevels            = map[Level]string{
+		DebugLevel:  tty.Color256(138),
+		InfoLevel:   tty.Color256(12),  // Blue
+		WarnLevel:   tty.Color256(208), // Yellow
+		ErrorLevel:  tty.Color256(124), // Red
+		DPanicLevel: tty.Color256(196), // Red
+		PanicLevel:  tty.Color256(196), // Red
+		FatalLevel:  tty.Color256(196), // Red
 	}
 )
 
@@ -68,10 +68,10 @@ func ResetWidths() {
 	widthName.Store(0)
 }
 
-func ColorLevel(l zapcore.Level) string {
+func ColorLevel(l Level) string {
 	if color, ok := ColorLevels[l]; ok {
 		return color
-	} else if l < zapcore.DebugLevel {
+	} else if l < DebugLevel {
 		return ColorLevelDebugVerbose
 	}
 
@@ -84,7 +84,7 @@ type encoderConfig struct {
 	ColorStacktrace string
 	ColorName       string
 	ColorCaller     string
-	ColorLevel      func(lvl zapcore.Level) string
+	ColorLevel      func(lvl Level) string
 
 	Function   bool
 	Message    bool
@@ -661,7 +661,7 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 		f.addSeparator(e.fieldSeparator)
 
 		if e.ColorLevel != nil {
-			f.colored(e.ColorLevel(ent.Level), cb)
+			f.colored(e.ColorLevel(Level(ent.Level)), cb)
 		} else {
 			cb()
 		}
@@ -702,7 +702,7 @@ func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	// Add the message itself.
 	if f.Message {
 		f.addSeparator(e.fieldSeparator)
-		f.AppendString(ent.Message)
+		f.buf.AppendString(ent.Message)
 	}
 
 	// Add context

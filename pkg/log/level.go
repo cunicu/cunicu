@@ -18,16 +18,24 @@ func levelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 type Level zapcore.Level
 
 const (
-	LevelMin = zapcore.DebugLevel - 10
-	LevelMax = zapcore.FatalLevel
+	DebugLevel Level = iota - 1
+	InfoLevel
+	WarnLevel
+	ErrorLevel
+	DPanicLevel
+	PanicLevel
+	FatalLevel
 )
 
-func (l Level) Verbosity() int {
-	if l > Level(zapcore.DebugLevel) {
-		return 0
-	}
+//nolint:gochecknoglobals
+var (
+	MaxLevel   = FatalLevel
+	MinLevel   = VerboseLevel(10)
+	TraceLevel = VerboseLevel(5)
+)
 
-	return -int(l) - 1
+func VerboseLevel(v int) Level {
+	return DebugLevel - Level(v)
 }
 
 func (l *Level) UnmarshalText(text []byte) error {
@@ -38,7 +46,7 @@ func (l *Level) UnmarshalText(text []byte) error {
 			v, _ = strconv.Atoi(vs)
 		}
 
-		*l = Level(zapcore.DebugLevel - zapcore.Level(v))
+		*l = DebugLevel - Level(v)
 
 		return nil
 	}
@@ -52,14 +60,14 @@ func (l *Level) UnmarshalText(text []byte) error {
 	return nil
 }
 
-func (l Level) MarshalText() ([]byte, error) {
-	return []byte(l.String()), nil
-}
-
 func (l Level) String() string {
-	if l < Level(zapcore.DebugLevel) {
+	if l < DebugLevel {
 		return zapcore.DebugLevel.String() + strconv.Itoa(l.Verbosity())
 	}
 
 	return zapcore.Level(l).String()
+}
+
+func (l Level) Verbosity() int {
+	return -int(l) - 1
 }

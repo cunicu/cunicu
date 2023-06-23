@@ -136,7 +136,7 @@ func (s *Subscription) NewMessage(env *Envelope) error {
 		return err
 	}
 
-	log.Global.Named("backend").Debug("Received signaling message", zap.Any("msg", msg), zap.Any("pkp", pkp))
+	log.Global.Named("backend").Debug("Received signaling message", zap.Reflect("msg", msg), zap.Any("pkp", pkp))
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()

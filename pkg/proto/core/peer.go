@@ -13,6 +13,7 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
+	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 )
 
@@ -53,7 +54,7 @@ func (p *Peer) Peer() wgtypes.Peer {
 	return q
 }
 
-func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
+func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 	wri := tty.NewIndenter(wr, "  ")
 
 	if _, err := fmt.Fprintf(wr, tty.Mods("peer", tty.Bold, tty.FgYellow)+": "+tty.Mods("%s", tty.FgYellow)+"\n", p.Name); err != nil {
@@ -122,7 +123,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 		}
 	}
 
-	if len(p.PresharedKey) > 0 && verbosity > 5 {
+	if len(p.PresharedKey) > 0 && level.Verbosity() > 5 {
 		if _, err := tty.FprintKV(wri, "preshared key", base64.StdEncoding.EncodeToString(p.PresharedKey)); err != nil {
 			return err
 		}
@@ -137,7 +138,7 @@ func (p *Peer) Dump(wr io.Writer, verbosity int) error { //nolint:gocognit
 			return err
 		}
 
-		if err := p.Ice.Dump(wri, verbosity); err != nil {
+		if err := p.Ice.Dump(wri, level); err != nil {
 			return err
 		}
 	}
