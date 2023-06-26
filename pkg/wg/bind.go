@@ -216,6 +216,11 @@ func (b *Bind) BatchSize() int {
 	return 1
 }
 
+func (b *Bind) AddConn(conn net.PacketConn) {
+	bindConn := newBindPacketConn(b, conn)
+	b.Conns = append(b.Conns, bindConn)
+}
+
 func (b *Bind) AddOpenHandler(h BindHandler) {
 	if !slices.Contains(b.onOpen, h) {
 		b.onOpen = append(b.onOpen, h)
@@ -248,11 +253,7 @@ func (b *Bind) addFallbackConnection(port uint16) error {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
 
-	logger := b.logger.Named("conn")
-	filteredConn := netx.NewFilteredConn(udpConn, logger)
-	bindConn := NewBindPacketConn(b, filteredConn, logger)
-
-	b.Conns = append(b.Conns, bindConn)
+	b.AddConn(udpConn)
 
 	return nil
 }

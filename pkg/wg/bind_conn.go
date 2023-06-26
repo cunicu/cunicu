@@ -16,25 +16,25 @@ import (
 	"github.com/stv0g/cunicu/pkg/log"
 )
 
-var _ BindConn = (*BindPacketConn)(nil)
+var _ BindConn = (*bindPacketConn)(nil)
 
-// BindPacketConn is a PacketConn
-type BindPacketConn struct {
+// bindPacketConn is a PacketConn
+type bindPacketConn struct {
 	net.PacketConn
 
 	bind   *Bind
 	logger *log.Logger
 }
 
-func NewBindPacketConn(bind *Bind, conn net.PacketConn, logger *log.Logger) *BindPacketConn {
-	return &BindPacketConn{
+func newBindPacketConn(bind *Bind, conn net.PacketConn) *bindPacketConn {
+	return &bindPacketConn{
 		PacketConn: conn,
 		bind:       bind,
-		logger:     logger,
+		logger:     bind.logger.Named("conn"),
 	}
 }
 
-func (c *BindPacketConn) Receive(buf []byte) (int, wgconn.Endpoint, error) {
+func (c *bindPacketConn) Receive(buf []byte) (int, wgconn.Endpoint, error) {
 	// Reset read deadline
 	if err := c.PacketConn.SetReadDeadline(time.Time{}); err != nil {
 		return -1, nil, fmt.Errorf("failed to reset read deadline: %w", err)
@@ -78,17 +78,17 @@ func (c *BindPacketConn) Receive(buf []byte) (int, wgconn.Endpoint, error) {
 	return n, ep, nil
 }
 
-func (c *BindPacketConn) Send(buf []byte, cep wgconn.Endpoint) (int, error) {
+func (c *bindPacketConn) Send(buf []byte, cep wgconn.Endpoint) (int, error) {
 	ep := cep.(*BindEndpoint) //nolint:forcetypeassert
 
 	return c.PacketConn.WriteTo(buf, ep.DstUDPAddr())
 }
 
-func (c *BindPacketConn) SetMark(mark uint32) error {
+func (c *bindPacketConn) SetMark(mark uint32) error {
 	return SetMark(c.PacketConn, mark)
 }
 
-func (c *BindPacketConn) ListenPort() (uint16, bool) {
+func (c *bindPacketConn) ListenPort() (uint16, bool) {
 	if addr, ok := c.PacketConn.LocalAddr().(*net.UDPAddr); ok {
 		return uint16(addr.Port), true
 	}
@@ -96,7 +96,7 @@ func (c *BindPacketConn) ListenPort() (uint16, bool) {
 	return 0, false
 }
 
-func (c *BindPacketConn) BindClose() error {
+func (c *bindPacketConn) BindClose() error {
 	// We do not want to close the underlying connections here
 	// as this would disrupt Pion's UDPMux's which would
 	// need to be recreated.
