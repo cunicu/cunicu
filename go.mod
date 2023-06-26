@@ -21,7 +21,7 @@ require (
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
 	github.com/mdp/qrterminal/v3 v3.1.1
-	github.com/miekg/dns v1.1.54
+	github.com/miekg/dns v1.1.55
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v2 v2.3.8
 	github.com/pion/logging v0.2.2
