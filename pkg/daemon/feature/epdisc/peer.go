@@ -454,13 +454,13 @@ func (p *Peer) updateProxy(cp *ice.CandidatePair, conn *ice.Conn) error {
 	// Create new proxy
 	switch {
 	case p.Interface.IsUserspace():
-		p.logger.Debug("Forwarding via in-process bind proxy")
+		p.logger.Debug("Forwarding via in-process bind")
 		newProxy, newEndpoint, err = NewBindProxy(bind, cp, conn, p.logger)
 	case p.Interface.nat != nil && CandidatePairCanBeNATted(cp):
-		p.logger.Debug("Forwarding via kernel port-forwarding")
+		p.logger.Debug("Forwarding via kernel NAT")
 		newProxy, newEndpoint, err = NewKernelNATProxy(cp, p.Interface.nat, p.Interface.ListenPort, p.logger)
 	default:
-		p.logger.Debug("Forwarding via kernel connection proxy")
+		p.logger.Debug("Forwarding via kernel connection")
 		newProxy, newEndpoint, err = NewKernelConnProxy(bind, cp, conn, p.Interface.ListenPort, p.logger)
 	}
 	if err != nil {

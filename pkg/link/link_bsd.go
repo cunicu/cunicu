@@ -135,14 +135,14 @@ func (d *BSDLink) MTU() int {
 }
 
 func (d *BSDLink) SetMTU(mtu int) error {
-	d.logger.Debug("Set BSDLink MTU", zap.Int("mtu", mtu))
+	d.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
 
 	_, err := run("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu))
 	return err
 }
 
 func (d *BSDLink) SetUp() error {
-	d.logger.Debug("Set BSDLink up")
+	d.logger.Debug("Set link up")
 
 	i, err := net.InterfaceByIndex(d.index)
 	if err != nil {
@@ -154,7 +154,7 @@ func (d *BSDLink) SetUp() error {
 }
 
 func (d *BSDLink) SetDown() error {
-	d.logger.Debug("Set BSDLink down")
+	d.logger.Debug("Set link down")
 
 	i, err := net.InterfaceByIndex(d.index)
 	if err != nil {

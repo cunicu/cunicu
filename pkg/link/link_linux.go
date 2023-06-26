@@ -58,19 +58,17 @@ func CreateWireGuardLink(name string) (*LinuxLink, error) {
 }
 
 func FindLink(name string) (*LinuxLink, error) {
-	logger := log.Global.Named("dev").With(
-		zap.String("dev", name),
-		zap.String("type", "kernel"),
-	)
-
 	link, err := netlink.LinkByName(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get link details: %w", err)
 	}
 
 	return &LinuxLink{
-		link:   link,
-		logger: logger,
+		link: link,
+		logger: log.Global.Named("dev").With(
+			zap.String("dev", name),
+			zap.String("type", "kernel"),
+		),
 	}, nil
 }
 
