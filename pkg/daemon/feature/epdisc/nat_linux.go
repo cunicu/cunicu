@@ -18,7 +18,7 @@ import (
 var errRuleNotFound = errors.New("rule not found")
 
 type NAT struct {
-	NFConn *nftables.Conn
+	conn *nftables.Conn
 
 	table        *nftables.Table
 	chainEgress  *nftables.Chain
@@ -32,7 +32,7 @@ func NewNAT(ident string) (*NAT, error) {
 
 	n := &NAT{}
 
-	if n.NFConn, err = nftables.New(); err != nil {
+	if n.conn, err = nftables.New(); err != nil {
 		return nil, fmt.Errorf("failed to create netlink conn: %w", err)
 	}
 
@@ -55,13 +55,13 @@ func (n *NAT) AddRule(r *nftables.Rule, comment string) (*NATRule, error) {
 	r.UserData = NftablesUserDataPutString(r.UserData, NftablesUserDataTypeComment, comment)
 	r.UserData = NftablesUserDataPutInt(r.UserData, NftablesUserDataTypeRuleID, id)
 
-	r = n.NFConn.AddRule(r)
+	r = n.conn.AddRule(r)
 
-	if err := n.NFConn.Flush(); err != nil {
+	if err := n.conn.Flush(); err != nil {
 		return nil, fmt.Errorf("failed to flush: %w", err)
 	}
 
-	rs, err := n.NFConn.GetRules(r.Table, r.Chain)
+	rs, err := n.conn.GetRules(r.Table, r.Chain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rules: %w", err)
 	}
@@ -85,22 +85,22 @@ func (n *NAT) AddRule(r *nftables.Rule, comment string) (*NATRule, error) {
 }
 
 func (nr *NATRule) Delete() error {
-	return nr.nat.NFConn.DelRule(nr.Rule)
+	return nr.nat.conn.DelRule(nr.Rule)
 }
 
 func (n *NAT) setupTable(ident string) error {
 	// Ignore any previously existing table
-	n.NFConn.DelTable(&nftables.Table{Name: ident})
+	n.conn.DelTable(&nftables.Table{Name: ident})
 
-	n.NFConn.Flush()
+	n.conn.Flush()
 
-	n.table = n.NFConn.AddTable(&nftables.Table{
+	n.table = n.conn.AddTable(&nftables.Table{
 		Name:   ident,
 		Family: nftables.TableFamilyINet,
 	})
 
 	// Ingress
-	n.chainIngress = n.NFConn.AddChain(&nftables.Chain{
+	n.chainIngress = n.conn.AddChain(&nftables.Chain{
 		Name:     "ingress",
 		Type:     nftables.ChainTypeFilter,
 		Hooknum:  nftables.ChainHookInput,
@@ -109,7 +109,7 @@ func (n *NAT) setupTable(ident string) error {
 	})
 
 	// Egress
-	n.chainEgress = n.NFConn.AddChain(&nftables.Chain{
+	n.chainEgress = n.conn.AddChain(&nftables.Chain{
 		Name:     "egress",
 		Type:     nftables.ChainTypeFilter,
 		Hooknum:  nftables.ChainHookOutput,
@@ -117,13 +117,13 @@ func (n *NAT) setupTable(ident string) error {
 		Table:    n.table,
 	})
 
-	return n.NFConn.Flush()
+	return n.conn.Flush()
 }
 
 func (n *NAT) Close() error {
-	n.NFConn.DelTable(n.table)
+	n.conn.DelTable(n.table)
 
-	if err := n.NFConn.Flush(); err != nil && !errors.Is(err, unix.ENOENT) {
+	if err := n.conn.Flush(); err != nil && !errors.Is(err, unix.ENOENT) {
 		return err
 	}
 
