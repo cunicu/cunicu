@@ -11,8 +11,6 @@ import (
 	"github.com/stv0g/cunicu/pkg/log"
 )
 
-type PacketListener interface{}
-
 func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool, logger *log.Logger) (*ice.MultiUDPMuxDefault, error) {
 	ips, err := localInterfaces(interfaceFilter, ipFilter, networkTypes, includeLoopback)
 	if err != nil {
