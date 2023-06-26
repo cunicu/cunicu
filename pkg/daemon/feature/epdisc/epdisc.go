@@ -57,6 +57,7 @@ func New(di *daemon.Interface) (*Interface, error) {
 	}
 
 	i.AddPeerHandler(i)
+	i.AddModifiedHandler(i)
 	i.Bind().AddOpenHandler(i)
 
 	// Create per-interface UDP muxes

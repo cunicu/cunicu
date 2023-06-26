@@ -13,6 +13,14 @@ import (
 	"github.com/stv0g/cunicu/pkg/wg"
 )
 
+func (i *Interface) OnInterfaceModified(di *daemon.Interface, old *wg.Interface, m daemon.InterfaceModifier) {
+	if m.Is(daemon.InterfaceModifiedListenPort) {
+		if err := i.updateNATRules(); err != nil {
+			i.logger.Error("Failed to update NAT rules", zap.Error(err))
+		}
+	}
+}
+
 func (i *Interface) OnPeerAdded(cp *daemon.Peer) {
 	p, err := NewPeer(cp, i)
 	if err != nil {
