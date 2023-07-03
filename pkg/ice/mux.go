@@ -4,6 +4,7 @@
 package ice
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/pion/ice/v2"
@@ -18,35 +19,30 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 	}
 
 	conns := make([]net.PacketConn, 0, len(ips))
+	muxes := make([]ice.UDPMux, 0, len(ips))
 	for _, ip := range ips {
-		conn, listenErr := listen(ip)
-		if listenErr != nil {
-			err = listenErr
-			break
+		conn, err := listen(ip)
+		if err != nil {
+			for _, conn := range conns {
+				conn.Close() //nolint:errcheck
+			}
+			for _, mux := range muxes {
+				mux.Close() //nolint:errcheck
+			}
+
+			return nil, fmt.Errorf("failed to listen: %w", err)
 		}
 
-		conns = append(conns, conn)
-	}
-
-	if err != nil {
-		for _, conn := range conns {
-			_ = conn.Close()
-		}
-		return nil, err
-	}
-
-	muxes := make([]ice.UDPMux, 0, len(conns))
-	for _, conn := range conns {
 		mux := ice.NewUDPMuxDefault(ice.UDPMuxParams{
 			Logger:  log.NewPionLogger(logger, "ice.udpmux"),
 			UDPConn: conn,
 		})
+
+		conns = append(conns, conn)
 		muxes = append(muxes, mux)
 	}
 
-	mux := ice.NewMultiUDPMuxDefault(muxes...)
-
-	return mux, nil
+	return ice.NewMultiUDPMuxDefault(muxes...), nil
 }
 
 func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool) ([]net.IP, error) { //nolint:gocognit
@@ -56,14 +52,14 @@ func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bo
 		return ips, err
 	}
 
-	var IPv4Requested, IPv6Requested bool
+	var ipv4Requested, ipv6Requested bool
 	for _, typ := range networkTypes {
 		if typ.IsIPv4() {
-			IPv4Requested = true
+			ipv4Requested = true
 		}
 
 		if typ.IsIPv6() {
-			IPv6Requested = true
+			ipv6Requested = true
 		}
 	}
 
@@ -71,6 +67,7 @@ func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bo
 		if iface.Flags&net.FlagUp == 0 {
 			continue // interface down
 		}
+
 		if (iface.Flags&net.FlagLoopback != 0) && !includeLoopback {
 			continue // loopback interface
 		}
@@ -97,12 +94,12 @@ func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bo
 			}
 
 			if ipv4 := ip.To4(); ipv4 == nil {
-				if !IPv6Requested {
+				if !ipv6Requested {
 					continue
 				} else if !isSupportedIPv6(ip) {
 					continue
 				}
-			} else if !IPv4Requested {
+			} else if !ipv4Requested {
 				continue
 			}
 
@@ -113,6 +110,7 @@ func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bo
 			ips = append(ips, ip)
 		}
 	}
+
 	return ips, nil
 }
 
