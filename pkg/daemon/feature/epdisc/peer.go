@@ -236,9 +236,7 @@ func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
 
 // Restart the ICE agent by creating a new one
 func (p *Peer) Restart() error {
-	invalidRestartStates := []ConnectionState{ConnectionStateClosed, ConnectionStateClosing, ConnectionStateRestarting}
-
-	if prev, ok := p.connectionState.SetIfNot(ConnectionStateRestarting, invalidRestartStates...); !ok {
+	if prev, ok := p.connectionState.SetIfNot(ConnectionStateRestarting, ConnectionStateClosed, ConnectionStateClosing, ConnectionStateRestarting); !ok {
 		return fmt.Errorf("%w: %s", errInvalidConnectionStateForRestart, strings.ToLower(prev.String()))
 	}
 
@@ -386,19 +384,22 @@ func (p *Peer) sendCredentialsWhileIdleWithBackoff(need bool) {
 
 	if err := backoff.RetryNotify(
 		func() error {
-			if s := p.connectionState.Load(); s == ConnectionStateClosed || s == ConnectionStateClosing {
+			if p.connectionState.Load() != ConnectionStateIdle {
+				// We are not idling any more.
+				// No need to send credentials
 				return nil
 			}
 
 			if err := p.sendCredentials(need); err != nil {
+				if errors.Is(err, signaling.ErrClosed) {
+					// Do not retry when the signaling backend has been closed
+					return nil
+				}
+
 				return err
 			}
 
-			if s := p.connectionState.Load(); s == ConnectionStateIdle {
-				return errStillIdle
-			}
-
-			return nil
+			return errStillIdle
 		}, bo,
 		func(err error, d time.Duration) {
 			if errors.Is(err, errStillIdle) {

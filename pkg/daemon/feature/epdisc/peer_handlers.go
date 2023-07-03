@@ -4,8 +4,6 @@
 package epdisc
 
 import (
-	"strings"
-
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
@@ -24,6 +22,12 @@ func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
 
 	switch cs {
 	case ConnectionStateFailed, ConnectionStateDisconnected:
+		if cs, ok := p.SetStateIf(daemon.PeerStateFailed, daemon.PeerStateConnected); !ok {
+			p.logger.Error("Invalid state transition",
+				zap.Any("current_state", cs),
+				zap.Any("new_state", daemon.PeerStateFailed))
+		}
+
 		if err := p.Restart(); err != nil {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
@@ -85,7 +89,7 @@ func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
 			p.logger.Error("Failed to restart ICE session", zap.Error(err))
 		}
 	} else {
-		if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateIdle); !ok {
+		if _, ok := p.connectionState.SetIf(ConnectionStateGathering, ConnectionStateIdle); !ok {
 			p.logger.Debug("Ignoring duplicated credentials")
 			return
 		}
@@ -107,8 +111,6 @@ func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
 			p.logger.Error("failed to gather candidates", zap.Error(err))
 			return
 		}
-
-		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
 	}
 }
 
@@ -125,6 +127,11 @@ func (p *Peer) onRemoteCandidate(c *epdiscproto.Candidate) {
 	if err := p.agent.AddRemoteCandidate(ic); err != nil {
 		logger.Error("Failed to add remote candidate", zap.Error(err))
 		return
+	}
+
+	// Connect if this has been the first remote candidate
+	if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateGathering); ok {
+		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
 	}
 
 	logger.Debug("Added remote candidate to agent")
