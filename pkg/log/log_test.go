@@ -71,7 +71,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 
 		It("can log via gRPC logger", func() {
 			name = "grpc"
-			lvl = log.DebugLevel - 5
+			lvl = log.TraceLevel
 			grpclog.Info(msg)
 		})
 	})
