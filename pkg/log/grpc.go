@@ -41,7 +41,7 @@ func (l *grpcLogger) Infof(format string, args ...any) {
 }
 
 func (l *grpcLogger) InfoDepth(_ int, args ...any) {
-	l.log(DebugLevel-5, "", args)
+	l.log(TraceLevel, "", args)
 }
 
 func (l *grpcLogger) WarningDepth(_ int, args ...any) {

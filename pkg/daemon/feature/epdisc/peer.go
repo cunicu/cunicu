@@ -402,7 +402,7 @@ func (p *Peer) sendCredentialsWhileIdleWithBackoff(need bool) {
 		}, bo,
 		func(err error, d time.Duration) {
 			if errors.Is(err, errStillIdle) {
-				p.logger.Info("Resending peer credentials while waiting for remote peer",
+				p.logger.Debug("Sending peer credentials while waiting for remote peer",
 					zap.Error(err),
 					zap.Duration("after", d))
 			} else if sts := status.Code(err); sts != codes.Canceled {

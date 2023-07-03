@@ -31,7 +31,7 @@ const (
 var (
 	MaxLevel   = FatalLevel
 	MinLevel   = VerboseLevel(10)
-	TraceLevel = VerboseLevel(5)
+	TraceLevel = MinLevel
 )
 
 func VerboseLevel(v int) Level {

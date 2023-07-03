@@ -23,7 +23,7 @@ func (i *Interface) setupNAT() (err error) {
 
 func (i *Interface) updateNATRules() (err error) {
 	if i.ListenPort == 0 {
-		i.logger.Warn("Skipping setup of NAT rules as interface has no listen port yet")
+		i.logger.Debug("Skipping setup of NAT rules as interface has no listen port yet")
 		return nil
 	}
 

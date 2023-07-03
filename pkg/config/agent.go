@@ -11,11 +11,13 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	icex "github.com/stv0g/cunicu/pkg/ice"
+	"github.com/stv0g/cunicu/pkg/log"
 	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
 	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
 	"github.com/stv0g/cunicu/pkg/types/slices"
@@ -24,6 +26,8 @@ import (
 var errInvalidURLScheme = errors.New("invalid ICE URL scheme")
 
 func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*stun.URI, error) { //nolint:gocognit
+	logger := log.Global.Named("config")
+
 	iceURLs := []*stun.URI{}
 
 	g := errgroup.Group{}
@@ -83,6 +87,8 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*s
 
 					iceURLs = append(iceURLs, u)
 				}
+
+				logger.Debug("Retrieved ICE servers from relay", zap.Any("uris", iceURLs))
 
 				return nil
 			})

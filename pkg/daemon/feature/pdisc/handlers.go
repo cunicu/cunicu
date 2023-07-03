@@ -63,7 +63,7 @@ func (i *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.
 }
 
 func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //nolint:gocognit
-	i.logger.Debug("Received peer description", zap.Any("description", d))
+	i.logger.Debug("Received peer description", zap.Reflect("description", d))
 
 	pk, err := crypto.ParseKeyBytes(d.PublicKey)
 	if err != nil {
