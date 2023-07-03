@@ -174,16 +174,6 @@ jobs:
       run: |
         make coverprofile_merged.out
 
-    - name: Report test coverage to Codacy
-      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
-      uses: codacy/codacy-coverage-reporter-action@v1
-      env:
-        CODACY_REPORTER_TMP_FOLDER: .codacy
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverprofile_merged.out
-        force-coverage-parser: go
-
     - name: Report test coverage to Codecov
       if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
       uses: codecov/codecov-action@v3
