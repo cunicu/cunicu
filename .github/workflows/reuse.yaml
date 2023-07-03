@@ -3,7 +3,7 @@
 
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: REUSE Compliance Check
+name: Compliance Checks
 
 on:
   push:
@@ -13,8 +13,10 @@ on:
 
 jobs:
   test:
+    name: REUSE
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
     - name: REUSE Compliance Check
       uses: fsfe/reuse-action@v1
