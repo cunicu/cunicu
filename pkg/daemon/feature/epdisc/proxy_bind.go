@@ -6,6 +6,7 @@ package epdisc
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"time"
@@ -75,7 +76,7 @@ func (p *BindProxy) Receive(buf []byte) (int, wgconn.Endpoint, error) {
 			// connection here.
 			err = net.ErrClosed
 
-		case errors.Is(err, net.ErrClosed):
+		case errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF):
 			p.logger.DebugV(10, "Connection closed. Returning from receive()")
 
 		default:
