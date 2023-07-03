@@ -99,10 +99,19 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolin
 					b.logger.Error("Failed to receive packet", zap.Error(err))
 				}
 
+				b.logger.Debug("Connection closed", zap.Error(err))
+
 				return -1, err
 			}
 
 			ep := cep.(*BindEndpoint) //nolint:forcetypeassert
+
+			if n > 0 {
+				b.logger.Debug("Received packet from bind",
+					zap.Int("len", n),
+					zap.String("ep", ep.DstToString()),
+					zap.Binary("data", buf[:n]))
+			}
 
 			sizes[0] = n
 			eps[0] = ep
@@ -121,13 +130,6 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolin
 				}
 			}
 
-			if n > 0 {
-				b.logger.Debug("Received packet from bind",
-					zap.Int("len", n),
-					zap.String("ep", ep.DstToString()),
-					zap.Binary("data", buf[:n]))
-			}
-
 			return 1, err
 		}
 
@@ -136,7 +138,7 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolin
 
 	b.logger.Debug("Opened bind",
 		zap.Uint16("port", port),
-		zap.Int("#conns", len(b.Conns)))
+		zap.Int("#conns", len(rcvFns)))
 
 	return rcvFns, port, nil
 }

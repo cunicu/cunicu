@@ -38,10 +38,10 @@ func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
 		}
 
 	case ConnectionStateConnected:
-		if _, ok := p.connectionState.SetIf(ConnectionStateConnected, ConnectionStateConnecting); !ok {
+		if ps, ok := p.connectionState.SetIf(ConnectionStateConnected, ConnectionStateConnecting); !ok {
 			p.logger.Error("Invalid state transition",
-				zap.Reflect("peer_state", p.State()),
-				zap.Reflect("ice_state", cs))
+				zap.Any("current_state", ps),
+				zap.Any("new_state", ConnectionStateConnected))
 		}
 
 		cp, err := p.agent.GetSelectedCandidatePair()
@@ -57,7 +57,9 @@ func (p *Peer) onConnectionStateChange(ics ice.ConnectionState) {
 
 		// Signal to daemon that we are now connected
 		if _, ok := p.SetStateIf(daemon.PeerStateConnected, daemon.PeerStateConnecting); !ok {
-			p.logger.Error("Failed to change peer state to connected", zap.String("prev_state", strings.ToLower(p.State().String())))
+			p.logger.Error("Invalid state transition",
+				zap.Any("current_state", cs),
+				zap.Any("new_state", daemon.PeerStateConnected))
 		}
 
 	default:
@@ -112,7 +114,7 @@ func (p *Peer) onRemoteCredentials(creds *epdiscproto.Credentials) {
 
 // onRemoteCandidate is a handler called for each received candidate via the signaling channel
 func (p *Peer) onRemoteCandidate(c *epdiscproto.Candidate) {
-	logger := p.logger.With(zap.Any("candidate", c))
+	logger := p.logger.With(zap.Reflect("candidate", c))
 
 	ic, err := c.ICECandidate()
 	if err != nil {

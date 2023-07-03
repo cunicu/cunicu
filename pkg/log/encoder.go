@@ -451,6 +451,10 @@ func doString(value any) bool {
 	pkgPath := rtype.PkgPath()
 
 	switch {
+	case rtype.Kind() != reflect.Array &&
+		rtype.Kind() != reflect.Slice &&
+		rtype.Kind() != reflect.Struct:
+		return true
 	case strings.HasPrefix(pkgPath, "github.com/vishvananda/netlink"):
 		return false
 	case strings.HasPrefix(pkgPath, "github.com/stv0g/cunicu/pkg/proto"):
