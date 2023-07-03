@@ -26,7 +26,7 @@ require (
 	github.com/pion/ice/v2 v2.3.8
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
-	github.com/pion/stun v0.6.0
+	github.com/pion/stun v0.6.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20221214185949-378a404a26f0
