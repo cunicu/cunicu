@@ -234,7 +234,7 @@ publishers:
 - name: Gemfury
   cmd: >-
     bash -c "
-      if [[ ${ARTIFACT_PATH} == *.rpm || ${ARTIFACT_PATH} == *.deb || ${ARTIFACT_PATH} == *.apk ]]; then
+      if [[ ${ARTIFACT_PATH} == *.rpm || ${ARTIFACT_PATH} == *.deb ]]; then
         curl -F package=@${ARTIFACT_PATH} https://${GEMFURY_TOKEN}@push.fury.io/cunicu/
       fi
     "
