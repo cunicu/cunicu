@@ -129,26 +129,36 @@ func (p *Peer) onRemoteCandidate(c *epdiscproto.Candidate) {
 		return
 	}
 
-	// Connect if this has been the first remote candidate
-	if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateGathering); ok {
-		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
-	}
-
 	logger.Debug("Added remote candidate to agent")
+
+	// Connect if this has been the first remote candidate
+	if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateGatheringRemote); ok {
+		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
+	} else {
+		// Continue gathering until we found the first local candidate
+		p.connectionState.SetIf(ConnectionStateGatheringLocal, ConnectionStateGathering)
+	}
 }
 
 // onLocalCandidate is a callback which gets called for each discovered local ICE candidate
 func (p *Peer) onLocalCandidate(c ice.Candidate) {
 	if c == nil {
 		p.logger.Info("Candidate gathering completed")
+		return
+	}
+
+	logger := p.logger.With(zap.Reflect("candidate", c))
+	logger.Debug("Added local candidate to agent")
+
+	if err := p.sendCandidate(c); err != nil {
+		logger.Error("Failed to send candidate", zap.Error(err))
+	}
+
+	if _, ok := p.connectionState.SetIf(ConnectionStateConnecting, ConnectionStateGatheringLocal); ok {
+		go p.connect(p.remoteCredentials.Ufrag, p.remoteCredentials.Pwd)
 	} else {
-		logger := p.logger.With(zap.Reflect("candidate", c))
-
-		logger.Debug("Added local candidate to agent")
-
-		if err := p.sendCandidate(c); err != nil {
-			logger.Error("Failed to send candidate", zap.Error(err))
-		}
+		// Continue waiting until we received the first remote candidate
+		p.connectionState.SetIf(ConnectionStateGatheringRemote, ConnectionStateGathering)
 	}
 }
 
