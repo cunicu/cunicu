@@ -14,6 +14,7 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  background-color: #263740;
 }
 
 @media screen and (max-width: 996px) {
