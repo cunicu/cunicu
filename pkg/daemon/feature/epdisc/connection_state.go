@@ -29,4 +29,6 @@ const (
 	ConnectionStateRestarting
 	ConnectionStateIdle
 	ConnectionStateGathering
+	ConnectionStateGatheringLocal  // After first remote candidate has been received
+	ConnectionStateGatheringRemote // After first local candidate has been received
 )
