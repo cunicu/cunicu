@@ -91,12 +91,28 @@ packer -S cunicu-bin
 yay cunicu-bin
 ```
 
-## Nix
+### Nix
+
+The `nix` branch of the cunicu repo is intended to always have a working nix package/flake.
+
+#### Flakes
 
 Building and installing cunīcu via [Nix](https://nix.dev/) is possible with [flakes](https://nixos.wiki/wiki/Flakes):
 
 ```bash
-nix --extra-experimental-features "nix-command flakes" profile install github:stv0g/cunicu/nix?dir=nix
+nix profile install github:stv0g/cunicu/nix?dir=nix
+```
+
+#### Legacy
+
+You can also use `nix-env`/`nix-build` if you have cunicu checked out locally.
+
+```
+# check out cunicu
+git clone https://github.com/stv0g/cunicu --branch nix && cd cunicu
+
+# Build cunicu and add it to the environment
+nix-env -if ./nix
 ```
 
 ## From Source (all)

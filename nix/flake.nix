@@ -11,9 +11,7 @@
     forSystems = lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     pkgsFor = system: nixpkgs.legacyPackages.${system};
     packagesWith = pkgs: {
-      cunicu = pkgs.callPackage ./cunicu.nix {
-        src = ./..;
-      };
+      cunicu = import ./default.nix { inherit pkgs; };
     };
   in {
     packages = forSystems (system: packagesWith (pkgsFor system) // {default = self.packages.${system}.cunicu;});
