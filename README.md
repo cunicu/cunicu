@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 <div align="center" >
     <img style="width: 40%; margin: 4em 0" src="website/static/img/cunicu_logo.svg" alt="cunīcu logo" />
 
-[![GitHub branch checks state](https://img.shields.io/github/checks-status/stv0g/cunicu/master?style=flat-square)](https://github.com/stv0g/cunicu/actions)
+[![GitHub build](https://img.shields.io/github/actions/workflow/status/stv0g/cunicu/build.yaml?style=flat-square)](https://github.com/stv0g/cunicu/actions)
 [![goreportcard](https://goreportcard.com/badge/github.com/stv0g/cunicu?style=flat-square)](https://goreportcard.com/report/github.com/stv0g/cunicu)
 [![Codecov](https://img.shields.io/codecov/c/github/stv0g/cunicu?token=WWQ6SR16LA&style=flat-square)](https://app.codecov.io/gh/stv0g/cunicu)
 [![License](https://img.shields.io/github/license/stv0g/cunicu?style=flat-square)](https://github.com/stv0g/cunicu/blob/master/LICENSE)
