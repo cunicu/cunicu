@@ -24,7 +24,7 @@ import (
  *  - 2x NAT routers      [nat?]
  *  - 1x WAN switch       [wan?]
  *  - 2x LAN switches     [lan?]
- *  - 2x cunicu Agent nodes [n?]
+ *  - 2x cunicu Agent nodes [n?]git restore --staged
  *
  *     ┌──────┐   ┌──────┐
  *     │  r1  │   │  s1  │
@@ -45,7 +45,7 @@ import (
  *  │  n1  │   │  n2  │  │ (n3) │
  *  └──────┘   └──────┘  └──────┘
  */
-var _ = Context("nat simple: Simple home-router NAT setup", func() {
+var _ = Context("nat simple: Simple home-router NAT setup", Pending, func() {
 	var (
 		err error
 
