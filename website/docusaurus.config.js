@@ -171,7 +171,7 @@ module.exports = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Institute for Automation of Complex Power Systems, RWTH Aachen University.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Steffen Vogel.`,
       },
       prism: {
         theme: prism.themes.github,
