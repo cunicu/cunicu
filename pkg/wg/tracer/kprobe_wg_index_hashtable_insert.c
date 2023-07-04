@@ -3,10 +3,6 @@
 
 //go:build ignore
 
-// @author Steffen Vogel <post@steffenvogel.de>
-// @license Apache-2.0
-// @copyright Institute for Automation of Complex Power Systems, RWTH Aachen University
-
 #include "kernel/config.h"
 #include "bpf_helpers.h"
 
