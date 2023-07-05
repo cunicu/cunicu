@@ -19,12 +19,12 @@ import (
 /* Typical wide-area NAT setup
  *
  * Hosts:
- *  - 1x Relay node       [r1] (Coturn STUN/TURN server)
- *  - 1x Signaling node   [s1] (GRPC server)
- *  - 2x NAT routers      [nat?]
- *  - 1x WAN switch       [wan?]
- *  - 2x LAN switches     [lan?]
- *  - 2x cunicu Agent nodes [n?]git restore --staged
+ *  - 1x Relay node         [r1] (Coturn STUN/TURN server)
+ *  - 1x Signaling node     [s1] (GRPC server)
+ *  - 2x NAT routers        [nat?]
+ *  - 1x WAN switch         [wan?]
+ *  - 2x LAN switches       [lan?]
+ *  - 2x cunicu Agent nodes [n?]
  *
  *     ┌──────┐   ┌──────┐
  *     │  r1  │   │  s1  │
