@@ -122,15 +122,20 @@ out:
 }
 
 // Stop stops the daemon
-func (d *Daemon) Stop() {
-	close(d.stop)
-	d.logger.Debug("Stopping daemon")
-}
+func (d *Daemon) Shutdown(restart bool) {
+	if d.stop == nil {
+		return
+	}
 
-func (d *Daemon) Restart() {
-	d.reexecOnClose = true
 	close(d.stop)
-	d.logger.Debug("Restarting daemon")
+	d.stop = nil
+
+	if restart {
+		d.reexecOnClose = true
+		d.logger.Debug("Restarting daemon")
+	} else {
+		d.logger.Debug("Stopping daemon")
+	}
 }
 
 func (d *Daemon) Sync() error {
@@ -173,7 +178,6 @@ func (d *Daemon) Close() error {
 	}
 
 	if d.reexecOnClose {
-		d.logger.Debug("Restarting daemon")
 		return osx.ReexecSelf()
 	}
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/stv0g/cunicu/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/proto/rpc"
 )
 
 func init() { //nolint:gochecknoinits
@@ -24,7 +24,9 @@ func init() { //nolint:gochecknoinits
 }
 
 func stop(_ *cobra.Command, _ []string) error {
-	if _, err := rpcClient.Stop(context.Background(), &proto.Empty{}); err != nil {
+	if _, err := rpcClient.Shutdown(context.Background(), &rpc.ShutdownParams{
+		Restart: false,
+	}); err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}
 

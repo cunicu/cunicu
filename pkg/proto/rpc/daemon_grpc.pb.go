@@ -26,8 +26,7 @@ const (
 	Daemon_GetBuildInfo_FullMethodName = "/cunicu.rpc.Daemon/GetBuildInfo"
 	Daemon_StreamEvents_FullMethodName = "/cunicu.rpc.Daemon/StreamEvents"
 	Daemon_UnWait_FullMethodName       = "/cunicu.rpc.Daemon/UnWait"
-	Daemon_Stop_FullMethodName         = "/cunicu.rpc.Daemon/Stop"
-	Daemon_Restart_FullMethodName      = "/cunicu.rpc.Daemon/Restart"
+	Daemon_Shutdown_FullMethodName     = "/cunicu.rpc.Daemon/Shutdown"
 	Daemon_Sync_FullMethodName         = "/cunicu.rpc.Daemon/Sync"
 	Daemon_GetStatus_FullMethodName    = "/cunicu.rpc.Daemon/GetStatus"
 	Daemon_SetConfig_FullMethodName    = "/cunicu.rpc.Daemon/SetConfig"
@@ -43,8 +42,7 @@ type DaemonClient interface {
 	GetBuildInfo(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.BuildInfo, error)
 	StreamEvents(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (Daemon_StreamEventsClient, error)
 	UnWait(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
-	Stop(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
-	Restart(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
+	Shutdown(ctx context.Context, in *ShutdownParams, opts ...grpc.CallOption) (*proto.Empty, error)
 	Sync(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
 	GetStatus(ctx context.Context, in *GetStatusParams, opts ...grpc.CallOption) (*GetStatusResp, error)
 	SetConfig(ctx context.Context, in *SetConfigParams, opts ...grpc.CallOption) (*proto.Empty, error)
@@ -111,18 +109,9 @@ func (c *daemonClient) UnWait(ctx context.Context, in *proto.Empty, opts ...grpc
 	return out, nil
 }
 
-func (c *daemonClient) Stop(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
+func (c *daemonClient) Shutdown(ctx context.Context, in *ShutdownParams, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, Daemon_Stop_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *daemonClient) Restart(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
-	out := new(proto.Empty)
-	err := c.cc.Invoke(ctx, Daemon_Restart_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Daemon_Shutdown_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -190,8 +179,7 @@ type DaemonServer interface {
 	GetBuildInfo(context.Context, *proto.Empty) (*proto.BuildInfo, error)
 	StreamEvents(*proto.Empty, Daemon_StreamEventsServer) error
 	UnWait(context.Context, *proto.Empty) (*proto.Empty, error)
-	Stop(context.Context, *proto.Empty) (*proto.Empty, error)
-	Restart(context.Context, *proto.Empty) (*proto.Empty, error)
+	Shutdown(context.Context, *ShutdownParams) (*proto.Empty, error)
 	Sync(context.Context, *proto.Empty) (*proto.Empty, error)
 	GetStatus(context.Context, *GetStatusParams) (*GetStatusResp, error)
 	SetConfig(context.Context, *SetConfigParams) (*proto.Empty, error)
@@ -214,11 +202,8 @@ func (UnimplementedDaemonServer) StreamEvents(*proto.Empty, Daemon_StreamEventsS
 func (UnimplementedDaemonServer) UnWait(context.Context, *proto.Empty) (*proto.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnWait not implemented")
 }
-func (UnimplementedDaemonServer) Stop(context.Context, *proto.Empty) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Stop not implemented")
-}
-func (UnimplementedDaemonServer) Restart(context.Context, *proto.Empty) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Restart not implemented")
+func (UnimplementedDaemonServer) Shutdown(context.Context, *ShutdownParams) (*proto.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
 }
 func (UnimplementedDaemonServer) Sync(context.Context, *proto.Empty) (*proto.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
@@ -308,38 +293,20 @@ func _Daemon_UnWait_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Daemon_Stop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(proto.Empty)
+func _Daemon_Shutdown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShutdownParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DaemonServer).Stop(ctx, in)
+		return srv.(DaemonServer).Shutdown(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Daemon_Stop_FullMethodName,
+		FullMethod: Daemon_Shutdown_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DaemonServer).Stop(ctx, req.(*proto.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Daemon_Restart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(proto.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DaemonServer).Restart(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Daemon_Restart_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DaemonServer).Restart(ctx, req.(*proto.Empty))
+		return srv.(DaemonServer).Shutdown(ctx, req.(*ShutdownParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -468,12 +435,8 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Daemon_UnWait_Handler,
 		},
 		{
-			MethodName: "Stop",
-			Handler:    _Daemon_Stop_Handler,
-		},
-		{
-			MethodName: "Restart",
-			Handler:    _Daemon_Restart_Handler,
+			MethodName: "Shutdown",
+			Handler:    _Daemon_Shutdown_Handler,
 		},
 		{
 			MethodName: "Sync",
