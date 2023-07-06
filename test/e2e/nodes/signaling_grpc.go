@@ -60,16 +60,13 @@ func (s *GrpcSignalingNode) Start(_, dir string, extraArgs ...any) error {
 	args := profileArgs
 	args = append(args,
 		"signal",
-		"--log-level", "debug",
+		"--log-level", "debug5",
 		"--listen", fmt.Sprintf(":%d", s.port),
 	)
 	args = append(args, extraArgs...)
 	args = append(args,
 		copt.Dir(dir),
 		copt.Combined(s.logFile),
-		// copt.EnvVar("GOMAXPROCS", "10"),
-		copt.EnvVar("GRPC_GO_LOG_SEVERITY_LEVEL", "debug"),
-		copt.EnvVar("GRPC_GO_LOG_VERBOSITY_LEVEL", "99"),
 		copt.EnvVar("GORACE", fmt.Sprintf("log_path=%s-race.log", s.Name())),
 	)
 

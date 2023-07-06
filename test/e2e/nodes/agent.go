@@ -103,7 +103,7 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		"daemon",
 		"--rpc-socket", rpcSockPath,
 		"--rpc-wait",
-		"--log-level", "debug",
+		"--log-level", "debug5",
 		"--sync-hosts=false",
 	)
 	args = append(args, a.ExtraArgs...)
@@ -112,9 +112,6 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		copt.Combined(a.logFile),
 		copt.Dir(dir),
 		copt.EnvVar("CUNICU_EXPERIMENTAL", "1"),
-		// copt.EnvVar("PION_LOG", "info"),
-		copt.EnvVar("GRPC_GO_LOG_SEVERITY_LEVEL", "debug"),
-		copt.EnvVar("GRPC_GO_LOG_VERBOSITY_LEVEL", fmt.Sprintf("%d", 99)),
 	)
 
 	if a.Command, err = a.Host.Start(binary, args...); err != nil {
