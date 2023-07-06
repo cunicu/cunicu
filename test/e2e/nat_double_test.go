@@ -19,11 +19,11 @@ import (
 /* Carrier Grade NAT setup with two relays and a single signaling server
  *
  * Hosts:
- *  - 1x Signaling node     [s1]    (GRPC server)
- *  - 2x Relay nodes        [nat?]  (Coturn STUN/TURN server)
- *  - 3x NAT routers        [nat?]
- *  - 2x WAN switches       [wan?]
- *  - 2x LAN switches       [lan?]
+ *  - 1x Signaling node       [s1]    (GRPC server)
+ *  - 2x Relay nodes          [nat?]  (Coturn STUN/TURN server)
+ *  - 3x NAT routers          [nat?]
+ *  - 2x WAN switches         [wan?]
+ *  - 2x LAN switches         [lan?]
  *  - 2-5x cunicu Agent nodes [n?]
  *
  *
