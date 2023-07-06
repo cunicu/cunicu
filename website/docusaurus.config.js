@@ -149,11 +149,11 @@ module.exports = {
             items: [
               {
                 label: "Slack",
-                href: "https://gophers.slack.com/archives/C036CTEGJFN",
+                href: "https://join.slack.com/t/gophers/shared_invite/zt-1447h1rgj-s9W5BcyRzBxUwNAZJUKmaQ)",
               },
               {
-                label: "Twitter",
-                href: "https://twitter.com/cunicuVPN",
+                label: "Fediverse",
+                href: "https://fosstodon.org/@cunicu",
               },
             ],
           },

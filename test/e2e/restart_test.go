@@ -26,9 +26,9 @@ import (
 
 /* Simple local-area switched topology with 2 agents
  *
- *  - 1x Signaling node    [s1] (GRPC server)
- *  - 1x Switch            [sw1]
- *  - 2x  cunicu Agent nodes [n?]
+ *  - 1x Signaling node     [s1] (GRPC server)
+ *  - 1x Switch             [sw1]
+ *  - 2x cunicu Agent nodes [n?]
  *
  *         Signaling
  *          ┌─────┐
