@@ -14,7 +14,7 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	netx "github.com/stv0g/cunicu/pkg/net"
-	"github.com/stv0g/cunicu/pkg/proto"
+	"github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
 	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
@@ -248,7 +248,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 
 			By("Initiating agent restart via RPC")
 
-			_, err = n1.Client.Restart(ctx, &proto.Empty{})
+			_, err = n1.Client.Shutdown(ctx, &rpc.ShutdownParams{Restart: true})
 			Expect(err).To(Succeed(), "Failed to restart peer: %s", err)
 		})
 	})

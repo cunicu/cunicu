@@ -96,18 +96,12 @@ func (s *DaemonServer) UnWait(_ context.Context, _ *proto.Empty) (*proto.Empty, 
 	return &proto.Empty{}, err
 }
 
-func (s *DaemonServer) Stop(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
-	s.Daemon.Stop()
-
-	return &proto.Empty{}, nil
-}
-
-func (s *DaemonServer) Restart(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
-	if osx.ReexecSelfSupported {
-		s.Daemon.Restart()
-	} else {
+func (s *DaemonServer) Shutdown(_ context.Context, params *rpcproto.ShutdownParams) (*proto.Empty, error) {
+	if params.Restart && !osx.ReexecSelfSupported {
 		return nil, status.Error(codes.Unimplemented, "not supported on this platform")
 	}
+
+	s.Daemon.Shutdown(params.Restart)
 
 	return &proto.Empty{}, nil
 }
