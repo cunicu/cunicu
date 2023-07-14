@@ -128,64 +128,8 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		n.Start()
 	})
 
-	ConnectivityTestsWithExtraArgs := func(extraArgs ...any) {
-		BeforeEach(func() {
-			n.AgentOptions = append(n.AgentOptions,
-				opt.ExtraArgs(extraArgs),
-			)
-		})
-
-		n.ConnectivityTests()
-	}
-
-	ConnectivityTestsForAllCandidateTypes := func() {
-		Context("candidate-types", func() {
-			Context("any: Allow any candidate type", func() {
-				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-network-type", "udp4")
-				})
-
-				Context("ipv6: Allow IPv6 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-network-type", "udp6")
-				})
-			})
-
-			Context("host: Allow only host candidates", func() {
-				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4") // , "--port-forwarding=false")
-				})
-
-				Context("ipv6: Allow IPv6 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp6")
-				})
-			})
-
-			Context("srflx: Allow only server reflexive candidates", func() {
-				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp4")
-				})
-
-				Context("ipv6: Allow IPv6 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp6")
-				})
-			})
-
-			Context("relay: Allow only relay candidates", func() {
-				Context("ipv4: Allow IPv4 network only", func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp4")
-				})
-
-				// TODO: Check why IPv6 relay is not working
-				// Blocked by: https://github.com/pion/ice/pull/462
-				Context("ipv6", Pending, func() {
-					ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp6")
-				})
-			})
-		})
-	}
-
 	Context("kernel: Use kernel WireGuard interface", func() {
-		ConnectivityTestsForAllCandidateTypes()
+		n.ConnectivityTestsForAllCandidateTypes()
 	})
 
 	Context("userspace: Use wireguard-go userspace interfaces", Pending, func() {
@@ -200,7 +144,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 			)
 		})
 
-		ConnectivityTestsForAllCandidateTypes()
+		n.ConnectivityTestsForAllCandidateTypes()
 	})
 
 	Context("no-nat: Disable NAT for kernel device", Pending, func() {
