@@ -10,6 +10,7 @@ import (
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 
 	"github.com/stv0g/cunicu/test/e2e/nodes"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -44,7 +45,7 @@ import (
  *             │  n1  │              │  n2  │
  *             └──────┘              └──────┘
  */
-var _ = Context("nat double: Carrier Grade NAT setup with two relays and a single signaling server", Pending, func() {
+var _ = Context("nat double: Carrier Grade NAT setup with two relays and a single signaling server", func() {
 	var (
 		err error
 
@@ -90,6 +91,10 @@ var _ = Context("nat double: Carrier Grade NAT setup with two relays and a singl
 				wopt.AddressIP("172.16.0.%d/16", i),
 				wopt.FullMeshPeers,
 			),
+			// Mixed IPv4/IPv6 NAT tests are currently broken for some reason.
+			// Hence we limit ourself to IPv6 here.
+			// See: https://github.com/stv0g/cunicu/issues/224
+			opt.ExtraArgs{"--ice-network-type", "udp6,tcp6"},
 		)
 
 		switch {
