@@ -10,6 +10,7 @@ import (
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 
 	"github.com/stv0g/cunicu/test/e2e/nodes"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -45,7 +46,7 @@ import (
  *  │  n1  │   │  n2  │  │ (n3) │
  *  └──────┘   └──────┘  └──────┘
  */
-var _ = Context("nat simple: Simple home-router NAT setup", Pending, func() {
+var _ = Context("nat simple: Simple home-router NAT setup", func() {
 	var (
 		err error
 
@@ -74,6 +75,11 @@ var _ = Context("nat simple: Simple home-router NAT setup", Pending, func() {
 				wopt.FullMeshPeers,
 				wopt.AddressIP("172.16.0.%d/16", i),
 			),
+			// Mixed IPv4/IPv6 NAT tests are currently broken for some reason.
+			// Hence we limit ourself to IPv6 here.
+			// See: https://github.com/stv0g/cunicu/issues/224
+			opt.ExtraArgs{"--ice-network-type", "udp6,tcp6"},
+			// opt.ExtraArgs{"--ice-candidate-type", "host,srflx"},
 		)
 		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
 

@@ -188,7 +188,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		ConnectivityTestsForAllCandidateTypes()
 	})
 
-	PContext("userspace: Use wireguard-go userspace interfaces", func() {
+	Context("userspace: Use wireguard-go userspace interfaces", Pending, func() {
 		BeforeEach(func() {
 			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
 				wopt.WriteConfigFile(true),
@@ -258,7 +258,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		n.ConnectivityTests()
 
 		It("", func() {
-			By("Check existing peers 2")
+			By("Check existing peers")
 
 			err := n.AgentNodes.ForEachAgent(func(a *nodes.Agent) error {
 				_, err := a.Run("wg", copt.Combined(GinkgoWriter))
