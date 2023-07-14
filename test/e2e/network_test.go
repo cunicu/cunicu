@@ -4,7 +4,6 @@
 package e2e_test
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -180,25 +179,6 @@ func (n *Network) WriteSpecReport() {
 
 	_, err = reportFile.Write(reportJSON)
 	Expect(err).To(Succeed(), "Failed to write report: %s", err)
-}
-
-func (n *Network) ConnectivityTests() {
-	It("", func() {
-		By("Waiting until all peers are connected")
-
-		ctx, cancel := context.WithTimeout(context.Background(), options.timeout)
-		defer cancel()
-
-		err := n.AgentNodes.WaitConnectionsReady(ctx)
-		Expect(err).To(Succeed(), "Failed to wait for peers to connect: %s", err)
-
-		By("Ping between all peers started")
-
-		err = n.AgentNodes.PingPeers(ctx)
-		Expect(err).To(Succeed(), "Failed to ping peers: %s", err)
-
-		By("Ping between all peers succeeded")
-	})
 }
 
 func (n *Network) Init() {
