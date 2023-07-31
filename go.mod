@@ -48,7 +48,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
 	github.com/gopacket/gopacket v1.1.1 // test-only
 	github.com/onsi/ginkgo/v2 v2.11.0 // test-only
-	github.com/onsi/gomega v1.27.9 // test-only
+	github.com/onsi/gomega v1.27.10 // test-only
 	github.com/stv0g/gont/v2 v2.3.6 // test-only
 )
 
