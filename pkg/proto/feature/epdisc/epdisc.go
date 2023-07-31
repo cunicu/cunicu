@@ -121,7 +121,7 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 			wri := tty.NewIndenter(wr, "  ")
 
 			if len(p.LocalCandidateStats) > 0 {
-				slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
+				slices.SortFunc(p.LocalCandidateStats, func(a, b *CandidateStats) int { return int(a.Priority - b.Priority) })
 
 				if _, err := tty.FprintKV(wr, "local"); err != nil {
 					return err
@@ -140,7 +140,7 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 			}
 
 			if len(p.RemoteCandidateStats) > 0 {
-				slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) bool { return a.Priority < b.Priority })
+				slices.SortFunc(p.RemoteCandidateStats, func(a, b *CandidateStats) int { return int(a.Priority - b.Priority) })
 
 				if _, err := tty.FprintKV(wr, "\nremote"); err != nil {
 					return err
