@@ -36,7 +36,7 @@ func RegisterFeature[I FeatureInterface](ctor func(i *Interface) (I, error), ord
 	}
 
 	features = append(features, feature)
-	slices.SortFunc(features, func(a, b *Feature) bool { return a.order < b.order })
+	slices.SortFunc(features, func(a, b *Feature) int { return a.order - b.order })
 
 	return func(i *Interface) (q I) {
 		if j, ok := i.features[feature]; ok {

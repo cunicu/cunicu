@@ -29,12 +29,8 @@ func DiffFunc[T any](oldSlice, newSlice []T, cmp func(a, b T) int) (added, remov
 	removed = []T{}
 	kept = []T{}
 
-	less := func(a, b T) bool {
-		return cmp(a, b) < 0
-	}
-
-	slices.SortFunc(newSlice, less)
-	slices.SortFunc(oldSlice, less)
+	slices.SortFunc(newSlice, cmp)
+	slices.SortFunc(oldSlice, cmp)
 
 	i, j := 0, 0
 	for i < len(oldSlice) && j < len(newSlice) {

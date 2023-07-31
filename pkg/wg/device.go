@@ -80,9 +80,7 @@ func (d *Interface) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	}
 
 	// Sort peers by last handshake time
-	slices.SortFunc(d.Peers, func(a, b wgtypes.Peer) bool {
-		return CmpPeerHandshakeTime(a, b) < 0
-	})
+	slices.SortFunc(d.Peers, CmpPeerHandshakeTime)
 
 	for _, p := range d.Peers {
 		fmt.Fprintf(wr, "\n"+tty.Mods("peer", tty.Bold, tty.FgYellow)+": "+tty.Mods("%s", tty.FgYellow)+"\n", p.PublicKey)
