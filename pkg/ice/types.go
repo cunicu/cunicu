@@ -4,93 +4,37 @@
 package ice
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pion/ice/v2"
-	"github.com/pion/stun"
 )
 
-var (
-	errUnknownCandidateType = errors.New("unknown candidate type")
-	errUnknownNetworkType   = errors.New("unknown network type")
-)
-
-type URL struct {
-	ice.URL
-}
-
-func (u *URL) UnmarshalText(text []byte) error {
-	up, err := stun.ParseURI(string(text))
-	if err != nil {
-		return err
-	}
-
-	u.URL = *up
-
-	return nil
-}
-
-func (u URL) MarshalText() ([]byte, error) {
-	return []byte(u.String()), nil
-}
-
-type CandidateType struct {
-	ice.CandidateType
-}
-
-func (t *CandidateType) UnmarshalText(text []byte) error {
-	switch string(text) {
+func ParseCandidateType(s string) (ice.CandidateType, error) {
+	switch s {
 	case "host":
-		t.CandidateType = ice.CandidateTypeHost
+		return ice.CandidateTypeHost, nil
 	case "srflx":
-		t.CandidateType = ice.CandidateTypeServerReflexive
+		return ice.CandidateTypeServerReflexive, nil
 	case "prflx":
-		t.CandidateType = ice.CandidateTypePeerReflexive
+		return ice.CandidateTypePeerReflexive, nil
 	case "relay":
-		t.CandidateType = ice.CandidateTypeRelay
+		return ice.CandidateTypeRelay, nil
 	default:
-		t.CandidateType = ice.CandidateTypeUnspecified
-		return fmt.Errorf("%w: %s", errUnknownCandidateType, text)
+		return ice.CandidateTypeUnspecified, fmt.Errorf("unknown candidate type: %s", s)
 	}
-
-	return nil
 }
 
-func (t CandidateType) MarshalText() ([]byte, error) {
-	if t.CandidateType == ice.CandidateTypeUnspecified {
-		return nil, ice.ErrUnknownType
-	}
-
-	return []byte(t.String()), nil
-}
-
-type NetworkType struct {
-	ice.NetworkType
-}
-
-func (t *NetworkType) UnmarshalText(text []byte) error {
-	switch string(text) {
+func ParseNetworkType(s string) (ice.NetworkType, error) {
+	switch s {
 	case "udp4":
-		t.NetworkType = ice.NetworkTypeUDP4
+		return ice.NetworkTypeUDP4, nil
 	case "udp6":
-		t.NetworkType = ice.NetworkTypeUDP6
+		return ice.NetworkTypeUDP6, nil
 	case "tcp4":
-		t.NetworkType = ice.NetworkTypeTCP4
+		return ice.NetworkTypeTCP4, nil
 	case "tcp6":
-		t.NetworkType = ice.NetworkTypeTCP6
+		return ice.NetworkTypeTCP6, nil
 	default:
-		t.NetworkType = ice.NetworkTypeTCP4
-		return fmt.Errorf("%w: %s", errUnknownNetworkType, text)
+		return 0, fmt.Errorf("unknown network type: %s", s)
 	}
-
-	return nil
-}
-
-func (t NetworkType) MarshalText() ([]byte, error) {
-	if t.String() == ice.ErrUnknownType.Error() {
-		return nil, ice.ErrUnknownType
-	}
-
-	return []byte(t.String()), nil
 }

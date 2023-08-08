@@ -174,29 +174,23 @@ var _ = Describe("Agent config", func() {
 		Expect(aCfg.CandidateTypes).To(ConsistOf(ice.CandidateTypeRelay, ice.CandidateTypeHost))
 	})
 
-	It("can parse multiple network types when passed as individual command line arguments", func() {
+	It("can parse multiple backend URLs when passed as individual command line arguments", func() {
 		cfg, err := config.ParseArgs(
-			"--ice-network-type", "udp4",
-			"--ice-network-type", "tcp6",
+			"--backend", "grpc://server1",
+			"--backend", "grpc://server2",
 		)
 		Expect(err).To(Succeed())
 
-		icfg := cfg.DefaultInterfaceSettings
-
-		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
-		Expect(err).To(Succeed())
-		Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
+		Expect(cfg.Backends).To(HaveLen(2))
 	})
 
-	It("can parse multiple network types when passed as comma-separated value", func() {
-		cfg, err := config.ParseArgs("--ice-network-type", "udp4,tcp6")
+	It("can parse multiple backend URLs when passed as comma-separated command line arguments", func() {
+		cfg, err := config.ParseArgs(
+			"--backend", "grpc://server1,grpc://server2",
+		)
 		Expect(err).To(Succeed())
 
-		icfg := cfg.DefaultInterfaceSettings
-
-		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
-		Expect(err).To(Succeed())
-		Expect(aCfg.NetworkTypes).To(ConsistOf(ice.NetworkTypeTCP6, ice.NetworkTypeUDP4))
+		Expect(cfg.Backends).To(HaveLen(2))
 	})
 
 	It("has proper default values", func() {

@@ -46,7 +46,7 @@ func (i *Interface) NewWebHook(cfg *config.WebHookSetting) *WebHook {
 func (h *WebHook) run(msg proto.Message) {
 	req := &http.Request{
 		Method: h.Method,
-		URL:    &h.URL.URL,
+		URL:    &h.URL,
 		Header: http.Header{},
 	}
 

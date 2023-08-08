@@ -109,6 +109,8 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 		Lite:               c.ICE.Lite,
 		PortMin:            uint16(c.ICE.PortRange.Min),
 		PortMax:            uint16(c.ICE.PortRange.Max),
+		CandidateTypes:     c.ICE.CandidateTypes,
+		NetworkTypes:       c.ICE.NetworkTypes,
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
@@ -120,7 +122,7 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 	if len(c.ICE.URLs) > 0 && len(c.ICE.CandidateTypes) > 0 {
 		needsURLs := false
 		for _, ct := range c.ICE.CandidateTypes {
-			if ct.CandidateType == ice.CandidateTypeRelay || ct.CandidateType == ice.CandidateTypeServerReflexive {
+			if ct == ice.CandidateTypeRelay || ct == ice.CandidateTypeServerReflexive {
 				needsURLs = true
 			}
 		}
@@ -173,18 +175,6 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 
 	if to := c.ICE.CheckInterval; to > 0 {
 		cfg.CheckInterval = &to
-	}
-
-	if len(c.ICE.CandidateTypes) > 0 {
-		cfg.CandidateTypes = []ice.CandidateType{}
-		for _, t := range c.ICE.CandidateTypes {
-			cfg.CandidateTypes = append(cfg.CandidateTypes, t.CandidateType)
-		}
-	}
-
-	cfg.NetworkTypes = []ice.NetworkType{}
-	for _, t := range c.ICE.NetworkTypes {
-		cfg.NetworkTypes = append(cfg.NetworkTypes, t.NetworkType)
 	}
 
 	return cfg, nil

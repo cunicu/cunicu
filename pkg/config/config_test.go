@@ -19,7 +19,6 @@ import (
 
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -92,7 +91,7 @@ var _ = Context("config", func() {
 		})
 
 		It("fails on invalid arguments values", func() {
-			_, err := config.ParseArgs("--ice-url", ":_")
+			_, err := config.ParseArgs("--backend", ":_")
 
 			Expect(err).To(MatchError(HaveSuffix("missing protocol scheme")))
 		})
@@ -208,9 +207,7 @@ var _ = Context("config", func() {
 			icfg := cfg.DefaultInterfaceSettings
 
 			Expect(icfg.ICE.CandidateTypes).To(ConsistOf(
-				icex.CandidateType{
-					CandidateType: ice.CandidateTypeServerReflexive,
-				},
+				ice.CandidateTypeServerReflexive,
 			))
 		})
 
@@ -223,23 +220,18 @@ var _ = Context("config", func() {
 			icfg := cfg.DefaultInterfaceSettings
 
 			Expect(icfg.ICE.CandidateTypes).To(ConsistOf(
-				icex.CandidateType{CandidateType: ice.CandidateTypeServerReflexive},
-				icex.CandidateType{CandidateType: ice.CandidateTypeRelay},
+				ice.CandidateTypeServerReflexive,
+				ice.CandidateTypeRelay,
 			))
 		})
 
 		It("environment variables are overwritten by command line arguments", func() {
-			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx,relay")
+			os.Setenv("CUNICU_WATCH_INTERVAL", "10s")
 
-			cfg, err := config.ParseArgs("--ice-candidate-type", "host")
+			cfg, err := config.ParseArgs("--watch-interval", "5s")
 			Expect(err).To(Succeed())
 
-			icfg := cfg.DefaultInterfaceSettings
-
-			Expect(icfg.ICE.CandidateTypes).To(HaveLen(1))
-			Expect(icfg.ICE.CandidateTypes).To(ContainElements(
-				icex.CandidateType{CandidateType: ice.CandidateTypeHost},
-			))
+			Expect(cfg.WatchInterval).To(Equal(5 * time.Second))
 		})
 	})
 
@@ -273,7 +265,7 @@ var _ = Context("config", func() {
 		BeforeEach(func() {
 			var err error
 
-			args := []string{"--ice-network-type", "udp4,udp6", "--ice-url", "stun:stun.cunicu.de", "wg0"}
+			args := []string{"--backend", "grpc://server1,grpc://server2", "--watch-interval", "10s", "wg0"}
 
 			cfg1, err = config.ParseArgs(args...)
 			Expect(err).To(Succeed())

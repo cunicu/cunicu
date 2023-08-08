@@ -6,13 +6,16 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
+	"net/url"
 	"time"
 
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/v2"
 	"github.com/pion/ice/v2"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 )
 
 var errInvalidSettings = errors.New("invalid settings")
@@ -28,10 +31,10 @@ type PortRangeSettings struct {
 }
 
 type ICESettings struct {
-	URLs           []URL                `koanf:"urls,omitempty"`
-	CandidateTypes []icex.CandidateType `koanf:"candidate_types,omitempty"`
-	NetworkTypes   []icex.NetworkType   `koanf:"network_types,omitempty"`
-	NAT1to1IPs     []string             `koanf:"nat_1to1_ips,omitempty"`
+	URLs           []url.URL           `koanf:"urls,omitempty"`
+	CandidateTypes []ice.CandidateType `koanf:"candidate_types,omitempty"`
+	NetworkTypes   []ice.NetworkType   `koanf:"network_types,omitempty"`
+	NAT1to1IPs     []string            `koanf:"nat_1to1_ips,omitempty"`
 
 	RelayTCP *bool `koanf:"relay_tcp,omitempty"`
 	RelayTLS *bool `koanf:"relay_tls,omitempty"`
@@ -61,7 +64,7 @@ type ICESettings struct {
 
 func (s *ICESettings) HasCandidateType(ct ice.CandidateType) bool {
 	for _, c := range s.CandidateTypes {
-		if ct == c.CandidateType {
+		if ct == c {
 			return true
 		}
 	}
@@ -71,7 +74,7 @@ func (s *ICESettings) HasCandidateType(ct ice.CandidateType) bool {
 
 func (s *ICESettings) HasNetworkType(nt ice.NetworkType) bool {
 	for _, n := range s.NetworkTypes {
-		if nt == n.NetworkType {
+		if nt == n {
 			return true
 		}
 	}
@@ -101,7 +104,7 @@ type BaseHookSetting struct {
 
 type WebHookSetting struct {
 	BaseHookSetting `koanf:",squash"`
-	URL             URL               `koanf:"url"`
+	URL             url.URL           `koanf:"url"`
 	Method          string            `koanf:"method"`
 	Headers         map[string]string `koanf:"headers"`
 }
@@ -164,7 +167,7 @@ type Settings struct {
 	Experimental bool `koanf:"experimental,omitempty"`
 
 	WatchInterval time.Duration `koanf:"watch_interval,omitempty"`
-	Backends      []BackendURL  `koanf:"backends,omitempty"`
+	Backends      []url.URL     `koanf:"backends,omitempty"`
 
 	RPC    RPCSettings    `koanf:"rpc,omitempty"`
 	Config ConfigSettings `koanf:"config,omitempty"`

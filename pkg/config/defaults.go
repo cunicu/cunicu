@@ -13,7 +13,6 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	icex "github.com/stv0g/cunicu/pkg/ice"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/wg"
 )
@@ -30,20 +29,18 @@ const (
 var (
 	DefaultPrefixes = []string{"fc2f:9a4d::/32", "10.237.0.0/16"}
 
-	DefaultBackends = []BackendURL{
+	DefaultBackends = []url.URL{
 		{
-			URL: url.URL{
-				Scheme: "grpc",
-				Host:   "signal.cunicu.li:443",
-			},
+			Scheme: "grpc",
+			Host:   "signal.cunicu.li:443",
 		},
 	}
 
-	DefaultICEURLs = []URL{
-		{url.URL{
+	DefaultICEURLs = []url.URL{
+		{
 			Scheme: "grpc",
 			Host:   "relay.cunicu.li:443",
-		}},
+		},
 	}
 
 	DefaultSettings = Settings{
@@ -79,17 +76,17 @@ var (
 				Min: EphemeralPortMin,
 				Max: EphemeralPortMax,
 			},
-			CandidateTypes: []icex.CandidateType{
-				{CandidateType: ice.CandidateTypeHost},
-				{CandidateType: ice.CandidateTypeServerReflexive},
-				{CandidateType: ice.CandidateTypePeerReflexive},
-				{CandidateType: ice.CandidateTypeRelay},
+			CandidateTypes: []ice.CandidateType{
+				ice.CandidateTypeHost,
+				ice.CandidateTypeServerReflexive,
+				ice.CandidateTypePeerReflexive,
+				ice.CandidateTypeRelay,
 			},
-			NetworkTypes: []icex.NetworkType{
-				{NetworkType: ice.NetworkTypeUDP4},
-				{NetworkType: ice.NetworkTypeUDP6},
-				{NetworkType: ice.NetworkTypeTCP4},
-				{NetworkType: ice.NetworkTypeTCP6},
+			NetworkTypes: []ice.NetworkType{
+				ice.NetworkTypeUDP4,
+				ice.NetworkTypeUDP6,
+				ice.NetworkTypeTCP4,
+				ice.NetworkTypeTCP6,
 			},
 		},
 
