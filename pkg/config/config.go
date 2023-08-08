@@ -96,17 +96,7 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.IntP("routing-table", "T", DefaultRouteTable, "Kernel routing table to use")
 
 	// Endpoint discovery
-	flags.StringSliceP("ice-url", "a", []string{}, "One or more `URL`s of STUN and/or TURN servers")
-	flags.StringP("ice-username", "u", "", "The `username` for STUN/TURN credentials")
-	flags.StringP("ice-password", "p", "", "The `password` for STUN/TURN credentials")
-
 	flags.BoolP("port-forwarding", "F", true, "Enabled in-kernel port-forwarding")
-
-	flags.StringSlice("ice-candidate-type", []string{}, "Usable `candidate-type`s (one of host, srflx, prflx, relay)")
-	flags.StringSlice("ice-network-type", []string{}, "Usable `network-type`s (one of udp4, udp6, tcp4, tcp6)")
-
-	flags.Bool("ice-relay-tcp", false, "Only use TCP relays")
-	flags.Bool("ice-relay-tls", false, "Only use TLS secured relays")
 
 	// Peer discovery
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
@@ -379,8 +369,7 @@ func DecoderConfig(result any) *mapstructure.DecoderConfig {
 			mapstructure.StringToSliceHookFunc(","),
 			mapstructure.StringToIPHookFunc(),
 			mapstructure.TextUnmarshallerHookFunc(),
-			stringToIPAddrHook,
-			stringToIPNetAddrHookFunc,
+			stringsDecodeHook,
 			hookDecodeHook,
 		),
 		IgnoreUntaggedFields: true,

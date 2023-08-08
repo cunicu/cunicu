@@ -6,7 +6,6 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"go.uber.org/zap"
@@ -66,13 +65,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	}
 
 	// Create signaling backend
-	urls := []*url.URL{}
-	for _, u := range cfg.Backends {
-		u := u
-		urls = append(urls, &u.URL)
-	}
-
-	if d.Backend, err = signaling.NewMultiBackend(urls, &signaling.BackendConfig{}); err != nil {
+	if d.Backend, err = signaling.NewMultiBackend(cfg.Backends, &signaling.BackendConfig{}); err != nil {
 		return nil, fmt.Errorf("failed to initialize signaling backend: %w", err)
 	}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/log"
 )
 
-func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool, logger *log.Logger) (*ice.MultiUDPMuxDefault, error) {
+func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []ice.NetworkType, includeLoopback bool, logger *log.Logger) (*ice.MultiUDPMuxDefault, error) {
 	ips, err := localInterfaces(interfaceFilter, ipFilter, networkTypes, includeLoopback)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 	return ice.NewMultiUDPMuxDefault(muxes...), nil
 }
 
-func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []NetworkType, includeLoopback bool) ([]net.IP, error) { //nolint:gocognit
+func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []ice.NetworkType, includeLoopback bool) ([]net.IP, error) { //nolint:gocognit
 	ips := []net.IP{}
 	ifaces, err := net.Interfaces()
 	if err != nil {

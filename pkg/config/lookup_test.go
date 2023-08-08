@@ -169,15 +169,15 @@ var _ = Describe("lookup", func() {
 			Expect(icfg.ICE.Username).To(Equal("user1"))
 			Expect(icfg.ICE.Password).To(Equal("pass1"))
 			Expect(cfg.Backends).To(ConsistOf(
-				config.BackendURL{URL: url.URL{Scheme: "p2p"}},
-				config.BackendURL{URL: url.URL{Scheme: "grpc", Host: "example.com:8080"}},
+				url.URL{Scheme: "p2p"},
+				url.URL{Scheme: "grpc", Host: "example.com:8080"},
 			))
 			Expect(icfg.ICE.URLs).To(ConsistOf(
-				config.URL{url.URL{Scheme: "stun", Opaque: "stun.example.com.:3478"}},
-				config.URL{url.URL{Scheme: "stuns", Opaque: "stun.example.com.:3478"}},
-				config.URL{url.URL{Scheme: "turn", Opaque: "turn.example.com.:3478", RawQuery: "transport=udp"}},
-				config.URL{url.URL{Scheme: "turn", Opaque: "turn.example.com.:3478", RawQuery: "transport=tcp"}},
-				config.URL{url.URL{Scheme: "turns", Opaque: "turn.example.com.:5349", RawQuery: "transport=tcp"}},
+				url.URL{Scheme: "stun", Opaque: "stun.example.com.:3478"},
+				url.URL{Scheme: "stuns", Opaque: "stun.example.com.:3478"},
+				url.URL{Scheme: "turn", Opaque: "turn.example.com.:3478", RawQuery: "transport=udp"},
+				url.URL{Scheme: "turn", Opaque: "turn.example.com.:3478", RawQuery: "transport=tcp"},
+				url.URL{Scheme: "turns", Opaque: "turn.example.com.:5349", RawQuery: "transport=tcp"},
 			))
 			Expect(cfg.Interfaces).To(HaveKey("wg-test"))
 

@@ -9,7 +9,6 @@ import (
 	"github.com/pion/ice/v2"
 
 	"github.com/stv0g/cunicu/pkg/config"
-	icex "github.com/stv0g/cunicu/pkg/ice"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,9 +20,9 @@ var _ = It("map", func() {
 		Interfaces: map[string]config.InterfaceSettings{
 			"wg0": {
 				ICE: config.ICESettings{
-					NetworkTypes: []icex.NetworkType{
-						{NetworkType: ice.NetworkTypeTCP4},
-						{NetworkType: ice.NetworkTypeTCP6},
+					NetworkTypes: []ice.NetworkType{
+						ice.NetworkTypeTCP4,
+						ice.NetworkTypeTCP6,
 					},
 				},
 				HostName: "test",

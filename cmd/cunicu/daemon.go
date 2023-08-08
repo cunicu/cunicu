@@ -36,14 +36,6 @@ Sending a SIGUSR1 signal to the daemon will trigger an immediate synchronization
 
 	cfg := config.New(pf)
 
-	if err := cmd.RegisterFlagCompletionFunc("ice-candidate-type", cobra.FixedCompletions([]string{"host", "srflx", "prflx", "relay"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
-		panic(err)
-	}
-
-	if err := cmd.RegisterFlagCompletionFunc("ice-network-type", cobra.FixedCompletions([]string{"udp4", "udp6", "tcp4", "tcp6"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
-		panic(err)
-	}
-
 	if err := cmd.MarkPersistentFlagFilename("config", "yaml", "json"); err != nil {
 		panic(err)
 	}
