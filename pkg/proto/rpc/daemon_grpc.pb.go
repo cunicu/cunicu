@@ -23,16 +23,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Daemon_GetBuildInfo_FullMethodName = "/cunicu.rpc.Daemon/GetBuildInfo"
-	Daemon_StreamEvents_FullMethodName = "/cunicu.rpc.Daemon/StreamEvents"
-	Daemon_UnWait_FullMethodName       = "/cunicu.rpc.Daemon/UnWait"
-	Daemon_Shutdown_FullMethodName     = "/cunicu.rpc.Daemon/Shutdown"
-	Daemon_Sync_FullMethodName         = "/cunicu.rpc.Daemon/Sync"
-	Daemon_GetStatus_FullMethodName    = "/cunicu.rpc.Daemon/GetStatus"
-	Daemon_SetConfig_FullMethodName    = "/cunicu.rpc.Daemon/SetConfig"
-	Daemon_GetConfig_FullMethodName    = "/cunicu.rpc.Daemon/GetConfig"
-	Daemon_ReloadConfig_FullMethodName = "/cunicu.rpc.Daemon/ReloadConfig"
-	Daemon_AddPeer_FullMethodName      = "/cunicu.rpc.Daemon/AddPeer"
+	Daemon_GetBuildInfo_FullMethodName  = "/cunicu.rpc.Daemon/GetBuildInfo"
+	Daemon_StreamEvents_FullMethodName  = "/cunicu.rpc.Daemon/StreamEvents"
+	Daemon_UnWait_FullMethodName        = "/cunicu.rpc.Daemon/UnWait"
+	Daemon_Shutdown_FullMethodName      = "/cunicu.rpc.Daemon/Shutdown"
+	Daemon_Sync_FullMethodName          = "/cunicu.rpc.Daemon/Sync"
+	Daemon_GetStatus_FullMethodName     = "/cunicu.rpc.Daemon/GetStatus"
+	Daemon_SetConfig_FullMethodName     = "/cunicu.rpc.Daemon/SetConfig"
+	Daemon_GetConfig_FullMethodName     = "/cunicu.rpc.Daemon/GetConfig"
+	Daemon_GetCompletion_FullMethodName = "/cunicu.rpc.Daemon/GetCompletion"
+	Daemon_ReloadConfig_FullMethodName  = "/cunicu.rpc.Daemon/ReloadConfig"
+	Daemon_AddPeer_FullMethodName       = "/cunicu.rpc.Daemon/AddPeer"
 )
 
 // DaemonClient is the client API for Daemon service.
@@ -47,6 +48,7 @@ type DaemonClient interface {
 	GetStatus(ctx context.Context, in *GetStatusParams, opts ...grpc.CallOption) (*GetStatusResp, error)
 	SetConfig(ctx context.Context, in *SetConfigParams, opts ...grpc.CallOption) (*proto.Empty, error)
 	GetConfig(ctx context.Context, in *GetConfigParams, opts ...grpc.CallOption) (*GetConfigResp, error)
+	GetCompletion(ctx context.Context, in *GetCompletionParams, opts ...grpc.CallOption) (*GetCompletionResp, error)
 	ReloadConfig(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error)
 	AddPeer(ctx context.Context, in *AddPeerParams, opts ...grpc.CallOption) (*AddPeerResp, error)
 }
@@ -154,6 +156,15 @@ func (c *daemonClient) GetConfig(ctx context.Context, in *GetConfigParams, opts 
 	return out, nil
 }
 
+func (c *daemonClient) GetCompletion(ctx context.Context, in *GetCompletionParams, opts ...grpc.CallOption) (*GetCompletionResp, error) {
+	out := new(GetCompletionResp)
+	err := c.cc.Invoke(ctx, Daemon_GetCompletion_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *daemonClient) ReloadConfig(ctx context.Context, in *proto.Empty, opts ...grpc.CallOption) (*proto.Empty, error) {
 	out := new(proto.Empty)
 	err := c.cc.Invoke(ctx, Daemon_ReloadConfig_FullMethodName, in, out, opts...)
@@ -184,6 +195,7 @@ type DaemonServer interface {
 	GetStatus(context.Context, *GetStatusParams) (*GetStatusResp, error)
 	SetConfig(context.Context, *SetConfigParams) (*proto.Empty, error)
 	GetConfig(context.Context, *GetConfigParams) (*GetConfigResp, error)
+	GetCompletion(context.Context, *GetCompletionParams) (*GetCompletionResp, error)
 	ReloadConfig(context.Context, *proto.Empty) (*proto.Empty, error)
 	AddPeer(context.Context, *AddPeerParams) (*AddPeerResp, error)
 	mustEmbedUnimplementedDaemonServer()
@@ -216,6 +228,9 @@ func (UnimplementedDaemonServer) SetConfig(context.Context, *SetConfigParams) (*
 }
 func (UnimplementedDaemonServer) GetConfig(context.Context, *GetConfigParams) (*GetConfigResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConfig not implemented")
+}
+func (UnimplementedDaemonServer) GetCompletion(context.Context, *GetCompletionParams) (*GetCompletionResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCompletion not implemented")
 }
 func (UnimplementedDaemonServer) ReloadConfig(context.Context, *proto.Empty) (*proto.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReloadConfig not implemented")
@@ -383,6 +398,24 @@ func _Daemon_GetConfig_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_GetCompletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCompletionParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).GetCompletion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Daemon_GetCompletion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).GetCompletion(ctx, req.(*GetCompletionParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Daemon_ReloadConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(proto.Empty)
 	if err := dec(in); err != nil {
@@ -453,6 +486,10 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConfig",
 			Handler:    _Daemon_GetConfig_Handler,
+		},
+		{
+			MethodName: "GetCompletion",
+			Handler:    _Daemon_GetCompletion_Handler,
 		},
 		{
 			MethodName: "ReloadConfig",

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/pion/ice/v2"
 	"golang.org/x/exp/slices"
 )
 
@@ -22,7 +23,8 @@ type Meta struct {
 }
 
 func Metadata() *Meta {
-	return metadata(reflect.TypeOf(Settings{}))
+	settingsType := reflect.TypeOf(Settings{})
+	return metadata(settingsType)
 }
 
 func metadata(typ reflect.Type) *Meta {
@@ -117,4 +119,19 @@ func (m *Meta) Parse(str string) (any, error) {
 	}
 
 	return out.Elem().Interface(), nil
+}
+
+func (m *Meta) CompletionOptions() []string {
+	var options []string
+
+	switch {
+	case m.Type.Kind() == reflect.Bool:
+		options = append(options, "true", "false")
+	case m.Type == reflect.TypeOf([]ice.CandidateType{}):
+		options = append(options, "host", "srflx", "prflx", "relay")
+	case m.Type == reflect.TypeOf([]ice.NetworkType{}):
+		options = append(options, "udp4", "udp6", "tcp4", "tcp6")
+	}
+
+	return options
 }

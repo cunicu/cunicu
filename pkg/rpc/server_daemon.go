@@ -19,6 +19,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
@@ -28,6 +29,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 )
 
 var errNoSettingChanged = errors.New("no setting was changed")
@@ -247,6 +249,47 @@ func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams)
 	return &rpcproto.GetConfigResp{
 		Settings: settings,
 	}, nil
+}
+
+func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetCompletionParams) (*rpcproto.GetCompletionResp, error) {
+	var options []string
+	var flags cobra.ShellCompDirective
+
+	if len(params.Cmd) < 2 || params.Cmd[0] != "cunicu" {
+		flags = cobra.ShellCompDirectiveError
+	} else if params.Cmd[1] == "config" {
+		options, flags = s.getConfigCompletion(params.Cmd[2], params.Args, params.ToComplete)
+	} else {
+		flags = cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return &rpcproto.GetCompletionResp{
+		Options: options,
+		Flags:   int32(flags),
+	}, nil
+}
+
+func (s *DaemonServer) getConfigCompletion(cmd string, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	var options []string
+	if isValueCompletion := len(args) > 0; isValueCompletion {
+		if cmd != "set" {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		if meta := s.Config.Meta.Lookup(args[0]); meta != nil {
+			options = meta.CompletionOptions()
+		}
+	} else {
+		options = s.Config.Meta.Keys()
+	}
+
+	if toComplete != "" {
+		options = slicesx.Filter(options, func(s string) bool {
+			return strings.HasPrefix(s, toComplete)
+		})
+	}
+
+	return options, cobra.ShellCompDirectiveNoFileComp
 }
 
 func (s *DaemonServer) ReloadConfig(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
