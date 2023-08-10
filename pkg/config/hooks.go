@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pion/ice/v2"
@@ -57,7 +58,7 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 
 // stringsDecodeHook is a DecodeHookFunc that converts strings to various types
 func stringsDecodeHook(
-	f reflect.Type,
+	_ reflect.Type,
 	t reflect.Type,
 	data interface{},
 ) (interface{}, error) {
@@ -69,11 +70,23 @@ func stringsDecodeHook(
 	switch t {
 	case reflect.TypeOf(stun.URI{}):
 		u, err := stun.ParseURI(str)
-		return *u, err
+		if err != nil {
+			return nil, err
+		}
+
+		return *u, nil
 
 	case reflect.TypeOf(url.URL{}):
+		if !strings.Contains(str, ":") {
+			str += ":"
+		}
+
 		u, err := url.Parse(str)
-		return *u, err
+		if err != nil {
+			return nil, err
+		}
+
+		return *u, nil
 
 	case reflect.TypeOf(net.IPAddr{}):
 		ip, err := net.ResolveIPAddr("ip", str)

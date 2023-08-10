@@ -182,12 +182,12 @@ type Settings struct {
 }
 
 // Check performs plausibility checks on the provided configuration.
-func (c *Settings) Check() error {
-	if err := c.DefaultInterfaceSettings.Check(); err != nil {
+func (s *Settings) Check() error {
+	if err := s.DefaultInterfaceSettings.Check(); err != nil {
 		return err
 	}
 
-	for _, icfg := range c.Interfaces {
+	for _, icfg := range s.Interfaces {
 		if err := icfg.Check(); err != nil {
 			return err
 		}
