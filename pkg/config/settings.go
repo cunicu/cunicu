@@ -6,13 +6,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/url"
 	"time"
 
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/v2"
 	"github.com/pion/ice/v2"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -80,6 +77,13 @@ func (s *ICESettings) HasNetworkType(nt ice.NetworkType) bool {
 	}
 
 	return false
+}
+
+type LogSettings struct {
+	Rules  []string `koanf:"rules,omitempty"`
+	File   string   `koanf:"file,omitempty"`
+	Color  string   `koanf:"color,omitempty"`
+	Banner bool     `koanf:"banner,omitempty"`
 }
 
 type RPCSettings struct {
@@ -169,6 +173,7 @@ type Settings struct {
 	WatchInterval time.Duration `koanf:"watch_interval,omitempty"`
 	Backends      []url.URL     `koanf:"backends,omitempty"`
 
+	Log    LogSettings    `koanf:"log,omitempty"`
 	RPC    RPCSettings    `koanf:"rpc,omitempty"`
 	Config ConfigSettings `koanf:"config,omitempty"`
 

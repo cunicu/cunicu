@@ -2,19 +2,18 @@
 // SPDX-FileCopyrightText: 2020 Manfred Touron <https://manfred.life>
 // SPDX-License-Identifier: Apache-2.0
 
-package log_test
+package log
 
 import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync/atomic"
 
 	"github.com/onsi/gomega/gcustom"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
-
-	"github.com/stv0g/cunicu/pkg/log"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -26,6 +25,16 @@ var (
 	errMismatchingLogLevel   = errors.New("mismatch in log level")
 	errMismatchingField      = errors.New("mismatch in context field")
 )
+
+// mustParseRule calls ParseRules and panics if initialization failed.
+func mustParseRule(rule string) FilterFunc {
+	filter, err := ParseRule(rule)
+	if err != nil {
+		panic(err)
+	}
+
+	return filter
+}
 
 func matchEntry(expectedEntry zapcore.Entry, expectedFields ...zapcore.Field) OmegaMatcher {
 	return gcustom.MakeMatcher(func(actualEntry observer.LoggedEntry) (bool, error) {
@@ -60,20 +69,23 @@ func matchEntry(expectedEntry zapcore.Entry, expectedFields ...zapcore.Field) Om
 	})
 }
 
-func makeLogger(filterFunc log.FilterFunc) (*zap.Logger, *observer.ObservedLogs) {
+func makeLogger(filterFunc FilterFunc) (*zap.Logger, *observer.ObservedLogs) {
 	observed, logs := observer.New(zapcore.DebugLevel)
 
-	rule := new(log.AtomicFilterRule)
-	rule.Store(log.NewFilterRule(filterFunc))
+	filter := new(atomic.Pointer[Filter])
+	filter.Store(&Filter{
+		FilterFunc: filterFunc,
+		Level:      Level(filterFunc.Level()),
+	})
 
-	filtered := log.NewFilteredCore(observed, rule)
+	filtered := newFilteredCore(observed, filter)
 
 	return zap.New(filtered), logs
 }
 
 // CheckAnyLevel determines whether at least one log level isn't filtered-out by the logger.
 func checkAnyLevel(logger *zap.Logger) bool {
-	for l := log.MinLevel; l <= log.DPanicLevel; l++ {
+	for l := MinLevel; l <= DPanicLevel; l++ {
 		if checkLevel(logger, l) {
 			return true
 		}
@@ -82,7 +94,7 @@ func checkAnyLevel(logger *zap.Logger) bool {
 }
 
 // CheckLevel determines whether a specific log level would produce log or not.
-func checkLevel(logger *zap.Logger, level log.Level) bool {
+func checkLevel(logger *zap.Logger, level Level) bool {
 	return logger.Check(zapcore.Level(level), "") != nil
 }
 
@@ -93,11 +105,15 @@ var _ = Describe("filter", func() {
 			logger := zap.New(next)
 			defer logger.Sync() //nolint:errcheck
 
-			rule := new(log.AtomicFilterRule)
-			rule.Store(log.NewFilterRule(log.MustParseRules("*:demo*")))
+			filterFunc := mustParseRule("*:demo*")
+			filter := new(atomic.Pointer[Filter])
+			filter.Store(&Filter{
+				FilterFunc: filterFunc,
+				Level:      Level(filterFunc.Level()),
+			})
 
 			logger = logger.WithOptions(zap.WrapCore(func(c zapcore.Core) zapcore.Core {
-				return log.NewFilteredCore(c, rule)
+				return newFilteredCore(c, filter)
 			}))
 
 			logger.Debug("hello world!")
@@ -110,7 +126,7 @@ var _ = Describe("filter", func() {
 		})
 
 		It("new logger", func() {
-			logger, logs := makeLogger(log.MustParseRules("*:demo*"))
+			logger, logs := makeLogger(mustParseRule("*:demo*"))
 			defer logger.Sync() //nolint:errcheck
 
 			logger.Debug("hello world!")
@@ -125,7 +141,7 @@ var _ = Describe("filter", func() {
 
 	Describe("FilterFunc", func() {
 		It("ByNamespace", func() {
-			logger, logs := makeLogger(log.ByNamespaces("demo1.*,demo3.*"))
+			logger, logs := makeLogger(ByNamespaces("demo1.*,demo3.*"))
 			defer logger.Sync() //nolint:errcheck
 
 			logger.Debug("hello city!")
@@ -159,7 +175,7 @@ var _ = Describe("filter", func() {
 
 		DescribeTable("simple",
 			func(
-				filterFunc log.FilterFunc,
+				filterFunc FilterFunc,
 				expectedLogs []string,
 			) {
 				logger, logs := makeLogger(filterFunc)
@@ -201,10 +217,10 @@ var _ = Describe("filter", func() {
 	)
 
 	It("ParseRule", func() {
-		// *=myns             => any level, myns namespace
+		// *:myns             => any level, myns namespace
 		// info,warn:myns.*   => info or warn level, any namespace matching myns.*
-		// error=*            => everything with error level
-		logger, logs := makeLogger(log.MustParseRules("*:myns info,warn:myns.* error:*"))
+		// error:*            => everything with error level
+		logger, logs := makeLogger(mustParseRule("*:myns info,warn:myns.* error:*"))
 		defer logger.Sync() //nolint:errcheck
 
 		logger.Debug("top debug") // No match
@@ -280,7 +296,7 @@ var _ = Describe("filter", func() {
 			expectedLogs string,
 			expectedError error,
 		) {
-			filterFunc, err := log.ParseRules(input)
+			filterFunc, err := ParseRule(input)
 			if err != nil {
 				Expect(err).To(MatchError(expectedError))
 				return
@@ -338,14 +354,14 @@ var _ = Describe("filter", func() {
 		},
 		Entry("empty", "", "", nil),
 		Entry("everything", "*", everything, nil),
-		Entry("debug+", "debug:*", everything, nil),
+		Entry("debug", "debug:*", everything, nil),
 		Entry("all-debug", "=debug:*", allDebug, nil),
 		Entry("all-info", "=info:*", allInfo, nil),
 		Entry("all-warn", "=warn:*", allWarn, nil),
 		Entry("all-error", "=error:*", allError, nil),
 		Entry("all-info-and-warn-1", "=info,=warn:*", "bcfgjknorsvwz034", nil),
 		Entry("all-info-and-warn-2", "=info:* =warn:*", "bcfgjknorsvwz034", nil),
-		Entry("warn+", "warn:*", "cdghklopstwx0145", nil),
+		Entry("warn", "warn:*", "cdghklopstwx0145", nil),
 		Entry("redundant-1", "=info,=info:* =info:*", allInfo, nil),
 		Entry("redundant-2", "* *:* =info:*", everything, nil),
 		Entry("foo-ns", "*:foo", "efgh", nil),
@@ -359,20 +375,20 @@ var _ = Describe("filter", func() {
 		Entry("exclude-4", "*:*,-foo,-bar", "abcdmnopqrstuvwxyz012345", nil),
 		Entry("exclude-5", "*:foo*,bar*,-foo.foo,-bar.foo", "efghijklqrst", nil),
 		Entry("exclude-6", "*:foo*,-foo.foo,bar*,-bar.foo", "efghijklqrst", nil),
-		Entry("invalid-left", "invalid:*", "", log.ErrUnsupportedKeyword),
-		Entry("missing-left", ":*", "", log.ErrBadSyntax),
-		Entry("missing-right", ":*", "", log.ErrBadSyntax),
-		PEntry("missing-exclude-pattern", "*:-", "", log.ErrBadSyntax),
+		Entry("invalid-left", "invalid:*", "", ErrUnsupportedKeyword),
+		Entry("missing-left", ":*", "", ErrBadSyntax),
+		Entry("missing-right", ":*", "", ErrBadSyntax),
+		PEntry("missing-exclude-pattern", "*:-", "", ErrBadSyntax),
 	)
 
 	Describe("Check", func() {
 		DescribeTable("simple",
 			func(
-				rules string,
+				rule string,
 				namespace string,
 				checked bool,
 			) {
-				filterFunc, err := log.ParseRules(rules)
+				filterFunc, err := ParseRule(rule)
 				if err != nil {
 					return
 				}
@@ -402,7 +418,7 @@ var _ = Describe("filter", func() {
 
 		DescribeTable("any level",
 			func(name string, expected bool) {
-				logger, _ := makeLogger(log.MustParseRules("=debug:*.* =info:demo*"))
+				logger, _ := makeLogger(mustParseRule("=debug:*.* =info:demo*"))
 				if name != "" {
 					logger = logger.Named(name)
 				}
@@ -418,8 +434,8 @@ var _ = Describe("filter", func() {
 		)
 
 		DescribeTable("level",
-			func(name string, lvl log.Level, expected bool) {
-				logger, _ := makeLogger(log.MustParseRules("=debug:*.* =info:demo*"))
+			func(name string, lvl Level, expected bool) {
+				logger, _ := makeLogger(mustParseRule("=debug:*.* =info:demo*"))
 
 				if name != "" {
 					logger = logger.Named(name)
@@ -427,23 +443,23 @@ var _ = Describe("filter", func() {
 
 				Expect(checkLevel(logger, lvl)).To(Equal(expected))
 			},
-			Entry("1", "", log.DebugLevel, false),
-			Entry("2", "demo", log.DebugLevel, false),
-			Entry("3", "blahdemo", log.DebugLevel, false),
-			Entry("4", "demoblah", log.DebugLevel, false),
-			Entry("5", "blah", log.DebugLevel, false),
-			Entry("6", "blah.blah", log.DebugLevel, true),
-			Entry("7", "", log.InfoLevel, false),
-			Entry("8", "demo", log.InfoLevel, true),
-			Entry("9", "blahdemo", log.InfoLevel, false),
-			Entry("10", "demoblah", log.InfoLevel, true),
-			Entry("11", "blah", log.InfoLevel, false),
-			Entry("12", "blah.blah", log.InfoLevel, false),
+			Entry("1", "", DebugLevel, false),
+			Entry("2", "demo", DebugLevel, false),
+			Entry("3", "blahdemo", DebugLevel, false),
+			Entry("4", "demoblah", DebugLevel, false),
+			Entry("5", "blah", DebugLevel, false),
+			Entry("6", "blah.blah", DebugLevel, true),
+			Entry("7", "", InfoLevel, false),
+			Entry("8", "demo", InfoLevel, true),
+			Entry("9", "blahdemo", InfoLevel, false),
+			Entry("10", "demoblah", InfoLevel, true),
+			Entry("11", "blah", InfoLevel, false),
+			Entry("12", "blah.blah", InfoLevel, false),
 		)
 	})
 
 	It("With", func() {
-		logger, logs := makeLogger(log.ByNamespaces("demo1.*,demo3.*"))
+		logger, logs := makeLogger(ByNamespaces("demo1.*,demo3.*"))
 		defer logger.Sync() //nolint:errcheck
 
 		logger.With(zap.String("lorem", "ipsum")).Debug("hello city!")
@@ -464,7 +480,7 @@ var _ = Describe("filter", func() {
 	})
 
 	It("Check", func() {
-		logger, logs := makeLogger(log.MustParseRules("=debug:* =info:demo*"))
+		logger, logs := makeLogger(mustParseRule("=debug:* =info:demo*"))
 		defer logger.Sync() //nolint:errcheck
 
 		ce := logger.Check(zap.DebugLevel, "a")

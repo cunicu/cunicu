@@ -9,6 +9,7 @@ package log
 
 import (
 	"errors"
+	"sync/atomic"
 
 	"go.uber.org/zap/zapcore"
 )
@@ -20,20 +21,20 @@ var (
 
 // NewFilteredCore returns a core middleware that uses the given filter function to
 // determine whether to actually call Write on the next core in the chain.
-func NewFilteredCore(next zapcore.Core, rule *AtomicFilterRule) zapcore.Core {
+func newFilteredCore(next zapcore.Core, rule *atomic.Pointer[Filter]) zapcore.Core {
 	return &filteringCore{next, rule}
 }
 
 type filteringCore struct {
-	next zapcore.Core
-	rule *AtomicFilterRule
+	next   zapcore.Core
+	filter *atomic.Pointer[Filter]
 }
 
 // Check determines whether the supplied zapcore.Entry should be logged.
 // If the entry should be logged, the filteringCore adds itself to the zapcore.CheckedEntry
 // and returns the results.
 func (core *filteringCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
-	if r := core.rule.Load(); r == nil || r.Filter(entry) {
+	if r := core.filter.Load(); r == nil || r.FilterFunc(entry) {
 		ce = ce.AddCore(entry, core)
 	}
 	return ce
@@ -48,8 +49,8 @@ func (core *filteringCore) Write(entry zapcore.Entry, fields []zapcore.Field) er
 // With adds structured context to the wrapped zapcore.Core.
 func (core *filteringCore) With(fields []zapcore.Field) zapcore.Core {
 	return &filteringCore{
-		next: core.next.With(fields),
-		rule: core.rule,
+		next:   core.next.With(fields),
+		filter: core.filter,
 	}
 }
 
@@ -60,7 +61,7 @@ func (core *filteringCore) Enabled(_ zapcore.Level) bool {
 }
 
 func (core *filteringCore) Level() zapcore.Level {
-	if r := core.rule.Load(); r != nil {
+	if r := core.filter.Load(); r != nil {
 		return zapcore.Level(r.Level)
 	}
 	return zapcore.InvalidLevel

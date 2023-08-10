@@ -49,52 +49,53 @@ var (
 			Socket: DefaultSocketPath,
 			Wait:   false,
 		},
-		WatchInterval:            1 * time.Second,
-		DefaultInterfaceSettings: DefaultInterfaceSettings,
-	}
+		Log: LogSettings{
+			Banner: true,
+		},
+		WatchInterval: 1 * time.Second,
+		DefaultInterfaceSettings: InterfaceSettings{
+			DiscoverPeers:     true,
+			DiscoverEndpoints: true,
+			SyncConfig:        true,
+			SyncHosts:         true,
+			SyncRoutes:        true,
+			WatchRoutes:       true,
 
-	DefaultInterfaceSettings = InterfaceSettings{
-		DiscoverPeers:     true,
-		DiscoverEndpoints: true,
-		SyncConfig:        true,
-		SyncHosts:         true,
-		SyncRoutes:        true,
-		WatchRoutes:       true,
+			PortForwarding: true,
 
-		PortForwarding: true,
+			ICE: ICESettings{
+				URLs:                DefaultICEURLs,
+				CheckInterval:       200 * time.Millisecond,
+				DisconnectedTimeout: 5 * time.Second,
+				FailedTimeout:       25 * time.Second,
+				RestartTimeout:      10 * time.Second,
+				InterfaceFilter:     "*",
+				KeepaliveInterval:   2 * time.Second,
+				MaxBindingRequests:  7,
+				PortRange: PortRangeSettings{
+					Min: EphemeralPortMin,
+					Max: EphemeralPortMax,
+				},
+				CandidateTypes: []ice.CandidateType{
+					ice.CandidateTypeHost,
+					ice.CandidateTypeServerReflexive,
+					ice.CandidateTypePeerReflexive,
+					ice.CandidateTypeRelay,
+				},
+				NetworkTypes: []ice.NetworkType{
+					ice.NetworkTypeUDP4,
+					ice.NetworkTypeUDP6,
+					ice.NetworkTypeTCP4,
+					ice.NetworkTypeTCP6,
+				},
+			},
 
-		ICE: ICESettings{
-			URLs:                DefaultICEURLs,
-			CheckInterval:       200 * time.Millisecond,
-			DisconnectedTimeout: 5 * time.Second,
-			FailedTimeout:       25 * time.Second,
-			RestartTimeout:      10 * time.Second,
-			InterfaceFilter:     "*",
-			KeepaliveInterval:   2 * time.Second,
-			MaxBindingRequests:  7,
-			PortRange: PortRangeSettings{
-				Min: EphemeralPortMin,
+			RoutingTable: DefaultRouteTable,
+
+			ListenPortRange: &PortRangeSettings{
+				Min: wg.DefaultPort,
 				Max: EphemeralPortMax,
 			},
-			CandidateTypes: []ice.CandidateType{
-				ice.CandidateTypeHost,
-				ice.CandidateTypeServerReflexive,
-				ice.CandidateTypePeerReflexive,
-				ice.CandidateTypeRelay,
-			},
-			NetworkTypes: []ice.NetworkType{
-				ice.NetworkTypeUDP4,
-				ice.NetworkTypeUDP6,
-				ice.NetworkTypeTCP4,
-				ice.NetworkTypeTCP6,
-			},
-		},
-
-		RoutingTable: DefaultRouteTable,
-
-		ListenPortRange: &PortRangeSettings{
-			Min: wg.DefaultPort,
-			Max: EphemeralPortMax,
 		},
 	}
 )

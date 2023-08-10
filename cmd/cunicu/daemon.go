@@ -56,12 +56,17 @@ Sending a SIGUSR1 signal to the daemon will trigger an immediate synchronization
 }
 
 func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
-	if _, err := io.WriteString(os.Stdout, Banner(color)); err != nil {
-		logger.Fatal("Failed to write banner", zap.Error(err))
-	}
-
 	if err := cfg.Init(args); err != nil {
 		logger.Fatal("Failed to parse configuration", zap.Error(err))
+	}
+
+	// Adjust logging based on config file settings
+	setupLogging(&cfg.Log)
+
+	if cfg.Log.Banner {
+		if _, err := io.WriteString(os.Stdout, Banner(color)); err != nil {
+			logger.Fatal("Failed to write banner", zap.Error(err))
+		}
 	}
 
 	// Require experimental env var

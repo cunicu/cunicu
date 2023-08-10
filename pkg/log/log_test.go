@@ -42,7 +42,7 @@ var _ = Context("log", Label("broken-on-windows"), func() {
 
 	JustBeforeEach(func() {
 		var err error
-		logger, err = log.SetupLogging("", []string{logPath}, false)
+		logger, err = log.SetupLogging(nil, []string{logPath}, false)
 		Expect(err).To(Succeed())
 	})
 

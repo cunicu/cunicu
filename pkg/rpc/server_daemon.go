@@ -178,12 +178,13 @@ func (s *DaemonServer) SetConfig(_ context.Context, p *rpcproto.SetConfigParams)
 
 	for key, value := range p.Settings {
 		switch key {
-		case "log.level":
-			rule, err := log.ParseFilterRule(value)
+		case "log.rules":
+			rules := strings.Split(value, ",")
+			filter, err := log.ParseFilter(rules)
 			if err != nil {
 				errs = append(errs, err)
 			}
-			log.Rule.Store(rule)
+			log.UpdateFilter(filter)
 			numChanges++
 
 		default:
@@ -228,10 +229,6 @@ func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams)
 		return p.KeyFilter == "" || strings.HasPrefix(key, p.KeyFilter)
 	}
 
-	if match("log.level") {
-		settings["log.level"] = log.Rule.Load().Expression
-	}
-
 	for key, value := range s.Config.All() {
 		if match(key) {
 			str, err := settingToString(value)
@@ -241,6 +238,10 @@ func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams)
 
 			settings[key] = str
 		}
+	}
+
+	if match("log.rules") {
+		settings["log.rules"] = log.CurrentFilter().String()
 	}
 
 	return &rpcproto.GetConfigResp{

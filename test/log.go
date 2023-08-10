@@ -48,5 +48,5 @@ func SetupLoggingWithFile(fn string, truncate bool) (*log.Logger, error) {
 		ginkgo.GinkgoWriter.TeeTo(tty.NewANSIStripper(f))
 	}
 
-	return log.SetupLogging("", outputPaths, true)
+	return log.SetupLogging(nil, outputPaths, true)
 }
