@@ -116,20 +116,6 @@ func ByNamespaces(input string) FilterFunc { //nolint:gocognit
 	}
 }
 
-// ExactLevel filters out entries with an invalid level.
-func ExactLevel(level Level) FilterFunc {
-	return func(entry zapcore.Entry) bool {
-		return Level(entry.Level) == level
-	}
-}
-
-// MinimumLevel filters out entries with a too low level.
-func MinimumLevel(level Level) FilterFunc {
-	return func(entry zapcore.Entry) bool {
-		return Level(entry.Level) >= level
-	}
-}
-
 // Any checks if any filter returns true.
 func Any(filters ...FilterFunc) FilterFunc {
 	return func(entry zapcore.Entry) bool {
