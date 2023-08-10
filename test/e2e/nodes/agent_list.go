@@ -15,9 +15,9 @@ import (
 
 type AgentList []*Agent
 
-func (al AgentList) Start(dir string, extraArgs ...any) error {
+func (al AgentList) Start(dir string, args ...any) error {
 	if err := al.ForEachAgent(func(a *Agent) error {
-		return a.Start("", dir, extraArgs...)
+		return a.Start("", dir, args...)
 	}); err != nil {
 		return fmt.Errorf("failed to start agent: %w", err)
 	}

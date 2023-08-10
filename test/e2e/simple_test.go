@@ -12,6 +12,7 @@ import (
 	gfopt "github.com/stv0g/gont/v2/pkg/options/filters"
 	"golang.org/x/sys/unix"
 
+	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/wg"
 	"github.com/stv0g/cunicu/test"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
@@ -140,7 +141,9 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 			)
 
 			n.AgentOptions = append(n.AgentOptions,
-				opt.ExtraArgs{"--wg-userspace", "wg0"},
+				opt.ConfigValue("interfaces.wg0", config.InterfaceSettings{
+					UserSpace: true,
+				}),
 			)
 		})
 
@@ -189,7 +192,7 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 	Context("pdisc: Peer Discovery", Pending, Ordered, func() {
 		BeforeEach(OncePerOrdered, func() {
 			n.AgentOptions = append(n.AgentOptions,
-				opt.ExtraArgs{"--community", "hallo"},
+				opt.ConfigValue("community", "hallo"),
 			)
 
 			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,

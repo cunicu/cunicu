@@ -94,7 +94,7 @@ var _ = Context("nat double: Carrier Grade NAT setup with two relays and a singl
 			// Mixed IPv4/IPv6 NAT tests are currently broken for some reason.
 			// Hence we limit ourself to IPv6 here.
 			// See: https://github.com/stv0g/cunicu/issues/224
-			opt.ExtraArgs{"--ice-network-type", "udp6,tcp6"},
+			opt.ConfigValue("ice.network_types", []string{"udp6", "tcp6"}),
 		)
 
 		switch {

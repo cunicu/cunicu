@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -33,8 +32,19 @@ var _ = Describe("Agent config", func() {
 	})
 
 	DescribeTable("can parse ICE urls with credentials",
-		func(args []string, exp any) {
-			cfg, err := config.ParseArgs(args...)
+		func(url, username, password string, exp any) {
+			iceCfgStr := fmt.Sprintf("urls: [ '%s' ]", url)
+
+			if username != "" {
+				iceCfgStr += fmt.Sprintf(", username: '%s'", username)
+			}
+
+			if password != "" {
+				iceCfgStr += fmt.Sprintf(", password: '%s'", password)
+			}
+
+			cfgStr := fmt.Sprintf("ice: { %s }", iceCfgStr)
+			cfg, err := config.ParseRaw(cfgStr)
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
@@ -50,7 +60,7 @@ var _ = Describe("Agent config", func() {
 				Expect(aCfg.Urls).To(ContainElements(exp))
 			}
 		},
-		Entry("url1", []string{"--ice-url", "stun:server1", "--ice-username", "user1", "--ice-password", "pass1"}, &stun.URI{
+		Entry("url1", "stun:server1", "user1", "pass1", &stun.URI{
 			Scheme:   stun.SchemeTypeSTUN,
 			Host:     "server1",
 			Port:     3478,
@@ -58,7 +68,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url2", []string{"--ice-url", "turn:server2:1234?transport=tcp", "--ice-username", "user1", "--ice-password", "pass1"}, &stun.URI{
+		Entry("url2", "turn:server2:1234?transport=tcp", "user1", "pass1", &stun.URI{
 			Scheme:   stun.SchemeTypeTURN,
 			Host:     "server2",
 			Port:     1234,
@@ -66,7 +76,7 @@ var _ = Describe("Agent config", func() {
 			Username: "user1",
 			Password: "pass1",
 		}),
-		Entry("url3", []string{"--ice-url", "turn:user3:pass3@server3:1234?transport=tcp", "--ice-password", "pass3"}, &stun.URI{
+		Entry("url3", "turn:user3:pass3@server3:1234?transport=tcp", "", "pass3", &stun.URI{
 			Scheme:   stun.SchemeTypeTURN,
 			Host:     "server3",
 			Port:     1234,
@@ -74,8 +84,8 @@ var _ = Describe("Agent config", func() {
 			Username: "user3",
 			Password: "pass3",
 		}),
-		Entry("url3", []string{"--ice-password", "pass1", "--ice-url", "http://bla.0l.de"}, "failed to gather ICE URLs: invalid ICE URL scheme: http"),
-		Entry("url4", []string{"--ice-url", "stun:stun.cunicu.li?transport=tcp"}, "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
+		Entry("url3", "http://bla.0l.de", "", "pass1", "failed to gather ICE URLs: invalid ICE URL scheme: http"),
+		Entry("url4", "stun:stun.cunicu.li?transport=tcp", "", "", "failed to gather ICE URLs: failed to parse STUN/TURN URL 'stun:stun.cunicu.li?transport=tcp': queries not supported in stun address"),
 	)
 
 	Context("can get ICE URLs from relay API", func() {
@@ -120,7 +130,8 @@ var _ = Describe("Agent config", func() {
 		})
 
 		It("can get list of relays", func() {
-			cfg, err := config.ParseArgs("--ice-url", fmt.Sprintf("grpc://localhost:%d?insecure=true", port))
+			cfgStr := fmt.Sprintf("ice: { urls: [ 'grpc://localhost:%d?insecure=true' ] }", port)
+			cfg, err := config.ParseRaw(cfgStr)
 			Expect(err).To(Succeed())
 
 			ctx := context.Background()
@@ -160,20 +171,6 @@ var _ = Describe("Agent config", func() {
 		})
 	})
 
-	It("can parse multiple candidate types", func() {
-		cfg, err := config.ParseArgs(
-			"--ice-candidate-type", "host",
-			"--ice-candidate-type", "relay",
-		)
-		Expect(err).To(Succeed())
-
-		icfg := cfg.DefaultInterfaceSettings
-
-		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
-		Expect(err).To(Succeed())
-		Expect(aCfg.CandidateTypes).To(ConsistOf(ice.CandidateTypeRelay, ice.CandidateTypeHost))
-	})
-
 	It("can parse multiple backend URLs when passed as individual command line arguments", func() {
 		cfg, err := config.ParseArgs(
 			"--backend", "grpc://server1",
@@ -182,6 +179,8 @@ var _ = Describe("Agent config", func() {
 		Expect(err).To(Succeed())
 
 		Expect(cfg.Backends).To(HaveLen(2))
+		Expect(cfg.Backends[0].Host).To(Equal("server1"))
+		Expect(cfg.Backends[1].Host).To(Equal("server2"))
 	})
 
 	It("can parse multiple backend URLs when passed as comma-separated command line arguments", func() {

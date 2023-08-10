@@ -78,8 +78,8 @@ var _ = Context("nat simple: Simple home-router NAT setup", func() {
 			// Mixed IPv4/IPv6 NAT tests are currently broken for some reason.
 			// Hence we limit ourself to IPv6 here.
 			// See: https://github.com/stv0g/cunicu/issues/224
-			opt.ExtraArgs{"--ice-network-type", "udp6,tcp6"},
-			// opt.ExtraArgs{"--ice-candidate-type", "host,srflx"},
+			opt.ConfigValue("ice.network_types", []string{"udp6", "tcp6"}),
+			// opt.ICECandidateTypes(ice.CandidateTypeHost, ice.CandidateTypeServerReflexive),
 		)
 		Expect(err).To(Succeed(), "Failed to created nodes: %s", err)
 

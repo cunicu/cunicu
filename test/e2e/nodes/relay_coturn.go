@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -21,6 +22,11 @@ import (
 )
 
 var errTimeout = errors.New("timed out")
+
+const (
+	relayUsername = "user1"
+	relayPassword = "password1"
+)
 
 type CoturnNode struct {
 	*g.Host
@@ -55,21 +61,12 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, er
 			"listening-port":           strconv.Itoa(stun.DefaultPort),
 			"realm":                    "cunicu",
 			"cli-password":             "cunicu",
+			"user":                     fmt.Sprintf("%s:%s", relayUsername, relayPassword),
 		},
 		logger: log.Global.Named("node.relay").With(zap.String("node", name)),
 	}
 
-	t.Config["user"] = fmt.Sprintf("%s:%s", t.Username(), t.Password())
-
 	return t, nil
-}
-
-func (c *CoturnNode) Username() string {
-	return "user1"
-}
-
-func (c *CoturnNode) Password() string {
-	return "password1"
 }
 
 func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
@@ -151,27 +148,25 @@ func (c *CoturnNode) WaitReady() error {
 	return nil
 }
 
-func (c *CoturnNode) URLs() []*stun.URI {
+func (c *CoturnNode) URLs() []url.URL {
 	host := c.Name()
+	hostPort := fmt.Sprintf("%s:%d", host, stun.DefaultPort)
+	userHostPort := fmt.Sprintf("%s:%s@%s", relayUsername, relayPassword, hostPort)
 
-	return []*stun.URI{
+	return []url.URL{
 		{
-			Scheme: stun.SchemeTypeSTUN,
-			Host:   host,
-			Port:   stun.DefaultPort,
-			Proto:  stun.ProtoTypeUDP,
+			Scheme: "stun",
+			Opaque: hostPort,
 		},
 		{
-			Scheme: stun.SchemeTypeTURN,
-			Host:   host,
-			Port:   stun.DefaultPort,
-			Proto:  stun.ProtoTypeUDP,
+			Scheme:   "turn",
+			Opaque:   userHostPort,
+			RawQuery: "transport=udp",
 		},
 		{
-			Scheme: stun.SchemeTypeTURN,
-			Host:   host,
-			Port:   stun.DefaultPort,
-			Proto:  stun.ProtoTypeTCP,
+			Scheme:   "turn",
+			Opaque:   userHostPort,
+			RawQuery: "transport=tcp",
 		},
 	}
 }

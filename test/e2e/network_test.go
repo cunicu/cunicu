@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/knadh/koanf/v2"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	g "github.com/stv0g/gont/v2/pkg"
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 	copt "github.com/stv0g/gont/v2/pkg/options/capture"
@@ -108,32 +110,28 @@ func (n *Network) Start() {
 
 	By("Starting agent nodes")
 
-	err = n.AgentNodes.Start(n.BasePath, n.AgentArgs()...)
+	err = n.AgentNodes.Start(n.BasePath, n.AgentConfig())
 	Expect(err).To(Succeed(), "Failed to start cunicu: %s", err)
 }
 
-func (n *Network) AgentArgs() []any {
-	extraArgs := []any{}
+func (n *Network) AgentConfig() nodes.AgentConfigOption {
+	return opt.Config(func(k *koanf.Koanf) {
+		var urls, backends []string
 
-	if len(n.RelayNodes) > 0 {
-		// TODO: We currently assume that all relays use the same credentials
-		extraArgs = append(extraArgs,
-			"--ice-username", n.RelayNodes[0].Username(),
-			"--ice-password", n.RelayNodes[0].Password(),
-		)
-	}
-
-	for _, r := range n.RelayNodes {
-		for _, u := range r.URLs() {
-			extraArgs = append(extraArgs, "--ice-url", u)
+		for _, r := range n.RelayNodes {
+			for _, u := range r.URLs() {
+				urls = append(urls, u.String())
+			}
 		}
-	}
 
-	for _, s := range n.SignalingNodes {
-		extraArgs = append(extraArgs, "--backend", s.URL())
-	}
+		for _, m := range n.SignalingNodes {
+			u := m.URL()
+			backends = append(backends, u.String())
+		}
 
-	return extraArgs
+		k.Set("ice.urls", urls)     //nolint:errcheck
+		k.Set("backends", backends) //nolint:errcheck
+	})
 }
 
 func (n *Network) Close() {
@@ -184,16 +182,19 @@ func (n *Network) WriteSpecReport() {
 func (n *Network) Init() {
 	*n = Network{}
 
+	cwd, err := os.Getwd()
+	Expect(err).To(Succeed())
+
 	n.Name = fmt.Sprintf("cunicu-%d", rand.Uint32()) //nolint:gosec
 	n.BasePath = filepath.Join(SpecName()...)
-	n.BasePath = filepath.Join("logs", n.BasePath)
+	n.BasePath = filepath.Join(cwd, "logs", n.BasePath)
 
 	logFilename := filepath.Join(n.BasePath, "test.log")
 	pcapFilename := filepath.Join(n.BasePath, "capture.pcapng")
 
 	By("Tweaking sysctls for large Gont networks")
 
-	err := osx.SetSysctlMap(map[string]any{
+	err = osx.SetSysctlMap(map[string]any{
 		"net.ipv4.neigh.default.gc_thresh1": 10000,
 		"net.ipv4.neigh.default.gc_thresh2": 15000,
 		"net.ipv4.neigh.default.gc_thresh3": 20000,

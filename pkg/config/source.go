@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
 )
 
@@ -44,7 +45,7 @@ func (s *Source) Load() error {
 func load(p koanf.Provider) (*koanf.Koanf, []string, error) {
 	var q koanf.Parser
 	switch p.(type) {
-	case *RemoteFileProvider, *LocalFileProvider:
+	case *RemoteFileProvider, *LocalFileProvider, *rawbytes.RawBytes:
 		q = yaml.Parser()
 	default:
 		q = nil

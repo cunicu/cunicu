@@ -31,57 +31,67 @@ func (n *Network) ConnectivityTests() {
 	})
 }
 
-func (n *Network) ConnectivityTestsWithExtraArgs(extraArgs ...any) {
-	BeforeEach(func() {
-		n.AgentOptions = append(n.AgentOptions,
-			opt.ExtraArgs(extraArgs),
-		)
-	})
-
-	n.ConnectivityTests()
-}
-
 func (n *Network) ConnectivityTestsForAllCandidateTypes() {
+	ConnectivityTests := func() {
+		Context("ipv4: Allow IPv4 network only", func() {
+			BeforeEach(func() {
+				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp4"))
+			})
+
+			n.ConnectivityTests()
+		})
+
+		Context("ipv6: Allow IPv6 network only", func() {
+			BeforeEach(func() {
+				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp6"))
+			})
+
+			n.ConnectivityTests()
+		})
+	}
+
 	Context("candidate-types", func() {
 		Context("any: Allow any candidate type", func() {
-			Context("ipv4: Allow IPv4 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-network-type", "udp4")
-			})
-
-			Context("ipv6: Allow IPv6 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-network-type", "udp6")
-			})
+			ConnectivityTests()
 		})
 
 		Context("host: Allow only host candidates", func() {
-			Context("ipv4: Allow IPv4 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp4") // , "--port-forwarding=false")
+			BeforeEach(func() {
+				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "host"))
 			})
 
-			Context("ipv6: Allow IPv6 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "host", "--ice-network-type", "udp6")
-			})
+			ConnectivityTests()
 		})
 
 		Context("srflx: Allow only server reflexive candidates", func() {
-			Context("ipv4: Allow IPv4 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp4")
+			BeforeEach(func() {
+				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "srflx"))
 			})
 
-			Context("ipv6: Allow IPv6 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "srflx", "--ice-network-type", "udp6")
-			})
+			ConnectivityTests()
 		})
 
 		Context("relay: Allow only relay candidates", func() {
+			BeforeEach(func() {
+				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "relay"))
+			})
+
 			Context("ipv4: Allow IPv4 network only", func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp4")
+				BeforeEach(func() {
+					n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp4"))
+				})
+
+				n.ConnectivityTests()
 			})
 
 			// TODO: Check why IPv6 relay is not working
 			// Blocked by: https://github.com/pion/ice/pull/462
-			Context("ipv6", Pending, func() {
-				n.ConnectivityTestsWithExtraArgs("--ice-candidate-type", "relay", "--ice-network-type", "udp6")
+			Context("ipv6: Allow IPv6 network only", Pending, func() {
+				BeforeEach(func() {
+					n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp6"))
+				})
+
+				n.ConnectivityTests()
 			})
 		})
 	})
