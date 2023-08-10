@@ -103,10 +103,12 @@ func (s *GrpcSignalingNode) Close() error {
 	return s.Stop()
 }
 
-func (s *GrpcSignalingNode) URL() *url.URL {
-	return &url.URL{
+func (s *GrpcSignalingNode) URL() url.URL {
+	hostPort := fmt.Sprintf("%s:%d", s.Name(), s.port)
+
+	return url.URL{
 		Scheme:   "grpc",
-		Host:     fmt.Sprintf("%s:%d", s.Name(), s.port),
+		Host:     hostPort,
 		RawQuery: "insecure=true",
 	}
 }

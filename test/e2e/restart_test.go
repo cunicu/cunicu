@@ -60,7 +60,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 		n.AgentOptions = append(n.AgentOptions,
 			gopt.EmptyDir(wg.ConfigPath),
 			gopt.EmptyDir(wg.SocketPath),
-			opt.ExtraArgs{"--ice-candidate-type", "host"},
+			opt.ConfigValue("ice.candidate_types", "host"),
 		)
 
 		n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
@@ -170,7 +170,7 @@ var _ = Context("restart: Restart ICE agents", func() {
 
 			By("Re-starting first agent again")
 
-			err = n1.Start("", n.BasePath, n.AgentArgs()...)
+			err = n1.Start("", n.BasePath, n.AgentConfig())
 			Expect(err).To(Succeed(), "Failed to restart first agent: %s", err)
 		})
 	})

@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/v2"
 	g "github.com/stv0g/gont/v2/pkg"
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
@@ -20,10 +22,15 @@ import (
 	"github.com/stv0g/cunicu/pkg/log"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
 	"github.com/stv0g/cunicu/pkg/rpc"
+	"github.com/stv0g/cunicu/test/e2e/nodes/options"
 )
 
 type AgentOption interface {
 	Apply(a *Agent)
+}
+
+type AgentConfigOption interface {
+	Apply(k *koanf.Koanf)
 }
 
 // Agent is a host running the cunīcu daemon.
@@ -33,17 +40,15 @@ type AgentOption interface {
 type Agent struct {
 	*g.Host
 
-	Command *g.Cmd
-	Client  *rpc.Client
-
+	Config          *koanf.Koanf
+	Command         *g.Cmd
+	Client          *rpc.Client
 	WireGuardClient *wgctrl.Client
 
-	ExtraArgs           []any
 	WireGuardInterfaces []*WireGuardInterface
 
 	logFile io.WriteCloser
-
-	logger *log.Logger
+	logger  *log.Logger
 }
 
 func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
@@ -53,15 +58,27 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	}
 
 	a := &Agent{
-		Host: h,
+		Host:   h,
+		Config: koanf.New("."),
 
 		logger: log.Global.Named("node.agent").With(zap.String("node", name)),
 	}
 
+	// Default config
+	options.ConfigMap{
+		"experimental": true,
+		"log.level":    "debug10",
+		"rpc.wait":     true,
+		"sync_hosts":   false,
+	}.Apply(a.Config)
+
 	// Apply agent options
 	for _, opt := range opts {
-		if aopt, ok := opt.(AgentOption); ok {
+		switch aopt := opt.(type) {
+		case AgentOption:
 			aopt.Apply(a)
+		case AgentConfigOption:
+			aopt.Apply(a.Config)
 		}
 	}
 
@@ -76,19 +93,32 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	return a, nil
 }
 
-func (a *Agent) Start(_, dir string, extraArgs ...any) error {
-	var err error
-	rpcSockPath := fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
+func (a *Agent) Start(_, dir string, args ...any) (err error) {
+	cfgPath := fmt.Sprintf("%s/%s.yaml", dir, a.Name())
 	logPath := fmt.Sprintf("%s/%s.log", dir, a.Name())
+	rpcPath := fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
+
+	// Create agent configuration
+	cfg := a.Config.Copy()
+	cfg.Set("rpc.socket", rpcPath) //nolint:errcheck
+
+	extraArgs := []any{}
+	for _, arg := range args {
+		if aopt, ok := arg.(AgentConfigOption); ok {
+			aopt.Apply(cfg)
+		} else {
+			extraArgs = append(extraArgs, arg)
+		}
+	}
 
 	// Old RPC sockets are also removed by cunīcu.
 	// However we also need to do it here to avoid racing
 	// against rpc.Connect() further down here
-	if err := os.RemoveAll(rpcSockPath); err != nil {
+	if err := os.RemoveAll(rpcPath); err != nil {
 		return fmt.Errorf("failed to remove old socket: %w", err)
 	}
 
-	binary, profileArgs, err := BuildBinary(a.Name())
+	binary, startArgs, err := BuildBinary(a.Name())
 	if err != nil {
 		return fmt.Errorf("failed to build: %w", err)
 	}
@@ -98,27 +128,28 @@ func (a *Agent) Start(_, dir string, extraArgs ...any) error {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
 
-	args := profileArgs
-	args = append(args,
-		"daemon",
-		"--rpc-socket", rpcSockPath,
-		"--rpc-wait",
-		"--log-level", "debug5",
-		"--sync-hosts=false",
-	)
-	args = append(args, a.ExtraArgs...)
-	args = append(args, extraArgs...)
-	args = append(args,
-		copt.Combined(a.logFile),
-		copt.Dir(dir),
-		copt.EnvVar("CUNICU_EXPERIMENTAL", "1"),
-	)
+	cfgRaw, err := cfg.Marshal(yaml.Parser())
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
 
-	if a.Command, err = a.Host.Start(binary, args...); err != nil {
+	if err := os.WriteFile(cfgPath, cfgRaw, 0o644); err != nil { //nolint:gosec
+		return fmt.Errorf("failed to write config file: %w", err)
+	}
+
+	startArgs = append(startArgs,
+		copt.Combined(a.logFile),
+		copt.EnvVar("CUNICU_CONFIG_ALLOW_INSECURE", "true"),
+		copt.Dir(dir),
+		"daemon", "--config", cfgPath,
+	)
+	startArgs = append(startArgs, extraArgs...)
+
+	if a.Command, err = a.Host.Start(binary, startArgs...); err != nil {
 		return fmt.Errorf("failed to start: %w", err)
 	}
 
-	if a.Client, err = rpc.Connect(rpcSockPath); err != nil {
+	if a.Client, err = rpc.Connect(rpcPath); err != nil {
 		return fmt.Errorf("failed to connect to to control socket: %w", err)
 	}
 

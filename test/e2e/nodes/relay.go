@@ -4,7 +4,8 @@
 package nodes
 
 import (
-	"github.com/pion/stun"
+	"net/url"
+
 	g "github.com/stv0g/gont/v2/pkg"
 )
 
@@ -12,9 +13,7 @@ type RelayNode interface {
 	Node
 
 	WaitReady() error
-	URLs() []*stun.URI
-	Username() string
-	Password() string
+	URLs() []url.URL
 
 	// Options
 	Apply(i *g.Interface)

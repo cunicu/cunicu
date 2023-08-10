@@ -14,6 +14,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/pflag"
@@ -25,6 +26,8 @@ type Config struct {
 	*Settings
 	*Meta
 	*koanf.Koanf
+	Runtime      *koanf.Koanf
+	Sources      []*Source
 	ExtraSources []*Source
 
 	// Settings which are not configurable via configuration file
@@ -53,6 +56,16 @@ func ParseArgs(args ...string) (*Config, error) {
 	}
 
 	return c, c.Init(c.flags.Args())
+}
+
+func ParseRaw(cfg string) (*Config, error) {
+	c := New(nil)
+
+	c.ExtraSources = append(c.ExtraSources, &Source{
+		Provider: rawbytes.Provider([]byte(cfg)),
+	})
+
+	return c, c.Init(nil)
 }
 
 // New creates a new configuration instance.
@@ -139,6 +152,8 @@ func (c *Config) Init(args []string) error {
 			}
 		}
 	}
+
+	c.Sources = append(c.Sources, c.ExtraSources...)
 
 	_, err = c.Reload()
 

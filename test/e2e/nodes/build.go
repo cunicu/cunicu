@@ -4,6 +4,7 @@
 package nodes
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -31,6 +32,8 @@ var (
 	binaryPath    string
 	binaryRunArgs []string
 	binaryOnce    sync.Once
+
+	errBuild = errors.New("failed to build")
 )
 
 func BuildBinary(name string) (string, []any, error) {
@@ -130,7 +133,7 @@ func buildBinary(packagePath string) (string, []string, error) {
 		zap.Bool("test", test))
 
 	if output, err := exec.Command("go", cmdArgs...).CombinedOutput(); err != nil {
-		return "", nil, fmt.Errorf("failed to build %s:\n\nError:\n%s\n\nOutput:\n%s", packagePath, path, string(output))
+		return "", nil, fmt.Errorf("%w %s:\n\nError:\n%s\n\nOutput:\n%s", errBuild, packagePath, path, string(output))
 	}
 
 	logger.Debug("Finished building",
