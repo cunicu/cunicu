@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"
 )
@@ -51,13 +52,15 @@ Code & Issues:
 )
 
 type options struct {
-	logFilter string
-	logFile   string
+	logRules  []string
+	logFiles  []string
 	colorMode string
 }
 
 var (
 	logger *log.Logger //nolint:gochecknoglobals
+	stdout io.Writer   //nolint:gochecknoglobals
+	opts   options     //nolint:gochecknoglobals
 	color  bool        //nolint:gochecknoglobals
 
 	// Do not use colors during generation of docs
@@ -82,20 +85,18 @@ in which WireGuard kernel support has not landed yet.`,
 )
 
 func init() { //nolint:gochecknoinits
-	opts := &options{}
-
 	rootCmd.SetUsageTemplate(usageTemplate)
 
 	cobra.OnInitialize(func() {
-		onInitialize(opts)
+		setupLogging(nil)
 	})
 
 	f := rootCmd.Flags()
 	f.SortFlags = false
 
 	pf := rootCmd.PersistentFlags()
-	pf.StringVarP(&opts.logFilter, "log-level", "d", "info", "log level filter rule (one of: debug, info, warn, error, dpanic, panic, and fatal)")
-	pf.StringVarP(&opts.logFile, "log-file", "l", "", "path of a file to write logs to")
+	pf.StringArrayVarP(&opts.logRules, "log-level", "d", nil, "log level filter rule (one of: debug, info, warn, error, dpanic, panic, and fatal) (default \"info\")")
+	pf.StringArrayVarP(&opts.logFiles, "log-file", "l", nil, "path of a file to write logs to")
 	pf.StringVarP(&opts.colorMode, "color", "q", "auto", "Enable colorization of output (one of: auto, always, never)")
 
 	if err := rootCmd.RegisterFlagCompletionFunc("log-level", cobra.FixedCompletions([]string{"debug", "info", "warn", "error", "dpanic", "panic", "fatal"}, cobra.ShellCompDirectiveNoFileComp)); err != nil {
@@ -107,9 +108,13 @@ func init() { //nolint:gochecknoinits
 	}
 }
 
-func onInitialize(opts *options) {
-	// Handle color output
-	switch opts.colorMode {
+func setupLogging(cfg *config.LogSettings) {
+	// Color
+	colorMode := opts.colorMode
+	if cfg != nil && cfg.Color != "" {
+		colorMode = cfg.Color
+	}
+	switch colorMode {
 	case "auto":
 		color = tty.IsATTY(os.Stdout)
 	case "always":
@@ -123,15 +128,31 @@ func onInitialize(opts *options) {
 		stdout = tty.NewANSIStripper(stdout)
 	}
 
-	// Setup logging
-	outputPaths := []string{"stdout"}
+	// Files
+	outputPaths := append([]string{"stdout"}, opts.logFiles...)
 
-	if opts.logFile != "" {
-		outputPaths = append(outputPaths, opts.logFile)
+	if cfg != nil && cfg.File != "" {
+		outputPaths = append(outputPaths, cfg.File)
 	}
 
-	var err error
-	logger, err = log.SetupLogging(opts.logFilter, outputPaths, color)
+	// Rules
+	rules := []string{}
+	rules = append(rules, opts.logRules...)
+
+	if cfg != nil {
+		rules = append(rules, cfg.Rules...)
+	}
+
+	if len(rules) == 0 {
+		rules = []string{"info"}
+	}
+
+	filterRule, err := log.ParseFilter(rules)
+	if err != nil {
+		panic(err)
+	}
+
+	logger, err = log.SetupLogging(filterRule, outputPaths, color)
 	if err != nil {
 		panic(err)
 	}

@@ -25,8 +25,7 @@ type Config struct {
 	*Settings
 	*Meta
 	*koanf.Koanf
-	Runtime *koanf.Koanf
-	Sources []*Source
+	ExtraSources []*Source
 
 	// Settings which are not configurable via configuration file
 	Files   []string

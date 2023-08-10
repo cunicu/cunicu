@@ -17,7 +17,6 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	Rule   AtomicFilterRule
 	Global *Logger
 )
 
@@ -43,7 +42,7 @@ type alwaysEnabled struct{}
 
 func (e *alwaysEnabled) Enabled(zapcore.Level) bool { return true }
 
-func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err error) {
+func SetupLogging(rule *Filter, paths []string, color bool) (logger *Logger, err error) {
 	cfg := encoderConfig{
 		Time:             true,
 		Level:            true,
@@ -80,19 +79,14 @@ func SetupLogging(rule string, paths []string, color bool) (logger *Logger, err 
 	enc := newEncoder(cfg)
 	core := zapcore.NewCore(enc, ws, &alwaysEnabled{})
 
-	if rule != "" {
-		filterRule, err := ParseFilterRule(rule)
-		if err != nil {
-			return nil, err
-		}
-
-		Rule.Store(filterRule)
+	if rule != nil {
+		filter.Store(rule)
 	}
 
 	zlogger := zap.New(core,
 		zap.ErrorOutput(ws),
 		zap.WrapCore(func(c zapcore.Core) zapcore.Core {
-			return NewFilteredCore(c, &Rule)
+			return newFilteredCore(c, &filter)
 		}))
 
 	zlogger.Level()
