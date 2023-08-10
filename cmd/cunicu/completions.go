@@ -5,25 +5,26 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/rpc"
 )
 
 //nolint:gochecknoglobals
 var BooleanCompletions = cobra.FixedCompletions([]string{"true", "false"}, cobra.ShellCompDirectiveNoFileComp)
 
 func interfaceValidArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
-	// Establish RPC connection
-	if err := rpcConnect(cmd, args); err != nil {
-		return nil, cobra.ShellCompDirectiveError
+	rpcClient, err := rpc.Connect(rpcSockPath)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	defer rpcDisconnect(cmd, args) //nolint:errcheck
+	defer rpcClient.Close()
 
 	p := &rpcproto.GetStatusParams{}
-
 	if len(args) > 0 {
 		p.Interface = args[0]
 	}
@@ -47,4 +48,35 @@ func interfaceValidArgs(cmd *cobra.Command, args []string, _ string) ([]string, 
 	}
 
 	return comps, cobra.ShellCompDirectiveNoFileComp
+}
+
+func getCommandParts(cmd *cobra.Command) []string {
+	var chain []string
+	if parent := cmd.Parent(); parent != nil {
+		chain = getCommandParts(parent)
+	}
+
+	parts := strings.SplitN(cmd.Use, " ", 2)
+	chain = append(chain, parts[0])
+
+	return chain
+}
+
+func rpcValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	rpcClient, err := rpc.Connect(rpcSockPath)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	defer rpcClient.Close()
+
+	resp, err := rpcClient.GetCompletion(context.Background(), &rpcproto.GetCompletionParams{
+		Cmd:        getCommandParts(cmd),
+		Args:       args,
+		ToComplete: toComplete,
+	})
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	return resp.Options, cobra.ShellCompDirective(resp.Flags)
 }

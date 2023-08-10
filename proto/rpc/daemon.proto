@@ -47,6 +47,17 @@ message ShutdownParams {
     bool restart = 1;
 }
 
+message GetCompletionParams {
+    repeated string cmd = 1;
+    repeated string args = 2;
+    string to_complete = 3;
+}
+
+message GetCompletionResp {
+    repeated string options = 1;
+    int32 flags = 2;
+}
+
 service Daemon {
     rpc GetBuildInfo(Empty) returns (BuildInfo) {}
     rpc StreamEvents(Empty) returns (stream Event) {}
@@ -57,6 +68,7 @@ service Daemon {
     
     rpc SetConfig(SetConfigParams) returns (Empty) {}
     rpc GetConfig(GetConfigParams) returns (GetConfigResp) {}
+    rpc GetCompletion(GetCompletionParams) returns (GetCompletionResp) {}
     rpc ReloadConfig(Empty) returns (Empty) {}
     
     rpc AddPeer(AddPeerParams) returns (AddPeerResp) {}
