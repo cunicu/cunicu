@@ -4,8 +4,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/stv0g/cunicu/pkg/tty"
 )
 
@@ -13,10 +11,7 @@ func Banner(color bool) string {
 	nop := func(s string) string { return s }
 	w, o, d := nop, nop, nop
 
-	// Do not use colors during generation of docs
-	isDocGen := len(os.Args) > 1 && os.Args[1] == "docs"
-
-	if color && !isDocGen {
+	if color {
 		w = func(s string) string {
 			return tty.Mods(s, tty.Bold, tty.Color256(15))
 		}

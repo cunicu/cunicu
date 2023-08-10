@@ -59,12 +59,14 @@ type options struct {
 var (
 	logger *log.Logger //nolint:gochecknoglobals
 	color  bool        //nolint:gochecknoglobals
-	stdout io.Writer   //nolint:gochecknoglobals
+
+	// Do not use colors during generation of docs
+	isDocGen = len(os.Args) > 1 && os.Args[1] == "docs"
 
 	rootCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "cunicu",
 		Short: "cunīcu is a user-space daemon managing WireGuard® interfaces to establish peer-to-peer connections in harsh network environments.",
-		Long: Banner(tty.IsATTY(os.Stdout)) + `cunīcu is a user-space daemon managing WireGuard® interfaces to
+		Long: Banner(!isDocGen) + `cunīcu is a user-space daemon managing WireGuard® interfaces to
 establish peer-to-peer connections in harsh network environments.
 
 It relies on the awesome pion/ice package for the interactive
