@@ -7,10 +7,10 @@ package hsync
 import (
 	"fmt"
 	"net/netip"
+	"slices"
 	"strings"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/log"

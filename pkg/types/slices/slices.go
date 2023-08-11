@@ -4,14 +4,13 @@
 package slices
 
 import (
+	"cmp"
 	"fmt"
 	"math/rand"
-
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
-func Diff[T constraints.Ordered](oldSlice, newSlice []T) (added, removed, kept []T) {
+func Diff[T cmp.Ordered](oldSlice, newSlice []T) (added, removed, kept []T) {
 	return DiffFunc(oldSlice, newSlice, func(a, b T) int {
 		switch {
 		case a == b:

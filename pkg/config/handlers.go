@@ -4,9 +4,8 @@
 package config
 
 import (
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/types"
 )

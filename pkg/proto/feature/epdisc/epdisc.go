@@ -6,11 +6,11 @@ package epdisc
 import (
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/randutil"
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/tty"

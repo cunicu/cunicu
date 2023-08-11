@@ -5,9 +5,8 @@ package log
 
 import (
 	"reflect"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 func getFieldName(field reflect.StructField) (string, bool) {

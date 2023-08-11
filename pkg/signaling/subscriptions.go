@@ -6,10 +6,10 @@ package signaling
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/log"

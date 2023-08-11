@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -21,7 +22,6 @@ import (
 
 	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/tty"
 )

@@ -3,7 +3,7 @@
 
 package daemon
 
-import "golang.org/x/exp/slices"
+import "slices"
 
 type InterfaceHandler interface {
 	OnInterfaceAdded(i *Interface)

@@ -4,9 +4,8 @@
 package slices_test
 
 import (
+	"slices"
 	"testing"
-
-	"golang.org/x/exp/slices"
 
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 	"github.com/stv0g/cunicu/test"

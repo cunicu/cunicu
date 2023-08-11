@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 

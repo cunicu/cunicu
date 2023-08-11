@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/maps"
 
 	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/types/maps"
 )
 
 type ProgressHandler interface {

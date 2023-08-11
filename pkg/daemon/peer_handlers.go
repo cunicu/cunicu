@@ -5,8 +5,8 @@ package daemon
 
 import (
 	"net"
+	"slices"
 
-	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 

@@ -4,13 +4,11 @@
 package types
 
 import (
+	"slices"
 	"sync/atomic"
-
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
-type AtomicEnum[T constraints.Integer] atomic.Uint64
+type AtomicEnum[T Integer] atomic.Uint64
 
 func (a *AtomicEnum[T]) Load() T {
 	return T((*atomic.Uint64)(a).Load())

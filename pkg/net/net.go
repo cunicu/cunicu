@@ -7,8 +7,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"net"
-
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 func CmpUDPAddr(a, b *net.UDPAddr) int {
