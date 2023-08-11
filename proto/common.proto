@@ -30,3 +30,7 @@ message BuildInfos {
 	BuildInfo client = 1;
 	BuildInfo daemon = 2;
 }
+
+message Error {
+	string message = 1;
+}

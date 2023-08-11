@@ -19,12 +19,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"
 	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/log"
 	osx "github.com/stv0g/cunicu/pkg/os"
 	"github.com/stv0g/cunicu/pkg/proto"
 	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
@@ -173,77 +173,42 @@ func (s *DaemonServer) GetStatus(_ context.Context, p *rpcproto.GetStatusParams)
 }
 
 func (s *DaemonServer) SetConfig(_ context.Context, p *rpcproto.SetConfigParams) (*proto.Empty, error) {
-	errs := []error{}
 	settings := map[string]any{}
 
-	numChanges := 0
-
 	for key, value := range p.Settings {
-		switch key {
-		case "log.rules":
-			rules := strings.Split(value, ",")
-			filter, err := log.ParseFilter(rules)
-			if err != nil {
-				errs = append(errs, err)
-			}
-			log.UpdateFilter(filter)
-			numChanges++
-
+		switch {
+		case value.Scalar != "":
+			settings[key] = value.Scalar
+		case len(value.List) > 0:
+			settings[key] = value.List
 		default:
-			if value == "" { // Unset value
-				settings[key] = nil
-			} else {
-				settings[key] = value
-			}
+			settings[key] = nil // Unset
 		}
 	}
 
-	changes, err := s.Config.Update(settings)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	numChanges += len(changes)
-	if numChanges == 0 {
-		errs = append(errs, errNoSettingChanged)
-	}
-
-	if len(errs) > 0 {
-		errstrs := []string{}
-		for _, err := range errs {
-			errstrs = append(errstrs, err.Error())
-		}
-
-		return nil, status.Error(codes.InvalidArgument, strings.Join(errstrs, ", "))
-	}
-
-	if err := s.Config.SaveRuntime(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Failed to save runtime configuration: %s", err)
+	if changes, err := s.Config.Update(settings); err != nil {
+		return nil, decodeError(err)
+	} else if len(changes) == 0 {
+		return nil, status.Error(codes.InvalidArgument, errNoSettingChanged.Error())
 	}
 
 	return &proto.Empty{}, nil
 }
 
 func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams) (*rpcproto.GetConfigResp, error) {
-	settings := map[string]string{}
-
-	match := func(key string) bool {
-		return p.KeyFilter == "" || strings.HasPrefix(key, p.KeyFilter)
-	}
+	settings := map[string]*rpcproto.ConfigValue{}
 
 	for key, value := range s.Config.All() {
-		if match(key) {
-			str, err := settingToString(value)
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "Failed to marshal: %s", err)
-			}
-
-			settings[key] = str
+		if p.KeyFilter != "" && !strings.HasPrefix(key, p.KeyFilter) {
+			continue
 		}
-	}
 
-	if match("log.rules") {
-		settings["log.rules"] = log.CurrentFilter().String()
+		str, err := settingToValue(value)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "Failed to marshal: %s", err)
+		}
+
+		settings[key] = str
 	}
 
 	return &rpcproto.GetConfigResp{
@@ -255,11 +220,13 @@ func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetComp
 	var options []string
 	var flags cobra.ShellCompDirective
 
-	if len(params.Cmd) < 2 || params.Cmd[0] != "cunicu" {
+	switch {
+	case len(params.Cmd) < 2 || params.Cmd[0] != "cunicu":
 		flags = cobra.ShellCompDirectiveError
-	} else if params.Cmd[1] == "config" {
-		options, flags = s.getConfigCompletion(params.Cmd[2], params.Args, params.ToComplete)
-	} else {
+	case params.Cmd[1] == "config":
+		flags = cobra.ShellCompDirectiveNoFileComp
+		options = s.getConfigCompletion(params.Cmd[2], params.Args, params.ToComplete)
+	default:
 		flags = cobra.ShellCompDirectiveNoFileComp
 	}
 
@@ -269,11 +236,11 @@ func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetComp
 	}, nil
 }
 
-func (s *DaemonServer) getConfigCompletion(cmd string, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func (s *DaemonServer) getConfigCompletion(cmd string, args []string, toComplete string) []string {
 	var options []string
 	if isValueCompletion := len(args) > 0; isValueCompletion {
 		if cmd != "set" {
-			return nil, cobra.ShellCompDirectiveNoFileComp
+			return nil
 		}
 
 		if meta := s.Config.Meta.Lookup(args[0]); meta != nil {
@@ -289,12 +256,12 @@ func (s *DaemonServer) getConfigCompletion(cmd string, args []string, toComplete
 		})
 	}
 
-	return options, cobra.ShellCompDirectiveNoFileComp
+	return options
 }
 
 func (s *DaemonServer) ReloadConfig(_ context.Context, _ *proto.Empty) (*proto.Empty, error) {
-	if _, err := s.Config.Reload(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to reload configuration: %s", err)
+	if _, err := s.Config.ReloadAllSources(); err != nil {
+		return nil, decodeError(err)
 	}
 
 	return &proto.Empty{}, nil
@@ -404,33 +371,56 @@ func (s *DaemonServer) OnPeerStateChanged(p *daemon.Peer, newState, prevState da
 	})
 }
 
-func settingToString(value any) (string, error) {
-	v := reflect.ValueOf(value)
-	switch {
-	case v.Kind() == reflect.Slice:
-		s := []string{}
-		for i := 0; i < v.Len(); i++ {
-			e := v.Index(i)
-			in := e.Interface()
-
-			if tm, ok := in.(encoding.TextMarshaler); ok {
-				b, err := tm.MarshalText()
-				if err != nil {
-					return "", err
-				}
-
-				s = append(s, string(b))
-			} else {
-				s = append(s, fmt.Sprint(in))
-			}
+func serializeToString(in any) (string, error) {
+	if tm, ok := in.(encoding.TextMarshaler); ok {
+		b, err := tm.MarshalText()
+		if err != nil {
+			return "", err
 		}
 
-		return strings.Join(s, ","), nil
-
-	case value == nil:
-		return "", nil
-
-	default:
-		return fmt.Sprintf("%v", value), nil
+		return string(b), nil
 	}
+
+	return fmt.Sprint(in), nil
+}
+
+func settingToValue(val any) (*rpcproto.ConfigValue, error) {
+	cval := &rpcproto.ConfigValue{}
+
+	if val == nil {
+		return cval, nil
+	} else if rval := reflect.ValueOf(val); rval.Kind() == reflect.Slice {
+		for i := 0; i < rval.Len(); i++ {
+			e := rval.Index(i)
+
+			s, err := serializeToString(e.Interface())
+			if err != nil {
+				return nil, err
+			}
+
+			cval.List = append(cval.List, s)
+		}
+	} else {
+		cval.Scalar = fmt.Sprint(val)
+	}
+
+	return cval, nil
+}
+
+func decodeError(err error) error {
+	var msErr *mapstructure.Error
+
+	if errors.As(err, &msErr) {
+		sts := status.New(codes.InvalidArgument, "Failed to decode")
+
+		for _, err := range msErr.Errors {
+			sts, _ = sts.WithDetails(&proto.Error{
+				Message: err,
+			})
+		}
+
+		return sts.Err()
+	}
+
+	return status.Error(codes.InvalidArgument, err.Error())
 }
