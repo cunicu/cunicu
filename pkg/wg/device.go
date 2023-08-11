@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
-	"golang.org/x/exp/slices"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
 	"github.com/stv0g/cunicu/pkg/crypto"

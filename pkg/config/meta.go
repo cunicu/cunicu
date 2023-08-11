@@ -5,11 +5,11 @@ package config
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pion/ice/v2"
-	"golang.org/x/exp/slices"
 
 	"github.com/stv0g/cunicu/pkg/types"
 )

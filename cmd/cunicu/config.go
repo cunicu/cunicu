@@ -6,17 +6,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	statusx "google.golang.org/grpc/status"
 
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"github.com/stv0g/cunicu/pkg/types/maps"
 )
 
 func init() { //nolint:gochecknoinits

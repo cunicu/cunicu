@@ -9,11 +9,11 @@ import (
 	"io"
 	"net"
 	"net/netip"
+	"slices"
 	"sync"
 
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 
 	"github.com/stv0g/cunicu/pkg/log"

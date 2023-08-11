@@ -7,8 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
-
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/stv0g/cunicu/pkg/log"
 )

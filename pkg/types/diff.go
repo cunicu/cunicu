@@ -7,8 +7,8 @@ import (
 	"reflect"
 
 	kmaps "github.com/knadh/koanf/maps"
-	"golang.org/x/exp/maps"
 
+	mapsx "github.com/stv0g/cunicu/pkg/types/maps"
 	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
 )
 
@@ -26,8 +26,8 @@ func DiffMap(oldMap, newMap map[string]any) map[string]Change {
 
 func diffMap(oldMap, newMap map[string]any) map[string]Change {
 	added, removed, kept := slicesx.Diff(
-		maps.Keys(oldMap),
-		maps.Keys(newMap),
+		mapsx.Keys(oldMap),
+		mapsx.Keys(newMap),
 	)
 
 	changes := map[string]Change{}

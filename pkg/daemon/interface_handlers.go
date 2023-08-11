@@ -4,7 +4,7 @@
 package daemon
 
 import (
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/stv0g/cunicu/pkg/wg"
 )
