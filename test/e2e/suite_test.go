@@ -26,7 +26,6 @@ type testOptions struct {
 	setup   bool
 	persist bool
 	capture bool
-	debug   bool
 	timeout time.Duration
 }
 
@@ -35,7 +34,6 @@ func init() { //nolint:gochecknoinits
 	flag.BoolVar(&options.setup, "setup", false, "Do not run the actual tests, but stop after test-network setup")
 	flag.BoolVar(&options.persist, "persist", false, "Do not tear-down virtual network")
 	flag.BoolVar(&options.capture, "capture", false, "Captures network-traffic to PCAPng file")
-	flag.BoolVar(&options.debug, "debug", false, "Start debugging agents and signaling servers")
 	flag.DurationVar(&options.timeout, "timeout", 10*time.Minute, "Timeout for connectivity tests")
 }
 
