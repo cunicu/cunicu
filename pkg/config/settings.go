@@ -75,6 +75,7 @@ func (s *ICESettings) HasNetworkType(nt ice.NetworkType) bool {
 }
 
 type LogSettings struct {
+	Level  string   `koanf:"level,omitempty"`
 	Rules  []string `koanf:"rules,omitempty"`
 	File   string   `koanf:"file,omitempty"`
 	Color  string   `koanf:"color,omitempty"`

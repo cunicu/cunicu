@@ -27,6 +27,54 @@ rpc:
   wait: false
 
 
+# Logging configuration
+log:
+  # Show a banner during start of daemon
+  banner: true
+
+  # Use one of
+  #  - auto    only colorize log output on TTYs
+  #  - never   never colorize log output
+  #  - always  always colorize log output
+  color: auto
+
+  # A path to a custom log file
+  file: mylogfile.log
+
+  # The standard log level
+  level: info
+
+  # Additional logging rules
+  # Rule syntax:
+  #
+  #   RULE: LEVELS:NAMESPACES
+  #
+  #   LEVELS: LEVEL[,LEVELS]
+  #   LEVEL: one of
+  #    -  SEVERITY        for matching all levels with equal or higher severity
+  #    - >SEVERITY        for matching all levels with higher severity
+  #    - =SEVERITY        for matching all levels with equal severity
+  #    - <SEVERITY        for matching all levels with lower severity
+  #
+  #   SEVERITY: one of
+  #    - debug10..debug1
+  #    - debug
+  #    - info
+  #    - warn
+  #    - error
+  #    - fatal
+  #    - panic
+  #
+  #   NAMESPACES: NAMESPACE[,NAMESPACES]
+  #   NAMESPACE: one of
+  #    - namespace        should be exactly this namespace
+  #    - *mat*ch*         should match
+  #    - -NAMESPACE       should not match a namespace
+  rules:
+  - debug5:watcher,daemon
+  - debug6:epdisc.*
+
+
 #### Interface settings start here
 # The following settings can be overwritten for each interface
 # using the 'interfaces' settings (see below).

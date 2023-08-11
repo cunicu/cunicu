@@ -193,7 +193,7 @@ func ParseRules(rules []string) (FilterFunc, error) {
 //	 - LEVELS
 //	LEVELS: LEVEL[,LEVELS]
 //	LEVEL: see `Level Patterns`
-//	NAMESPACES: NAMESPACE[,NAMESPACE]
+//	NAMESPACES: NAMESPACE[,NAMESPACES]
 //	NAMESPACE: one of:
 //	 - namespace     // Should be exactly this namespace
 //	 - *mat*ch*      // Should match
