@@ -33,15 +33,15 @@ func (l *grpcLogger) Warningf(format string, args ...any) {
 }
 
 func (l *grpcLogger) Info(args ...any) {
-	l.log(TraceLevel, "", args)
+	l.log(VerboseLevel(20), "", args)
 }
 
 func (l *grpcLogger) Infof(format string, args ...any) {
-	l.log(TraceLevel, format, args)
+	l.log(VerboseLevel(20), format, args)
 }
 
 func (l *grpcLogger) InfoDepth(_ int, args ...any) {
-	l.log(TraceLevel, "", args)
+	l.log(VerboseLevel(20), "", args)
 }
 
 func (l *grpcLogger) WarningDepth(_ int, args ...any) {
