@@ -22,7 +22,7 @@ import (
 
 var _ = Describe("lookup", func() {
 	It("should not load anything from domains without auto-configuration", func() {
-		_, err := parseArgs("-D", "google.com")
+		_, err := parseArgs("-D", "steffenvogel.de")
 
 		Expect(err).To(
 			And(
