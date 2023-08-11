@@ -14,7 +14,7 @@ import (
 )
 
 func (i *Interface) OnInterfaceModified(_ *daemon.Interface, _ *wg.Interface, m daemon.InterfaceModifier) {
-	if m.Is(daemon.InterfaceModifiedListenPort) {
+	if m.Is(daemon.InterfaceModifiedListenPort) && i.nat != nil {
 		if err := i.updateNATRules(); err != nil {
 			i.logger.Error("Failed to update NAT rules", zap.Error(err))
 		}
