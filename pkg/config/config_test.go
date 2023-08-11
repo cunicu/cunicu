@@ -5,6 +5,7 @@ package config_test
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pion/ice/v2"
+	"github.com/spf13/pflag"
 
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/crypto"
@@ -49,14 +51,14 @@ var _ = Context("config", func() {
 
 	Describe("parse command line arguments", func() {
 		It("can parse a boolean argument like --wg-userspace", func() {
-			cfg, err := config.ParseArgs("--wg-userspace")
+			cfg, err := parseArgs("--wg-userspace")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.DefaultInterfaceSettings.UserSpace).To(BeTrue())
 		})
 
 		It("can parse multiple backends", func() {
-			cfg, err := config.ParseArgs("--backend", "grpc", "--backend", "inprocess")
+			cfg, err := parseArgs("--backend", "grpc", "--backend", "inprocess")
 
 			Expect(err).To(Succeed())
 			Expect(cfg.Backends).To(HaveLen(2))
@@ -65,7 +67,7 @@ var _ = Context("config", func() {
 		})
 
 		It("parse an interface list", func() {
-			cfg, err := config.ParseArgs("wg0", "wg1")
+			cfg, err := parseArgs("wg0", "wg1")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
@@ -74,7 +76,7 @@ var _ = Context("config", func() {
 		})
 
 		It("parse an interface list with patterns", func() {
-			cfg, err := config.ParseArgs("wg0", "wg1", "wg-work-*")
+			cfg, err := parseArgs("wg0", "wg1", "wg-work-*")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
@@ -85,13 +87,13 @@ var _ = Context("config", func() {
 		})
 
 		It("fails on invalid arguments", func() {
-			_, err := config.ParseArgs("--wrong")
+			_, err := parseArgs("--wrong")
 
 			Expect(err).To(MatchError("failed to parse command line flags: unknown flag: --wrong"))
 		})
 
 		It("fails on invalid arguments values", func() {
-			_, err := config.ParseArgs("--backend", ":_")
+			_, err := parseArgs("--backend", ":_")
 
 			Expect(err).To(MatchError(HaveSuffix("missing protocol scheme")))
 		})
@@ -106,14 +108,14 @@ var _ = Context("config", func() {
 
 				Context("file with explicit path", func() {
 					It("can read a single valid local file", func() {
-						cfg, err := config.ParseArgs("--config", cfgFile.Name())
+						cfg, err := parseArgs("--config", cfgFile.Name())
 
 						Expect(err).To(Succeed())
 						Expect(cfg.WatchInterval).To(Equal(1337 * time.Second))
 					})
 
 					Specify("that command line arguments take precedence over settings provided by configuration files", func() {
-						cfg, err := config.ParseArgs("--config", cfgFile.Name(), "--watch-interval", "1m")
+						cfg, err := parseArgs("--config", cfgFile.Name(), "--watch-interval", "1m")
 						Expect(err).To(Succeed())
 						Expect(cfg.WatchInterval).To(Equal(time.Minute))
 					})
@@ -129,7 +131,7 @@ var _ = Context("config", func() {
 					})
 
 					It("can read a single valid local file", func() {
-						cfg, err := config.ParseArgs()
+						cfg, err := parseArgs()
 
 						Expect(err).To(Succeed())
 						Expect(cfg.WatchInterval).To(Equal(1337 * time.Second))
@@ -156,7 +158,7 @@ var _ = Context("config", func() {
 				})
 
 				It("can fetch a valid remote configuration file", func() {
-					cfg, err := config.ParseArgs("--config", server.URL()+"/cunicu.yaml")
+					cfg, err := parseArgs("--config", server.URL()+"/cunicu.yaml")
 
 					Expect(err).To(Succeed())
 					Expect(cfg.WatchInterval).To(BeNumerically("==", 1337*time.Second))
@@ -168,7 +170,7 @@ var _ = Context("config", func() {
 				})
 
 				It("fails on loading an non-existent remote file", func() {
-					_, err := config.ParseArgs("--config", "http://example.com/doesnotexist.yaml")
+					_, err := parseArgs("--config", "http://example.com/doesnotexist.yaml")
 
 					Expect(err).To(HaveOccurred())
 				})
@@ -183,13 +185,13 @@ var _ = Context("config", func() {
 						errPattern = `no such file or directory$`
 					}
 
-					_, err := config.ParseArgs("--config", "/does-not-exist.yaml")
+					_, err := parseArgs("--config", "/does-not-exist.yaml")
 
 					Expect(err).To(MatchError(MatchRegexp(errPattern)))
 				})
 
 				It("fails on loading an non-existing remote file paths", func() {
-					_, err := config.ParseArgs("--config", "https://domain.invalid/config.yaml")
+					_, err := parseArgs("--config", "https://domain.invalid/config.yaml")
 
 					Expect(err).To(MatchError(MatchRegexp(`^failed to load config: failed to fetch https://domain\.invalid/config\.yaml`)))
 				})
@@ -201,7 +203,7 @@ var _ = Context("config", func() {
 		It("accepts settings via environment variables", func() {
 			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx")
 
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
@@ -214,7 +216,7 @@ var _ = Context("config", func() {
 		It("accepts multiple settings via environment variables", func() {
 			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx,relay")
 
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
@@ -228,9 +230,8 @@ var _ = Context("config", func() {
 		It("environment variables are overwritten by command line arguments", func() {
 			os.Setenv("CUNICU_WATCH_INTERVAL", "10s")
 
-			cfg, err := config.ParseArgs("--watch-interval", "5s")
+			cfg, err := parseArgs("--watch-interval", "5s")
 			Expect(err).To(Succeed())
-
 			Expect(cfg.WatchInterval).To(Equal(5 * time.Second))
 		})
 	})
@@ -241,7 +242,7 @@ var _ = Context("config", func() {
 		var icfg *config.InterfaceSettings
 
 		BeforeEach(func() {
-			cfg, err = config.ParseArgs()
+			cfg, err = parseArgs()
 			Expect(err).To(Succeed())
 
 			icfg = &cfg.DefaultInterfaceSettings
@@ -267,14 +268,14 @@ var _ = Context("config", func() {
 
 			args := []string{"--backend", "grpc://server1,grpc://server2", "--watch-interval", "10s", "wg0"}
 
-			cfg1, err = config.ParseArgs(args...)
+			cfg1, err = parseArgs(args...)
 			Expect(err).To(Succeed())
 
 			buf := &bytes.Buffer{}
 
 			Expect(cfg1.Marshal(buf)).To(Succeed())
 
-			cfg2, err = config.ParseArgs(args...)
+			cfg2, err = parseArgs(args...)
 			Expect(err).To(Succeed())
 
 			err = cfg2.Koanf.Load(rawbytes.Provider(buf.Bytes()), yaml.Parser())
@@ -310,7 +311,7 @@ var _ = Context("config", func() {
 		})
 
 		It("can parse the example config file", func() {
-			cfg, err := config.ParseArgs("--config", "../../etc/cunicu.advanced.yaml")
+			cfg, err := parseArgs("--config", "../../etc/cunicu.advanced.yaml")
 
 			Expect(err).To(Succeed())
 
@@ -326,18 +327,22 @@ var _ = Context("config", func() {
 	})
 
 	It("throws an error on an invalid config file path", func() {
-		_, err := config.ParseArgs("--config", "_:")
+		_, err := parseArgs("--config", "_:")
 		Expect(err).To(MatchError(HavePrefix("ignoring config file with invalid name")))
 	})
 
 	It("throws an error on an invalid config file URL schema", func() {
-		_, err := config.ParseArgs("--config", "smb://is-not-supported")
+		_, err := parseArgs("--config", "smb://is-not-supported")
 		Expect(err).To(MatchError("unsupported scheme 'smb' for config file"))
 	})
 
 	Describe("runtime", func() {
+		AfterEach(func() {
+			os.RemoveAll(config.RuntimeConfigFile)
+		})
+
 		It("can update multiple settings", func() {
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			_, err = cfg.Update(map[string]any{
@@ -353,7 +358,7 @@ var _ = Context("config", func() {
 		})
 
 		It("fails to update multiple settings which are incorrect", func() {
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			orig := cfg.DefaultInterfaceSettings.ListenPortRange
@@ -370,7 +375,7 @@ var _ = Context("config", func() {
 		})
 
 		It("can save runtime settings", func() {
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			_, err = cfg.Update(map[string]any{
@@ -379,7 +384,7 @@ var _ = Context("config", func() {
 			Expect(err).To(Succeed())
 
 			buf := &bytes.Buffer{}
-			Expect(cfg.MarshalRuntime(buf)).To(Succeed())
+			Expect(cfg.Runtime.Marshal(buf)).To(Succeed())
 			Expect(buf.Bytes()).To(MatchYAML("watch_interval: 100s"))
 		})
 	})
@@ -389,7 +394,7 @@ var _ = Context("config", func() {
 
 	Describe("interface overwrites", func() {
 		It("should accept all interfaces", func() {
-			cfg, err := config.ParseArgs()
+			cfg, err := parseArgs()
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"*"}))
@@ -401,7 +406,7 @@ var _ = Context("config", func() {
 		})
 
 		It("single interface as argument", func() {
-			cfg, err := config.ParseArgs("wg0")
+			cfg, err := parseArgs("wg0")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg0"}))
@@ -416,7 +421,7 @@ var _ = Context("config", func() {
 		})
 
 		It("single interface pattern as argument", func() {
-			cfg, err := config.ParseArgs("wg*")
+			cfg, err := parseArgs("wg*")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg*"}))
@@ -442,7 +447,7 @@ interfaces:
       restart_timeout: 10s
 `)
 
-			cfg, err := config.ParseArgs("--config", cfgFile.Name())
+			cfg, err := parseArgs("--config", cfgFile.Name())
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
@@ -479,7 +484,7 @@ interfaces:
       restart_timeout: 30s
 `)
 
-			cfg, err := config.ParseArgs("--config", cfgFile.Name(), "wg1")
+			cfg, err := parseArgs("--config", cfgFile.Name(), "wg1")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg1", "wg0", "wg-work-*", "wg-*"}))
@@ -515,3 +520,17 @@ interfaces:
 		})
 	})
 })
+
+// parseArgs creates a new configuration instance and loads all configuration
+//
+// Only used for testing.
+func parseArgs(args ...string) (*config.Config, error) {
+	flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+	cfg := config.New(flags)
+
+	if err := flags.Parse(args); err != nil {
+		return nil, fmt.Errorf("failed to parse command line flags: %w", err)
+	}
+
+	return cfg, cfg.Init(flags.Args())
+}

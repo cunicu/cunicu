@@ -5,44 +5,69 @@ package config
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
 )
 
-type Source struct {
-	Provider koanf.Provider
-	Config   *koanf.Koanf
-
-	Order []string
-
-	LastVersion any
+type Source interface {
+	Load() error
+	Config() *koanf.Koanf
+	Order() []string
 }
 
-func (s *Source) Load() error {
+type source struct {
+	*koanf.Koanf
+	koanf.Provider
+
+	lastVersion any
+}
+
+func (s *source) Order() []string {
+	order := []string{}
+
+	if q, ok := s.Provider.(Orderable); ok {
+		order = append(order, q.Order()...)
+	}
+
+	if s, ok := s.Provider.(SubProvidable); ok {
+		for _, p := range s.SubProviders() {
+			if q, ok := p.(Orderable); ok {
+				order = append(order, q.Order()...)
+			}
+		}
+	}
+
+	return order
+}
+
+func (s *source) Config() *koanf.Koanf {
+	return s.Koanf
+}
+
+func (s *source) Load() error {
 	var err error
 	var version any
 	if v, ok := s.Provider.(Versioned); ok {
 		version = v.Version()
 
 		// Do not reload if we already are loaded and the version has not changed
-		if s.Config != nil && version == s.LastVersion {
+		if s.Koanf != nil && version == s.lastVersion {
 			return nil
 		}
 	}
 
-	if s.Config, s.Order, err = load(s.Provider); err != nil {
+	if s.Koanf, err = load(s.Provider); err != nil {
 		return err
 	}
 
-	s.LastVersion = version
+	s.lastVersion = version
 
 	return nil
 }
 
-func load(p koanf.Provider) (*koanf.Koanf, []string, error) {
+func load(p koanf.Provider) (*koanf.Koanf, error) {
 	var q koanf.Parser
 	switch p.(type) {
 	case *RemoteFileProvider, *LocalFileProvider, *rawbytes.RawBytes:
@@ -52,38 +77,23 @@ func load(p koanf.Provider) (*koanf.Koanf, []string, error) {
 	}
 
 	k := koanf.New(".")
-	o := []string{}
 
 	if err := k.Load(p, q); err != nil {
-		return nil, nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	if q, ok := p.(Orderable); ok {
-		o = append(o, q.Order()...)
-	}
-
-	if w, ok := p.(Watchable); ok {
-		if err := w.Watch(func(event interface{}, err error) {}); err != nil {
-			if !strings.Contains(err.Error(), "does not support this method") {
-				return nil, nil, fmt.Errorf("failed to watch for changes: %w", err)
-			}
-		}
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	if s, ok := p.(SubProvidable); ok {
 		for _, p := range s.SubProviders() {
-			d, m, err := load(p)
+			d, err := load(p)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 
 			if err := k.Merge(d); err != nil {
-				return nil, nil, fmt.Errorf("failed to merge config: %w", err)
+				return nil, fmt.Errorf("failed to merge config: %w", err)
 			}
-
-			o = append(o, m...)
 		}
 	}
 
-	return k, o, nil
+	return k, nil
 }

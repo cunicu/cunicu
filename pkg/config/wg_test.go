@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/config"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -55,7 +53,7 @@ PersistentKeepalive = 25
 PrivateKey = mBVQEpzmRVRRkba82CorTcbE2Zab4KhAtlNhDm4DYXo=
 `)
 
-		cfg, err := config.ParseArgs()
+		cfg, err := parseArgs()
 		Expect(err).To(Succeed())
 
 		Expect(cfg.InterfaceOrder).To(ContainElements("wg0", "wg1"))

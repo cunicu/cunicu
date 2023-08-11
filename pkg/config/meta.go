@@ -9,6 +9,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pion/ice/v2"
+	"github.com/stv0g/cunicu/pkg/types"
 	"golang.org/x/exp/slices"
 )
 
@@ -98,12 +99,16 @@ func (m *Meta) AddChangedHandler(key string, h ChangedHandler) {
 	}
 }
 
-func (m *Meta) InvokeHandlers(key string, change Change) {
+func (m *Meta) InvokeChangedHandlers(key string, change types.Change) error {
 	for n := m.Lookup(key); n != nil; n = n.Parent {
 		for _, h := range n.onChanged {
-			h.OnConfigChanged(key, change.Old, change.New)
+			if err := h.OnConfigChanged(key, change.Old, change.New); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
 
 func (m *Meta) Parse(str string) (any, error) {

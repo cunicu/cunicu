@@ -22,7 +22,7 @@ import (
 
 var _ = Describe("lookup", func() {
 	It("should not load anything from domains without auto-configuration", func() {
-		_, err := config.ParseArgs("-D", "google.com")
+		_, err := parseArgs("-D", "google.com")
 
 		Expect(err).To(
 			And(
@@ -38,7 +38,7 @@ var _ = Describe("lookup", func() {
 
 	It("should fail when passed an non-existent domain name", func() {
 		// RFC6761 defines that "invalid" is a special domain name to always be invalid
-		_, err := config.ParseArgs("-D", "invalid")
+		_, err := parseArgs("-D", "invalid")
 
 		Expect(err).To(HaveOccurred())
 	})
@@ -160,7 +160,7 @@ var _ = Describe("lookup", func() {
 		})
 
 		It("can do DNS auto configuration", func() {
-			cfg, err := config.ParseArgs("--domain", "example.com")
+			cfg, err := parseArgs("--domain", "example.com")
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings

@@ -7,18 +7,15 @@ package config
 import (
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
-	"time"
 
 	"dario.cat/mergo"
 	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/confmap"
-	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/pflag"
 	"github.com/stv0g/cunicu/pkg/log"
+	"github.com/stv0g/cunicu/pkg/types"
 	"go.uber.org/zap"
 )
 
@@ -26,16 +23,15 @@ type Config struct {
 	*Settings
 	*Meta
 	*koanf.Koanf
-	Runtime      *koanf.Koanf
-	Sources      []*Source
-	ExtraSources []*Source
+	Runtime *runtimeSource
+	Sources []Source
 
 	// Settings which are not configurable via configuration file
 	Files   []string
 	Domains []string
 	Watch   bool
 
-	Providers         []Provider
+	Providers         []koanf.Provider
 	InterfaceOrder    []string
 	InterfaceOrderCLI []string
 
@@ -45,38 +41,11 @@ type Config struct {
 	logger *log.Logger
 }
 
-// ParseArgs creates a new configuration instance and loads all configuration
-//
-// Only used for testing.
-func ParseArgs(args ...string) (*Config, error) {
-	c := New(nil)
-
-	if err := c.flags.Parse(args); err != nil {
-		return nil, fmt.Errorf("failed to parse command line flags: %w", err)
-	}
-
-	return c, c.Init(c.flags.Args())
-}
-
-func ParseRaw(cfg string) (*Config, error) {
-	c := New(nil)
-
-	c.ExtraSources = append(c.ExtraSources, &Source{
-		Provider: rawbytes.Provider([]byte(cfg)),
-	})
-
-	return c, c.Init(nil)
-}
-
 // New creates a new configuration instance.
 func New(flags *pflag.FlagSet) *Config {
-	if flags == nil {
-		flags = pflag.NewFlagSet("", pflag.ContinueOnError)
-	}
-
-	c := &Config{
+	cfg := &Config{
 		Meta:               Metadata(),
-		Runtime:            koanf.New("."),
+		Runtime:            newRuntimeSource(),
 		onInterfaceChanged: map[string]*Meta{},
 		flags:              flags,
 	}
@@ -89,9 +58,9 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.BoolP("sync-routes", "R", true, "Enable synchronization of AllowedIPs with Kernel routes")
 
 	// Config flags
-	flags.StringSliceVarP(&c.Domains, "domain", "D", []string{}, "A DNS `domain` name used for DNS auto-configuration")
-	flags.StringSliceVarP(&c.Files, "config", "c", []string{}, "One or more `filename`s of configuration files")
-	flags.BoolVarP(&c.Watch, "watch-config", "w", false, "Watch configuration files for changes and apply changes at runtime.")
+	flags.StringSliceVarP(&cfg.Domains, "domain", "D", []string{}, "A DNS `domain` name used for DNS auto-configuration")
+	flags.StringSliceVarP(&cfg.Files, "config", "c", []string{}, "One or more `filename`s of configuration files")
+	flags.BoolVarP(&cfg.Watch, "watch-config", "w", false, "Watch configuration for changes and apply changes at runtime.")
 
 	// Daemon flags
 	flags.StringSliceP("backend", "b", []string{}, "One or more `URL`s to signaling backends")
@@ -114,10 +83,10 @@ func New(flags *pflag.FlagSet) *Config {
 	flags.StringP("community", "x", "", "A `passphrase` shared with other peers in the same community")
 	flags.StringP("hostname", "n", "", "A `name` which identifies this peer")
 
-	return c
+	return cfg
 }
 
-func (c *Config) Init(args []string) error {
+func (c *Config) Init(args []string) (err error) {
 	// We recreate the logger here, as the logger created
 	// in New() was created in init() before the logging system
 	// was initialized.
@@ -129,205 +98,71 @@ func (c *Config) Init(args []string) error {
 	}
 
 	c.InterfaceOrderCLI = args
+	c.Sources = nil
 
-	ps, err := c.GetProviders()
+	// Construct list of config sources
+	providers, err := c.getProviders()
 	if err != nil {
 		return err
 	}
 
-	for _, p := range ps {
-		s := &Source{
-			Provider: p,
-		}
-
-		c.Sources = append(c.Sources, s)
-
-		if w, ok := p.(Watchable); c.Watch && ok {
-			if err := w.Watch(func(event interface{}, err error) {
-				if _, err := c.ReloadSource(s); err != nil {
-					c.logger.Error("Failed to reload config", zap.Error(err))
-				}
-			}); err != nil {
-				return fmt.Errorf("failed to watch for changes: %w", err)
-			}
+	for _, provider := range providers {
+		if err := c.AddProvider(provider); err != nil {
+			return err
 		}
 	}
 
-	c.Sources = append(c.Sources, c.ExtraSources...)
+	if err := c.AddSource(c.Runtime); err != nil {
+		return err
+	}
 
-	_, err = c.Reload()
-
+	_, err = c.ReloadAllSources()
 	return err
 }
 
-// Reload reloads all configuration sources
-func (c *Config) Reload() (map[string]Change, error) {
-	return c.ReloadSource(nil)
+func (c *Config) AddProvider(provider koanf.Provider) error {
+	return c.AddSource(&source{
+		Provider: provider,
+	})
 }
 
-// ReloadSource reloads a specific configuration source or all of nil is passed
-func (c *Config) ReloadSource(src *Source) (map[string]Change, error) {
-	newKoanf := koanf.New(".")
-	newOrder := c.InterfaceOrderCLI
-
-	for _, s := range c.Sources {
-		if src == nil || src == s {
-			if err := s.Load(); err != nil {
-				return nil, err
+func (c *Config) AddSource(source Source) error {
+	if w, ok := source.(Watchable); c.Watch && ok {
+		if err := w.Watch(func(event any, err error) {
+			if _, err := c.reload(func(s Source) bool { return s == source }); err != nil {
+				c.logger.Error("Failed to reload config", zap.Error(err))
 			}
-		}
-
-		if err := newKoanf.Merge(s.Config); err != nil {
-			return nil, fmt.Errorf("failed to merge: %w", err)
-		}
-
-		newOrder = append(newOrder, s.Order...)
-	}
-
-	if err := newKoanf.Merge(c.Runtime); err != nil {
-		return nil, err
-	}
-
-	if len(newOrder) == 0 {
-		newOrder = append(newOrder, "*")
-	}
-
-	newSettings, err := Unmarshal(newKoanf)
-	if err != nil {
-		return nil, err
-	}
-
-	// Detect changes
-	var changes map[string]Change
-	if c.Koanf != nil {
-		changes = DiffSettings(c.Settings, newSettings)
-	}
-
-	c.Settings = newSettings
-	c.Koanf = newKoanf
-	c.InterfaceOrder = newOrder
-
-	// Invoke onChanged handlers
-	for key, change := range changes {
-		c.logger.Info("Configuration setting changed",
-			zap.String("key", key),
-			zap.Any("old", change.Old),
-			zap.Any("new", change.New))
-
-		c.InvokeHandlers(key, change)
-	}
-
-	return changes, nil
-}
-
-// Update sets multiple settings in the provided map.
-func (c *Config) Update(sets map[string]any) (map[string]Change, error) {
-	newRuntimeKoanf := c.Runtime.Copy()
-
-	if err := newRuntimeKoanf.Load(confmap.Provider(sets, "."), nil); err != nil {
-		return nil, err
-	}
-
-	newKoanf := c.Koanf.Copy()
-	if err := newKoanf.Merge(newRuntimeKoanf); err != nil {
-		return nil, err
-	}
-
-	newSettings, err := Unmarshal(newKoanf)
-	if err != nil {
-		return nil, err
-	}
-
-	// Detect changes
-	var changes map[string]Change
-	if c.Koanf != nil {
-		changes = DiffSettings(c.Settings, newSettings)
-	}
-
-	c.Settings = newSettings
-	c.Koanf = newKoanf
-	c.Runtime = newRuntimeKoanf
-
-	// Invoke onChanged handlers
-	for key, change := range changes {
-		c.logger.Info("Configuration setting changed",
-			zap.String("key", key),
-			zap.Any("old", change.Old),
-			zap.Any("new", change.New))
-
-		c.InvokeHandlers(key, change)
-	}
-
-	return changes, nil
-}
-
-// SaveRuntime saves the current runtime configuration to disk
-func (c *Config) SaveRuntime() error {
-	f, err := os.OpenFile(RuntimeConfigFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	fmt.Fprintln(f, "# This is the cunīcu runtime configuration file.")
-	fmt.Fprintln(f, "# It contains configuration adjustments made by")
-	fmt.Fprintln(f, "# by the user with the cunicu-config-set(1) command.")
-	fmt.Fprintln(f, "#")
-	fmt.Fprintln(f, "# Please do not edit this file by hand as it will")
-	fmt.Fprintln(f, "# be overwritten by cunīcu.")
-
-	if len(c.Files) > 0 {
-		fmt.Fprintln(f, "# Instead, please edit and more these settings")
-		fmt.Fprintln(f, "# into the main configuration files:")
-		for _, fn := range c.Files {
-			fmt.Fprintf(f, "#  - %s\n", fn)
+		}); err != nil {
+			return fmt.Errorf("failed to watch for changes: %w", err)
 		}
 	}
 
-	fmt.Fprintln(f, "#")
-	fmt.Fprintf(f, "# Last modification at %s\n", time.Now().Format(time.RFC1123Z))
-	fmt.Fprintln(f, "---")
-
-	return c.MarshalRuntime(f)
-}
-
-// MarshalRuntime writes the runtime configuration in YAML format to the provided writer.
-func (c *Config) MarshalRuntime(wr io.Writer) error {
-	if c.Runtime == nil {
-		return nil
-	}
-
-	out, err := c.Runtime.Marshal(yaml.Parser())
-	if err != nil {
-		return fmt.Errorf("failed to encode config: %w", err)
-	}
-
-	if _, err := wr.Write(out); err != nil {
-		return fmt.Errorf("failed to write: %w", err)
-	}
+	c.Sources = append(c.Sources, source)
 
 	return nil
 }
 
+// Update sets multiple settings in the provided map.
+func (c *Config) Update(sets map[string]any) (map[string]types.Change, error) {
+	if err := c.Runtime.Update(sets); err != nil {
+		return nil, err
+	}
+
+	if err := c.Runtime.Save(); err != nil {
+		return nil, err
+	}
+
+	changes, err := c.reload(func(s Source) bool { return false })
+	if err != nil {
+		return nil, err
+	}
+
+	return changes, nil
+}
+
 // Marshal writes the configuration in YAML format to the provided writer.
 func (c *Config) Marshal(wr io.Writer) error {
-	k := koanf.New(".")
-
-	for _, src := range c.Sources {
-		if err := k.Merge(src.Config); err != nil {
-			return fmt.Errorf("failed to merge: %w", err)
-		}
-	}
-
-	out, err := k.Marshal(yaml.Parser())
-	if err != nil {
-		return err
-	}
-
-	_, err = wr.Write(out)
-
-	return err
+	return marshal(c.Koanf, wr)
 }
 
 // InterfaceSettings returns interface specific settings
@@ -375,6 +210,64 @@ func (c *Config) InterfaceFilter(name string) bool {
 	return false
 }
 
+// ReloadAllSources reloads all configuration sources
+func (c *Config) ReloadAllSources() (map[string]types.Change, error) {
+	return c.reload(func(s Source) bool { return true })
+}
+
+// ReloadSource reloads a specific configuration source or all of nil is passed
+func (c *Config) reload(filter func(s Source) bool) (map[string]types.Change, error) {
+	var err error
+
+	newKoanf := koanf.New(".")
+	newOrder := c.InterfaceOrderCLI
+
+	for _, s := range c.Sources {
+		if filter(s) {
+			if err := s.Load(); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := newKoanf.Merge(s.Config()); err != nil {
+			return nil, fmt.Errorf("failed to merge: %w", err)
+		}
+
+		newOrder = append(newOrder, s.Order()...)
+	}
+
+	if len(newOrder) == 0 {
+		newOrder = append(newOrder, "*")
+	}
+
+	if c.Settings, err = unmarshal(newKoanf); err != nil {
+		return nil, err
+	}
+
+	// Detect changes
+	changes := map[string]types.Change{}
+	if c.Koanf != nil {
+		changes = types.DiffMap(c.Koanf.Raw(), newKoanf.Raw())
+	}
+
+	c.Koanf = newKoanf
+	c.InterfaceOrder = newOrder
+
+	// Invoke onChanged handlers
+	for key, change := range changes {
+		c.logger.Info("Configuration setting changed",
+			zap.String("key", key),
+			zap.Any("old", change.Old),
+			zap.Any("new", change.New))
+
+		if err := c.InvokeChangedHandlers(key, change); err != nil {
+			return nil, err
+		}
+	}
+
+	return changes, nil
+}
+
 // DecoderConfig returns the mapstructure DecoderConfig which is used by cunicu
 func DecoderConfig(result any) *mapstructure.DecoderConfig {
 	return &mapstructure.DecoderConfig{
@@ -395,15 +288,29 @@ func DecoderConfig(result any) *mapstructure.DecoderConfig {
 	}
 }
 
-// Unmarshal unmarshals the passed Koanf instance to a Settings struct.
-func Unmarshal(k *koanf.Koanf) (*Settings, error) {
+// unmarshal unmarshals the passed Koanf instance to a Settings struct.
+func unmarshal(k *koanf.Koanf) (*Settings, error) {
 	s := &Settings{}
 
-	if err := k.UnmarshalWithConf("", nil, koanf.UnmarshalConf{
-		DecoderConfig: DecoderConfig(s),
-	}); err != nil {
+	d, err := mapstructure.NewDecoder(DecoderConfig(s))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := d.Decode(k.Raw()); err != nil {
 		return nil, err
 	}
 
 	return s, s.Check()
+}
+
+func marshal(k *koanf.Koanf, wr io.Writer) error {
+	out, err := k.Marshal(yaml.Parser())
+	if err != nil {
+		return err
+	}
+
+	_, err = wr.Write(out)
+
+	return err
 }

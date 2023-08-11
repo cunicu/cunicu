@@ -21,7 +21,7 @@ const (
 var errUnsupportedScheme = errors.New("unsupported scheme")
 
 type Watchable interface {
-	Watch(cb func(event interface{}, err error)) error
+	Watch(cb func(event any, err error)) error
 }
 
 type Orderable interface {
@@ -36,10 +36,28 @@ type Versioned interface {
 	Version() any
 }
 
-type Provider struct {
-	koanf.Provider
+func (c *Config) findConfigFiles() []string {
+	files := []string{}
+	searchPath := []string{"/etc", "/etc/cunicu"}
 
-	Config *koanf.Koanf
+	if cwd, err := os.Getwd(); err != nil {
+		c.logger.Warn("Failed to get working directory", zap.Error(err))
+	} else {
+		searchPath = append(searchPath, cwd)
+	}
+
+	if cfgDir := os.Getenv("CUNICU_CONFIG_DIR"); cfgDir != "" {
+		searchPath = append(searchPath, cfgDir)
+	}
+
+	for _, path := range searchPath {
+		fn := filepath.Join(path, "cunicu.yaml")
+		if fi, err := os.Stat(fn); err == nil && !fi.IsDir() {
+			files = append(files, fn)
+		}
+	}
+
+	return files
 }
 
 // Load loads configuration settings from various sources
@@ -50,42 +68,25 @@ type Provider struct {
 // - configuration files
 // - environment variables
 // - command line flags
-func (c *Config) GetProviders() ([]koanf.Provider, error) {
-	ps := []koanf.Provider{
+func (c *Config) getProviders() ([]koanf.Provider, error) {
+	providers := []koanf.Provider{
 		NewStructsProvider(&DefaultSettings, "koanf"),
 		NewWireGuardProvider(),
 	}
 
 	// Load settings from DNS lookups
 	for _, domain := range c.Domains {
-		p := NewLookupProvider(domain)
-		ps = append(ps, p)
+		providers = append(providers, NewLookupProvider(domain))
 	}
 
 	// Search for config files
-	if len(c.Files) == 0 {
-		searchPath := []string{"/etc", "/etc/cunicu"}
-
-		if cwd, err := os.Getwd(); err != nil {
-			c.logger.Warn("Failed to get working directory", zap.Error(err))
-		} else {
-			searchPath = append(searchPath, cwd)
-		}
-
-		if cfgDir := os.Getenv("CUNICU_CONFIG_DIR"); cfgDir != "" {
-			searchPath = append(searchPath, cfgDir)
-		}
-
-		for _, path := range searchPath {
-			fn := filepath.Join(path, "cunicu.yaml")
-			if fi, err := os.Stat(fn); err == nil && !fi.IsDir() {
-				c.Files = append(c.Files, fn)
-			}
-		}
+	files := c.Files
+	if len(files) == 0 {
+		files = c.findConfigFiles()
 	}
 
 	// Add config files providers
-	for _, f := range c.Files {
+	for _, f := range files {
 		u, err := url.Parse(f)
 		if err != nil {
 			return nil, fmt.Errorf("ignoring config file with invalid name: %w", err)
@@ -105,20 +106,13 @@ func (c *Config) GetProviders() ([]koanf.Provider, error) {
 			}
 		}
 
-		ps = append(ps, p)
+		providers = append(providers, p)
 	}
 
-	// Add a runtime configuration file if it exists
-	if fi, err := os.Stat(RuntimeConfigFile); err == nil && !fi.IsDir() {
-		ps = append(ps,
-			NewLocalFileProvider(RuntimeConfigFile),
-		)
-	}
-
-	ps = append(ps,
-		c.EnvironmentProvider(),
-		c.FlagProvider(),
+	providers = append(providers,
+		c.environmentProvider(),
+		c.flagProvider(),
 	)
 
-	return ps, nil
+	return providers, nil
 }

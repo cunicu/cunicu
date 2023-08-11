@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func (c *Config) FlagProvider() koanf.Provider {
+func (c *Config) flagProvider() koanf.Provider {
 	// Map flags from the flags to to Koanf settings
 	flagMap := map[string]string{
 		// Feature flags

@@ -17,11 +17,6 @@ import (
 
 var errInvalidSettings = errors.New("invalid settings")
 
-//nolint:revive
-type ConfigSettings struct {
-	Watch bool `koanf:"watch,omitempty"`
-}
-
 type PortRangeSettings struct {
 	Min int `koanf:"min,omitempty"`
 	Max int `koanf:"max,omitempty"`
@@ -173,9 +168,8 @@ type Settings struct {
 	WatchInterval time.Duration `koanf:"watch_interval,omitempty"`
 	Backends      []url.URL     `koanf:"backends,omitempty"`
 
-	Log    LogSettings    `koanf:"log,omitempty"`
-	RPC    RPCSettings    `koanf:"rpc,omitempty"`
-	Config ConfigSettings `koanf:"config,omitempty"`
+	Log LogSettings `koanf:"log,omitempty"`
+	RPC RPCSettings `koanf:"rpc,omitempty"`
 
 	DefaultInterfaceSettings InterfaceSettings            `koanf:",squash"`
 	Interfaces               map[string]InterfaceSettings `koanf:"interfaces"`

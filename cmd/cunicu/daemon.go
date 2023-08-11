@@ -60,7 +60,9 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	}
 
 	// Adjust logging based on config file settings
-	setupLogging(&cfg.Log)
+	if err := setupLogging(cfg); err != nil {
+		logger.Fatal("Failed to initialize logging", zap.Error(err))
+	}
 
 	if cfg.Log.Banner {
 		if _, err := io.WriteString(os.Stdout, Banner(color)); err != nil {
