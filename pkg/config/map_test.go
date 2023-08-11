@@ -51,7 +51,7 @@ var _ = It("map", func() {
 		"interfaces": map[string]any{
 			"wg0": map[string]any{
 				"ice": map[string]any{
-					"network_types": []string{"tcp4", "tcp6"},
+					"network_types": []any{"tcp4", "tcp6"},
 				},
 				"hostname": "test",
 			},

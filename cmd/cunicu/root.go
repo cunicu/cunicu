@@ -5,10 +5,12 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"github.com/stv0g/cunicu/pkg/config"
 	"github.com/stv0g/cunicu/pkg/log"
@@ -88,7 +90,9 @@ func init() { //nolint:gochecknoinits
 	rootCmd.SetUsageTemplate(usageTemplate)
 
 	cobra.OnInitialize(func() {
-		setupLogging(nil)
+		if err := setupLogging(nil); err != nil {
+			panic(err)
+		}
 	})
 
 	f := rootCmd.Flags()
@@ -108,11 +112,47 @@ func init() { //nolint:gochecknoinits
 	}
 }
 
-func setupLogging(cfg *config.LogSettings) {
+type logConfigChangedHandler struct{}
+
+func (h *logConfigChangedHandler) OnConfigChanged(key string, _, newValue any) error {
+	switch key {
+	case "log.rules":
+		var newRules []string
+		switch value := newValue.(type) {
+		case string:
+			newRules = []string{value}
+		case []string:
+			newRules = value
+		}
+
+		newRules = append(newRules, opts.logRules...)
+
+		if len(newRules) == 0 {
+			newRules = []string{"info"}
+		}
+
+		filter, err := log.ParseFilter(newRules)
+		if err != nil {
+			logger.Error("Failed to parse filter rules", zap.Error(err))
+		}
+
+		log.UpdateFilter(filter)
+
+		logger.Debug("Updated log filter", zap.Strings("rules", newRules))
+
+	default:
+		return fmt.Errorf("setting '%s' is not runtime adjustable", key)
+
+	}
+
+	return nil
+}
+
+func setupLogging(cfg *config.Config) error {
 	// Color
 	colorMode := opts.colorMode
-	if cfg != nil && cfg.Color != "" {
-		colorMode = cfg.Color
+	if cfg != nil && cfg.Log.Color != "" {
+		colorMode = cfg.Log.Color
 	}
 	switch colorMode {
 	case "auto":
@@ -131,8 +171,8 @@ func setupLogging(cfg *config.LogSettings) {
 	// Files
 	outputPaths := append([]string{"stdout"}, opts.logFiles...)
 
-	if cfg != nil && cfg.File != "" {
-		outputPaths = append(outputPaths, cfg.File)
+	if cfg != nil && cfg.Log.File != "" {
+		outputPaths = append(outputPaths, cfg.Log.File)
 	}
 
 	// Rules
@@ -140,7 +180,7 @@ func setupLogging(cfg *config.LogSettings) {
 	rules = append(rules, opts.logRules...)
 
 	if cfg != nil {
-		rules = append(rules, cfg.Rules...)
+		rules = append(rules, cfg.Log.Rules...)
 	}
 
 	if len(rules) == 0 {
@@ -149,13 +189,20 @@ func setupLogging(cfg *config.LogSettings) {
 
 	filterRule, err := log.ParseFilter(rules)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to parse filter rules: %w", err)
 	}
 
 	logger, err = log.SetupLogging(filterRule, outputPaths, color)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	if cfg != nil {
+		h := &logConfigChangedHandler{}
+		cfg.Meta.AddChangedHandler("log", h)
+	}
+
+	return nil
 }
 
 func main() {

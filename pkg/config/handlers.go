@@ -6,16 +6,20 @@ package config
 import (
 	"strings"
 
+	"github.com/stv0g/cunicu/pkg/types"
 	"golang.org/x/exp/slices"
 )
 
 type ChangedHandler interface {
-	OnConfigChanged(key string, oldValue, newValue any)
+	OnConfigChanged(key string, oldValue, newValue any) error
 }
 
-func (c *Config) InvokeHandlers(key string, change Change) {
-	c.Meta.InvokeHandlers(key, change)
+func (c *Config) InvokeChangedHandlers(key string, change types.Change) error {
+	if err := c.Meta.InvokeChangedHandlers(key, change); err != nil {
+		return err
+	}
 
+	// Invoke handlers for per-interface settings
 	if keyParts := strings.Split(key, "."); len(keyParts) > 0 && keyParts[0] == "interfaces" {
 		pattern := keyParts[1]
 
@@ -24,8 +28,13 @@ func (c *Config) InvokeHandlers(key string, change Change) {
 
 			if slices.Contains(pats, pattern) {
 				key := strings.Join(keyParts[2:], ".")
-				meta.InvokeHandlers(key, change)
+
+				if err := meta.InvokeChangedHandlers(key, change); err != nil {
+					return err
+				}
 			}
 		}
 	}
+
+	return nil
 }

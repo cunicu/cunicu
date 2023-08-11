@@ -66,7 +66,7 @@ func (p *LookupProvider) Read() (map[string]any, error) {
 	return maps.Unflatten(p.settings, "."), nil
 }
 
-func (p *LookupProvider) Watch(cb func(event interface{}, err error)) error {
+func (p *LookupProvider) Watch(cb func(event any, err error)) error {
 	go func() {
 		t := time.NewTicker(5 * time.Minute)
 		for range t.C {

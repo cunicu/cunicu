@@ -10,7 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/pion/stun"
+	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -21,6 +23,21 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+func parseRaw(raw string) (*config.Config, error) {
+	flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+	cfg := config.New(flags)
+
+	if err := cfg.AddProvider(rawbytes.Provider([]byte(raw))); err != nil {
+		return nil, err
+	}
+
+	if _, err := cfg.ReloadAllSources(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
 
 var _ = Describe("Agent config", func() {
 	var err error
@@ -33,7 +50,7 @@ var _ = Describe("Agent config", func() {
 
 	DescribeTable("can parse ICE urls with credentials",
 		func(url, username, password string, exp any) {
-			iceCfgStr := fmt.Sprintf("urls: [ '%s' ]", url)
+			iceCfgStr := fmt.Sprintf("urls: [ '%s' ], candidate_types: [ srflx ]", url)
 
 			if username != "" {
 				iceCfgStr += fmt.Sprintf(", username: '%s'", username)
@@ -44,7 +61,7 @@ var _ = Describe("Agent config", func() {
 			}
 
 			cfgStr := fmt.Sprintf("ice: { %s }", iceCfgStr)
-			cfg, err := config.ParseRaw(cfgStr)
+			cfg, err := parseRaw(cfgStr)
 			Expect(err).To(Succeed())
 
 			icfg := cfg.DefaultInterfaceSettings
@@ -131,7 +148,7 @@ var _ = Describe("Agent config", func() {
 
 		It("can get list of relays", func() {
 			cfgStr := fmt.Sprintf("ice: { urls: [ 'grpc://localhost:%d?insecure=true' ] }", port)
-			cfg, err := config.ParseRaw(cfgStr)
+			cfg, err := parseRaw(cfgStr)
 			Expect(err).To(Succeed())
 
 			ctx := context.Background()
@@ -172,7 +189,7 @@ var _ = Describe("Agent config", func() {
 	})
 
 	It("can parse multiple backend URLs when passed as individual command line arguments", func() {
-		cfg, err := config.ParseArgs(
+		cfg, err := parseArgs(
 			"--backend", "grpc://server1",
 			"--backend", "grpc://server2",
 		)
@@ -184,7 +201,7 @@ var _ = Describe("Agent config", func() {
 	})
 
 	It("can parse multiple backend URLs when passed as comma-separated command line arguments", func() {
-		cfg, err := config.ParseArgs(
+		cfg, err := parseArgs(
 			"--backend", "grpc://server1,grpc://server2",
 		)
 		Expect(err).To(Succeed())
@@ -193,7 +210,7 @@ var _ = Describe("Agent config", func() {
 	})
 
 	It("has proper default values", func() {
-		cfg, err := config.ParseArgs()
+		cfg, err := parseArgs()
 		Expect(err).To(Succeed())
 
 		icfg := cfg.DefaultInterfaceSettings
