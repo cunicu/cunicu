@@ -171,7 +171,7 @@ func (b *Bind) SetMark(mark uint32) error {
 	return nil
 }
 
-// Send writes a packet b to address ep.
+// Send writes a packet to an endpoint.
 func (b *Bind) Send(packets [][]byte, cep wgconn.Endpoint) error {
 	if len(packets) != 1 {
 		panic("batch size not 1?")
