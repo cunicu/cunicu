@@ -34,19 +34,14 @@ func TestSuite(t *testing.T) {
 }
 
 var _ = Context("config", func() {
-	mkTempFile := func(contents string) *os.File {
+	mkTempFile := func(contents string) string {
 		dir := GinkgoT().TempDir()
 		fn := filepath.Join(dir, "cunicu.yaml")
 
-		file, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0o600)
+		err := os.WriteFile(fn, []byte(contents), 0o600)
 		Expect(err).To(Succeed())
 
-		defer file.Close()
-
-		_, err = file.Write([]byte(contents))
-		Expect(err).To(Succeed())
-
-		return file
+		return fn
 	}
 
 	Describe("parse command line arguments", func() {
@@ -100,7 +95,7 @@ var _ = Context("config", func() {
 
 		Describe("parse configuration files", func() {
 			Context("with a local file", func() {
-				var cfgFile *os.File
+				var cfgFile string
 
 				BeforeEach(func() {
 					cfgFile = mkTempFile("watch_interval: 1337s\n")
@@ -108,14 +103,15 @@ var _ = Context("config", func() {
 
 				Context("file with explicit path", func() {
 					It("can read a single valid local file", func() {
-						cfg, err := parseArgs("--config", cfgFile.Name())
+						cfg, err := parseArgs("--config", cfgFile)
 
 						Expect(err).To(Succeed())
 						Expect(cfg.WatchInterval).To(Equal(1337 * time.Second))
 					})
 
 					Specify("that command line arguments take precedence over settings provided by configuration files", func() {
-						cfg, err := parseArgs("--config", cfgFile.Name(), "--watch-interval", "1m")
+						cfg, err := parseArgs("--config", cfgFile, "--watch-interval", "1m")
+
 						Expect(err).To(Succeed())
 						Expect(cfg.WatchInterval).To(Equal(time.Minute))
 					})
@@ -124,10 +120,13 @@ var _ = Context("config", func() {
 				Context("in search path", func() {
 					BeforeEach(func() {
 						// Move config file into XDG config directory
-						configDir := filepath.Dir(cfgFile.Name())
+						configDir := filepath.Dir(cfgFile)
 
-						err := os.Setenv("CUNICU_CONFIG_DIR", configDir)
-						Expect(err).To(Succeed())
+						os.Setenv("CUNICU_CONFIG_DIR", configDir)
+					})
+
+					AfterEach(func() {
+						os.Unsetenv("CUNICU_CONFIG_DIR")
 					})
 
 					It("can read a single valid local file", func() {
@@ -200,6 +199,11 @@ var _ = Context("config", func() {
 	})
 
 	Describe("use environment variables", func() {
+		AfterEach(func() {
+			os.Unsetenv("CUNICU_ICE_CANDIDATE_TYPES")
+			os.Unsetenv("CUNICU_WATCH_INTERVAL")
+		})
+
 		It("accepts settings via environment variables", func() {
 			os.Setenv("CUNICU_ICE_CANDIDATE_TYPES", "srflx")
 
@@ -337,8 +341,8 @@ var _ = Context("config", func() {
 	})
 
 	Describe("runtime", func() {
-		AfterEach(func() {
-			os.RemoveAll(config.RuntimeConfigFile)
+		BeforeEach(func() {
+			config.RuntimeConfigFile = filepath.Join(GinkgoT().TempDir(), "cunicu.runtime.yaml")
 		})
 
 		It("can update multiple settings", func() {
@@ -447,7 +451,7 @@ interfaces:
       restart_timeout: 10s
 `)
 
-			cfg, err := parseArgs("--config", cfgFile.Name())
+			cfg, err := parseArgs("--config", cfgFile)
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceFilter("wg0")).To(BeTrue())
@@ -484,7 +488,7 @@ interfaces:
       restart_timeout: 30s
 `)
 
-			cfg, err := parseArgs("--config", cfgFile.Name(), "wg1")
+			cfg, err := parseArgs("--config", cfgFile, "wg1")
 			Expect(err).To(Succeed())
 
 			Expect(cfg.InterfaceOrder).To(Equal([]string{"wg1", "wg0", "wg-work-*", "wg-*"}))

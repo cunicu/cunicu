@@ -56,8 +56,11 @@ func (p *LookupProvider) ReadBytes() ([]byte, error) {
 func (p *LookupProvider) Read() (map[string]any, error) {
 	g := errgroup.Group{}
 
-	g.Go(func() error { return p.lookupTXT(context.Background()) })
-	g.Go(func() error { return p.lookupSRV(context.Background()) })
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	g.Go(func() error { return p.lookupTXT(ctx) })
+	g.Go(func() error { return p.lookupSRV(ctx) })
 
 	if err := g.Wait(); err != nil {
 		return nil, err
@@ -89,7 +92,10 @@ func (p *LookupProvider) Watch(cb func(event any, err error)) error {
 func (p *LookupProvider) Version() any {
 	var err error
 
-	if p.lastSerial, err = p.lookupSerial(context.Background()); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	if p.lastSerial, err = p.lookupSerial(ctx); err != nil {
 		return nil
 	}
 
