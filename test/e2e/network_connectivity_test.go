@@ -55,7 +55,7 @@ func (n *Network) ConnectivityTestsForAllCandidateTypes() {
 			ConnectivityTests()
 		})
 
-		Context("host: Allow only host candidates", func() {
+		Context("host: Allow only host candidates", Label("host"), func() {
 			BeforeEach(func() {
 				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "host"))
 			})
@@ -63,7 +63,7 @@ func (n *Network) ConnectivityTestsForAllCandidateTypes() {
 			ConnectivityTests()
 		})
 
-		Context("srflx: Allow only server reflexive candidates", func() {
+		Context("srflx: Allow only server reflexive candidates", Label("srflx"), func() {
 			BeforeEach(func() {
 				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "srflx"))
 			})
@@ -71,12 +71,12 @@ func (n *Network) ConnectivityTestsForAllCandidateTypes() {
 			ConnectivityTests()
 		})
 
-		Context("relay: Allow only relay candidates", func() {
+		Context("relay: Allow only relay candidates", Label("relay"), func() {
 			BeforeEach(func() {
 				n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.candidate_types", "relay"))
 			})
 
-			Context("ipv4: Allow IPv4 network only", func() {
+			Context("ipv4: Allow IPv4 network only", Label("ipv4"), func() {
 				BeforeEach(func() {
 					n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp4"))
 				})
@@ -86,7 +86,7 @@ func (n *Network) ConnectivityTestsForAllCandidateTypes() {
 
 			// TODO: Check why IPv6 relay is not working
 			// Blocked by: https://github.com/pion/ice/pull/462
-			Context("ipv6: Allow IPv6 network only", Pending, func() {
+			Context("ipv6: Allow IPv6 network only", Label("ipv6"), Pending, func() {
 				BeforeEach(func() {
 					n.AgentOptions = append(n.AgentOptions, opt.ConfigValue("ice.network_types", "udp6"))
 				})

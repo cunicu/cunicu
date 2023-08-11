@@ -46,7 +46,7 @@ import (
  *  │  n1  │   │  n2  │  │ (n3) │
  *  └──────┘   └──────┘  └──────┘
  */
-var _ = Context("nat simple: Simple home-router NAT setup", func() {
+var _ = Context("nat simple: Simple home-router NAT setup", Label("nat"), func() {
 	var (
 		err error
 

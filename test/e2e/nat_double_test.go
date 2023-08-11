@@ -45,7 +45,7 @@ import (
  *             │  n1  │              │  n2  │
  *             └──────┘              └──────┘
  */
-var _ = Context("nat double: Carrier Grade NAT setup with two relays and a single signaling server", func() {
+var _ = Context("nat double: Carrier Grade NAT setup with two relays and a single signaling server", Label("nat"), func() {
 	var (
 		err error
 

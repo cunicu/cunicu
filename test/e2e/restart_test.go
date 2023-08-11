@@ -44,7 +44,7 @@ import (
  *    └────┘       └────┘
  *         cunicu Agents
  */
-var _ = Context("restart: Restart ICE agents", func() {
+var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 	var (
 		err error
 		n   Network

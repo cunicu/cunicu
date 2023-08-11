@@ -129,11 +129,11 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 		n.Start()
 	})
 
-	Context("kernel: Use kernel WireGuard interface", func() {
+	Context("kernel: Use kernel WireGuard interface", Label("kernel"), func() {
 		n.ConnectivityTestsForAllCandidateTypes()
 	})
 
-	Context("userspace: Use wireguard-go userspace interfaces", Pending, func() {
+	Context("userspace: Use wireguard-go userspace interfaces", Label("userspace"), func() {
 		BeforeEach(func() {
 			n.WireGuardInterfaceOptions = append(n.WireGuardInterfaceOptions,
 				wopt.WriteConfigFile(true),
