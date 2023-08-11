@@ -181,6 +181,9 @@ func setupLogging(cfg *config.Config) error {
 
 	if cfg != nil {
 		rules = append(rules, cfg.Log.Rules...)
+		if cfg.Log.Level != "" {
+			rules = append(rules, cfg.Log.Level)
+		}
 	}
 
 	if len(rules) == 0 {
