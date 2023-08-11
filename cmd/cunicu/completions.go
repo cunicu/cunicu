@@ -17,7 +17,7 @@ import (
 //nolint:gochecknoglobals
 var BooleanCompletions = cobra.FixedCompletions([]string{"true", "false"}, cobra.ShellCompDirectiveNoFileComp)
 
-func interfaceValidArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+func interfaceValidArgs(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 	rpcClient, err := rpc.Connect(rpcSockPath)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
