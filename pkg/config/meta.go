@@ -9,8 +9,9 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pion/ice/v2"
-	"github.com/stv0g/cunicu/pkg/types"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/types"
 )
 
 const delim = "."

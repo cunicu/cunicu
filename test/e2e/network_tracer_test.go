@@ -9,10 +9,12 @@ import (
 	"bytes"
 
 	"github.com/gopacket/gopacket/pcapgo"
+	"go.uber.org/zap"
+
+	"github.com/stv0g/cunicu/pkg/wg/tracer"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stv0g/cunicu/pkg/wg/tracer"
-	"go.uber.org/zap"
 )
 
 type HandshakeTracer tracer.HandshakeTracer

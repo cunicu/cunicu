@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -60,6 +61,8 @@ type options struct {
 }
 
 var (
+	errSettingNotRuntimeTunable = errors.New("setting is not runtime tunable")
+
 	logger *log.Logger //nolint:gochecknoglobals
 	stdout io.Writer   //nolint:gochecknoglobals
 	opts   options     //nolint:gochecknoglobals
@@ -141,8 +144,7 @@ func (h *logConfigChangedHandler) OnConfigChanged(key string, _, newValue any) e
 		logger.Debug("Updated log filter", zap.Strings("rules", newRules))
 
 	default:
-		return fmt.Errorf("setting '%s' is not runtime adjustable", key)
-
+		return fmt.Errorf("%w: %s", errSettingNotRuntimeTunable, key)
 	}
 
 	return nil

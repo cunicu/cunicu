@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/knadh/koanf/v2"
-	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 	g "github.com/stv0g/gont/v2/pkg"
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 	copt "github.com/stv0g/gont/v2/pkg/options/capture"
@@ -20,6 +19,7 @@ import (
 	"github.com/stv0g/cunicu/pkg/tty"
 	"github.com/stv0g/cunicu/test"
 	"github.com/stv0g/cunicu/test/e2e/nodes"
+	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

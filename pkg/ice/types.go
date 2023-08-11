@@ -20,7 +20,7 @@ func ParseCandidateType(s string) (ice.CandidateType, error) {
 	case "relay":
 		return ice.CandidateTypeRelay, nil
 	default:
-		return ice.CandidateTypeUnspecified, fmt.Errorf("unknown candidate type: %s", s)
+		return ice.CandidateTypeUnspecified, fmt.Errorf("%w: %s", ice.ErrUnknownCandidateTyp, s)
 	}
 }
 
@@ -35,6 +35,6 @@ func ParseNetworkType(s string) (ice.NetworkType, error) {
 	case "tcp6":
 		return ice.NetworkTypeTCP6, nil
 	default:
-		return 0, fmt.Errorf("unknown network type: %s", s)
+		return 0, fmt.Errorf("%w: %s", ice.ErrUnknownType, s)
 	}
 }
