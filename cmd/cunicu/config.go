@@ -6,11 +6,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	statusx "google.golang.org/grpc/status"
 
 	"github.com/stv0g/cunicu/pkg/proto"
 	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
@@ -28,7 +31,7 @@ func init() { //nolint:gochecknoinits
 		Use:               "set key value",
 		Short:             "Update the value of a configuration setting",
 		Run:               set,
-		Args:              cobra.ExactArgs(2),
+		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: rpcValidArgs,
 	}
 
@@ -55,14 +58,22 @@ func init() { //nolint:gochecknoinits
 }
 
 func set(_ *cobra.Command, args []string) {
-	settings := map[string]string{
-		args[0]: args[1],
+	key := args[0]
+	values := args[1:]
+
+	var settingValue rpcproto.ConfigValue
+	if len(values) == 1 {
+		settingValue.Scalar = values[0]
+	} else if len(values) > 1 {
+		settingValue.List = values
 	}
 
 	if _, err := rpcClient.SetConfig(context.Background(), &rpcproto.SetConfigParams{
-		Settings: settings,
+		Settings: map[string]*rpcproto.ConfigValue{
+			key: &settingValue,
+		},
 	}); err != nil {
-		logger.Fatal("Failed to set configuration", zap.Error(err))
+		handleError(zap.FatalLevel, "Failed to set configuration", err)
 	}
 }
 
@@ -75,21 +86,53 @@ func get(_ *cobra.Command, args []string) {
 
 	resp, err := rpcClient.GetConfig(context.Background(), params)
 	if err != nil {
-		logger.Fatal("Failed to set configuration", zap.Error(err))
+		logger.Fatal("Failed to get configuration", zap.Error(err))
 	}
 
 	keys := maps.Keys(resp.Settings)
 	slices.Sort(keys)
 
 	for _, key := range keys {
-		fmt.Printf("%s\t%s\n", key, resp.Settings[key])
+		val := resp.Settings[key]
+		if val == nil {
+			continue
+		}
+
+		if val.Scalar != "" {
+			fmt.Printf("%s\t%s\n", key, val.Scalar)
+		} else if len(val.List) > 0 {
+			fmt.Printf("%s\t%s\n", key, strings.Join(val.List, "\t"))
+		}
 	}
 }
 
 func reload(_ *cobra.Command, _ []string) error {
 	if _, err := rpcClient.ReloadConfig(context.Background(), &proto.Empty{}); err != nil {
-		return fmt.Errorf("failed RPC request: %w", err)
+		handleError(zap.FatalLevel, "Failed to reload configuration", err)
 	}
 
 	return nil
+}
+
+func handleError(lvl zapcore.Level, msg string, err error) {
+	var field zap.Field
+
+	if sts, ok := statusx.FromError(err); ok {
+		errs := []string{}
+		for _, detail := range sts.Details() {
+			if err, ok := detail.(*proto.Error); ok {
+				errs = append(errs, err.Message)
+			}
+		}
+
+		if len(errs) > 0 {
+			field = zap.Strings("errors", errs)
+		} else {
+			field = zap.String("error", sts.Message())
+		}
+	} else {
+		field = zap.Error(err)
+	}
+
+	logger.Log(lvl, msg, field)
 }
