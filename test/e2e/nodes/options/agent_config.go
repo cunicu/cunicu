@@ -6,6 +6,7 @@ package options
 import (
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
+
 	"github.com/stv0g/cunicu/pkg/config"
 )
 

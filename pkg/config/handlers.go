@@ -6,8 +6,9 @@ package config
 import (
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/types"
 	"golang.org/x/exp/slices"
+
+	"github.com/stv0g/cunicu/pkg/types"
 )
 
 type ChangedHandler interface {

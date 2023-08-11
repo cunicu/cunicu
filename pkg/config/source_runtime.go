@@ -82,7 +82,7 @@ func (s *runtimeSource) Save() error {
 	fmt.Fprintln(f, "---")
 
 	if s.watchCallback != nil {
-		if s.LocalFileProvider.Watch(s.watchCallback); err != nil {
+		if err := s.LocalFileProvider.Watch(s.watchCallback); err != nil {
 			return err
 		}
 	}

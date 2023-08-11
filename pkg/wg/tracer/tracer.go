@@ -18,6 +18,7 @@ import (
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
+
 	"github.com/stv0g/cunicu/pkg/wg/tracer/kernel"
 )
 

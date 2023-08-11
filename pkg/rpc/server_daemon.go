@@ -14,13 +14,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/cobra"
 	"github.com/stv0g/cunicu/pkg/buildinfo"
 	"github.com/stv0g/cunicu/pkg/crypto"
 	"github.com/stv0g/cunicu/pkg/daemon"

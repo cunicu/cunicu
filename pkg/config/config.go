@@ -14,9 +14,10 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/pflag"
+	"go.uber.org/zap"
+
 	"github.com/stv0g/cunicu/pkg/log"
 	"github.com/stv0g/cunicu/pkg/types"
-	"go.uber.org/zap"
 )
 
 type Config struct {
