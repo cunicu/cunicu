@@ -29,18 +29,17 @@ Sending a SIGUSR1 signal to the daemon will trigger an immediate synchronization
 		ValidArgsFunction: interfaceValidArgs,
 	}
 
-	f := cmd.Flags()
-	f.SortFlags = false
+	flags := cmd.Flags()
+	flags.SortFlags = false
 
-	pf := cmd.PersistentFlags()
-
-	cfg := config.New(pf)
+	pflags := cmd.PersistentFlags()
+	cfg := config.New(pflags)
 
 	if err := cmd.MarkPersistentFlagFilename("config", "yaml", "json"); err != nil {
 		panic(err)
 	}
 
-	pf.VisitAll(func(f *pflag.Flag) {
+	pflags.VisitAll(func(f *pflag.Flag) {
 		if f.Value.Type() == "bool" {
 			if err := cmd.RegisterFlagCompletionFunc(f.Name, BooleanCompletions); err != nil {
 				panic(err)

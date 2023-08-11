@@ -64,7 +64,7 @@ var (
 	color  bool        //nolint:gochecknoglobals
 
 	// Do not use colors during generation of docs
-	isDocGen = len(os.Args) > 1 && os.Args[1] == "docs"
+	isDocGen = len(os.Args) > 1 && os.Args[1] == "docs" //nolint:gochecknoglobals
 
 	rootCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "cunicu",
@@ -159,13 +159,15 @@ func setupLogging(cfg *config.LogSettings) {
 }
 
 func main() {
-	if os.Args[0] == "wg" {
-		if err := wgCmd.Execute(); err != nil {
-			os.Exit(1)
-		}
-	} else {
-		if err := rootCmd.Execute(); err != nil {
-			os.Exit(1)
-		}
+	var execute func() error
+	switch os.Args[0] {
+	case "wg":
+		execute = wgCmd.Execute
+	default:
+		execute = rootCmd.Execute
+	}
+
+	if err := execute(); err != nil {
+		os.Exit(1)
 	}
 }
