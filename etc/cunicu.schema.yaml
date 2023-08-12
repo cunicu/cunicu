@@ -1,0 +1,813 @@
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Schema of cunīcu configuration file
+allOf:
+- $ref: "#/$defs/GlobalSettings"
+- $ref: "#/$defs/InterfaceSettings"
+- type: object
+  properties:
+    interfaces:
+      title: Interface specific settings / overwrites
+      description: |
+        Most of the top-level settings of this configuration file can be customized for specific interfaces.
+
+        The keys of the 'interfaces' dictionary are [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) patterns which will be matched against the interface names.
+        Settings are overlayed in the order in which the keys are provided in the interface map.
+        Multiple patterns are supported and evaluated in the order they a defined in the configuration file.
+
+        Keys which are not a [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) pattern, will be created as new interfaces if they do not exist already in the system.
+      type: object
+      additionalProperties:
+        $ref: "#/$defs/InterfaceSettings"
+
+$defs:
+  Duration:
+    type: string
+    description: |
+      Parsed by [`time.ParseDuration`](https://pkg.go.dev/time#ParseDuration).
+    pattern: "(\\d+(\\.\\d)?(ns|us|µs|ms|s|m|h))+"
+    examples:
+    - 300ms
+    - 1.5h
+    - 2h45m
+
+  Base64Key:
+    type: string
+    pattern: "[^-A-Za-z0-9+/=]|=[^=]|={3,}$"
+    examples:
+    - zu86NBVsWOU3cx4UKOQ6MgNj3gv8GXsV9ATzSemdqlI=
+
+  IPv4Address:
+    title: IPv4 Address
+    type: string
+    format: ipv4
+    examples:
+    - 1.1.1.1
+
+  IPv6Address:
+    title: IPv6 Address
+    type: string
+    format: ipv6
+    examples:
+    - fe80::760f:aa34:275e:57cd%utun1
+
+  Address:
+    title: IP Address
+    oneOf:
+    - "#/$defs/IPv4Address"
+    - "#/$defs/IPv6Address"
+
+  CIDR:
+    title: IPv4 / IPv6 Prefix
+    type: string
+    examples:
+    - fc2f:9a4d::/32
+    - 2001:DB8::/32
+    - 10.237.0.0/16
+    - 192.0.2.0/24
+
+  GlobalSettings:
+    type: object
+    properties:
+      watch_interval:
+        type: string
+        title: Watch Interval
+        description: |
+          An interval at which cunīcu will periodically check for added, removed or modified WireGuard interfaces.
+        $ref: "#/$defs/Duration"
+
+      backends:
+        title: Signaling backends
+        description: |
+          These backends are used for exchanging control-plane messages between the peers.
+
+          Examples of the exchanged information are ICE candidates or peer information.
+        type: array
+        items:
+          type: string
+          format: uri
+        default:
+        - grpc://signal.cunicu.li:443
+
+      rpc:
+        title: RPC Settings
+        description: |
+          Settings for controlling cunīcu via the CLI.
+        type: object
+        properties:
+
+          socket:
+            title: Unix Domain Socket Path
+            description: |
+              Path to a Unix socket for management and monitoring of the cunīcu daemon.
+            type: string
+            default: /var/run/cunicu.sock
+
+          wait:
+            description: |
+              Start of cunīcu daemon will block until its unblocked via the control socket.
+              
+              Mostly useful for test automation.
+            type: boolean
+            default: false
+
+      log:
+        title: Logging Settings
+        description: |
+          Settings of logging system.
+        type: object
+        properties:
+
+          banner:
+            title: Banner
+            description: |
+              Show a banner during start of daemon.
+            type: boolean
+            default: true
+
+          color:
+            title: Colorize log output
+            description: |
+              Use one of:
+              - `auto`    only colorize log output on TTYs
+              - `never`   never colorize log output
+              - `always`  always colorize log output
+            type: string
+            enum:
+            - auto
+            - never
+            - always
+
+          file:
+            title: Log File
+            description:
+              A path to a custom log file.
+            type: string
+            examples:
+            - /var/log/cunicu.log
+
+          level:
+            title: The standard log level
+            type: string
+            default: info
+            enum:
+            - debug2
+            - debug1
+            - debug
+            - info
+            - warn
+            - error
+            - fatal
+            - panic
+
+          rules:
+            title: Additional logging rules
+            description: |
+              Rule syntax:
+
+                  RULE: LEVELS:NAMESPACES
+
+                  LEVELS: LEVEL[,LEVELS]
+                  LEVEL: one of
+                    -  SEVERITY        for matching all levels with equal or higher severity
+                    - >SEVERITY        for matching all levels with higher severity
+                    - =SEVERITY        for matching all levels with equal severity
+                    - <SEVERITY        for matching all levels with lower severity
+
+                  SEVERITY: one of
+                    - debug10..debug1
+                    - debug
+                    - info
+                    - warn
+                    - error
+                    - fatal
+                    - panic
+
+                  NAMESPACES: NAMESPACE[,NAMESPACES]
+                  NAMESPACE: one of
+                    - namespace        should be exactly this namespace
+                    - *mat*ch*         should match
+                    - -NAMESPACE       should not match a namespace
+
+            type: array
+            items:
+              type: string
+              examples:
+              - debug5:watcher,daemon
+              - debug6:epdisc.*
+
+  InterfaceSettings:
+    title: Interface Settings
+    allOf:
+    - $ref: "#/$defs/BasicInterfaceSettings"
+    - $ref: "#/$defs/WireGuardInterfaceSettings"
+    - $ref: "#/$defs/RouteSyncSettings"
+    - $ref: "#/$defs/ConfigSyncSettings"
+    - $ref: "#/$defs/HostsSyncSettings"
+    - $ref: "#/$defs/PeerDiscoverySettings"
+    - $ref: "#/$defs/EndpointDiscoverySettings"
+
+  BasicInterfaceSettings:
+    title: Basic Interface Settings
+    type: object
+    properties:
+      mtu:
+        title: MTU
+        description: |
+          The [Maximum Transmission Unit (MTU)](https://en.wikipedia.org/wiki/Maximum_transmission_unit) of the WireGuard interface.
+          If not specified, the MTU is automatically determined from the endpoint addresses or the system default route, which is usually a sane choice.
+          However, to manually specify an MTU to override this automatic discovery, this value may be specified explicitly.
+        type: number
+        examples:
+        - 1420
+
+      addresses:
+        title: Addresses
+        description: |
+          A list of IP (v4 or v6) addresses (optionally with CIDR masks) to be assigned to the interface.
+        type: array
+        items:
+          $ref: "#/$defs/CIDR"
+
+      prefixes:
+        type: array
+        title: Prefixes
+        description: |
+          A list of prefixes which cunīcu uses to derive local addresses from the interfaces public key.
+        items:
+          $ref: "#/$defs/CIDR"
+
+      dns:
+        title: DNS Servers
+        description: |
+          A list of IP (v4 or v6) addresses to be set as the interface's DNS servers, or non-IP hostnames to be set as the interface's DNS search domains.
+          Upon bringing the interface up, this runs `resolvconf -a tun.INTERFACE -m 0 -x` and upon bringing it down, this runs `resolvconf -d tun.INTERFACE`.
+          If these particular invocations of [resolvconf(8)](https://manpages.debian.org/stretch/resolvconf/resolvconf.8.en.html) are undesirable, custom hooks can be used instead.
+
+        type: array
+        items:
+          $ref: "#/$defs/Address"
+
+      hooks:
+        type: array
+        items:
+          $ref: "#/$defs/HookSettings"
+
+  WireGuardInterfaceSettings:
+    title: WireGuard Interface Settings
+    type: object
+    description: |
+      These settings configure WireGuard specific settings of the interface.
+    properties:
+      private_key:
+        title: WireGuard Private Key
+        description: |
+          A base64 encoded WireGuard private key.
+          This key can be generated via the `wg genkey` command.
+          Will be automatically generated if not provided.
+        $ref: "#/$defs/Base64Key"
+
+      userspace:
+        title: Use userspace WireGuard implementation
+        description: |
+          Create WireGuard interfaces using bundled wireguard-go user space implementation.
+          This will be the default if there is no WireGuard kernel module present.
+        type: boolean
+        default: false
+
+      listen_port_range:
+        title: Listen Port Range
+        description: |
+          A range constraint for an automatically assigned selected listen port.
+          If the interface has no listen port specified, cunīcu will use the first available port from this range.
+        type: object
+        properties:
+
+          min:
+            title: Minimum Port
+            description: |
+              Minimum port used to select a listen port.
+            type: integer
+            default: 52820
+            minimum: 0
+            maximum: 65535
+
+          max:
+            title: Maximum Port
+            description: |
+              Maximum port used to select a listen port.
+            type: integer
+            default: 65535
+            minimum: 0
+            maximum: 65535
+
+      listen_port:
+        title: Listen Port
+        description: |
+          An UDP port for listening.
+          If not specified, first available port from listen_port_range will be used.
+        type: integer
+        default: 51820
+        minimum: 0
+        maximum: 65535
+
+      fwmark:
+        title: Firewall Mark
+        type: integer
+        description: |
+          A 32-bit firewall mark for outgoing packets which can be used for [Netfilter](https://www.netfilter.org/) or [Traffic Control (TC)](https://lartc.org/) classification.
+          If set to `0`, this option is disabled.
+          May be specified in hexadecimal by prepending `0x`.
+        examples:
+        - 0x1000
+
+      peers:
+        title: WireGuard peer
+        description: |
+          The remote WireGuard peers provided as a dictionary.
+          The keys of this dictionary are used as names for the peers.
+        type: object
+        additionalProperties:
+          $ref: "#/$defs/WireGuardPeerSettings"
+
+  WireGuardPeerSettings:
+    title: WireGuard Peer Settings
+    description: |
+      Peer-specific WireGuard settings.
+    type: object
+    properties:
+
+      public_key:
+        title: Public Key
+        description: |
+          A base64 public key calculated by `wg pubkey` from a private key,
+          and usually transmitted out of band to the author of the configuration file.
+        $ref: "#/$defs/Base64Key"
+        
+
+      preshared_key:
+        title: Preshared Key
+        description: |
+          A base64 pre-shared key generated by `wg genpsk`.
+          Optional, and may be omitted.
+          This option adds an additional layer of symmetric-key
+          cryptography to be mixed into the already existing
+          public-key cryptography, for post-quantum resistance.
+        $ref: "#/$defs/Base64Key"
+
+      preshared_key_passphrase:
+        title: Preshared Key Passphrase
+        description: |
+          A pre-shared passphrase which is used to derive a preshared key.
+          cunīcu is using Argon2id as the key derivation function.
+        type: string
+        examples:
+        - theifo1we1Ayahth
+
+      endpoint:
+        title: Endpoint
+        description: |
+          An endpoint IP or hostname, followed by a colon, and then a port number.
+          This endpoint will be updated automatically to the most recent source IP address and port of correctly authenticated packets from the peer.
+          
+          If provided, no endpoint discovery will be performed.
+        type: string
+        examples:
+        - 192.0.2.1:51820
+        - vpn.example.com:51820
+
+      persistent_keepalive:
+        title: Persistent Keepalive
+        # TODO: Calculate range in seconds
+        description: |
+          A time duration, between 1 and 65535s inclusive, of how often to send an authenticated empty packet to the peer for the purpose of keeping a stateful firewall or NAT mapping valid persistently.
+          For example, if the interface very rarely sends traffic, but it might at anytime receive traffic from a peer, and it is behind NAT, the interface might benefit from having a persistent keepalive interval of 25 seconds.
+          
+          If set to zero, this option is disabled.
+          By default or when unspecified, this option is off.
+
+          Most users will not need this.
+        $ref: "#/$defs/Duration"
+        default: 120s
+
+      allowed_ips:
+        title: Allowed IPs
+        description: |
+          A list of IP (v4 or v6) addresses with CIDR masks from which incoming traffic for this peer is allowed and to which outgoing  traffic for this peer is directed.
+          The catch-all `0.0.0.0/0` may be specified for matching all IPv4 addresses, and `::/0` may be specified for matching all IPv6 addresses.
+        type: array
+        items:
+          $ref: "#/$defs/CIDR"
+
+  IceSettings:
+    title: ICE Settings
+    description: |
+      Interactive Connectivity Establishment (ICE) parameters.
+    type: object
+    properties:
+      urls:
+        type: array
+        title: ICE URLs
+        description: |
+          A list of STUN and TURN servers used by ICE.
+        items:
+          type: string
+          format: uri
+          examples:
+          # Community provided STUN/TURN servers
+          - grpc://relay.cunicu.li
+
+          # Public STUN servers
+          - stun:stun3.l.google.com:19302
+          - stun:relay.webwormhole.io
+          - stun:stun.sipgate.net
+          - stun:stun.ekiga.net
+          - stun:stun.services.mozilla.com
+
+          # Caution: OpenRelay servers are located in Ontario, Canada.
+          # Beware of the latency!
+          # See also: https://www.metered.ca/tools/openrelay/
+          # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:80
+          # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:443
+          # - turn:openrelayproject:openrelayproject@openrelay.metered.ca:443?transport=tcp
+
+      username:
+        title: Username
+        description: |
+          Username credential for STUN/TURN URLs configured above.
+        type: string
+
+      password:
+        title: Password
+        description: |
+          Username credential for STUN/TURN URLs configured above.
+        type: string
+
+      insecure_skip_verify:
+        title: Skip TLS verification
+        description: |
+          Allow connections to STUNS/TURNS servers for which we can not validate TLS certificates.
+        type: boolean
+        default: false
+
+      network_types:
+        title: ICE Network Types
+        type: array
+        items:
+          type: string
+          enum: [udp4, udp6, tcp4, tcp6]
+
+      candidate_types:
+        title: ICE Candidate Types
+        type: array
+        items:
+          type: string
+          enum: [host, srflx, prflx, relay]
+
+      interface_filter:
+        title: Interface Filter
+        description: |
+          A [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) pattern to match interfaces against which are used to gather ICE candidates (e.g. `eth[0-9]`).
+        type: string
+        default: "*"
+        examples:
+        - eth*
+        - wlan0
+
+      lite:
+        title: Lite Agent
+        description: |
+          Lite agents do not perform connectivity check and only provide host candidates.
+        type: boolean
+
+      mdns:
+        title: Multicast DNS Discovery
+        description: |
+          Enable local Multicast DNS discovery.
+        type: boolean
+        default: false
+
+      max_binding_requests:
+        title: Maximum Number of Binding Requests
+        description: |
+          Sets the max amount of binding requests the agent will send over a candidate pair for validation or nomination.
+          If after the the configured number, the candidate is yet to answer a binding request or a nomination we set the pair as failed.
+        type: number
+        minimum: 0
+        default: 7
+
+      nat_1to1_ips:
+        title: 1-to-1 NAT IP Addresses
+        description: |
+          A list of external IP addresses of 1:1 (D)NAT and a candidate type for which the external IP address is used.
+          This is useful when you are host a server using Pion on an AWS EC2 instance which has a private address, behind a 1:1 DNAT with a public IP (e.g. Elastic IP).
+          In this case, you can give the public IP address so that Pion will use the public IP address in its candidate instead of the private IP address.
+        type: array
+        items:
+          $ref: "#/$defs/Address"
+
+      port_range:
+        title: Port Range
+        description: |
+          Limit the port range used by ICE
+        type: object
+        properties:
+
+          min:
+            title: Minimum Port
+            description: |
+              Minimum port for allocation policy for ICE sockets.
+            type: integer
+            default: 49152
+
+          max:
+            title: Maximum Port
+            description: |
+              Maximum port for allocation policy for ICE sockets.
+            type: integer
+            default: 65535
+
+      check_interval:
+        title: Check Interval
+        description: |
+          Interval at which the agent performs candidate checks in the connecting phase.
+        $ref: "#/$defs/Duration"
+        default: 200ms
+
+      disconnected_timeout:
+        title: Disconnected Timeout
+        description: |
+          Time until an Agent transitions disconnected.
+          If the duration is `0`, the ICE Agent will never go to disconnected.
+        $ref: "#/$defs/Duration"
+        default: 5s
+
+      failed_timeout:
+        title: Failed Timeout
+        description: |
+          Time until an Agent transitions to failed after disconnected.
+          If the duration is 0, we will never go to failed.
+        $ref: "#/$defs/Duration"
+        default: 5s
+
+      restart_timeout:
+        title: Restart Timeout
+        description: |
+          Time to wait before attempting an ICE restart.
+        $ref: "#/$defs/Duration"
+        default: 5s
+
+      keepalive_interval:
+        title: Keepalive Interval
+        description: |
+          Interval between STUN keepalives (should be less then connection timeout above).
+          Af the interval is 0, we never send keepalive packets.
+        $ref: "#/$defs/Duration"
+        default: 2s
+
+  HookSettings:
+    title: Hook Settings
+    description: |
+      Hook callback can be used to invoke subprocesses or web-hooks on certain events within cunīcu.
+    oneOf:
+    - $ref: "#/$defs/WebHookSettings"
+    - $ref: "#/$defs/ExecHookSettings"
+
+  WebHookSettings:
+    title: Web Hook Settings
+    description: |
+      A webhook performs HTTP requests for each event.
+
+    type: object
+    properties:
+      type:
+        type: string
+        const: web
+
+      url:
+        title: Webhook Endpoint
+        description: |
+          URL of the webhook endpoint.
+        type: string
+        format: uri
+        examples:
+        - https://my-webhook-endpoint.com/api/v1/webhook
+
+      method:
+        title: HTTP Method
+        description: |
+          HTTP method of the request.
+        type: string
+        enum:
+        - DELETE
+        - GET
+        - HEAD
+        - OPTIONS
+        - PATCH
+        - POST
+        - PUT
+        - TRACE
+
+      headers:
+        title: HTTP Headers
+        description: |
+          Additional HTTP headers which are used for the requests.
+        type: object
+        additionalProperties:
+          type: string
+        examples:
+        - Content-type: application/json
+        - Authorization: Bearer XXXXXX
+
+  ExecHookSettings:
+    title: Sub-process Hook
+    description: |
+      An 'exec' hook spawn a subprocess for each event.
+    type: object
+    properties:
+      type:
+        type: string
+        const: exec
+
+      command:
+        type: string
+        examples:
+        - ../../scripts/hook.sh
+
+      args:
+        title: Command Arguments
+        description: |
+          Prepend additional arguments.
+        type: array
+        items:
+          type: string
+        default: []
+
+      stdin:
+        title: Standard Input
+        description: |
+          Pass JSON object via Stdin to command.
+        type: boolean
+
+      env:
+        title: Environment Variables
+        description: |
+          Set environment variables for invocation
+        type: object
+        additionalProperties:
+          type: string
+        examples:
+        - COLOR: "1"
+
+  RouteSyncSettings:
+    title: Route Synchronization Settomgs
+    description: |
+      Synchronize the kernel routing table with WireGuard's AllowedIPs setting
+
+      It checks for routes in the kernel routing table which have a peers address
+      as next-hop and adds those routes to the AllowedIPs setting of the respective peer.
+
+      In reverse, also networks listed in a peers AllowedIPs setting will be installed as a
+      kernel route with the peers address as the routes next-hop.
+    type: object
+    properties:
+      sync_routes:
+        title: Route Synchronization
+        description: |
+          Enable route synchronization.
+        type: boolean
+        default: true
+
+      routing_table:
+        title: Kernel Routing Table
+        description: |
+          Kernel routing table which is used.
+          On Linux, see `/etc/iproute2/rt_tables` for table ids and names
+        type: integer
+        default: 254
+
+      watch_routes:
+        title: Watch Routes
+        description: |
+          Keep watching the for changes in the kernel routing table via netlink multicast group.
+        type: boolean
+        default: true
+
+  ConfigSyncSettings:
+    title: Config Synchronization Settings
+    description: |
+      Synchronize local WireGuard interface configuration with wg(8) config-files.
+    type: object
+    properties:
+      sync_config:
+        title: Config Synchronization
+        description: |
+          Enable config synchronization.
+        type: boolean
+
+      watch_config:
+        title: Watch Configuration Files
+        description: |
+          Keep watching for changes in the configuration and apply them on-the-fly
+        type: boolean
+
+  HostsSyncSettings:
+    title: /etc/hosts Synchronization Settings
+    description: |
+      Synchronizes the local /etc/hosts file with host names and addresses of connected peers.
+    type: object
+    properties:
+      sync_hosts:
+        title: /etc/hosts Synchronization
+        description: |
+          Enable hosts file synchronization.
+        type: boolean
+        default: true
+
+      domain:
+        title: Domain
+        description: |
+          The domain name which is appended to each of the peer host names
+        type: string
+        examples:
+        - wg-local
+
+  PeerDiscoverySettings:
+    title: Peer Discovery Settings
+    description: Peer discovery finds new peers within the same community and adds them to the respective interface.
+    type: object
+    properties:
+      discover_peers:
+        title: Peer Discovery
+        description: Enable/disable peer discovery.
+        type: boolean
+        default: true
+
+      hostname:
+        title: Hostname
+        description: |
+          The hostname which gets advertised to remote peers.
+        type: string
+        format: hostname
+        examples:
+        - my-node
+
+      community:
+        title: Community
+        description: |
+          A passphrase shared among all peers of the same community.
+        type: string
+        minLength: 1
+        examples:
+        - some-common-password
+
+      networks:
+        title: Networks
+        description: |
+          Networks which are reachable via this peer and get advertised to remote peers.
+          These will be part of this interfaces AllowedIPs at the remote peers.
+        type: array
+        items:
+          type: string
+          examples:
+          - 192.168.1.0/24
+          - 10.2.0.0/24
+
+      whitelist:
+        title: Peer Whitelist
+        description: |
+          A list of WireGuard public keys which are accepted peers.
+          If not configured, all peers will be accepted.
+        type: array
+        items:
+          $ref: "#/$defs/Base64Key"
+
+      blacklist:
+        title: Peer Blacklist
+        description: |
+          A list of WireGuard public keys which are rejected as peers.
+        type: array
+        items:
+          $ref: "#/$defs/Base64Key"
+
+  EndpointDiscoverySettings:
+    title: Endpoint Discovery Settings
+    description: |
+      Endpoint discovery uses Interactive Connectivity Establishment (ICE) as used by WebRTC to
+      gather a list of candidate endpoints and performs connectivity checks to find a suitable
+      endpoint address which can be used by WireGuard.
+    type: object
+    properties:
+
+      discover_endpoints:
+        title: Endpoint Discovery
+        description: |
+          Enable/disable endpoint discovery.
+        type: boolean
+        default: true
+
+      ice:
+        $ref: "#/$defs/IceSettings"

@@ -73,6 +73,17 @@ module.exports = {
 
   presets: [
     [
+      "redocusaurus",
+      {
+        // Plugin Options for loading OpenAPI files
+        specs: [
+          {
+            spec: 'openapi/openapi.yaml',
+          },
+        ],
+      },
+    ],
+    [
       "classic",
       /** @type {import("@docusaurus/preset-classic").Options} */
       ({
