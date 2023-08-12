@@ -51,6 +51,9 @@ func New(flags *pflag.FlagSet) *Config {
 		flags:              flags,
 	}
 
+	// Generic flags
+	flags.StringArrayP("option", "o", nil, "Set arbitrary options (example: --option watch_interval=5s)")
+
 	// Feature flags
 	flags.BoolP("discover-endpoints", "E", true, "Enable ICE endpoint discovery")
 	flags.BoolP("discover-peers", "P", true, "Enable peer discovery")
