@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml
+---
+$schema: https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml
+openapi: 3.1.0
+info:
+  title: cunicu API
+  version: 0.0.1
+components:
+  schemas:
+    Config:
+      $ref: config.yaml
+    
