@@ -11,13 +11,13 @@ This page describes the ways of configuring the cunīcu daemon (`cunicu daemon`)
 ## Command Line Flags
 
 Basic options of `cunicu daemon` can be configured by passing command line arguments.
-A full overview is available in its [manpage](./usage/md/cunicu_daemon.md).
+A full overview is available in its [manpage](../usage/md/cunicu_daemon.md).
 
 ## Configuration File
 
 For more advanced setups, a configuration file can be used for a persistent configuration:
 
-Please have a look at the [example configuration file](./config-reference.md) for a full reference of all available settings.
+Please have a look at the [example configuration file](./example-advanced.md) for a full reference of all available settings.
 
 ## Environment Variables
 
@@ -37,7 +37,7 @@ Setting lists such as `ice.urls` or `backends` can currently not be set via envi
 
 cunīcu's configuration can also be updated at runtime, elevating the need to restart the daemon to avoid interruption of connectivity.
 
-Please have a look at the [`cunicu config`](./usage/md/cunicu_config.md) commands.
+Please have a look at the [`cunicu config`](../usage/md/cunicu_config.md) commands.
 
 ## DNS Auto-configuration
 
