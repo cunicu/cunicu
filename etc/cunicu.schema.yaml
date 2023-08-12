@@ -207,8 +207,9 @@ $defs:
     - $ref: "#/$defs/RouteSyncSettings"
     - $ref: "#/$defs/ConfigSyncSettings"
     - $ref: "#/$defs/HostsSyncSettings"
-    - $ref: "#/$defs/PeerDiscoverySettings"
+    - $ref: "#/$defs/PeerDiscSettings"
     - $ref: "#/$defs/EndpointDiscoverySettings"
+    - $ref: "#/$defs/HooksSettings"
 
   BasicInterfaceSettings:
     title: Basic Interface Settings
@@ -250,11 +251,6 @@ $defs:
         type: array
         items:
           $ref: "#/$defs/Address"
-
-      hooks:
-        type: array
-        items:
-          $ref: "#/$defs/HookSettings"
 
   WireGuardInterfaceSettings:
     title: WireGuard Interface Settings
@@ -568,6 +564,14 @@ $defs:
         $ref: "#/$defs/Duration"
         default: 2s
 
+  HooksSettings:
+    type: object
+    properties:
+      hooks:
+        type: array
+        items:
+          $ref: "#/$defs/HookSettings"
+
   HookSettings:
     title: Hook Settings
     description: |
@@ -735,7 +739,7 @@ $defs:
         examples:
         - wg-local
 
-  PeerDiscoverySettings:
+  PeerDiscSettings:
     title: Peer Discovery Settings
     description: Peer discovery finds new peers within the same community and adds them to the respective interface.
     type: object

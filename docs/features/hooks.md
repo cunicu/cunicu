@@ -9,6 +9,8 @@ The hooks feature allows the user to configure a list of hook functions which ar
 
 ## Configuration
 
-import ExampleConfig from '../../src/components/ExampleConfig';
+The following settings can be used in the main section of the [configuration file](../config/) or with-in the `interfaces` section to customize settings of an individual interface.
 
-<ExampleConfig section="hooks" />
+import ApiSchema from '@theme/ApiSchema';
+
+<ApiSchema pointer="#/components/schemas/HooksSettings"/>

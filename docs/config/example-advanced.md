@@ -6,18 +6,16 @@ sidebar_position: 3
 
 # Advanced Example
 
+:::info
+Please also have a look at the [JSON Schema](./schema.md) for a full reference of available options/
+:::
+
+The following file contains a full-featured set of cunīcu's options.
+
+You can find the file at:
+- In a local installation: `/etc/cunicu/cunicu.advanced.yaml`
+- In the Git repo: [`etc/cunicu.advanced.yaml`](https://github.com/stv0g/cunicu/blob/master/etc/cunicu.advanced.yaml)
+
 import ExampleConfig from '../../src/components/ExampleConfig';
 
-<ExampleConfig />
-
-## JSON Schema
-
-There exists also a [JSON Schema](https://json-schema.org/) of cunīcu's configuration file at:
-
-- https://cunicu.li/schemas/config.yaml
-
-Here is a rendered version of this schema:
-
-import ApiSchema from '@theme/ApiSchema';
-
-<ApiSchema pointer="#/components/schemas/Config" />
+<ExampleConfig advanced />

@@ -78,9 +78,17 @@ module.exports = {
         // Plugin Options for loading OpenAPI files
         specs: [
           {
-            spec: 'openapi/openapi.yaml',
+            spec: "openapi/openapi.yaml",
           },
         ],
+        theme: {
+          primaryColor: '#d4aa01',
+          options: {
+            showObjectSchemaExamples: true,
+            expandResponses: "all",
+            schemaExpansionLevel: "all",
+          }
+        },
       },
     ],
     [

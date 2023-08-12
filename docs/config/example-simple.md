@@ -6,18 +6,12 @@ sidebar_position: 2
 
 # Simple Example
 
+The following example contains just the basic settings.
+
+You can find the file at:
+- In a local installation: `/etc/cunicu/cunicu.yaml`
+- In the Git repo: [`etc/cunicu.yaml`](https://github.com/stv0g/cunicu/blob/master/etc/cunicu.yaml)
+
 import ExampleConfig from '../../src/components/ExampleConfig';
 
 <ExampleConfig />
-
-## JSON Schema
-
-There exists also a [JSON Schema](https://json-schema.org/) of cunīcu's configuration file at:
-
-- https://cunicu.li/schemas/config.yaml
-
-Here is a rendered version of this schema:
-
-import ApiSchema from '@theme/ApiSchema';
-
-<ApiSchema pointer="#/components/schemas/Config" />
