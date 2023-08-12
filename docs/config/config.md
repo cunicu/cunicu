@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 1
 # SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 ---
