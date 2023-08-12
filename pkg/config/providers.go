@@ -112,6 +112,7 @@ func (c *Config) getProviders() ([]koanf.Provider, error) {
 	providers = append(providers,
 		c.environmentProvider(),
 		c.flagProvider(),
+		c.flagOptionProvider(),
 	)
 
 	return providers, nil

@@ -4,10 +4,56 @@
 package config
 
 import (
+	"strings"
+
+	"github.com/knadh/koanf/maps"
 	"github.com/knadh/koanf/providers/posflag"
 	"github.com/knadh/koanf/v2"
 	"github.com/spf13/pflag"
 )
+
+type flagOptionProvider struct {
+	flags *pflag.FlagSet
+}
+
+func (c *Config) flagOptionProvider() koanf.Provider {
+	return &flagOptionProvider{c.flags}
+}
+
+func (p *flagOptionProvider) Read() (map[string]any, error) {
+	options, err := p.flags.GetStringArray("option")
+	if err != nil {
+		return nil, err
+	}
+
+	settings := map[string]any{}
+
+	for _, option := range options {
+		p := strings.SplitN(option, "=", 2)
+		if len(p) != 2 {
+			continue
+		}
+
+		key, value := p[0], p[1]
+
+		if oldValue, ok := settings[key]; ok {
+			switch oldValue := oldValue.(type) {
+			case []string:
+				settings[key] = append(oldValue, value)
+			case string:
+				settings[key] = []string{oldValue, value}
+			}
+		} else {
+			settings[key] = value
+		}
+	}
+
+	return maps.Unflatten(settings, "."), nil
+}
+
+func (p *flagOptionProvider) ReadBytes() ([]byte, error) {
+	return nil, errNotImplemented
+}
 
 func (c *Config) flagProvider() koanf.Provider {
 	// Map flags from the flags to to Koanf settings

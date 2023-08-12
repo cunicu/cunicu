@@ -81,6 +81,21 @@ var _ = Context("config", func() {
 			Expect(cfg.InterfaceSettings("wg2")).To(BeNil())
 		})
 
+		It("parses arbitrary options", func() {
+			cfg, err := parseArgs(
+				"-o", "watch_interval=1m",
+				"-o", "log.rules=info:watcher",
+				"-o", "rpc.socket=/some/other/cunicu.sock",
+				"-o", "log.rules=debug:epdisc.*",
+				"-o", "log.rules=error",
+			)
+			Expect(err).To(Succeed())
+
+			Expect(cfg.WatchInterval).To(Equal(1 * time.Minute))
+			Expect(cfg.RPC.Socket).To(Equal("/some/other/cunicu.sock"))
+			Expect(cfg.Log.Rules).To(HaveExactElements("info:watcher", "debug:epdisc.*", "error"))
+		})
+
 		It("fails on invalid arguments", func() {
 			_, err := parseArgs("--wrong")
 
