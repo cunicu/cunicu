@@ -17,8 +17,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/test"
 )
 
 // We implement our own functions for building the binary-under-test

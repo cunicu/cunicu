@@ -18,7 +18,7 @@ import (
 	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 var errTimeout = errors.New("timed out")

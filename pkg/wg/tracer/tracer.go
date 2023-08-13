@@ -19,7 +19,7 @@ import (
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
 
-	"github.com/stv0g/cunicu/pkg/wg/tracer/kernel"
+	"cunicu.li/cunicu/pkg/wg/tracer/kernel"
 )
 
 //go:generate make -C kernel config.h

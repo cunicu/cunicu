@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 var _ BindConn = (*bindPacketConn)(nil)

@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 const (
@@ -457,7 +457,7 @@ func doString(value any) bool {
 		return true
 	case strings.HasPrefix(pkgPath, "github.com/vishvananda/netlink"):
 		return false
-	case strings.HasPrefix(pkgPath, "github.com/stv0g/cunicu/pkg/proto"):
+	case strings.HasPrefix(pkgPath, "cunicu.li/cunicu/pkg/proto"):
 		return false
 	}
 

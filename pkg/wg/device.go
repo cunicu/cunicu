@@ -12,8 +12,8 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 type Interface wgtypes.Device

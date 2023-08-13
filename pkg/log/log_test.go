@@ -12,7 +12,7 @@ import (
 
 	"google.golang.org/grpc/grpclog"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

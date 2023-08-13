@@ -13,8 +13,8 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func (p *Peer) Peer() wgtypes.Peer {

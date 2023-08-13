@@ -13,10 +13,10 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/tty"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type inviteOptions struct {

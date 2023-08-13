@@ -9,7 +9,7 @@ import (
 	"github.com/pion/stun"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 type STUNPacketHandler struct {

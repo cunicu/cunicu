@@ -9,9 +9,9 @@ import (
 	g "github.com/stv0g/gont/v2/pkg"
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 
-	"github.com/stv0g/cunicu/test/e2e/nodes"
-	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
-	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
+	"cunicu.li/cunicu/test/e2e/nodes"
+	opt "cunicu.li/cunicu/test/e2e/nodes/options"
+	wopt "cunicu.li/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -77,7 +77,7 @@ var _ = Context("nat simple: Simple home-router NAT setup", Label("nat"), func()
 			),
 			// Mixed IPv4/IPv6 NAT tests are currently broken for some reason.
 			// Hence we limit ourself to IPv6 here.
-			// See: https://github.com/stv0g/cunicu/issues/224
+			// See: https://github.com/cunicu/cunicu/issues/224
 			opt.ConfigValue("ice.network_types", []string{"udp6", "tcp6"}),
 			// opt.ICECandidateTypes(ice.CandidateTypeHost, ice.CandidateTypeServerReflexive),
 		)

@@ -16,8 +16,8 @@ import (
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/log"
+	netx "cunicu.li/cunicu/pkg/net"
 )
 
 var ErrNoConn = errors.New("no connection for endpoint")

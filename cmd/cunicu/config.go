@@ -14,9 +14,9 @@ import (
 	"go.uber.org/zap/zapcore"
 	statusx "google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/proto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/types/maps"
+	"cunicu.li/cunicu/pkg/proto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/types/maps"
 )
 
 func init() { //nolint:gochecknoinits

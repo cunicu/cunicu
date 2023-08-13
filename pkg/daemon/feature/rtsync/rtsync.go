@@ -10,8 +10,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 var errNotSupported = errors.New("not supported on this platform")

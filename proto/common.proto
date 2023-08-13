@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package cunicu;
-option go_package = "github.com/stv0g/cunicu/pkg/proto";
+option go_package = "cunicu.li/cunicu/pkg/proto";
 
 message Empty {}
 

@@ -4,7 +4,7 @@
 package daemon
 
 import (
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type AllHandler interface {

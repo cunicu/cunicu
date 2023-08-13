@@ -10,9 +10,9 @@
 package rpc
 
 import (
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	core "github.com/stv0g/cunicu/pkg/proto/core"
-	signaling "github.com/stv0g/cunicu/pkg/proto/signaling"
+	proto "cunicu.li/cunicu/pkg/proto"
+	core "cunicu.li/cunicu/pkg/proto/core"
+	signaling "cunicu.li/cunicu/pkg/proto/signaling"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

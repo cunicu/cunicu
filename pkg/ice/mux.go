@@ -9,7 +9,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []ice.NetworkType, includeLoopback bool, logger *log.Logger) (*ice.MultiUDPMuxDefault, error) {

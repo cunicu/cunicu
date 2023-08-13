@@ -8,8 +8,8 @@ import (
 
 	kmaps "github.com/knadh/koanf/maps"
 
-	mapsx "github.com/stv0g/cunicu/pkg/types/maps"
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
+	mapsx "cunicu.li/cunicu/pkg/types/maps"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
 )
 
 type Change struct {

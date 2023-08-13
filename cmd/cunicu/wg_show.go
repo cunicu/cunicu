@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	proto "github.com/stv0g/cunicu/pkg/proto/core"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/wg"
+	proto "cunicu.li/cunicu/pkg/proto/core"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 var errUnknownField = errors.New("unknown field")

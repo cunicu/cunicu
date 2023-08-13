@@ -15,7 +15,7 @@ import (
 	"github.com/pion/ice/v2"
 	"github.com/pion/stun"
 
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	icex "cunicu.li/cunicu/pkg/ice"
 )
 
 var errUnknownHookType = errors.New("unknown hook type")

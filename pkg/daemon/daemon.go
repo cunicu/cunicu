@@ -11,12 +11,12 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/log"
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/device"
+	"cunicu.li/cunicu/pkg/log"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 var (

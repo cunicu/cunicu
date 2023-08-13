@@ -16,7 +16,7 @@ These binary versions can be manually downloaded and installed.
 
 ## By Hand
 
-1.  [Download your desired version](https://github.com/stv0g/cunicu/releases)
+1.  [Download your desired version](https://github.com/cunicu/cunicu/releases)
 2.  Unzip it: `gunzip cunicu_0.0.1_linux_amd64.tar.gz`
 3.  Move the unzipped binary to its desired destination: `mv cunicu /usr/local/bin/cunicu`
 4.  Make it executable: `chmod +x /usr/local/bin/cunicu`
@@ -68,10 +68,10 @@ sudo yum install cunicu
 
 ### From Homebrew (macOS)
 
-A formulae for cunīcu is available in our Homebrew Tap: https://github.com/stv0g/homebrew-cunicu.
+A formulae for cunīcu is available in our Homebrew Tap: https://github.com/cunicu/homebrew-cunicu.
 
 ```bash
-brew tap stv0g/cunicu
+brew tap cunicu/cunicu
 brew install cunicu
 ```
 
@@ -100,7 +100,7 @@ The `nix` branch of the cunicu repo is intended to always have a working nix pac
 Building and installing cunīcu via [Nix](https://nix.dev/) is possible with [flakes](https://nixos.wiki/wiki/Flakes):
 
 ```bash
-nix profile install github:stv0g/cunicu/nix?dir=nix
+nix profile install github:cunicu/cunicu/nix?dir=nix
 ```
 
 #### Legacy
@@ -109,7 +109,7 @@ You can also use `nix-env`/`nix-build` if you have cunicu checked out locally.
 
 ```
 # check out cunicu
-git clone https://github.com/stv0g/cunicu --branch nix && cd cunicu
+git clone https://github.com/cunicu/cunicu --branch nix && cd cunicu
 
 # Build cunicu and add it to the environment
 nix-env -if ./nix
@@ -122,7 +122,7 @@ Building cunīcu is fairly easy and allows you to install the latest unreleased 
 You must have a working Go environment.
 
 ```bash
-go install github.com/stv0g/cunicu/cmd/cunicu@latest
+go install github.com/cunicu/cunicu/cmd/cunicu@latest
 ```
 
 If required, it will fetch the dependencies and cache them, and validate configuration.

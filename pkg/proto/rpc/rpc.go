@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 func (s *GetStatusResp) Dump(wr io.Writer, level log.Level) error {

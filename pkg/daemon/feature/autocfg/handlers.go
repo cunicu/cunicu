@@ -8,10 +8,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/pdisc"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/daemon/feature/pdisc"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 func (i *Interface) OnInterfaceModified(ci *daemon.Interface, old *wg.Interface, mod daemon.InterfaceModifier) {

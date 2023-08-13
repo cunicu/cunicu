@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/selfupdate"
+	"cunicu.li/cunicu/pkg/selfupdate"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

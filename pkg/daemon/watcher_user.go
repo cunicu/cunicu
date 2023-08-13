@@ -12,7 +12,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 func normalizeSocketName(name string) string {

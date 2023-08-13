@@ -10,8 +10,8 @@
 package hooks
 
 import (
-	core "github.com/stv0g/cunicu/pkg/proto/core"
-	rpc "github.com/stv0g/cunicu/pkg/proto/rpc"
+	core "cunicu.li/cunicu/pkg/proto/core"
+	rpc "cunicu.li/cunicu/pkg/proto/rpc"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

@@ -15,9 +15,9 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 var Get = daemon.RegisterFeature(New, 20) //nolint:gochecknoglobals

@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	osx "github.com/stv0g/cunicu/pkg/os"
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	osx "cunicu.li/cunicu/pkg/os"
+	grpcx "cunicu.li/cunicu/pkg/signaling/grpc"
 )
 
 type relayOptions struct {

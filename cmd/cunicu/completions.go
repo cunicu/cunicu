@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/rpc"
+	"cunicu.li/cunicu/pkg/crypto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/rpc"
 )
 
 //nolint:gochecknoglobals

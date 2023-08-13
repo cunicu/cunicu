@@ -11,12 +11,12 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/link"
+	"cunicu.li/cunicu/pkg/log"
+	netx "cunicu.li/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/wg"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )

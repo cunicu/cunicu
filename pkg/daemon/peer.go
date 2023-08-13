@@ -13,13 +13,13 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
-	"github.com/stv0g/cunicu/pkg/types"
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/log"
+	netx "cunicu.li/cunicu/pkg/net"
+	proto "cunicu.li/cunicu/pkg/proto"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
+	"cunicu.li/cunicu/pkg/types"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
 )
 
 type Peer struct {

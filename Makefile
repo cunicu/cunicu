@@ -5,12 +5,12 @@ PKG = $(shell grep module go.mod | cut -f2 -d" ")
 
 export CGO_ENABLED = 0
 
-LDFLAGS = -X github.com/stv0g/cunicu/pkg/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
-          -X github.com/stv0g/cunicu/pkg/buildinfo.Tag=$(shell git describe --tags) \
-          -X github.com/stv0g/cunicu/pkg/buildinfo.Commit=$(shell git rev-parse HEAD) \
-          -X github.com/stv0g/cunicu/pkg/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
-          -X github.com/stv0g/cunicu/pkg/buildinfo.DateStr=$(shell date -Iseconds) \
-          -X github.com/stv0g/cunicu/pkg/buildinfo.BuiltBy=makefile \
+LDFLAGS = -X cunicu.li/cunicu/pkg/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
+          -X cunicu.li/cunicu/pkg/buildinfo.Tag=$(shell git describe --tags) \
+          -X cunicu.li/cunicu/pkg/buildinfo.Commit=$(shell git rev-parse HEAD) \
+          -X cunicu.li/cunicu/pkg/buildinfo.Branch=$(shell git rev-parse --abbrev-ref HEAD) \
+          -X cunicu.li/cunicu/pkg/buildinfo.DateStr=$(shell date -Iseconds) \
+          -X cunicu.li/cunicu/pkg/buildinfo.BuiltBy=makefile \
 
 PKGS ?= ./cmd/... ./pkg/... ./test
 ifeq ($(GOOS),linux)

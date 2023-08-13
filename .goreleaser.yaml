@@ -68,12 +68,12 @@ builds:
   ldflags:
   - -s
   - -w
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.Version=v{{.Version}}
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.Commit={{.Commit}}
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.DateStr={{.Date}}
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.Tag={{.Tag}}
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.Branch={{.Branch}}
-  - -X github.com/stv0g/cunicu/pkg/buildinfo.BuiltBy=goreleaser
+  - -X cunicu.li/cunicu/pkg/buildinfo.Version=v{{.Version}}
+  - -X cunicu.li/cunicu/pkg/buildinfo.Commit={{.Commit}}
+  - -X cunicu.li/cunicu/pkg/buildinfo.DateStr={{.Date}}
+  - -X cunicu.li/cunicu/pkg/buildinfo.Tag={{.Tag}}
+  - -X cunicu.li/cunicu/pkg/buildinfo.Branch={{.Branch}}
+  - -X cunicu.li/cunicu/pkg/buildinfo.BuiltBy=goreleaser
 
 archives:
 - id: cunicu
@@ -101,8 +101,8 @@ archives:
   rlcp: true
 
 nfpms:
-- vendor: stv0g
-  homepage: https://github.com/stv0g/cunicu/
+- vendor: cunicu
+  homepage: https://cunicu.li/
   maintainer: Steffen Vogel <post@steffenvogel.de>
   license: Apache 2.0
 
@@ -159,16 +159,16 @@ dockers:
   goos: linux
   goarch: amd64
   image_templates:
-  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-amd64"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-amd64"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-amd64"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:latest-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
   build_flag_templates:
   - --platform=linux/amd64
   - --label=org.opencontainers.image.title={{ .ProjectName }}
   - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://github.com/stv0g/{{ .ProjectName }}
-  - --label=org.opencontainers.image.source=https://github.com/stv0g/{{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/cunicu/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/cunicu/{{ .ProjectName }}
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
@@ -179,16 +179,16 @@ dockers:
   goos: linux
   goarch: arm64
   image_templates:
-  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-arm64v8"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-arm64v8"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-arm64v8"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:latest-arm64v8"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}-arm64v8"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
   build_flag_templates:
   - --platform=linux/arm64/v8
   - --label=org.opencontainers.image.title={{ .ProjectName }}
   - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://github.com/stv0g/{{ .ProjectName }}
-  - --label=org.opencontainers.image.source=https://github.com/stv0g/{{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/cunicu/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/cunicu/{{ .ProjectName }}
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
@@ -200,32 +200,32 @@ dockers:
   goarch: arm
   goarm: "7"
   image_templates:
-  - "ghcr.io/stv0g/{{ .ProjectName }}:latest-armv7"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}-armv7"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv7"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:latest-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}-armv7"
   build_flag_templates:
   - --platform=linux/arm/v7
   - --label=org.opencontainers.image.title={{ .ProjectName }}
   - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://github.com/stv0g/{{ .ProjectName }}
-  - --label=org.opencontainers.image.source=https://github.com/stv0g/{{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/cunicu/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/cunicu/{{ .ProjectName }}
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=Apache-2.0
 
 docker_manifests:
-- name_template: "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}"
+- name_template: "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}"
   image_templates:
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-amd64"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv7"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
-- name_template: "ghcr.io/stv0g/{{ .ProjectName }}:latest"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
+- name_template: "ghcr.io/cunicu/{{ .ProjectName }}:latest"
   image_templates:
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-amd64"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-armv7"
-  - "ghcr.io/stv0g/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-amd64"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-armv7"
+  - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
@@ -250,7 +250,7 @@ brews:
   - cunicu
 
   tap:
-    owner: stv0g
+    owner: cunicu
     name: homebrew-cunicu
     token: "{{ .Env.TAP_GITHUB_TOKEN }}"
 
@@ -324,7 +324,7 @@ changelog:
 
 release:
   github:
-    owner: stv0g
+    owner: cunicu
     name: cunicu
 
   draft:  true

@@ -5,8 +5,8 @@
 package device
 
 import (
-	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/link"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type Device interface {

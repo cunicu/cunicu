@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/log"
+	netx "cunicu.li/cunicu/pkg/net"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

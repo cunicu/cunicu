@@ -6,8 +6,8 @@ package link_test
 import (
 	"testing"
 
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/test"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

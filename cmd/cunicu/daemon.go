@@ -12,10 +12,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapio"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/rpc"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/rpc"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func init() { //nolint:gochecknoinits
@@ -78,7 +78,7 @@ func daemonRun(_ *cobra.Command, args []string, cfg *config.Config) {
 	Please set the env var CUNICU_EXPERIMENTAL=1 to bypass this warning.
 	
 	Please feel free to join the development
-	 - at Github: https://github.com/stv0g/cunicu
+	 - at Github: https://github.com/cunicu/cunicu
 	 - via Slack: #cunicu in the Gophers workspace`)
 	}
 

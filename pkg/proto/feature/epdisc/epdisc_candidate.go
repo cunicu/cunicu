@@ -9,8 +9,8 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"github.com/stv0g/cunicu/pkg/proto"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/proto"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func NewCandidate(ic ice.Candidate) *Candidate {

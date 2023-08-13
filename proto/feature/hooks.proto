@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package cunicu.hooks;
-option go_package = "github.com/stv0g/cunicu/pkg/proto/feature/hooks";
+option go_package = "cunicu.li/cunicu/pkg/proto/feature/hooks";
 
 import "core/interface.proto";
 import "core/peer.proto";

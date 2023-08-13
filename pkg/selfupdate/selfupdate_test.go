@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/selfupdate"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/selfupdate"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

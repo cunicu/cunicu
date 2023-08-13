@@ -11,8 +11,8 @@ import (
 
 	"github.com/onsi/ginkgo/v2"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func SetupLogging() *log.Logger {

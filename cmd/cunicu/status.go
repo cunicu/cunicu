@@ -10,9 +10,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/crypto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 type statusOptions struct {

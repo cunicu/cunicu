@@ -12,14 +12,14 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/device"
-	"github.com/stv0g/cunicu/pkg/log"
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/device"
+	"cunicu.li/cunicu/pkg/log"
+	proto "cunicu.li/cunicu/pkg/proto"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type Interface struct {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"github.com/stv0g/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/config"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

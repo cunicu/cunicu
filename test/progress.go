@@ -10,8 +10,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/types/maps"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/types/maps"
 )
 
 type ProgressHandler interface {

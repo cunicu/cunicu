@@ -6,7 +6,7 @@ package grpc_test
 import (
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"cunicu.li/cunicu/pkg/signaling/grpc"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

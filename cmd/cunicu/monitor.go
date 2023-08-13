@@ -8,10 +8,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/log"
-	osx "github.com/stv0g/cunicu/pkg/os"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/log"
+	osx "cunicu.li/cunicu/pkg/os"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 type monitorOptions struct {

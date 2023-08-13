@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/stv0g/cunicu/pkg/proto"
+	"cunicu.li/cunicu/pkg/proto"
 )
 
 func init() { //nolint:gochecknoinits

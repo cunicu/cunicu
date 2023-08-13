@@ -7,8 +7,8 @@ import (
 	"net"
 	"testing"
 
-	netx "github.com/stv0g/cunicu/pkg/net"
-	"github.com/stv0g/cunicu/test"
+	netx "cunicu.li/cunicu/pkg/net"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

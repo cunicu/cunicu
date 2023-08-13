@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/types"
+	"cunicu.li/cunicu/pkg/types"
 )
 
 type ChangedHandler interface {

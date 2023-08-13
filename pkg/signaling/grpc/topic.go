@@ -4,8 +4,8 @@
 package grpc
 
 import (
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/types"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/types"
 )
 
 type Topic struct {

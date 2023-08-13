@@ -5,8 +5,8 @@
 package signaling
 
 import (
-	"github.com/stv0g/cunicu/pkg/crypto"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
 )
 
 type (

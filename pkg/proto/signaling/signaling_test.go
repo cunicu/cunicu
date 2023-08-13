@@ -8,10 +8,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/crypto"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

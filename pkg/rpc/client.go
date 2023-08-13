@@ -19,12 +19,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/proto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/proto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 var errTimeout = errors.New("timed out")

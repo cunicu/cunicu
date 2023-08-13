@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/signaling/grpc"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

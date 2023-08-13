@@ -8,11 +8,11 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 func (s *Server) OnInterfaceAdded(i *daemon.Interface) {

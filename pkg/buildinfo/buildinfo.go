@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stv0g/cunicu/pkg/proto"
+	"cunicu.li/cunicu/pkg/proto"
 )
 
 //nolint:gochecknoglobals

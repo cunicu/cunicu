@@ -18,15 +18,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/types"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
+	proto "cunicu.li/cunicu/pkg/proto"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/types"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 var (

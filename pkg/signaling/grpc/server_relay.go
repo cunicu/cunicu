@@ -15,11 +15,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/proto"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	icex "cunicu.li/cunicu/pkg/ice"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/proto"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
 )
 
 const (

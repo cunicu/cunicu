@@ -10,7 +10,7 @@ import (
 
 	"github.com/onsi/gomega/types"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/daemon"
 )
 
 func BeRandom() types.GomegaMatcher {

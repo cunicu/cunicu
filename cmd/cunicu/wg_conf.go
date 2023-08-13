@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 var errNoSuchInterface = errors.New("unknown interface")

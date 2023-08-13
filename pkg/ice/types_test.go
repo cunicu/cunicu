@@ -6,7 +6,7 @@ package ice_test
 import (
 	"github.com/pion/ice/v2"
 
-	icex "github.com/stv0g/cunicu/pkg/ice"
+	icex "cunicu.li/cunicu/pkg/ice"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

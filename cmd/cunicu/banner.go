@@ -4,7 +4,7 @@
 package main
 
 import (
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func Banner(color bool) string {

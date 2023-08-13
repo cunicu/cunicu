@@ -12,8 +12,8 @@ import (
 
 	"github.com/onsi/ginkgo/v2/reporters"
 
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/test/e2e/nodes"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

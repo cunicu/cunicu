@@ -58,7 +58,7 @@ The _envelopes_ are containers which encrypt the carried _message_ via asymmetri
 
 Both the _envelope_ and the _message_ are serialized using Protobuf.
 
-Checkout the [`pkg/pb/signaling.proto`](https://github.com/stv0g/cunicu/blob/master/proto/signaling/signaling.proto) for details.
+Checkout the [`pkg/pb/signaling.proto`](https://github.com/cunicu/cunicu/blob/master/proto/signaling/signaling.proto) for details.
 
 ## Backends
 
@@ -70,7 +70,7 @@ cunīcu can support multiple backends for signaling session information such as 
 -   Kubernetes API server
 
 For the use within a Kubernetes cluster also a dedicated backend using the Kubernetes api-server is available.
-Checkout the [`Backend`](https://github.com/stv0g/cunicu/blob/master/pkg/signaling/backend.go) interface for implementing your own backend.
+Checkout the [`Backend`](https://github.com/cunicu/cunicu/blob/master/pkg/signaling/backend.go) interface for implementing your own backend.
 
 ### Semantics
 
@@ -84,7 +84,7 @@ A backend must:
 
 ### Interface
 
-All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/stv0g/cunicu/blob/master/pkg/signaling/backend.go):
+All signaling backends implement the rather simple [`signaling.Backend` interface](https://github.com/cunicu/cunicu/blob/master/pkg/signaling/backend.go):
 
 ```go
 type Message = pb.SignalingMessage

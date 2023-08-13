@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/selfupdate"
+	"cunicu.li/cunicu/pkg/selfupdate"
 )
 
 type selfUpdateOptions struct {
