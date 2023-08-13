@@ -17,7 +17,7 @@ import (
 
 	"github.com/knadh/koanf/providers/file"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/buildinfo"
 )
 
 var (

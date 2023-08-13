@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
-	"github.com/stv0g/cunicu/test"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

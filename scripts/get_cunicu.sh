@@ -20,7 +20,7 @@ HAS_GPG="$(type "gpg" &> /dev/null && echo true || echo false)"
 HAS_TAR="$(type "tar" &> /dev/null && echo true || echo false)"
 
 # Settings
-GITHUB_URL="https://github.com/stv0g/cunicu"
+GITHUB_URL="https://github.com/cunicu/cunicu"
 SUPPORTED_PLATFORMS=(darwin-amd64 darwin-arm64 linux-amd64 linux-arm linux-armv6 linux-arm64 windows-amd64 windows-arm64)
 
 # detectArch discovers the architecture for this system.
@@ -106,7 +106,7 @@ function checkDesiredVersion() {
   local latest_release_url="${GITHUB_URL}/releases"
 
   if [[ -z "${DESIRED_TAG}" ]]; then
-    TAG=$(wget ${latest_release_url} -O - 2>&1 | grep 'href="/stv0g/cunicu/releases/tag/v[0-9]*.[0-9]*.[0-9]*\"' | sed -E 's/.*\/stv0g\/cunicu\/releases\/tag\/(v[0-9\.]+)".*/\1/g' | head -1)
+    TAG=$(wget ${latest_release_url} -O - 2>&1 | grep 'href="/cunicu/cunicu/releases/tag/v[0-9]*.[0-9]*.[0-9]*\"' | sed -E 's/.*\/cunicu\/cunicu\/releases\/tag\/(v[0-9\.]+)".*/\1/g' | head -1)
     echo "Latest available version of ${BINARY_NAME} is ${TAG}"
   else
     TAG=${DESIRED_TAG}

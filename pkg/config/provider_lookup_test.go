@@ -12,9 +12,9 @@ import (
 	"github.com/foxcpp/go-mockdns"
 	"github.com/onsi/gomega/ghttp"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/crypto"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

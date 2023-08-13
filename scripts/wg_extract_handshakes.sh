@@ -16,7 +16,7 @@
 # **full** kernel sources (headers are not sufficient) while running "go generate":
 #
 #  $ export KERNELDIR=/usr/src/linux-5.15
-#  $ git clone github.com/stv0g/cunicu
+#  $ git clone github.com/cunicu/cunicu
 #  $ cd cunicu
 #  $ go generate -tags tracer 
 #  $ go build -tags tracer ./cmd/cunicu

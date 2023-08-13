@@ -4,8 +4,8 @@
 package hooks
 
 import (
-	"github.com/stv0g/cunicu/pkg/daemon"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	"cunicu.li/cunicu/pkg/daemon"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
 )
 
 func marshalRedactedInterface(i *daemon.Interface) *coreproto.Interface {

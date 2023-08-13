@@ -21,15 +21,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/pkg/proto"
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/daemon/feature/epdisc"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/proto"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
 )
 
 var errNoSettingChanged = errors.New("no setting was changed")

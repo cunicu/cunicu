@@ -12,8 +12,8 @@ import (
 	"github.com/pion/ice/v2"
 	"github.com/pion/randutil"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 const (

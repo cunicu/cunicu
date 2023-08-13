@@ -9,12 +9,12 @@ hide_title: true
 <p align="center" >
     <img style={{width: '60%'}} src="/img/cunicu_logo.svg" alt="cunīcu logo" />
 
-[![GitHub build](https://img.shields.io/github/actions/workflow/status/stv0g/cunicu/build.yaml?style=flat-square)](https://github.com/stv0g/cunicu/actions)
-[![goreportcard](https://goreportcard.com/badge/github.com/stv0g/cunicu?style=flat-square)](https://goreportcard.com/report/github.com/stv0g/cunicu)
-[![Codecov](https://img.shields.io/codecov/c/github/stv0g/cunicu?token=WWQ6SR16LA&style=flat-square)](https://app.codecov.io/gh/stv0g/cunicu)
-[![License](https://img.shields.io/github/license/stv0g/cunicu?style=flat-square)](https://github.com/stv0g/cunicu/blob/master/LICENSE)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stv0g/cunicu?style=flat-square)
-[![Go Reference](https://pkg.go.dev/badge/github.com/stv0g/cunicu.svg)](https://pkg.go.dev/github.com/stv0g/cunicu)
+[![GitHub build](https://img.shields.io/github/actions/workflow/status/cunicu/cunicu/build.yaml?style=flat-square)](https://github.com/cunicu/cunicu/actions)
+[![goreportcard](https://goreportcard.com/badge/github.com/cunicu/cunicu?style=flat-square)](https://goreportcard.com/report/github.com/cunicu/cunicu)
+[![Codecov](https://img.shields.io/codecov/c/github/cunicu/cunicu?token=WWQ6SR16LA&style=flat-square)](https://app.codecov.io/gh/cunicu/cunicu)
+[![License](https://img.shields.io/github/license/cunicu/cunicu?style=flat-square)](https://github.com/cunicu/cunicu/blob/master/LICENSE)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/cunicu/cunicu?style=flat-square)
+[![Go Reference](https://pkg.go.dev/badge/github.com/cunicu/cunicu.svg)](https://pkg.go.dev/github.com/cunicu/cunicu)
 </p>
 
 :::caution cunīcu is currently still in an Alpha state and not usable yet 🚧
@@ -66,7 +66,7 @@ It has been changed from the former name _wice_ in order to broaden the scope of
 
 ## License
 
-cunīcu is licensed under the [Apache 2.0](https://github.com/stv0g/cunicu/blob/master/LICENSE) license.
+cunīcu is licensed under the [Apache 2.0](https://github.com/cunicu/cunicu/blob/master/LICENSE) license.
 
 ## Funding acknowledgement
 
@@ -82,6 +82,6 @@ _WireGuard_ and the _WireGuard_ logo are [registered trademarks](https://www.wir
 
 [pion-ice]: https://github.com/pion/ice
 
-[cunicu]: https://github.com/stv0g/cunicu
+[cunicu]: https://github.com/cunicu/cunicu
 
 [erigrid]: https://erigrid2.eu

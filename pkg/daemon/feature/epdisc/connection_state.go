@@ -4,7 +4,7 @@
 package epdisc
 
 import (
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
 )
 
 type ConnectionState = epdiscproto.ConnectionState

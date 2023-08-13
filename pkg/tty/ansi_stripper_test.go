@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/tty"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

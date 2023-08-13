@@ -11,7 +11,7 @@ package signaling
 
 import (
 	context "context"
-	proto "github.com/stv0g/cunicu/pkg/proto"
+	proto "cunicu.li/cunicu/pkg/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

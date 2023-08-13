@@ -4,8 +4,8 @@
 package wg_test
 
 import (
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/pkg/wg"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

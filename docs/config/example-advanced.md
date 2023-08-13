@@ -14,7 +14,7 @@ The following file contains a full-featured set of cunīcu's options.
 
 You can find the file at:
 - In a local installation: `/etc/cunicu/cunicu.advanced.yaml`
-- In the Git repo: [`etc/cunicu.advanced.yaml`](https://github.com/stv0g/cunicu/blob/master/etc/cunicu.advanced.yaml)
+- In the Git repo: [`etc/cunicu.advanced.yaml`](https://github.com/cunicu/cunicu/blob/master/etc/cunicu.advanced.yaml)
 
 import ExampleConfig from '../../src/components/ExampleConfig';
 

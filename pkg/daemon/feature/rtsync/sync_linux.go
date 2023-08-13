@@ -13,9 +13,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/link"
-	netx "github.com/stv0g/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/link"
+	netx "cunicu.li/cunicu/pkg/net"
 )
 
 // removeKernel removes all routes from the kernel which target

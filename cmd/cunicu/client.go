@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/rpc"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/rpc"
 )
 
 var (

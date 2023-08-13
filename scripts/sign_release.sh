@@ -53,7 +53,7 @@ function upload_asset() {
     jq .
 }
 
-REPO="stv0g/cunicu"
+REPO="cunicu/cunicu"
 
 if [[ -z "${GITHUB_TOKEN}" ]]; then
     echo -e "Missing GITHUB_TOKEN environment variable"

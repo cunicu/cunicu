@@ -10,10 +10,10 @@
 package signaling
 
 import (
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	epdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	pdisc "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
-	pske "github.com/stv0g/cunicu/pkg/proto/feature/pske"
+	proto "cunicu.li/cunicu/pkg/proto"
+	epdisc "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	pdisc "cunicu.li/cunicu/pkg/proto/feature/pdisc"
+	pske "cunicu.li/cunicu/pkg/proto/feature/pske"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

@@ -11,10 +11,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/link"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 var errNotSupported = errors.New("not supported on this platform")

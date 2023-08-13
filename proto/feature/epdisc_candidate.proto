@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package cunicu.epdisc;
-option go_package = "github.com/stv0g/cunicu/pkg/proto/feature/epdisc";
+option go_package = "cunicu.li/cunicu/pkg/proto/feature/epdisc";
 
 import "common.proto";
 

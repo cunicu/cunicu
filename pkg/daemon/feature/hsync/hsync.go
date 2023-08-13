@@ -12,9 +12,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
-	slicesx "github.com/stv0g/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
+	slicesx "cunicu.li/cunicu/pkg/types/slices"
 )
 
 const (

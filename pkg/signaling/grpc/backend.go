@@ -14,11 +14,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/proto"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"github.com/stv0g/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/proto"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 func init() { //nolint:gochecknoinits

@@ -10,8 +10,8 @@
 package core
 
 import (
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	epdisc "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
+	proto "cunicu.li/cunicu/pkg/proto"
+	epdisc "cunicu.li/cunicu/pkg/proto/feature/epdisc"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

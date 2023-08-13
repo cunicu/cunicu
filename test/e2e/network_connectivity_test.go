@@ -6,7 +6,7 @@ package e2e_test
 import (
 	"context"
 
-	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
+	opt "cunicu.li/cunicu/test/e2e/nodes/options"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

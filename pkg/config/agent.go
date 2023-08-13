@@ -15,12 +15,12 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	icex "github.com/stv0g/cunicu/pkg/ice"
-	"github.com/stv0g/cunicu/pkg/log"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
-	"github.com/stv0g/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/crypto"
+	icex "cunicu.li/cunicu/pkg/ice"
+	"cunicu.li/cunicu/pkg/log"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	grpcx "cunicu.li/cunicu/pkg/signaling/grpc"
+	"cunicu.li/cunicu/pkg/types/slices"
 )
 
 var errInvalidURLScheme = errors.New("invalid ICE URL scheme")

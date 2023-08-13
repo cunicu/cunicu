@@ -4,7 +4,7 @@
 package daemon
 
 import (
-	"github.com/stv0g/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/crypto"
 )
 
 // InterfaceList stores all WireGuard interfaces indexed by their unique ifindex

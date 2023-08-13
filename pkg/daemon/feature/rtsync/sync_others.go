@@ -6,7 +6,7 @@
 package rtsync
 
 import (
-	"github.com/stv0g/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/daemon"
 )
 
 func (i *Interface) removeKernel(_ *daemon.Peer) error {

@@ -11,10 +11,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/proto"
-	"github.com/stv0g/cunicu/pkg/rpc"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/proto"
+	"cunicu.li/cunicu/pkg/rpc"
 )
 
 type versionOptions struct {

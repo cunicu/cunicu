@@ -15,8 +15,8 @@ cunīcu is written almost completely in [Go](https://go.dev/) and heavily relies
 
 Furthermore use the following services to manage our development:
 
--   [GitHub](https://github.com/stv0g/cunicu) for source code management and CI pipelines
--   [Codecov](https://app.codecov.io/gh/stv0g/cunicu) for code coverage analysis
+-   [GitHub](https://github.com/cunicu/cunicu) for source code management and CI pipelines
+-   [Codecov](https://app.codecov.io/gh/cunicu/cunicu) for code coverage analysis
 
 ## Testing
 

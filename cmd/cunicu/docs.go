@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/buildinfo"
 )
 
 type docsOptions struct {
@@ -129,7 +129,7 @@ func docsManpage(_ *cobra.Command, _ []string, opts *docsOptions) error {
 
 	header := &doc.GenManHeader{
 		Title:  "cunīcu",
-		Source: "https://github.com/stv0g/cunicu",
+		Source: "https://github.com/cunicu/cunicu",
 		Date:   buildinfo.Date,
 	}
 

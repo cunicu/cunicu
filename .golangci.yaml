@@ -40,7 +40,7 @@ linters-settings:
     sections:
     - standard
     - default
-    - prefix(github.com/stv0g/cunicu)
+    - prefix(cunicu.li/cunicu)
     - blank
     - dot
 

@@ -14,14 +14,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/log"
-	hooksproto "github.com/stv0g/cunicu/pkg/proto/feature/hooks"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/daemon/feature/epdisc"
+	"cunicu.li/cunicu/pkg/log"
+	hooksproto "cunicu.li/cunicu/pkg/proto/feature/hooks"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type WebHook struct {

@@ -6,8 +6,8 @@ package crypto_test
 import (
 	"testing"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

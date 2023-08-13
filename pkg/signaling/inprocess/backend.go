@@ -6,10 +6,10 @@ package inprocess
 import (
 	"context"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/log"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"github.com/stv0g/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/log"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 //nolint:gochecknoglobals

@@ -6,7 +6,7 @@ package grpc
 import (
 	"sync"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/crypto"
 )
 
 type topicRegistry struct {

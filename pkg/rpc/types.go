@@ -6,7 +6,7 @@ package rpc
 import (
 	"fmt"
 
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 type Event struct {

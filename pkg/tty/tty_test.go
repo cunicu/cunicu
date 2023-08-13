@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stv0g/cunicu/pkg/tty"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/tty"
+	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package cunicu.pdisc;
-option go_package = "github.com/stv0g/cunicu/pkg/proto/feature/pdisc";
+option go_package = "cunicu.li/cunicu/pkg/proto/feature/pdisc";
 
 import "common.proto";
 import "core/net.proto";

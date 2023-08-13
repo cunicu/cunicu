@@ -13,9 +13,9 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 const (
@@ -50,7 +50,7 @@ Website:
   https://cunicu.li
 
 Code & Issues:
-  https://github.com/stv0g/cunicu
+  https://github.com/cunicu/cunicu
 `
 )
 

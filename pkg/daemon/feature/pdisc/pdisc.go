@@ -12,14 +12,14 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/log"
-	proto "github.com/stv0g/cunicu/pkg/proto/core"
-	pdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/pdisc"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/types/slices"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/log"
+	proto "cunicu.li/cunicu/pkg/proto/core"
+	pdiscproto "cunicu.li/cunicu/pkg/proto/feature/pdisc"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/types/slices"
 )
 
 var errFailedUpdatePublicKey = errors.New("can not change public key in non-update message")

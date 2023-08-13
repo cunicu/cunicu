@@ -12,12 +12,12 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	icex "github.com/stv0g/cunicu/pkg/ice"
-	"github.com/stv0g/cunicu/pkg/link"
-	"github.com/stv0g/cunicu/pkg/log"
-	netx "github.com/stv0g/cunicu/pkg/net"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/config"
+	icex "cunicu.li/cunicu/pkg/ice"
+	"cunicu.li/cunicu/pkg/link"
+	"cunicu.li/cunicu/pkg/log"
+	netx "cunicu.li/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 func (i *Interface) setupUDPMux() error {

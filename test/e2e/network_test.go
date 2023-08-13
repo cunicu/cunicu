@@ -14,12 +14,12 @@ import (
 	gopt "github.com/stv0g/gont/v2/pkg/options"
 	copt "github.com/stv0g/gont/v2/pkg/options/capture"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/pkg/tty"
-	"github.com/stv0g/cunicu/test"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
-	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
+	"cunicu.li/cunicu/pkg/log"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/tty"
+	"cunicu.li/cunicu/test"
+	"cunicu.li/cunicu/test/e2e/nodes"
+	opt "cunicu.li/cunicu/test/e2e/nodes/options"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

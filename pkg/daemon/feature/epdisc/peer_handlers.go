@@ -7,11 +7,11 @@ import (
 	"github.com/pion/ice/v2"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 // onConnectionStateChange is a callback which gets called by the ICE agent

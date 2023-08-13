@@ -12,7 +12,7 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/crypto"
 )
 
 var errInvalidSettings = errors.New("invalid settings")

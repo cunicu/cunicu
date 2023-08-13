@@ -13,9 +13,9 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 type readyHandler struct {

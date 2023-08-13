@@ -12,12 +12,12 @@ import (
 	gfopt "github.com/stv0g/gont/v2/pkg/options/filters"
 	"golang.org/x/sys/unix"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/wg"
-	"github.com/stv0g/cunicu/test"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
-	opt "github.com/stv0g/cunicu/test/e2e/nodes/options"
-	wopt "github.com/stv0g/cunicu/test/e2e/nodes/options/wg"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/wg"
+	"cunicu.li/cunicu/test"
+	"cunicu.li/cunicu/test/e2e/nodes"
+	opt "cunicu.li/cunicu/test/e2e/nodes/options"
+	wopt "cunicu.li/cunicu/test/e2e/nodes/options/wg"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

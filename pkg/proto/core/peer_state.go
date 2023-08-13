@@ -6,7 +6,7 @@ package core
 import (
 	"strings"
 
-	"github.com/stv0g/cunicu/pkg/tty"
+	"cunicu.li/cunicu/pkg/tty"
 )
 
 func (s PeerState) Color() string {

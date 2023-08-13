@@ -6,7 +6,7 @@ package daemon
 import (
 	"slices"
 
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 type InterfaceModifiedHandler interface {

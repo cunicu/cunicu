@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/test"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/test"
 )
 
 type AgentList []*Agent

@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	coreproto "github.com/stv0g/cunicu/pkg/proto/core"
+	coreproto "cunicu.li/cunicu/pkg/proto/core"
 )
 
 type PeerState = coreproto.PeerState

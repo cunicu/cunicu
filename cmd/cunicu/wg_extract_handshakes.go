@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	osx "github.com/stv0g/cunicu/pkg/os"
-	"github.com/stv0g/cunicu/pkg/wg/tracer"
+	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/wg/tracer"
 )
 
 func init() {

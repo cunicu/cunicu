@@ -14,9 +14,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	epdiscproto "github.com/stv0g/cunicu/pkg/proto/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/crypto"
+	epdiscproto "cunicu.li/cunicu/pkg/proto/feature/epdisc"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 func GenerateKeyPairs() (*crypto.KeyPair, *crypto.KeyPair, error) {

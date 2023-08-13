@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/nacl/box"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/crypto"
 )
 
 var (

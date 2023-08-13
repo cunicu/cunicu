@@ -10,8 +10,8 @@ import (
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/test/e2e/nodes"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/test/e2e/nodes"
 )
 
 // PublicKey specifies the public key of this peer.  PublicKey is a

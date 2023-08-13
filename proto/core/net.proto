@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package cunicu.core;
-option go_package = "github.com/stv0g/cunicu/pkg/proto/core";
+option go_package = "cunicu.li/cunicu/pkg/proto/core";
 
 message IPAddress {
     bytes addr = 1;    

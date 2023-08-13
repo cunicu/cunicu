@@ -9,10 +9,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/stv0g/cunicu/pkg/crypto"
-	"github.com/stv0g/cunicu/pkg/daemon/feature/epdisc"
-	"github.com/stv0g/cunicu/pkg/proto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
+	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/daemon/feature/epdisc"
+	"cunicu.li/cunicu/pkg/proto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 )
 
 type EndpointDiscoveryServer struct {

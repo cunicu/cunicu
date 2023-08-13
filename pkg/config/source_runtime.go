@@ -10,10 +10,10 @@ import (
 	"os"
 	"time"
 
+	"cunicu.li/cunicu/pkg/log"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
-	"github.com/stv0g/cunicu/pkg/log"
 	"go.uber.org/zap"
 )
 

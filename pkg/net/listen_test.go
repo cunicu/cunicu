@@ -6,8 +6,8 @@ package net_test
 import (
 	"net"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	netx "github.com/stv0g/cunicu/pkg/net"
+	"cunicu.li/cunicu/pkg/config"
+	netx "cunicu.li/cunicu/pkg/net"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	credsinsecure "google.golang.org/grpc/credentials/insecure"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/buildinfo"
 )
 
 var errInvalidServerHostname = errors.New("missing gRPC server url")

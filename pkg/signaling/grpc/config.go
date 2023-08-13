@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/stv0g/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 type BackendConfig struct {

@@ -25,12 +25,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/buildinfo"
-	"github.com/stv0g/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/buildinfo"
+	"cunicu.li/cunicu/pkg/log"
 )
 
 const (
-	githubUser       = "stv0g"
+	githubUser       = "cunicu"
 	githubRepo       = "cunicu"
 	binaryFile       = "cunicu"
 	checksumsFile    = "checksums.txt"

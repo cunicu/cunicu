@@ -13,8 +13,8 @@ import (
 
 	"github.com/pion/ice/v2"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 const (

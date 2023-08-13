@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/stv0g/cunicu/pkg/daemon"
-	"github.com/stv0g/cunicu/pkg/wg"
+	"cunicu.li/cunicu/pkg/daemon"
+	"cunicu.li/cunicu/pkg/wg"
 )
 
 func (i *Interface) OnInterfaceModified(_ *daemon.Interface, _ *wg.Interface, m daemon.InterfaceModifier) {

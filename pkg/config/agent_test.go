@@ -16,9 +16,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/stv0g/cunicu/pkg/config"
-	"github.com/stv0g/cunicu/pkg/crypto"
-	grpcx "github.com/stv0g/cunicu/pkg/signaling/grpc"
+	"cunicu.li/cunicu/pkg/config"
+	"cunicu.li/cunicu/pkg/crypto"
+	grpcx "cunicu.li/cunicu/pkg/signaling/grpc"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

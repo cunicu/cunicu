@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	proto "github.com/stv0g/cunicu/pkg/proto"
-	rpcproto "github.com/stv0g/cunicu/pkg/proto/rpc"
-	signalingproto "github.com/stv0g/cunicu/pkg/proto/signaling"
-	"github.com/stv0g/cunicu/pkg/signaling"
-	"github.com/stv0g/cunicu/pkg/signaling/grpc"
+	proto "cunicu.li/cunicu/pkg/proto"
+	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/signaling"
+	"cunicu.li/cunicu/pkg/signaling/grpc"
 )
 
 type SignalingServer struct {

@@ -16,8 +16,8 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 
-	"github.com/stv0g/cunicu/pkg/log"
-	"github.com/stv0g/cunicu/pkg/types"
+	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/types"
 )
 
 type Config struct {
