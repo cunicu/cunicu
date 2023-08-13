@@ -197,10 +197,6 @@ module.exports = {
 
       metadata: [
         {
-          name: "go-import",
-          content: "cunicu.li git https://github.com/cunicu"
-        },
-        {
           name: "keywords",
           content: "go, golang, iot, networking, nat-traversal, vpn, vpn-manager, mesh, ice, multi-agent-systems, wireguard, edge-cloud, wireguard-vpn"
         },
