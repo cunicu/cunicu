@@ -32,9 +32,7 @@ module.exports = {
   plugins: [
     [
       require.resolve("@cmfcmf/docusaurus-search-local"),
-      {
-        
-      }
+      { }
     ],
     [
       require.resolve("@gabrielcsapo/docusaurus-plugin-matomo"),
@@ -60,7 +58,7 @@ module.exports = {
 
   // GitHub pages deployment config.
   // If you aren"t using GitHub pages, you don't need these.
-  organizationName: "stv0g", // Usually your GitHub org/user name.
+  organizationName: "cunicu", // Usually your GitHub org/user name.
   projectName: "cunicu", // Usually your repo name.
 
   // Even if you don"t use internalization, you can use this field to set useful
@@ -98,7 +96,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl:
-            "https://github.com/stv0g/cunicu/edit/master/",
+            "https://github.com/cunicu/cunicu/edit/master/",
           remarkPlugins: [
             math
           ],
@@ -111,7 +109,7 @@ module.exports = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            "https://github.com/stv0g/cunicu/master/website",
+            "https://github.com/cunicu/cunicu/master/website",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -145,8 +143,8 @@ module.exports = {
             position: "left"
           },
           {
-            href: "https://github.com/stv0g/cunicu",
-            label: "GitHub",
+            href: "https://github.com/cunicu",
+            label: "Sourcecode",
             position: "right",
           },
         ],
@@ -184,8 +182,8 @@ module.exports = {
                 to: "/blog",
               },
               {
-                label: "GitHub",
-                href: "https://github.com/stv0g/cunicu",
+                label: "Sourcode",
+                href: "https://github.com/cunicu",
               },
             ],
           },
@@ -196,10 +194,38 @@ module.exports = {
         theme: prism.themes.github,
         darkTheme: prism.themes.dracula,
       },
+
+      metadata: [
+        {
+          name: "go-import",
+          content: "cunicu.li git https://github.com/cunicu"
+        },
+        {
+          name: "keywords",
+          content: "go, golang, iot, networking, nat-traversal, vpn, vpn-manager, mesh, ice, multi-agent-systems, wireguard, edge-cloud, wireguard-vpn"
+        },
+        {
+          name: "description",
+          content: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
+        },
+        {
+          name: "twitter:creator",
+          content: "@stv0g"
+        }
+      ]
     }),
 
   markdown: {
     mermaid: true,
   },
   themes: ['@docusaurus/theme-mermaid'],
+
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        
+      }
+    }
+  ],
 };
