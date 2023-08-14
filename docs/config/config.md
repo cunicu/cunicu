@@ -35,9 +35,14 @@ Setting lists such as `ice.urls` or `backends` can currently not be set via envi
 
 ## At Runtime
 
-cunīcu's configuration can also be updated at runtime, elevating the need to restart the daemon to avoid interruption of connectivity.
+cunīcu's configuration can also be updated at runtime, alleviating daemon restarts and interruption of connectivity.
 
 Please have a look at the [`cunicu config`](../usage/md/cunicu_config.md) commands.
+
+Currently, not all settings are runtime tunable.
+
+Changed settings via the `cunicu config set` command are persisted in a runtime configuration file at `/var/lib/cunicu.runtime.yaml`.
+So runtime changes will also be taken into account for subsequent starts of the daemon.
 
 ## DNS Auto-configuration
 
