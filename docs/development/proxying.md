@@ -31,7 +31,7 @@ The output rule will mach all traffic originating from the listen port of the WG
 WireGuard traffic passes only through the Netfilter chains and remains inside the kernel.
 Only STUN binding requests are passed to cunīcu.
 
-```bash
+```shell
 $ sudo nft list ruleset
 table inet cunicu {
     chain ingress {

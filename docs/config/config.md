@@ -75,7 +75,7 @@ The `cunicu-backend` and `cunicu-config` TXT records can be provided multiple ti
 
 When `cunicu daemon` can be started with `--config` options pointing to HTTPS URIs:
 
-```bash
+```shell
 cunicu daemon --config http://example.com/cunicu.yaml
 ```
 
