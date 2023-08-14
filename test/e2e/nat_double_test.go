@@ -6,8 +6,8 @@ package e2e_test
 import (
 	"fmt"
 
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
+	g "cunicu.li/gont/v2/pkg"
+	gopt "cunicu.li/gont/v2/pkg/options"
 
 	"cunicu.li/cunicu/test/e2e/nodes"
 	opt "cunicu.li/cunicu/test/e2e/nodes/options"

@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+	copt "cunicu.li/gont/v2/pkg/options/cmd"
 	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"

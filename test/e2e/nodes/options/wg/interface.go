@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-	g "github.com/stv0g/gont/v2/pkg"
+	g "cunicu.li/gont/v2/pkg"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
 	"cunicu.li/cunicu/pkg/crypto"

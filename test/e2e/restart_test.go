@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+	g "cunicu.li/gont/v2/pkg"
+	gopt "cunicu.li/gont/v2/pkg/options"
+	copt "cunicu.li/gont/v2/pkg/options/cmd"
 
 	"cunicu.li/cunicu/pkg/crypto"
 	netx "cunicu.li/cunicu/pkg/net"

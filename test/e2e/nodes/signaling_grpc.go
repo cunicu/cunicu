@@ -11,8 +11,8 @@ import (
 	"os"
 	"time"
 
-	g "github.com/stv0g/gont/v2/pkg"
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
+	g "cunicu.li/gont/v2/pkg"
+	copt "cunicu.li/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/log"

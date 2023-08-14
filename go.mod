@@ -44,11 +44,11 @@ require (
 )
 
 require (
+	cunicu.li/gont/v2 v2.4.1 // test-only
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
-	github.com/gopacket/gopacket v1.1.1 // test-only
+	github.com/gopacket/gopacket v1.1.2-0.20230727130822-916e2ade1109 // test-only
 	github.com/onsi/ginkgo/v2 v2.11.0 // test-only
 	github.com/onsi/gomega v1.27.10 // test-only
-	github.com/stv0g/gont/v2 v2.3.6 // test-only
 )
 
 require (
@@ -89,7 +89,7 @@ require (
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/net v0.13.0 // indirect
+	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect

@@ -9,10 +9,10 @@ import (
 	"os"
 	"path/filepath"
 
+	g "cunicu.li/gont/v2/pkg"
+	gopt "cunicu.li/gont/v2/pkg/options"
+	copt "cunicu.li/gont/v2/pkg/options/capture"
 	"github.com/knadh/koanf/v2"
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
-	copt "github.com/stv0g/gont/v2/pkg/options/capture"
 
 	"cunicu.li/cunicu/pkg/log"
 	osx "cunicu.li/cunicu/pkg/os"

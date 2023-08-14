@@ -11,7 +11,7 @@ cunīcu is written almost completely in [Go](https://go.dev/) and heavily relies
 -   [GoReleaser](https://goreleaser.com/) for release automation
 -   [Ginkgo](https://onsi.github.io/ginkgo) and [Gomega](https://onsi.github.io/gomega) for testing
 -   [Pion](https://github.com/pion) for its ICE, STUN, TURN implementation
--   [Gont](https://github.com/stv0g/gont) for end-to-end testing in various network topologies
+-   [Gont](https://github.com/cunicu/gont) for end-to-end testing in various network topologies
 
 Furthermore use the following services to manage our development:
 
