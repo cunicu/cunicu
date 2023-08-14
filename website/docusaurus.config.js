@@ -182,7 +182,7 @@ module.exports = {
                 to: "/blog",
               },
               {
-                label: "Sourcode",
+                label: "Sourcecode",
                 href: "https://github.com/cunicu",
               },
             ],
