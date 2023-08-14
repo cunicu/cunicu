@@ -93,7 +93,9 @@ Remote configuration files must be fetched via HTTPS if they are not hosted loca
 
 ## Auto-reload
 
-cunīcu watches local and remote files as well as the DNS configuration for changes and automatically reloads its configuration from them whenever a change has been detected.
+cunīcu can watch local and remote files as well as the DNS configuration for changes and automatically reloads its configuration from them whenever a change has been detected.
+
+Pass the `--watch-config` or `-w` command line options to `cunicu daemon` to enable this feature.
 
 For local files the change is detected by [inotify(7)](https://man7.org/linux/man-pages/man7/inotify.7.html).
 For remote sources, cunīcu periodically checks the `Last-Modified` and `Etag` headers in case of HTTP files or the DNS zone's [SOA serial number](https://en.wikipedia.org/wiki/SOA_record#Structure) to detect changes without request the full remote source.
