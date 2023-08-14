@@ -34,7 +34,7 @@ cunīcu also has an installer script that will automatically grab the latest ver
 You can fetch that script, and then execute it locally.
 It's well documented so that you can read through it and understand what it is doing before you run it.
 
-```bash
+```shell
 curl -fsSL -o get_cunicu.sh get.cunicu.li
 chmod 700 get_cunicu.sh
 ./get_cunicu.sh
@@ -48,7 +48,7 @@ cunīcu provides the ability to install via operating system package managers.
 
 ### From Apt (Debian, Ubuntu)
 
-```bash
+```shell
 sudo apt-get install apt-transport-https --yes
 echo "deb [arch=$(dpkg --print-architecture) trusted=yes] https://packages.cunicu.li/apt/ /" | sudo tee /etc/apt/sources.list.d/cunicu.list
 sudo apt-get update
@@ -57,7 +57,7 @@ sudo apt-get install cunicu
 
 ### From Yum (Redhat, Fedora, RockyLinux)
 
-```bash
+```shell
 echo '[cunicu]
 name=cunicu
 baseurl=https://packages.cunicu.li/yum/
@@ -70,7 +70,7 @@ sudo yum install cunicu
 
 A formulae for cunīcu is available in our Homebrew Tap: https://github.com/cunicu/homebrew-cunicu.
 
-```bash
+```shell
 brew tap cunicu/cunicu
 brew install cunicu
 ```
@@ -79,15 +79,15 @@ brew install cunicu
 
 cunīcu is available in the Archlinux User Repository: https://aur.archlinux.org/packages/cunicu-bin.
 
-```bash title="via Yaourt"
+```shell title="via Yaourt"
 yaourt -S cunicu-bin
 ```
 
-```bash title="or via Packer"
+```shell title="or via Packer"
 packer -S cunicu-bin
 ```
 
-```bash title="or via yay"
+```shell title="or via yay"
 yay cunicu-bin
 ```
 
@@ -99,7 +99,7 @@ The `nix` branch of the cunicu repo is intended to always have a working nix pac
 
 Building and installing cunīcu via [Nix](https://nix.dev/) is possible with [flakes](https://nixos.wiki/wiki/Flakes):
 
-```bash
+```shell
 nix profile install github:cunicu/cunicu/nix?dir=nix
 ```
 
@@ -107,7 +107,7 @@ nix profile install github:cunicu/cunicu/nix?dir=nix
 
 You can also use `nix-env`/`nix-build` if you have cunicu checked out locally.
 
-```
+```shell
 # check out cunicu
 git clone https://github.com/cunicu/cunicu --branch nix && cd cunicu
 
@@ -121,7 +121,7 @@ Building cunīcu is fairly easy and allows you to install the latest unreleased 
 
 You must have a working Go environment.
 
-```bash
+```shell
 go install github.com/cunicu/cunicu/cmd/cunicu@latest
 ```
 

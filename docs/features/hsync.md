@@ -15,7 +15,7 @@ This optional hostname can either be configured by the user in the configuration
 The following snippet shows the local hosts file of an Ubuntu 20.04 system with two entries added by cunicu.
 As shown here, all entries managed by cunicu are marked with a comment prefixed with `# cunicu:`
 
-```bash title="/etc/hosts"
+```shell title="/etc/hosts"
 127.0.0.1 localhost
 127.0.1.1 ubuntu
 
