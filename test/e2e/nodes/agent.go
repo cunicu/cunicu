@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	g "cunicu.li/gont/v2/pkg"
+	copt "cunicu.li/gont/v2/pkg/options/cmd"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/v2"
-	g "github.com/stv0g/gont/v2/pkg"
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
 

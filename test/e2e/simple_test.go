@@ -6,10 +6,10 @@ package e2e_test
 import (
 	"fmt"
 
-	g "github.com/stv0g/gont/v2/pkg"
-	gopt "github.com/stv0g/gont/v2/pkg/options"
-	copt "github.com/stv0g/gont/v2/pkg/options/cmd"
-	gfopt "github.com/stv0g/gont/v2/pkg/options/filters"
+	g "cunicu.li/gont/v2/pkg"
+	gopt "cunicu.li/gont/v2/pkg/options"
+	copt "cunicu.li/gont/v2/pkg/options/cmd"
+	gfopt "cunicu.li/gont/v2/pkg/options/filters"
 	"golang.org/x/sys/unix"
 
 	"cunicu.li/cunicu/pkg/config"

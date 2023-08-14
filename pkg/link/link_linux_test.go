@@ -11,7 +11,7 @@ import (
 	"net"
 	"syscall"
 
-	g "github.com/stv0g/gont/v2/pkg"
+	g "cunicu.li/gont/v2/pkg"
 	nl "github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
 	wgdevice "golang.zx2c4.com/wireguard/device"
