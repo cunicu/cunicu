@@ -96,7 +96,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl:
-            "https://github.com/cunicu/cunicu/edit/master/",
+            "https://github.com/cunicu/cunicu/edit/main/",
           remarkPlugins: [
             math
           ],
@@ -109,7 +109,7 @@ module.exports = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            "https://github.com/cunicu/cunicu/master/website",
+            "https://github.com/cunicu/cunicu/main/website",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),

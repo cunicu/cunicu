@@ -31,8 +31,8 @@ func init() { //nolint:gochecknoinits
 		Use:   "version",
 		Short: "Show version of the cunīcu binary and optionally also a running daemon",
 		Example: `$ sudo cunicu version
-client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
-daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=master, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)`,
+client: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=main, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)
+daemon: v0.1.2 (os=linux, arch=arm64, commit=b22ee3e7, branch=main, built-at=2022-09-09T13:44:22+02:00, built-by=goreleaser)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return version(cmd, args, opts)
 		},

@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 [![GitHub build](https://img.shields.io/github/actions/workflow/status/cunicu/cunicu/build.yaml?style=flat-square)](https://github.com/cunicu/cunicu/actions)
 [![goreportcard](https://goreportcard.com/badge/github.com/cunicu/cunicu?style=flat-square)](https://goreportcard.com/report/github.com/cunicu/cunicu)
 [![Codecov](https://img.shields.io/codecov/c/github/cunicu/cunicu?token=WWQ6SR16LA&style=flat-square)](https://app.codecov.io/gh/cunicu/cunicu)
-[![License](https://img.shields.io/github/license/cunicu/cunicu?style=flat-square)](https://github.com/cunicu/cunicu/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/cunicu/cunicu?style=flat-square)](https://github.com/cunicu/cunicu/blob/main/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/cunicu/cunicu?style=flat-square)
 [![Go Reference](https://pkg.go.dev/badge/github.com/cunicu/cunicu.svg)](https://pkg.go.dev/github.com/cunicu/cunicu)
 </div>
