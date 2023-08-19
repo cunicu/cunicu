@@ -17,7 +17,7 @@ JSON Schema is the most portable and broadly supported choice for YAML validatio
 
 The schema of cunīcu's configuration file is available at:
 
-- [`etc/cunicu.schema.yaml`](https://github.com/cunicu/cunicu/blob/master/etc/cunicu.schema.yaml)
+- [`etc/cunicu.schema.yaml`](https://github.com/cunicu/cunicu/blob/main/etc/cunicu.schema.yaml)
 - https://cunicu.li/schemas/config.yaml
 
 ## Editor / Language Server support

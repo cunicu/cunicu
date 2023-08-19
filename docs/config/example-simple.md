@@ -10,7 +10,7 @@ The following example contains just the basic settings.
 
 You can find the file at:
 - In a local installation: `/etc/cunicu/cunicu.yaml`
-- In the Git repo: [`etc/cunicu.yaml`](https://github.com/cunicu/cunicu/blob/master/etc/cunicu.yaml)
+- In the Git repo: [`etc/cunicu.yaml`](https://github.com/cunicu/cunicu/blob/main/etc/cunicu.yaml)
 
 import ExampleConfig from '../../src/components/ExampleConfig';
 

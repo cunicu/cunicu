@@ -7,4 +7,4 @@ ignore:
 - pkg/proto/**/*.pb.go
 
 codecov:
-  strict_yaml_branch: master
+  strict_yaml_branch: main
