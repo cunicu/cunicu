@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Copyright The cunicu Authors.
 # SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 
