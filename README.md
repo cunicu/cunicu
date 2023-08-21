@@ -1,8 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
-SPDX-License-Identifier: Apache-2.0
--->
-
 <div align="center" >
     <img style="width: 40%; margin: 4em 0" src="website/static/img/cunicu_logo.svg" alt="cunīcu logo" />
 
@@ -41,6 +36,9 @@ cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/do
 ## License
 
 cunīcu is licensed under the [Apache 2.0](./LICENSE) license.
+
+- SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+- SPDX-License-Identifier: Apache-2.0
 
 ## Funding acknowledgement
 
