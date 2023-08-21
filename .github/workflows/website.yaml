@@ -42,7 +42,7 @@ jobs:
       working-directory: ./
 
     - name: Generate docs
-      run: make docs
+      run: make docs redirects
       working-directory: ./
 
     - name: Set up Node.js
