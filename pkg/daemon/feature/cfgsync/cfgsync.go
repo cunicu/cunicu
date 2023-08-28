@@ -101,6 +101,8 @@ func (i *Interface) ConfigureWireGuard() error { //nolint:gocognit
 	}
 
 	for _, p := range i.Settings.Peers {
+		p := p
+
 		pcfg := wgtypes.PeerConfig{}
 
 		pcfg.PublicKey = wgtypes.Key(p.PublicKey)
