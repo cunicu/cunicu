@@ -23,7 +23,7 @@ require (
 	github.com/mdp/qrterminal/v3 v3.1.1
 	github.com/miekg/dns v1.1.55
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.3.10
+	github.com/pion/ice/v2 v2.3.11
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.6.1
@@ -63,7 +63,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
 	github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/native v1.1.0 // indirect
@@ -74,8 +74,8 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
-	github.com/pion/mdns v0.0.7 // indirect
-	github.com/pion/transport/v2 v2.2.1 // indirect
+	github.com/pion/mdns v0.0.8 // indirect
+	github.com/pion/transport/v2 v2.2.2 // indirect
 	github.com/pion/turn/v2 v2.1.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
