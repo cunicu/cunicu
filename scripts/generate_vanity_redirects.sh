@@ -7,11 +7,11 @@ STATIC_DIR="./website/static"
 
 PACKAGES=(
     cunicu
+    hawkes
     gont/v2
     go-babel
     go-pmtud
     go-rosenpass
-    go-skes
     go-openpgp-card
 )
 
