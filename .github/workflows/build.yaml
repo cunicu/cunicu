@@ -105,7 +105,7 @@ jobs:
       GOARM: ${{ matrix.arm || '' }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       if: ${{ matrix.host_os == 'linux' }}
