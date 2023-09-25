@@ -63,7 +63,7 @@ func (c *FilteredConn) AddPacketReadHandler(h PacketHandler) {
 
 func (c *FilteredConn) RemovePacketReadHandler(h PacketHandler) {
 	if idx := slices.Index(c.onPacket, h); idx > 0 {
-		slices.Delete(c.onPacket, idx, idx+1)
+		c.onPacket = slices.Delete(c.onPacket, idx, idx+1)
 	}
 }
 
