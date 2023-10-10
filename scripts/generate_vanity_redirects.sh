@@ -10,9 +10,11 @@ PACKAGES=(
     hawkes
     gont/v2
     go-babel
+    go-openpgp-card
+    go-piv
     go-pmtud
     go-rosenpass
-    go-openpgp-card
+    go-ykoath
 )
 
 function generate() {
