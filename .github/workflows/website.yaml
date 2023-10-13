@@ -6,6 +6,7 @@
 name: Build and deploy website
 
 on:
+  workflow_dispatch:
   push:
     tags:
     - 'v*'
