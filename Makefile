@@ -80,7 +80,8 @@ docs: cunicu
 	./cunicu docs --with-frontmatter
 
 redirects:
-	bash ./scripts/generate_vanity_redirects.sh
+	cd scripts && \
+	go run ./generate_vanity_redirects.go -static-dir ../website/static
 
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 
