@@ -34,7 +34,7 @@ require (
 	golang.org/x/crypto v0.14.0
 	golang.org/x/sync v0.4.0
 	golang.org/x/sys v0.13.0
-	golang.zx2c4.com/wireguard v0.0.0-20230704135630-469159ecf7d1
+	golang.zx2c4.com/wireguard v0.0.0-20231010133717-42ec952eadc2
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.31.0
