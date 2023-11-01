@@ -36,7 +36,7 @@ require (
 	golang.org/x/sys v0.13.0
 	golang.zx2c4.com/wireguard v0.0.0-20231022001213-2e0774f246fb
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
-	google.golang.org/grpc v1.58.2
+	google.golang.org/grpc v1.58.3
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
