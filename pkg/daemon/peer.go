@@ -339,7 +339,7 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 		return coreproto.ReachabilityType_DIRECT
 	} else if lastActivity.After(p.LastHandshakeTime) {
 		return coreproto.ReachabilityType_NONE
-	} else {
-		return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
 	}
+
+	return coreproto.ReachabilityType_UNSPECIFIED_REACHABILITY_TYPE
 }
