@@ -10,7 +10,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/cilium/ebpf v0.12.2
 	github.com/dchest/siphash v1.2.3
-	github.com/fsnotify/fsnotify v1.6.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/google/nftables v0.1.0
 	github.com/knadh/koanf/maps v0.1.1
 	github.com/knadh/koanf/parsers/yaml v0.1.0
