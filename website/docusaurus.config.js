@@ -121,6 +121,9 @@ module.exports = {
   themeConfig:
     /** @type {import("@docusaurus/preset-classic").ThemeConfig} */
     ({
+      mermaid: {
+        theme: {light: 'neutral', dark: 'forest'},
+      },
       colorMode: {
         disableSwitch: true
       },
