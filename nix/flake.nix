@@ -11,11 +11,25 @@
     forSystems = lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     pkgsFor = system: nixpkgs.legacyPackages.${system};
     packagesWith = pkgs: {
-      cunicu = import ./default.nix { inherit pkgs; };
+      cunicu = import ./default.nix {inherit pkgs;};
     };
   in {
     packages = forSystems (system: packagesWith (pkgsFor system) // {default = self.packages.${system}.cunicu;});
     formatter = forSystems (system: (pkgsFor system).alejandra);
     overlays.default = final: prev: packagesWith final;
+    devShell = forSystems (
+      system: let
+        pkgs = pkgsFor system;
+      in
+        pkgs.mkShell {
+          nativeBuildInputs = [
+            pkgs.yarn-berry
+          ];
+
+          inputsFrom = [
+            self.packages.${system}.cunicu
+          ];
+        }
+    );
   };
 }
