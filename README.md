@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/github/license/cunicu/cunicu?style=flat-square)](https://github.com/cunicu/cunicu/blob/main/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/cunicu/cunicu?style=flat-square)
 [![Go Reference](https://pkg.go.dev/badge/github.com/cunicu/cunicu.svg)](https://pkg.go.dev/github.com/cunicu/cunicu)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?style=flat-square)](code_of_conduct.md)
 </div>
 
 ## 🚧 cunīcu is currently still in an Alpha state and not usable yet
