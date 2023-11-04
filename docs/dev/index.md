@@ -29,3 +29,13 @@ End-to-end (e2e) integration tests can be found in the `test/e2e` directory.
 
 The e2e tests use Gont to construct virtual network environment using Linux's `net` namespaces and `veth` point-to-point links.
 This allows us to test cunīcu in both simple and complex network topologies including, L2 switches, L3 routers, firewalls and NAT boxes.
+
+# Nix
+
+There exists a Nix flake for cunicu which can be used for both adding cunicu to your Nix profile or NixOS configuration as well as to launch a development shell by running
+
+```shell
+nix develop ./nix
+```
+
+In this shell all required build-time dependencies and tools for cunicu are available.
