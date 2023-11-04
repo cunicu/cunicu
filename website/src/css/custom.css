@@ -38,3 +38,37 @@
 .project-logo {
   margin-bottom: 2em;
 }
+
+.header-github-link:hover, .header-codeberg-link:hover {
+  opacity: 0.6;
+}
+
+.header-github-link:before {
+  background: url("/img/github_mark.svg");
+  background-size: contain;
+  content: "";
+  display: flex;
+  height: 24px;
+  width: 24px;
+}
+
+[data-theme='dark'] .header-github-link::before {
+  background: url("/img/github_mark_white.svg");
+}
+
+
+.header-codeberg-link:before {
+  background: url("/img/codeberg.svg");
+  background-size: contain;
+  content: "";
+  display: flex;
+  height: 24px;
+  width: 24px;
+  filter: invert(100%);
+  -webkit-filter: invert(100%);
+}
+
+[data-theme='dark'] .header-codeberg-link::before {
+  filter: invert(0%);
+  -webkit-filter: invert(0%);
+}

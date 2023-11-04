@@ -147,8 +147,15 @@ module.exports = {
           },
           {
             href: "https://github.com/cunicu",
-            label: "Sourcecode",
             position: "right",
+            className: "header-github-link",
+            "aria-label": "GitHub repository",
+          },
+          {
+            href: "https://codeberg.org/cunicu",
+            position: "right",
+            className: "header-codeberg-link",
+            "aria-label": "Codeberg repository",
           },
         ],
       },
