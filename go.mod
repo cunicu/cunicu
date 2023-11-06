@@ -48,7 +48,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
 	github.com/gopacket/gopacket v1.1.2-0.20231013201358-4769cf270e9e // test-only
 	github.com/onsi/ginkgo/v2 v2.13.0 // test-only
-	github.com/onsi/gomega v1.28.0 // test-only
+	github.com/onsi/gomega v1.29.0 // test-only
 )
 
 require (
@@ -60,7 +60,7 @@ require (
 	github.com/go-ping/ping v1.1.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
 	github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3 // indirect
 	github.com/google/uuid v1.3.1 // indirect
