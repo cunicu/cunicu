@@ -31,8 +31,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20230705154206-78ac5704cfa0
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.14.0
-	golang.org/x/sync v0.4.0
+	golang.org/x/crypto v0.15.0
+	golang.org/x/sync v0.5.0
 	golang.org/x/sys v0.14.1-0.20231108175955-e4099bfacb8c
 	golang.zx2c4.com/wireguard v0.0.0-20231022001213-2e0774f246fb
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
@@ -44,7 +44,7 @@ require (
 )
 
 require (
-	cunicu.li/gont/v2 v2.4.1 // test-only
+	cunicu.li/gont/v2 v2.4.2 // test-only
 	github.com/foxcpp/go-mockdns v1.0.0 // test-only
 	github.com/gopacket/gopacket v1.1.2-0.20231013201358-4769cf270e9e // test-only
 	github.com/onsi/ginkgo/v2 v2.13.0 // test-only
@@ -54,7 +54,7 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/go-delve/delve v1.21.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-ping/ping v1.1.0 // indirect
@@ -87,11 +87,11 @@ require (
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/tools v0.13.0 // indirect
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/tools v0.15.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
