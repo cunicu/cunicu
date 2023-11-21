@@ -33,7 +33,7 @@ require (
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.15.0
 	golang.org/x/sync v0.5.0
-	golang.org/x/sys v0.14.1-0.20231108175955-e4099bfacb8c
+	golang.org/x/sys v0.14.1-0.20231118010836-13b15b780d90
 	golang.zx2c4.com/wireguard v0.0.0-20231022001213-2e0774f246fb
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/grpc v1.58.3
