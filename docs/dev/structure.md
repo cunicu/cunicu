@@ -17,14 +17,18 @@ graph TD
 
     go-babel --> gont
 
-    hawkes --> go-ykoath
-    hawkes --> go-piv
     hawkes --> go-openpgp-card
-
+    hawkes --> go-piv
+    hawkes --> go-ykoath
+    hawkes --> go-trussed-secrets-app
+    hawkes --> go-feitian-oath
+    
     go-ykoath --> go-iso7816
     go-piv --> go-iso7816
     go-ykoath --> go-iso7816
     go-openpgp-card --> go-iso7816
+    go-trussed-secrets-app --> go-iso7816
+    go-feitian-oath --> go-iso7816
 
     click cunicu href "https://github.com/cunicu/cunicu" "GitHub Repo"
     click hawkes href "https://github.com/cunicu/hawkes" "GitHub Repo"
