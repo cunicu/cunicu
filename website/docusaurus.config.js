@@ -1,15 +1,11 @@
 // SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
-// @ts-check
-// Note: type annotations allow type checking and IDEs autocompletion
+import {themes as prismThemes} from 'prism-react-renderer';
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
-const prism = require("prism-react-renderer");
-const math = require("remark-math");
-const katex = require("rehype-katex");
-
-/** @type {import("@docusaurus/types").Config} */
-module.exports = {
+export default {
   title: "cunīcu",
   tagline: "zeroconf • p2p • mesh • vpn",
   url: "https://cunicu.li",
@@ -30,10 +26,7 @@ module.exports = {
   ],
 
   plugins: [
-    [
-      require.resolve("@cmfcmf/docusaurus-search-local"),
-      { }
-    ],
+    require.resolve('docusaurus-lunr-search'),
     [
       require.resolve("@gabrielcsapo/docusaurus-plugin-matomo"),
       {
@@ -57,7 +50,7 @@ module.exports = {
   ],
 
   // GitHub pages deployment config.
-  // If you aren"t using GitHub pages, you don't need these.
+  // If you aren't using GitHub pages, you don't need these.
   organizationName: "cunicu", // Usually your GitHub org/user name.
   projectName: "cunicu", // Usually your repo name.
 
@@ -90,18 +83,17 @@ module.exports = {
       },
     ],
     [
-      "classic",
-      /** @type {import("@docusaurus/preset-classic").Options} */
+      "@docusaurus/preset-classic",
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl:
             "https://github.com/cunicu/cunicu/edit/main/",
           remarkPlugins: [
-            math
+            remarkMath
           ],
           rehypePlugins: [
-            katex
+            rehypeKatex
           ],
         },
         blog: {
@@ -119,10 +111,12 @@ module.exports = {
   ],
 
   themeConfig:
-    /** @type {import("@docusaurus/preset-classic").ThemeConfig} */
-    ({
+    {
       mermaid: {
-        theme: {light: 'neutral', dark: 'forest'},
+        theme: {
+          light: 'neutral',
+          dark: 'forest'
+        },
       },
       colorMode: {
         disableSwitch: true
@@ -200,9 +194,10 @@ module.exports = {
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Steffen Vogel.`,
       },
+
       prism: {
-        theme: prism.themes.github,
-        darkTheme: prism.themes.dracula,
+        theme: prismThemes.github,
+        darkTheme: prismThemes.dracula,
       },
 
       metadata: [
@@ -219,19 +214,10 @@ module.exports = {
           content: "@stv0g"
         }
       ]
-    }),
+    },
 
-  markdown: {
-    mermaid: true,
-  },
-  themes: ['@docusaurus/theme-mermaid'],
-
-  headTags: [
-    {
-      tagName: "meta",
-      attributes: {
-        
-      }
-    }
-  ],
+    themes: ["@docusaurus/theme-mermaid"],
+    markdown: {
+      mermaid: true,
+    },
 };
