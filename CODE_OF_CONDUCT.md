@@ -1,7 +1,7 @@
-<!-- 
-SPDX-FileCopyrightText: 2023 Contributor Covenant authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2023 Contributor Covenant authors
+# SPDX-License-Identifier: CC-BY-4.0
+---
 
 # Code of Conduct
 
