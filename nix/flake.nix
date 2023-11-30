@@ -2,34 +2,37 @@
 # SPDX-License-Identifier: Apache-2.0
 {
   description = "cunīcu is a user-space daemon managing WireGuard® interfaces to establish a mesh of peer-to-peer VPN connections in harsh network environments.";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  outputs = {
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+  };
+
+  outputs = inputs @ {
     self,
     nixpkgs,
-  }: let
-    inherit (nixpkgs) lib;
-    forSystems = lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-    pkgsFor = system: nixpkgs.legacyPackages.${system};
-    packagesWith = pkgs: {
-      cunicu = import ./default.nix {inherit pkgs;};
+    flake-parts,
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      flake = {
+        # Put your original flake attributes here.
+      };
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+      perSystem = {
+        config,
+        pkgs,
+        ...
+      }: {
+        formatter = pkgs.alejandra;
+        devShells.default = import ./dev.nix {
+          inherit self pkgs;
+        };
+        packages = {
+          cunicu = import ./default.nix {inherit pkgs;};
+        };
+      };
     };
-  in {
-    packages = forSystems (system: packagesWith (pkgsFor system) // {default = self.packages.${system}.cunicu;});
-    formatter = forSystems (system: (pkgsFor system).alejandra);
-    overlays.default = final: prev: packagesWith final;
-    devShell = forSystems (
-      system: let
-        pkgs = pkgsFor system;
-      in
-        pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs.yarn-berry
-          ];
-
-          inputsFrom = [
-            self.packages.${system}.cunicu
-          ];
-        }
-    );
-  };
 }
