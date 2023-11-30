@@ -95,6 +95,7 @@ export default {
           rehypePlugins: [
             rehypeKatex
           ],
+            exclude: ["/docs/usage/man/**"],
         },
         blog: {
           showReadingTime: true,
