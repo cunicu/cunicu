@@ -24,14 +24,18 @@
       perSystem = {
         config,
         pkgs,
+        self',
         ...
       }: {
         formatter = pkgs.alejandra;
         devShells.default = import ./dev.nix {
-          inherit self pkgs;
+          inherit self pkgs self';
         };
         packages = {
-          cunicu = import ./default.nix {inherit pkgs;};
+          cunicu = import ./default.nix {
+            inherit pkgs;
+          };
+          packages.default = self'.packages.cunicu;
         };
       };
     };

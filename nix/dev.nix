@@ -1,5 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Philipp Jungkamp <p.jungkamp@gmx.net>
+# SPDX-License-Identifier: Apache-2.0
 {
-  # self,
+  self',
   pkgs,
   ...
 }:
@@ -9,7 +11,7 @@ pkgs.mkShell {
     protobuf
     gnumake
     libpcap
-
+    reuse
     ginkgo
     gcov2lcov
     goreleaser
@@ -34,7 +36,7 @@ pkgs.mkShell {
     # coturn
   ];
 
-  # inputsFrom = [
-  #   self.packages.${pkgs.system}.cunicu
-  # ];
+  inputsFrom = [
+    self'.packages.cunicu
+  ];
 }
