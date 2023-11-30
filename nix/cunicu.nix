@@ -5,7 +5,7 @@
   src,
   buildGoModule,
 }:
-buildGoModule rec {
+buildGoModule {
   pname = "cunicu";
   version = "0.3.3";
   vendorHash = "sha256-EDZJTQ/Ln4YVELZTTOGJr5S+d/UxfrSrJEBW7Nv/XsA=";
