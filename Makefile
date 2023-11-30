@@ -80,7 +80,7 @@ docs: cunicu
 	./cunicu docs --with-frontmatter
 
 docs-website: docs
-	find ./docs/usage/md -name "*.md" -exec sed -ri 's!<!\\<!g' {} \;
+	find ./docs/usage/md -name "*.md" -exec sed -r -i -e 's!<!\\<!g' -e 's!\$\{!\\\$\{!g' {} \;
 
 redirects:
 	cd scripts && \

@@ -32,24 +32,22 @@ jobs:
             make
             libpcap-dev
 
-    - name: Set up Go
+    - name: Setup Go
       uses: actions/setup-go@v4
       with:
         go-version-file: go.mod
         check-latest: true
-    
-    - name: Install build and test dependencies
-      run: make install-deps
-      working-directory: ./
 
-    - name: Generate docs
-      run: make docs redirects
-      working-directory: ./
-
-    - name: Set up Node.js
+    - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 20.5
+
+    - name: Setup yarn
+      run: |
+        corepack enable
+        corepack prepare yarn@4.0.1 --activate
+        yarn set version 4.0.1
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
@@ -64,13 +62,16 @@ jobs:
         restore-keys: |
           yarn-cache-folder-
 
-    - name: Set up yarn
-      run: |
-        corepack enable
-        corepack prepare yarn@stable --activate
+    - name: Install Go dependencies
+      run: make install-deps
+      working-directory: ./
 
-    - name: Install dependencies
-      run: yarn install --immutable
+    - name: Install Yarn dependencies
+      run: yarn install
+
+    - name: Build docs
+      run: make docs-website redirects
+      working-directory: ./
 
     - name: Build website
       run: yarn build
