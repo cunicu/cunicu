@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 position: 3.5
-label: "Man Pages"
+label: "Manpage"
 collapsible: true
 collapsed: true
 link:

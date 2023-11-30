@@ -72,12 +72,15 @@ install-deps:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/onsi/ginkgo/v2/ginkgo
 
-website: docs redirects
+website: docs-website redirects
 	cd website && \
 	yarn build
 
 docs: cunicu
 	./cunicu docs --with-frontmatter
+
+docs-website: docs
+	find ./docs/usage/md -name "*.md" -exec sed -ri 's!<!\\<!g' {} \;
 
 redirects:
 	cd scripts && \
