@@ -31,11 +31,11 @@
         devShells.default = import ./dev.nix {
           inherit self pkgs self';
         };
-        packages = {
+        packages = rec {
           cunicu = import ./default.nix {
             inherit pkgs;
           };
-          packages.default = self'.packages.cunicu;
+          default = cunicu;
         };
       };
     };
