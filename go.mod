@@ -33,7 +33,7 @@ require (
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20230705154206-78ac5704cfa0
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.17.0
-	golang.org/x/sync v0.5.0
+	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.15.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
