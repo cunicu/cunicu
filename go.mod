@@ -23,7 +23,7 @@ require (
 	github.com/mdp/qrterminal/v3 v3.2.0
 	github.com/miekg/dns v1.1.57
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.3.12
+	github.com/pion/ice/v3 v3.0.2
 	github.com/pion/ice/v3 v3.0.2
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
