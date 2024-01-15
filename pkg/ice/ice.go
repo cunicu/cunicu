@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pion/stun"
+	"github.com/pion/stun/v2"
 )
 
 func ParseURL(urlStr string) (*stun.URI, string, string, url.Values, error) {

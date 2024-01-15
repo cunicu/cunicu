@@ -23,17 +23,15 @@ require (
 	github.com/mdp/qrterminal/v3 v3.2.0
 	github.com/miekg/dns v1.1.57
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v2 v2.3.12
 	github.com/pion/ice/v3 v3.0.2
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
-	github.com/pion/stun/v2 v2.0.0
 	github.com/pion/stun/v2 v2.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20230705154206-78ac5704cfa0
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.17.0
+	golang.org/x/crypto v0.18.0
 	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.16.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
@@ -65,7 +63,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
 	github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3 // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/native v1.1.0 // indirect
@@ -75,10 +73,11 @@ require (
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/pion/dtls/v2 v2.2.7 // indirect
+	github.com/pion/dtls/v2 v2.2.9 // indirect
 	github.com/pion/mdns v0.0.9 // indirect
-	github.com/pion/transport/v2 v2.2.2 // indirect
-	github.com/pion/turn/v2 v2.1.3 // indirect
+	github.com/pion/transport/v2 v2.2.4 // indirect
+	github.com/pion/transport/v3 v3.0.1 // indirect
+	github.com/pion/turn/v3 v3.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -91,8 +90,8 @@ require (
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/term v0.15.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.15.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect

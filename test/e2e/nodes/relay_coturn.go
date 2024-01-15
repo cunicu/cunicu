@@ -15,7 +15,7 @@ import (
 
 	g "cunicu.li/gont/v2/pkg"
 	copt "cunicu.li/gont/v2/pkg/options/cmd"
-	"github.com/pion/stun"
+	"github.com/pion/stun/v2"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/log"

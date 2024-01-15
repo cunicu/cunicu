@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/pion/ice/v2"
+	"github.com/pion/ice/v3"
 	"go.uber.org/zap"
 	wgdevice "golang.zx2c4.com/wireguard/device"
 

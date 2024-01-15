@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pion/ice/v2"
-	"github.com/pion/stun"
+	"github.com/pion/ice/v3"
+	"github.com/pion/stun/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"

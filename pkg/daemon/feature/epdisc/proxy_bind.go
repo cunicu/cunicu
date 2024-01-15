@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/pion/ice/v2"
+	"github.com/pion/ice/v3"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 

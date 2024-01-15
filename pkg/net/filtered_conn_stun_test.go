@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/pion/stun"
+	"github.com/pion/stun/v2"
 
 	"cunicu.li/cunicu/pkg/log"
 	netx "cunicu.li/cunicu/pkg/net"

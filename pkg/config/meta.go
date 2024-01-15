@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/pion/ice/v2"
+	"github.com/pion/ice/v3"
 
 	"cunicu.li/cunicu/pkg/types"
 )
