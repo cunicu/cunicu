@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/pion/ice/v2"
+	"github.com/pion/ice/v3"
 	"github.com/pion/randutil"
 
 	"cunicu.li/cunicu/pkg/log"

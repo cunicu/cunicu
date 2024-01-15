@@ -4,7 +4,7 @@
 package epdisc
 
 import (
-	"github.com/pion/ice/v2"
+	"github.com/pion/ice/v3"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/crypto"
