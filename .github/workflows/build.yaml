@@ -176,7 +176,7 @@ jobs:
 
     - name: Report test coverage to Codecov
       if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: coverprofile_merged.out
