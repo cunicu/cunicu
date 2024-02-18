@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 RUN apk add \
     git \
