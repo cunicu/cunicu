@@ -37,7 +37,7 @@ var _ = Context("slice", func() {
 
 	It("filter", func() {
 		Expect(slicesx.Filter(s, func(i int) bool { return i != 22 && i != 123 })).To(Equal([]int{23, 54, 8, 112, 234}))
-		Expect(slicesx.Filter(s, func(i int) bool { return true })).To(Equal(s))
+		Expect(slicesx.Filter(s, func(_ int) bool { return true })).To(Equal(s))
 	})
 
 	It("contains", func() {
