@@ -8,28 +8,36 @@
   };
 
   outputs = inputs @ {
-    self,
     nixpkgs,
+    self,
     flake-parts,
-  }:
+  }
+  :
     flake-parts.lib.mkFlake {inherit inputs;} {
-      flake = {
-        # Put your original flake attributes here.
-      };
       systems = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
       perSystem = {
-        config,
         pkgs,
         self',
+        system,
         ...
-      }: {
+      }: let
+        go122 = final: prev: {
+          go = prev.go_1_22;
+          buildGoModule = prev.buildGo122Module;
+          buildGoPackage = prev.buildGo122Package;
+        };
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [go122];
+        };
+      in {
         formatter = pkgs.alejandra;
         devShells.default = import ./dev.nix {
-          inherit self pkgs self';
+          inherit pkgs self';
         };
         packages = {
           cunicu = import ./default.nix {
