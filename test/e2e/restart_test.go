@@ -230,7 +230,7 @@ var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 	})
 
 	Context("peer-rpc: Restart peer via RPC", func() {
-		RestartTest(func(gap time.Duration) {
+		RestartTest(func(_ time.Duration) {
 			ctx := context.Background()
 
 			By("Initiating restart via RPC")
@@ -243,7 +243,7 @@ var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 	})
 
 	Context("agent-rpc: Restart agent via RPC", Pending, func() {
-		RestartTest(func(gap time.Duration) {
+		RestartTest(func(_ time.Duration) {
 			ctx := context.Background()
 
 			By("Initiating agent restart via RPC")
@@ -281,7 +281,7 @@ var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 	})
 
 	Context("private-key: Trigger recreation of peer by changing private-key of interface", func() {
-		RestartTest(func(gap time.Duration) {
+		RestartTest(func(_ time.Duration) {
 			By("Changing private-key")
 
 			// i.Configuring

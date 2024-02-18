@@ -71,8 +71,8 @@ type PeerSelector nodes.WireGuardPeerSelectorFunc
 
 //nolint:gochecknoglobals
 var (
-	FullMeshPeers PeerSelector = func(i, j *nodes.WireGuardInterface) bool { return true }
-	NoPeers       PeerSelector = func(i, j *nodes.WireGuardInterface) bool { return false }
+	FullMeshPeers PeerSelector = func(_, _ *nodes.WireGuardInterface) bool { return true }
+	NoPeers       PeerSelector = func(_, _ *nodes.WireGuardInterface) bool { return false }
 )
 
 func (ps PeerSelector) Apply(i *nodes.WireGuardInterface) {
