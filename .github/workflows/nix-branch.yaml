@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2023 Philipp Jungkamp <philipp@jungkamp.dev>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Update `nix` branch
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  update-nix-hash:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: DeterminateSystems/nix-installer-action@main
+    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        filter: tree:0
+        fetch-depth: 0
+        fetch-tags: true
+    - name: Update Nix Derivation
+      run: |
+        git checkout -b nix
+        bash ./scripts/update_nix_derivation.sh ./nix/cunicu.nix
+
+        if ! git diff --exit-code ./nix/cunicu.nix; then
+          git config --global user.name 'Philipp Jungkamp'
+          git config --global user.email 'philipp@jungkamp.dev'
+          git add ./nix/cunicu.nix
+          git commit -m "nix: Update cunicu derivation"
+          git push -f origin nix
+        fi
