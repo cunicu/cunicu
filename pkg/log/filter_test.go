@@ -194,13 +194,13 @@ var _ = Describe("filter", func() {
 				Expect(gotLogs).To(Equal(expectedLogs))
 			},
 			Entry("allow-all",
-				func(entry zapcore.Entry) bool {
+				func(_ zapcore.Entry) bool {
 					return true
 				},
 				[]string{"a", "b", "c", "d"},
 			),
 			Entry("disallow-all",
-				func(entry zapcore.Entry) bool {
+				func(_ zapcore.Entry) bool {
 					return false
 				},
 				[]string{},

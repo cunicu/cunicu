@@ -132,7 +132,7 @@ func (c *Config) AddProvider(provider koanf.Provider) error {
 
 func (c *Config) AddSource(source Source) error {
 	if w, ok := source.(Watchable); c.Watch && ok {
-		if err := w.Watch(func(event any, err error) {
+		if err := w.Watch(func(_ any, _ error) {
 			if _, err := c.reload(func(s Source) bool { return s == source }); err != nil {
 				c.logger.Error("Failed to reload config", zap.Error(err))
 			}
@@ -156,7 +156,7 @@ func (c *Config) Update(sets map[string]any) (map[string]types.Change, error) {
 		return nil, err
 	}
 
-	changes, err := c.reload(func(s Source) bool { return false })
+	changes, err := c.reload(func(_ Source) bool { return false })
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (c *Config) InterfaceFilter(name string) bool {
 
 // ReloadAllSources reloads all configuration sources
 func (c *Config) ReloadAllSources() (map[string]types.Change, error) {
-	return c.reload(func(s Source) bool { return true })
+	return c.reload(func(_ Source) bool { return true })
 }
 
 // ReloadSource reloads a specific configuration source or all of nil is passed

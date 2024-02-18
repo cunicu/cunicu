@@ -310,7 +310,7 @@ var _ = Context("encoder", func() {
 
 				errBanana := errors.New("banana") //nolint:goerr113
 
-				err := enc.AddArray("x", zapcore.ArrayMarshalerFunc(func(enc zapcore.ArrayEncoder) error {
+				err := enc.AddArray("x", zapcore.ArrayMarshalerFunc(func(_ zapcore.ArrayEncoder) error {
 					return errBanana
 				}))
 				Expect(err).To(MatchError(errBanana))
@@ -366,7 +366,7 @@ var _ = Context("encoder", func() {
 
 				errMangoTango := errors.New("mango-tango") //nolint:goerr113
 
-				err := enc.AddObject("x", zapcore.ObjectMarshalerFunc(func(enc zapcore.ObjectEncoder) error {
+				err := enc.AddObject("x", zapcore.ObjectMarshalerFunc(func(_ zapcore.ObjectEncoder) error {
 					return errMangoTango
 				}))
 				Expect(err).To(MatchError(errMangoTango))
@@ -601,8 +601,8 @@ var _ = Context("encoder", func() {
 		},
 		Entry("nil", "1000000000", nil),
 		Entry("epoch millis", "1000", zapcore.EpochMillisTimeEncoder),
-		Entry("custom", "custom-time", func(t time.Time, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("custom-time") }),
-		Entry("custom with spaces", `"with spaces"`, func(t time.Time, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("with spaces") }),
+		Entry("custom", "custom-time", func(_ time.Time, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("custom-time") }),
+		Entry("custom with spaces", `"with spaces"`, func(_ time.Time, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("with spaces") }),
 	)
 
 	duration := time.Second
@@ -621,8 +621,8 @@ var _ = Context("encoder", func() {
 		Entry("nil", "1000000000", nil),
 		Entry("seconds", "1", zapcore.SecondsDurationEncoder),
 		Entry("string", "1s", zapcore.StringDurationEncoder),
-		Entry("custom", "custom", func(d time.Duration, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("custom") }),
-		Entry("custom with spaces", `"with spaces"`, func(d time.Duration, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("with spaces") }),
+		Entry("custom", "custom", func(_ time.Duration, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("custom") }),
+		Entry("custom with spaces", `"with spaces"`, func(_ time.Duration, enc zapcore.PrimitiveArrayEncoder) { enc.AppendString("with spaces") }),
 	)
 })
 
