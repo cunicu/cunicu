@@ -8,7 +8,7 @@ go 1.22.0
 require (
 	dario.cat/mergo v1.0.0
 	github.com/cenkalti/backoff/v4 v4.2.1
-	github.com/cilium/ebpf v0.13.0
+	github.com/cilium/ebpf v0.13.2
 	github.com/dchest/siphash v1.2.3
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/google/nftables v0.1.0
