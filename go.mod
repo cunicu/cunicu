@@ -47,7 +47,7 @@ require (
 	cunicu.li/gont/v2 v2.4.2 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.2.0 // test-only
-	github.com/onsi/ginkgo/v2 v2.15.0 // test-only
+	github.com/onsi/ginkgo/v2 v2.16.0 // test-only
 	github.com/onsi/gomega v1.31.1 // test-only
 )
 
@@ -56,7 +56,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/go-delve/delve v1.21.0 // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-ping/ping v1.1.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
