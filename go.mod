@@ -21,7 +21,7 @@ require (
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.1.1
 	github.com/mdp/qrterminal/v3 v3.2.0
-	github.com/miekg/dns v1.1.58
+	github.com/miekg/dns v1.1.59
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v3 v3.0.3
 	github.com/pion/logging v0.2.2
@@ -90,11 +90,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3 // indirect
-	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/tools v0.19.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
