@@ -47,8 +47,8 @@ require (
 	cunicu.li/gont/v2 v2.4.2 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.2.0 // test-only
-	github.com/onsi/ginkgo/v2 v2.17.1 // test-only
-	github.com/onsi/gomega v1.33.0 // test-only
+	github.com/onsi/ginkgo/v2 v2.17.2 // test-only
+	github.com/onsi/gomega v1.33.1 // test-only
 )
 
 require (
@@ -59,11 +59,12 @@ require (
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-ping/ping v1.1.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
-	github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3 // indirect
+	github.com/google/pprof v0.0.0-20240424215950-a892ee059fd6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -90,11 +91,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3 // indirect
-	golang.org/x/mod v0.16.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.19.0 // indirect
+	golang.org/x/tools v0.20.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
