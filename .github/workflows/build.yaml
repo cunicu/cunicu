@@ -64,13 +64,13 @@ jobs:
         - target_os: darwin
           target_arch: arm64
           host_os: darwin
-          host_arch: amd64
+          host_arch: arm64
           runner: macos-latest
 
         - target_os: darwin
           target_arch: amd64
           host_os: darwin
-          host_arch: amd64
+          host_arch: arm64
           runner: macos-latest
 
         - target_os: windows
