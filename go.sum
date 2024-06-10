@@ -709,8 +709,12 @@ honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
 kernel.org/pub/linux/libs/security/libcap/cap v1.2.69 h1:N0m3tKYbkRMmDobh/47ngz+AWeV7PcfXMDi8xu3Vrag=
 kernel.org/pub/linux/libs/security/libcap/cap v1.2.69/go.mod h1:Tk5Ip2TuxaWGpccL7//rAsLRH6RQ/jfqTGxuN/+i/FQ=
+kernel.org/pub/linux/libs/security/libcap/cap v1.2.70 h1:QnLPkuDWWbD5C+3DUA2IUXai5TK6w2zff+MAGccqdsw=
+kernel.org/pub/linux/libs/security/libcap/cap v1.2.70/go.mod h1:/iBwcj9nbLejQitYvUm9caurITQ6WyNHibJk6Q9fiS4=
 kernel.org/pub/linux/libs/security/libcap/psx v1.2.69 h1:IdrOs1ZgwGw5CI+BH6GgVVlOt+LAXoPyh7enr8lfaXs=
 kernel.org/pub/linux/libs/security/libcap/psx v1.2.69/go.mod h1:+l6Ee2F59XiJ2I6WR5ObpC1utCQJZ/VLsEbQCD8RG24=
+kernel.org/pub/linux/libs/security/libcap/psx v1.2.70 h1:HsB2G/rEQiYyo1bGoQqHZ/Bvd6x1rERQTNdPr1FyWjI=
+kernel.org/pub/linux/libs/security/libcap/psx v1.2.70/go.mod h1:+l6Ee2F59XiJ2I6WR5ObpC1utCQJZ/VLsEbQCD8RG24=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/pdf v0.1.1/go.mod h1:n8OzWcQ6Sp37PL01nO98y4iUCRdTGarVfzxY20ICaU4=
 rsc.io/qr v0.2.0 h1:6vBLea5/NRMVTz8V66gipeLycZMl/+UlFmk8DvqQ6WY=
