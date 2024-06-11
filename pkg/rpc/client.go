@@ -72,6 +72,7 @@ func Connect(path string) (*Client, error) {
 	}
 
 	tgt := fmt.Sprintf("unix://%s", path)
+	//nolint:staticcheck
 	conn, err := grpc.Dial(tgt,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(buildinfo.UserAgent()),
