@@ -12,7 +12,11 @@ buildGoModule {
   inherit src;
   CGO_ENABLED = 0;
   # These packages contain networking dependent tests which fail in the sandbox
-  excludedPackages = ["pkg/config" "pkg/selfupdate" "pkg/tty"];
+  excludedPackages = [
+    "pkg/config"
+    "pkg/selfupdate"
+    "pkg/tty"
+  ];
   postBuild = ''
     cunicu=$GOPATH/bin/cunicu
     $cunicu docs --with-frontmatter
