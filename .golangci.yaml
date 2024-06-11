@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 run:
-  skip-files:
+  exclude-files:
   - ".*\\.pb\\.go$"
   - ".*_grpc\\.pb\\.go$"
 
@@ -74,7 +74,7 @@ linters:
   - gocognit # Computes and checks the cognitive complexity of functions
   - goconst # Finds repeated strings that could be replaced by a constant
   - gocritic # The most opinionated Go source code linter
-  - goerr113 # Golang linter to check the errors handling expressions
+  - err113 # Golang linter to check the errors handling expressions
   - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
   - gofumpt # Gofumpt checks whether code was gofumpt-ed.
   - goheader # Checks is file header matches to pattern
@@ -111,19 +111,16 @@ linters:
   - containedctx # containedctx is a linter that detects struct contained context.Context field
   - cyclop # checks function and package cyclomatic complexity
   - depguard # Go linter that checks if package imports are in a list of acceptable packages
-  - exhaustivestruct # Checks if all struct's fields are initialized
   - forbidigo # Forbids identifiers
   - funlen # Tool for detection of long functions
   - gocyclo # Computes and checks the cyclomatic complexity of functions
   - godot # Check if comments end in a period
   - godox # Tool for detection of FIXME, TODO and other comment keywords
   - gomnd # An analyzer to detect magic numbers.
-  - ifshort # Checks that your code uses short syntax for if-statements whenever possible
   - ireturn # Accept Interfaces, Return Concrete Types
   - lll # Reports long lines
   - maintidx # maintidx measures the maintainability index of each function.
   - makezero # Finds slice declarations with non-zero initial length
-  - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
   - nestif # Reports deeply nested if statements
   - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity
   - nolintlint # Reports ill-formed or insufficient nolint directives
