@@ -7,8 +7,8 @@
 }:
 buildGoModule {
   pname = "cunicu";
-  version = "0.3.3";
-  vendorHash = "sha256-EDZJTQ/Ln4YVELZTTOGJr5S+d/UxfrSrJEBW7Nv/XsA=";
+  version = "0.4.7";
+  vendorHash = "sha256-XgBslgbTzvPYONRPmcNyzLVaJszmHyUHcLRI9fKxKbs=";
   inherit src;
   CGO_ENABLED = 0;
   # These packages contain networking dependent tests which fail in the sandbox
