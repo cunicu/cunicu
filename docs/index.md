@@ -53,11 +53,11 @@ Once this has been done, the cunīcu logs should show a line `state=connected`.
 
 ## Authors
 
--   Steffen Vogel ([@stv0g](https://github.com/stv0g), Institute for Automation of Complex Power Systems, RWTH Aachen University)
+-   Steffen Vogel ([@stv0g](https://github.com/stv0g))
 
-## Join us
+## Community space
 
-Please feel free to [join our Slack channel](https://join.slack.com/t/gophers/shared_invite/zt-1447h1rgj-s9W5BcyRzBxUwNAZJUKmaQ) `#cunicu` in the [Gophers workspace](https://gophers.slack.com/) and say 👋.
+We are hosting our own forum, chat and wiki at http://discuss.cunicu.li. Feel free to say hi 👋, discuss cunīcu, ask questions or share ideas.
 
 ## Name
 
