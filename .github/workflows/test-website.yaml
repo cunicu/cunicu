@@ -45,8 +45,8 @@ jobs:
     - name: Setup yarn
       run: |
         corepack enable
-        corepack prepare yarn@4.0.1 --activate
-        yarn set version 4.0.1
+        corepack prepare yarn@4.1.0 --activate
+        yarn set version 4.1.0
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
