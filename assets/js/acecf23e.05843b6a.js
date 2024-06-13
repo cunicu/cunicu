@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcunicu=self.webpackChunkcunicu||[]).push([[7393],{81838:e=>{e.exports=JSON.parse('{"blogBasePath":"/blog","blogTitle":"Blog"}')}}]);

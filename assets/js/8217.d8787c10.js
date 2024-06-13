@@ -1,0 +1,1 @@
+(self.webpackChunkcunicu=self.webpackChunkcunicu||[]).push([[8217],{97533:(c,u,s)=>{"use strict";s.d(u,{Z:()=>n});var e=s(31336);const n=e},15525:()=>{}}]);

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcunicu=self.webpackChunkcunicu||[]).push([[9361],{57588:e=>{e.exports=JSON.parse('{"tags":[{"label":"hello","permalink":"/blog/tags/hello","count":1}]}')}}]);
