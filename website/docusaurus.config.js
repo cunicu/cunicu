@@ -130,15 +130,20 @@ export default {
         },
         items: [
           {
+            to: "/blog",
+            label: "📰 Blog",
+            position: "left"
+          },
+          {
+            to: "https://discuss.cunicu.li",
+            label: "👋 Community",
+            position: "left"
+          },
+          {
             type: "doc",
             docId: "index",
             position: "left",
-            label: "Docs",
-          },
-          {
-            to: "/blog",
-            label: "Blog",
-            position: "left"
+            label: "📚 Docs",
           },
           {
             href: "https://github.com/cunicu",
