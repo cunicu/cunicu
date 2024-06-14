@@ -222,8 +222,8 @@ export default {
       ]
     },
 
-    themes: ["@docusaurus/theme-mermaid"],
-    markdown: {
-      mermaid: true,
-    },
+  themes: ["@docusaurus/theme-mermaid"],
+  markdown: {
+    mermaid: true,
+  }
 };
