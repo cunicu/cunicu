@@ -4,10 +4,34 @@
         <title>cunīcu Blog</title>
         <link>https://cunicu.li/blog</link>
         <description>cunīcu Blog</description>
-        <lastBuildDate>Thu, 15 Sep 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 12 Jun 2024 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Announcing Our New Community Space: Forum, Chat, and Wiki!]]></title>
+            <link>https://cunicu.li/blog/community</link>
+            <guid>https://cunicu.li/blog/community</guid>
+            <pubDate>Wed, 12 Jun 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[We are excited to unveil a new community space designed to foster collaboration, discussion, and knowledge sharing.]]></description>
+            <content:encoded><![CDATA[<p>We are excited to unveil a new community space designed to foster collaboration, discussion, and knowledge sharing.
+This new platform integrates a forum, chat, and wiki, providing a comprehensive environment for all users to engage, learn, and contribute.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-join">How to Join<a class="hash-link" aria-label="Direct link to How to Join" title="Direct link to How to Join" href="https://cunicu.li/blog/community#how-to-join">​</a></h2>
+<p>Joining our new community space is simple.
+Whether you're a seasoned contributor or a newcomer, everyone is welcome. Just head over to our platform, sign up, and start exploring the forum, engaging in chat, and contributing to the wiki.</p>
+<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>tip</div><div class="admonitionContent_BuS1"><p>Visit our Discourse at: <strong><a href="https://discuss.cunicu.li/" target="_blank" rel="noopener noreferrer">discuss.cunicu.li</a></strong>.</p></div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="access-and-participation">Access and Participation<a class="hash-link" aria-label="Direct link to Access and Participation" title="Direct link to Access and Participation" href="https://cunicu.li/blog/community#access-and-participation">​</a></h2>
+<p>For those who wish to browse and read content, our community space offers read-only access without the need for an account.
+However, if you'd like to actively participate, you'll need to create an account.
+To make the process seamless, login is also possible via GitHub, allowing you to quickly join the conversation and contribute.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="why-this-matters">Why This Matters<a class="hash-link" aria-label="Direct link to Why This Matters" title="Direct link to Why This Matters" href="https://cunicu.li/blog/community#why-this-matters">​</a></h2>
+<p>Creating a vibrant community space is about more than just providing tools; it's about fostering an environment where collaboration and learning thrive. By integrating these three key components, we aim to create a cohesive and supportive ecosystem that enhances the overall user experience and drives innovation.</p>
+<p>We look forward to seeing you in the new community space. Let's build, learn, and grow together!</p>
+<p><img decoding="async" loading="lazy" alt="AI generated cover image showing a group of people collaborating in a community space." src="https://cunicu.li/assets/images/cover-bfb8cacb574dc3c854ed9f6f52062acd.jpeg" width="2016" height="1152" class="img_ev3q">
+<small style="float:right;color:grey">Generated via <a href="https://getimg.ai/" target="_blank" rel="noopener noreferrer">https://getimg.ai/</a></small></p>]]></content:encoded>
+            <category>community</category>
+            <category>announcement</category>
+        </item>
         <item>
             <title><![CDATA[Welcome]]></title>
             <link>https://cunicu.li/blog/welcome</link>

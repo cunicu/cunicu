@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcunicu=self.webpackChunkcunicu||[]).push([[2535],{45641:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Announcing Our New Community Space: Forum, Chat, and Wiki!","permalink":"/blog/community","unlisted":false},{"title":"Welcome","permalink":"/blog/welcome","unlisted":false}]}')}}]);
