@@ -51,32 +51,10 @@ After the cunīcu daemons have been started, they will attempt to discover valid
 These _ICE candidates_ are then exchanged via the signaling server and cunīcu will update the endpoint addresses of the WireGuard peers accordingly.
 Once this has been done, the cunīcu logs should show a line `state=connected`.
 
-## Authors
-
--   Steffen Vogel ([@stv0g](https://github.com/stv0g))
-
-## Community space
-
-We are hosting our own forum, chat and wiki at http://discuss.cunicu.li. Feel free to say hi 👋, discuss cunīcu, ask questions or share ideas.
-
 ## Name
 
 The project name _cunīcu_ \[kʊˈniːkʊ\] is derived from the [latin noun cunīculus](https://en.wiktionary.org/wiki/cuniculus#Latin) which means rabbit, a rabbit burrow or underground tunnel. We have choosen it as a name for this project as _cunīcu_ builds tunnels between otherwise hard to reach network locations.
 It has been changed from the former name _wice_ in order to broaden the scope of the project and avoid any potential trademark violations. 
-
-## License
-
-cunīcu is licensed under the [Apache 2.0](https://github.com/cunicu/cunicu/blob/main/LICENSE) license.
-
-## Funding acknowledgement
-
-The project has been initiated by Steffen Vogel while working at the [Institute for Automation of Complex Power Systems (ACS)](https://www.acs.eonerc.rwth-aachen.de) of [RWTH Aachen University](https://www.rwth-aachen.de).
-
-<img alt="European Flag" style={{height: '4em', marginRight: '10px'}} src="/img/flag_of_europe.svg" align="left" /> The development of cunīcu has been supported by the <a href="https://erigrid2.eu">ERIGrid 2.0</a> project of the H2020 Programme under <a href="https://cordis.europa.eu/project/id/870620">Grant Agreement No. 870620</a>
-
-## Trademark
-
-_WireGuard_ and the _WireGuard_ logo are [registered trademarks](https://www.wireguard.com/trademark-policy/) of Jason A. Donenfeld.
 
 [wireguard]: https://wireguard.com
 
