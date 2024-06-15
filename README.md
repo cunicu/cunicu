@@ -30,9 +30,9 @@ Within the [ERIGrid 2.0 project](https://erigrid2.eu), cunīcu is used to interc
 
 cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/docs).
 
-## Authors
+## Contact
 
--   Steffen Vogel ([@stv0g](https://github.com/stv0g))
+Please have a look at the contact page: https://cunicu.li/docs/contact
 
 ## License
 

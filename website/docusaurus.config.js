@@ -143,7 +143,7 @@ export default {
             type: "doc",
             docId: "index",
             position: "left",
-            label: "📚 Docs",
+            label: "📚 Documentation",
           },
           {
             href: "https://github.com/cunicu",
@@ -163,11 +163,15 @@ export default {
         style: "dark",
         links: [
           {
-            title: "Docs",
+            title: "Documentation",
             items: [
               {
                 label: "Tutorial",
                 to: "/docs/",
+              },
+              {
+                label: "Legal",
+                to: "/docs/legal/",
               },
             ],
           },
@@ -175,8 +179,8 @@ export default {
             title: "Community",
             items: [
               {
-                label: "Slack",
-                href: "https://join.slack.com/t/gophers/shared_invite/zt-1447h1rgj-s9W5BcyRzBxUwNAZJUKmaQ)",
+                label: "Forum",
+                href: "https://discuss.cunicu.li",
               },
               {
                 label: "Fediverse",
@@ -192,8 +196,8 @@ export default {
                 to: "/blog",
               },
               {
-                label: "Sourcecode",
-                href: "https://github.com/cunicu",
+                label: "Contact",
+                href: "/docs/contact",
               },
             ],
           },

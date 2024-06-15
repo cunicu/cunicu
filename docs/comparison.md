@@ -1,6 +1,6 @@
 ---
 title: Comparison
-sidebar_position: 99
+sidebar_position: 80
 # SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 ---
