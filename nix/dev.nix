@@ -32,4 +32,6 @@ pkgs.mkShell {
   ];
 
   inputsFrom = [ self'.packages.cunicu ];
+
+  hardeningDisable = [ "fortify" ];
 }
