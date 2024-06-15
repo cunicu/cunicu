@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Compliance Checks
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  reuse:
+    uses: cunicu/.github/.github/workflows/reuse.yaml@v0.2.0
