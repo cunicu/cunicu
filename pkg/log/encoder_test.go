@@ -308,7 +308,7 @@ var _ = Context("encoder", func() {
 			It("error", func() {
 				enc := newEncoder(encoderConfig{})
 
-				errBanana := errors.New("banana") //nolint:goerr113
+				errBanana := errors.New("banana") //nolint:err113
 
 				err := enc.AddArray("x", zapcore.ArrayMarshalerFunc(func(_ zapcore.ArrayEncoder) error {
 					return errBanana
@@ -364,7 +364,7 @@ var _ = Context("encoder", func() {
 			It("error", func() {
 				enc := newEncoder(encoderConfig{})
 
-				errMangoTango := errors.New("mango-tango") //nolint:goerr113
+				errMangoTango := errors.New("mango-tango") //nolint:err113
 
 				err := enc.AddObject("x", zapcore.ObjectMarshalerFunc(func(_ zapcore.ObjectEncoder) error {
 					return errMangoTango
