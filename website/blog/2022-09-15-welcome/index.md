@@ -32,7 +32,7 @@ This also gave us the opportunity to redesign the logo which you find further do
 
 ### Stickers
 
-We have stickers! Just drop me a mail at [📧 info@cunicu.li](mailto:info@cunicu.li) and I will send you some or talk to me at some of the upcoming conferences.
+We have stickers! Just [reach out](/docs/contact) and I will send you some or talk to me at some of the upcoming conferences.
 
 <figure>
     <center>

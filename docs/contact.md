@@ -31,6 +31,6 @@ A complete list of all maintainers can be found on [**GitHub**](https://github.c
 
 A list of all contributors can be found on [**GitHub**](https://github.com/cunicu/cunicu/graphs/contributors).
 
-## [✉️ E-Mail](info@cunicu.li)
+## [✉️ E-Mail](mailto:info@cunicu.li)
 
-As a last resort, you can reach also reach us at **info@cunicu.li**.
+As a last resort, you can reach also reach us at **[info@cunicu.li](mailto:info@cunicu.li)**.
