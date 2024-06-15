@@ -15,3 +15,5 @@ jobs:
     uses: cunicu/.github/.github/workflows/release.yaml@v0.2.0
     secrets:
       PAT: ${{ secrets.PAT }}
+    permissions:
+      contents: write
