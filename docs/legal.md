@@ -13,7 +13,7 @@ Information according to [§ 5 of the German DDG](https://www.gesetze-im-interne
 Steffen Vogel\
 Monschauer Str. 16\
 52152 Simmerath\
-E-Mail: info@cunicu.li \
+E-Mail: [info@cunicu.li](mailto:info@cunicu.li) \
 Supervisory authority: Aachen
 
 ## Liability for content
