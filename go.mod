@@ -23,7 +23,7 @@ require (
 	github.com/mdp/qrterminal/v3 v3.2.0
 	github.com/miekg/dns v1.1.59
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v3 v3.0.7
+	github.com/pion/ice/v3 v3.0.6
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun/v2 v2.0.0
@@ -58,10 +58,8 @@ require (
 	github.com/go-delve/delve v1.21.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-ping/ping v1.1.0 // indirect
-	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
 	github.com/google/pprof v0.0.0-20240424215950-a892ee059fd6 // indirect
@@ -76,19 +74,14 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pion/dtls/v2 v2.2.10 // indirect
-	github.com/pion/mdns v0.0.12 // indirect
 	github.com/pion/mdns/v2 v2.0.7 // indirect
 	github.com/pion/transport/v2 v2.2.4 // indirect
 	github.com/pion/transport/v3 v3.0.2 // indirect
 	github.com/pion/turn/v3 v3.0.3 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.2 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
