@@ -27,7 +27,7 @@ require (
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
 	github.com/pion/stun/v2 v2.0.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/vishvananda/netlink v1.2.1-beta.2.0.20230705154206-78ac5704cfa0
 	go.uber.org/zap v1.27.0
@@ -52,7 +52,7 @@ require (
 )
 
 require (
-	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-delve/delve v1.21.0 // indirect
