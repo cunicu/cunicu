@@ -44,7 +44,7 @@ require (
 )
 
 require (
-	cunicu.li/gont/v2 v2.6.6 // test-only
+	cunicu.li/gont/v2 v2.6.7 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.2.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.19.0 // test-only
