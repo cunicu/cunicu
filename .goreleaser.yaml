@@ -3,6 +3,9 @@
 
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 ---
+
+version: 2
+
 project_name: cunicu
 
 before:
@@ -97,8 +100,6 @@ archives:
   format_overrides:
   - goos: windows
     format: zip
-
-  rlcp: true
 
 nfpms:
 - vendor: cunicu
@@ -249,7 +250,7 @@ brews:
 - ids:
   - cunicu
 
-  tap:
+  repository:
     owner: cunicu
     name: homebrew-cunicu
     token: "{{ .Env.TAP_GITHUB_TOKEN }}"
