@@ -6,7 +6,7 @@ module cunicu.li/cunicu
 go 1.22.2
 
 require (
-	dario.cat/mergo v1.0.0
+	dario.cat/mergo v1.0.1
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cilium/ebpf v0.16.0
 	github.com/dchest/siphash v1.2.3
