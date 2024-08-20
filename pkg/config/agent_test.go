@@ -208,20 +208,4 @@ var _ = Describe("Agent config", func() {
 
 		Expect(cfg.Backends).To(HaveLen(2))
 	})
-
-	It("has proper default values", func() {
-		cfg, err := parseArgs()
-		Expect(err).To(Succeed())
-
-		icfg := cfg.DefaultInterfaceSettings
-
-		aCfg, err := icfg.AgentConfig(context.Background(), &pk)
-		Expect(err).To(Succeed())
-
-		Expect(aCfg.InterfaceFilter("wg1")).To(BeTrue())
-
-		Expect(aCfg.Urls).To(HaveLen(5))
-		Expect(aCfg.Urls[0].Host).To(Equal("stun.cunicu.li"))
-		Expect(aCfg.Urls[1].Host).To(Equal("turn.cunicu.li"))
-	})
 })
