@@ -15,8 +15,8 @@ func TimeNow() *Timestamp {
 
 func Time(s time.Time) *Timestamp {
 	return &Timestamp{
-		Seconds: int32(s.Unix()),
-		Nanos:   int32(s.Nanosecond()),
+		Seconds: int32(s.Unix()),       //nolint:gosec
+		Nanos:   int32(s.Nanosecond()), //nolint:gosec
 	}
 }
 

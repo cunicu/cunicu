@@ -157,7 +157,7 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
 			&expr.Cmp{
 				Op:       expr.CmpOpEq,
 				Register: 1,
-				Data:     binaryutil.BigEndian.PutUint16(uint16(origPort)),
+				Data:     binaryutil.BigEndian.PutUint16(uint16(origPort)), //nolint:gosec
 			},
 
 			// @th,96,32 != StunMagicCookie
@@ -178,7 +178,7 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
 			// udp dport set newPort
 			&expr.Immediate{
 				Register: 1,
-				Data:     binaryutil.BigEndian.PutUint16(uint16(newPort)),
+				Data:     binaryutil.BigEndian.PutUint16(uint16(newPort)), //nolint:gosec
 			},
 			&expr.Payload{
 				OperationType:  expr.PayloadWrite,
@@ -235,7 +235,7 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 			&expr.Cmp{
 				Op:       expr.CmpOpEq,
 				Register: 1,
-				Data:     binaryutil.BigEndian.PutUint16(uint16(fromPort)),
+				Data:     binaryutil.BigEndian.PutUint16(uint16(fromPort)), //nolint:gosec
 			},
 
 			// udp dst dest.IP
@@ -261,7 +261,7 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 			&expr.Cmp{
 				Op:       expr.CmpOpEq,
 				Register: 1,
-				Data:     binaryutil.BigEndian.PutUint16(uint16(dest.Port)),
+				Data:     binaryutil.BigEndian.PutUint16(uint16(dest.Port)), //nolint:gosec
 			},
 
 			// notrack
@@ -270,7 +270,7 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 			// udp sport set toPort
 			&expr.Immediate{
 				Register: 1,
-				Data:     binaryutil.BigEndian.PutUint16(uint16(toPort)),
+				Data:     binaryutil.BigEndian.PutUint16(uint16(toPort)), //nolint:gosec
 			},
 			&expr.Payload{
 				OperationType:  expr.PayloadWrite,

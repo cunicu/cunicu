@@ -46,7 +46,7 @@ func OffsetIP(ip net.IP, off int) net.IP {
 		binary.BigEndian.PutUint64(oip[8:], num+uint64(off))
 	} else {
 		num := binary.BigEndian.Uint32(ip[12:])
-		binary.BigEndian.PutUint32(oip[12:], num+uint32(off))
+		binary.BigEndian.PutUint32(oip[12:], num+uint32(off)) //nolint:gosec
 	}
 
 	return oip

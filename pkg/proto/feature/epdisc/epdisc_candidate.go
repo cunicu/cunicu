@@ -18,17 +18,17 @@ func NewCandidate(ic ice.Candidate) *Candidate {
 		Type:        CandidateType(ic.Type()),
 		Foundation:  ic.Foundation(),
 		Component:   int32(ic.Component()),
-		NetworkType: NetworkType(ic.NetworkType()),
-		Priority:    int32(ic.Priority()),
+		NetworkType: NetworkType(ic.NetworkType()), //nolint:gosec
+		Priority:    int32(ic.Priority()),          //nolint:gosec
 		Address:     ic.Address(),
-		Port:        int32(ic.Port()),
-		TcpType:     TCPType(ic.TCPType()),
+		Port:        int32(ic.Port()),      //nolint:gosec
+		TcpType:     TCPType(ic.TCPType()), //nolint:gosec
 	}
 
 	if r := ic.RelatedAddress(); r != nil {
 		c.RelatedAddress = &RelatedAddress{
 			Address: r.Address,
-			Port:    int32(r.Port),
+			Port:    int32(r.Port), //nolint:gosec
 		}
 	}
 
@@ -58,8 +58,8 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Network:    nw.String(),
 			Address:    c.Address,
 			Port:       int(c.Port),
-			Component:  uint16(c.Component),
-			Priority:   uint32(c.Priority),
+			Component:  uint16(c.Component), //nolint:gosec
+			Priority:   uint32(c.Priority),  //nolint:gosec
 			Foundation: c.Foundation,
 			TCPType:    ice.TCPType(c.TcpType),
 		})
@@ -68,8 +68,8 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Network:    nw.String(),
 			Address:    c.Address,
 			Port:       int(c.Port),
-			Component:  uint16(c.Component),
-			Priority:   uint32(c.Priority),
+			Component:  uint16(c.Component), //nolint:gosec
+			Priority:   uint32(c.Priority),  //nolint:gosec
 			Foundation: c.Foundation,
 			RelAddr:    relAddr,
 			RelPort:    relPort,
@@ -79,8 +79,8 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Network:    nw.String(),
 			Address:    c.Address,
 			Port:       int(c.Port),
-			Component:  uint16(c.Component),
-			Priority:   uint32(c.Priority),
+			Component:  uint16(c.Component), //nolint:gosec
+			Priority:   uint32(c.Priority),  //nolint:gosec
 			Foundation: c.Foundation,
 			RelAddr:    relAddr,
 			RelPort:    relPort,
@@ -91,8 +91,8 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 			Network:       nw.String(),
 			Address:       c.Address,
 			Port:          int(c.Port),
-			Component:     uint16(c.Component),
-			Priority:      uint32(c.Priority),
+			Component:     uint16(c.Component), //nolint:gosec
+			Priority:      uint32(c.Priority),  //nolint:gosec
 			Foundation:    c.Foundation,
 			RelAddr:       relAddr,
 			RelPort:       relPort,
@@ -110,7 +110,7 @@ func NewCandidatePairStats(cps *ice.CandidatePairStats) *CandidatePairStats {
 	p := &CandidatePairStats{
 		LocalCandidateId:           cps.LocalCandidateID,
 		RemoteCandidateId:          cps.RemoteCandidateID,
-		State:                      CandidatePairState(cps.State),
+		State:                      CandidatePairState(cps.State), //nolint:gosec
 		Nominated:                  cps.Nominated,
 		PacketsSent:                cps.PacketsSent,
 		PacketsReceived:            cps.PacketsReceived,
@@ -164,9 +164,9 @@ func NewCandidateStats(cs *ice.CandidateStats) *CandidateStats {
 	return &CandidateStats{
 		Timestamp:     proto.Time(cs.Timestamp),
 		Id:            cs.ID,
-		NetworkType:   NetworkType(cs.NetworkType),
+		NetworkType:   NetworkType(cs.NetworkType), //nolint:gosec
 		Ip:            cs.IP,
-		Port:          int32(cs.Port),
+		Port:          int32(cs.Port), //nolint:gosec
 		CandidateType: CandidateType(cs.CandidateType),
 		Priority:      cs.Priority,
 		Url:           cs.URL,

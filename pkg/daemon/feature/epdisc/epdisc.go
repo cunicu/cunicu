@@ -123,11 +123,11 @@ func (i *Interface) Marshal() *epdiscproto.Interface {
 	is := &epdiscproto.Interface{}
 
 	if i.mux != nil {
-		is.MuxPort = uint32(i.muxPort)
+		is.MuxPort = uint32(i.muxPort) //nolint:gosec
 	}
 
 	if i.muxSrflx != nil {
-		is.MuxSrflxPort = uint32(i.muxSrflxPort)
+		is.MuxSrflxPort = uint32(i.muxSrflxPort) //nolint:gosec
 	}
 
 	if i.nat == nil {

@@ -133,7 +133,6 @@ func (i *WireGuardInterface) SetupKernel() error {
 	}
 
 	for _, addr := range i.Addresses {
-		addr := addr
 		nlAddr := netlink.Addr{
 			IPNet: &addr,
 		}

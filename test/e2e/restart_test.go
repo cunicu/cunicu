@@ -183,7 +183,6 @@ var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 			By("Deleting old addresses from agent interface")
 
 			for _, a := range i.Addresses {
-				a := a
 				err = i.DeleteAddress(&a)
 				Expect(err).To(Succeed(), "Failed to remove IP address '%s': %s", a, err)
 			}

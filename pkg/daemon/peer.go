@@ -292,11 +292,11 @@ func (p *Peer) Marshal() *coreproto.Peer {
 		Name:                        p.Name,
 		State:                       p.State(),
 		PublicKey:                   p.PublicKey().Bytes(),
-		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval / time.Second),
+		PersistentKeepaliveInterval: uint32(p.PersistentKeepaliveInterval / time.Second), //nolint:gosec
 		TransmitBytes:               p.TransmitBytes,
 		ReceiveBytes:                p.ReceiveBytes,
 		AllowedIps:                  allowedIPs,
-		ProtocolVersion:             uint32(p.ProtocolVersion),
+		ProtocolVersion:             uint32(p.ProtocolVersion), //nolint:gosec
 		Reachability:                p.Reachability(),
 	}
 

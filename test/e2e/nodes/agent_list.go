@@ -35,8 +35,6 @@ func (al AgentList) ForEachAgent(cb func(a *Agent) error) error {
 	g := errgroup.Group{}
 
 	for _, a := range al {
-		a := a
-
 		g.Go(func() error {
 			if err := cb(a); err != nil {
 				return fmt.Errorf("%w (node %s)", err, a.Name())
@@ -53,8 +51,6 @@ func (al AgentList) ForEachInterface(cb func(i *WireGuardInterface) error) error
 
 	for _, n := range al {
 		for _, ni := range n.WireGuardInterfaces {
-			ni := ni // avoid aliasing
-
 			g.Go(func() error {
 				return cb(ni)
 			})
@@ -91,9 +87,6 @@ func (al AgentList) ForEachInterfacePair(cb func(a, b *WireGuardInterface) error
 			if n != p {
 				for _, ni := range n.WireGuardInterfaces {
 					for _, pi := range p.WireGuardInterfaces {
-						pi := pi // avoid aliasing
-						ni := ni
-
 						g.Go(func() error {
 							return cb(ni, pi)
 						})
@@ -113,9 +106,6 @@ func (al AgentList) ForEachInterfacePairOneDir(cb func(a, b *WireGuardInterface)
 		for _, p := range al[i+1:] {
 			for _, ni := range n.WireGuardInterfaces {
 				for _, pi := range p.WireGuardInterfaces {
-					pi := pi // avoid aliasing
-					ni := ni
-
 					g.Go(func() error {
 						return cb(ni, pi)
 					})

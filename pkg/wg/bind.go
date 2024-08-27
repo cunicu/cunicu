@@ -82,8 +82,6 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolin
 
 	rcvFns := []wgconn.ReceiveFunc{}
 	for _, conn := range b.Conns {
-		conn := conn
-
 		rcvFn := func(packets [][]byte, sizes []int, eps []wgconn.Endpoint) (int, error) {
 			if len(packets) != 1 {
 				panic("batch size not 1?")

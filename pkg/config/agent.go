@@ -107,8 +107,8 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 	cfg := &ice.AgentConfig{
 		InsecureSkipVerify: c.ICE.InsecureSkipVerify,
 		Lite:               c.ICE.Lite,
-		PortMin:            uint16(c.ICE.PortRange.Min),
-		PortMax:            uint16(c.ICE.PortRange.Max),
+		PortMin:            uint16(c.ICE.PortRange.Min), //nolint:gosec
+		PortMax:            uint16(c.ICE.PortRange.Max), //nolint:gosec
 		CandidateTypes:     c.ICE.CandidateTypes,
 		NetworkTypes:       c.ICE.NetworkTypes,
 	}
@@ -153,7 +153,7 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 		cfg.NAT1To1IPs = c.ICE.NAT1to1IPs
 	}
 
-	if mbr := uint16(c.ICE.MaxBindingRequests); mbr > 0 {
+	if mbr := uint16(c.ICE.MaxBindingRequests); mbr > 0 { //nolint:gosec
 		cfg.MaxBindingRequests = &mbr
 	}
 
