@@ -639,7 +639,7 @@ func (e *encoder) padded(width int, cb func()) int {
 func (e *encoder) aligned(w *atomic.Int32, cb func()) {
 	width := w.Load()
 	newWidth := e.padded(int(width), cb)
-	w.CompareAndSwap(width, int32(newWidth))
+	w.CompareAndSwap(width, int32(newWidth)) //nolint:gosec
 }
 
 func (e *encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) { //nolint:gocognit

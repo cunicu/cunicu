@@ -24,7 +24,7 @@ func Prefix(i net.IPNet) *IPPrefix {
 
 	return &IPPrefix{
 		Addr:   i.IP,
-		Pfxlen: uint32(ones),
+		Pfxlen: uint32(ones), //nolint:gosec
 	}
 }
 

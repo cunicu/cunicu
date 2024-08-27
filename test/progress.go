@@ -91,7 +91,7 @@ type DefaultProgressHandler struct {
 
 func (ph *DefaultProgressHandler) OnProgress(cntStarted, cntCompleted, cntFailed uint, durElapsed, durRemaining time.Duration, idsMissing []string) {
 	fields := []zap.Field{
-		zap.Int("percentage", int(100*cntCompleted/cntStarted)),
+		zap.Int("percentage", int(100*cntCompleted/cntStarted)), //nolint:gosec
 		zap.Uint("started", cntStarted),
 		zap.Uint("completed", cntCompleted),
 		zap.Uint("failed", cntFailed),

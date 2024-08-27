@@ -232,7 +232,7 @@ func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetComp
 
 	return &rpcproto.GetCompletionResp{
 		Options: options,
-		Flags:   int32(flags),
+		Flags:   int32(flags), //nolint:gosec
 	}, nil
 }
 

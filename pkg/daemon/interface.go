@@ -138,11 +138,11 @@ func (i *Interface) Marshal() *coreproto.Interface {
 func (i *Interface) MarshalWithPeers(cb func(p *Peer) *coreproto.Peer) *coreproto.Interface {
 	q := &coreproto.Interface{
 		Name:         i.Name(),
-		Type:         coreproto.InterfaceType(i.Interface.Type),
-		ListenPort:   uint32(i.ListenPort),
-		FirewallMark: uint32(i.FirewallMark),
-		Mtu:          uint32(i.MTU()),
-		Ifindex:      uint32(i.Index()),
+		Type:         coreproto.InterfaceType(i.Interface.Type), //nolint:gosec
+		ListenPort:   uint32(i.ListenPort),                      //nolint:gosec
+		FirewallMark: uint32(i.FirewallMark),                    //nolint:gosec
+		Mtu:          uint32(i.MTU()),                           //nolint:gosec
+		Ifindex:      uint32(i.Index()),                         //nolint:gosec
 	}
 
 	if cb == nil {

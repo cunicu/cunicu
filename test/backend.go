@@ -76,7 +76,7 @@ func (h *msgHandler) Check(p, o *peer) error {
 		return fmt.Errorf("peer %d received no messages from peer %d", p.id, o.id)
 	default:
 		msg := msgs2[0]
-		if msg.Candidate.Port != int32(o.id) {
+		if msg.Candidate.Port != int32(o.id) { //nolint:gosec
 			return fmt.Errorf("received invalid msg: epoch == %d != %d", msg.Candidate.Port, o.id)
 		}
 
@@ -100,7 +100,7 @@ func (p *peer) publish(o *peer) error {
 		Candidate: &epdiscproto.Candidate{
 			// We use the epoch to transport the id of the sending peer which gets checked on the receiving side
 			// This should allow us to check against any mixed up message deliveries
-			Port: int32(p.id),
+			Port: int32(p.id), //nolint:gosec
 		},
 	}
 

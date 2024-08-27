@@ -35,7 +35,7 @@ func (s *Server) OnInterfaceModified(i *daemon.Interface, _ *wg.Interface, mod d
 		Interface: i.Name(),
 		Event: &rpcproto.Event_InterfaceModified{
 			InterfaceModified: &rpcproto.InterfaceModifiedEvent{
-				Modified: uint32(mod),
+				Modified: uint32(mod), //nolint:gosec
 			},
 		},
 	})

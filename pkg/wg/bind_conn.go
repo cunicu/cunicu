@@ -90,7 +90,7 @@ func (c *bindPacketConn) SetMark(mark uint32) error {
 
 func (c *bindPacketConn) ListenPort() (uint16, bool) {
 	if addr, ok := c.PacketConn.LocalAddr().(*net.UDPAddr); ok {
-		return uint16(addr.Port), true
+		return uint16(addr.Port), true //nolint:gosec
 	}
 
 	return 0, false

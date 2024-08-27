@@ -35,7 +35,7 @@ var (
 )
 
 func VerboseLevel(v int) Level {
-	return DebugLevel - Level(v)
+	return DebugLevel - Level(v) //nolint:gosec
 }
 
 func (l *Level) UnmarshalText(text []byte) error {
@@ -46,7 +46,7 @@ func (l *Level) UnmarshalText(text []byte) error {
 			v, _ = strconv.Atoi(vs)
 		}
 
-		*l = DebugLevel - Level(v)
+		*l = DebugLevel - Level(v) //nolint:gosec
 
 		return nil
 	}

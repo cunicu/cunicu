@@ -29,7 +29,7 @@ func SetMark(conn net.PacketConn, mark uint32) error {
 	}
 
 	if err = rawConn.Control(func(fd uintptr) {
-		operr = unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, fwmarkIoctl, int(mark))
+		operr = unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, fwmarkIoctl, int(mark)) //nolint:gosec
 	}); err == nil {
 		err = operr
 	}

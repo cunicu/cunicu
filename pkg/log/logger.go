@@ -17,7 +17,7 @@ func (l *Logger) Level() Level {
 }
 
 func (l *Logger) DebugV(verboseLevel int, message string, fields ...zap.Field) {
-	l.Log(zap.DebugLevel-zapcore.Level(verboseLevel), message, fields...)
+	l.Log(zap.DebugLevel-zapcore.Level(verboseLevel), message, fields...) //nolint:gosec
 }
 
 func (l *Logger) With(fields ...zap.Field) *Logger {

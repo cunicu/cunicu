@@ -47,7 +47,7 @@ func GenerateSignalingMessage() *signaling.Message {
 
 	return &signaling.Message{
 		Candidate: &epdiscproto.Candidate{
-			Port: int32(r.Int64()),
+			Port: int32(r.Int64()), //nolint:gosec
 		},
 	}
 }
@@ -79,8 +79,6 @@ func ParallelNew[T any](cnt int, ctor func(i int) (T, error)) ([]T, error) {
 
 	eg := errgroup.Group{}
 	for i := 1; i <= cnt; i++ {
-		i := i
-
 		eg.Go(func() error {
 			t, err := ctor(i)
 			if err != nil {

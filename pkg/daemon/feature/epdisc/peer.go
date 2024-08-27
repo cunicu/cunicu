@@ -156,17 +156,14 @@ func (p *Peer) Marshal() *epdiscproto.Peer {
 		}
 
 		for _, cps := range p.agent.GetCandidatePairsStats() {
-			cps := cps
 			q.CandidatePairStats = append(q.CandidatePairStats, epdiscproto.NewCandidatePairStats(&cps))
 		}
 
 		for _, cs := range p.agent.GetLocalCandidatesStats() {
-			cs := cs
 			q.LocalCandidateStats = append(q.LocalCandidateStats, epdiscproto.NewCandidateStats(&cs))
 		}
 
 		for _, cs := range p.agent.GetRemoteCandidatesStats() {
-			cs := cs
 			q.RemoteCandidateStats = append(q.RemoteCandidateStats, epdiscproto.NewCandidateStats(&cs))
 		}
 	}

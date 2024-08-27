@@ -158,8 +158,6 @@ func (d *Interface) Config() *Config {
 	}
 
 	for _, p := range d.Peers {
-		p := p
-
 		pcfg := wgtypes.PeerConfig{
 			PublicKey:  p.PublicKey,
 			Endpoint:   p.Endpoint,

@@ -204,8 +204,6 @@ func showInterfaceDetails(dev *wg.Interface, i int, mode, field string) error {
 			}
 
 			for _, peer := range dev.Peers {
-				peer := peer
-
 				if field == "peers" {
 					fmt.Printf("%s%s\n", prefix, peer.PublicKey)
 				} else {

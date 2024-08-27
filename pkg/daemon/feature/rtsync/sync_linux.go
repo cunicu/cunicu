@@ -171,8 +171,6 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	}
 
 	for _, aip := range p.AllowedIPs {
-		aip := aip
-
 		if netx.ContainsNet(&aip, ru.Dst) {
 			logger.DebugV(10, "Ignoring route as it is already covered by the current AllowedIPs",
 				zap.Any("allowed_ip", aip),
