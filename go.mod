@@ -3,7 +3,7 @@
 
 module cunicu.li/cunicu
 
-go 1.22.2
+go 1.22.5
 
 require (
 	dario.cat/mergo v1.0.1
@@ -21,7 +21,7 @@ require (
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.1.1
 	github.com/mdp/qrterminal/v3 v3.2.0
-	github.com/miekg/dns v1.1.61
+	github.com/miekg/dns v1.1.62
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v3 v3.0.16
 	github.com/pion/logging v0.2.2
@@ -47,7 +47,7 @@ require (
 	cunicu.li/gont/v2 v2.6.12 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.2.0 // test-only
-	github.com/onsi/ginkgo/v2 v2.20.0 // test-only
+	github.com/onsi/ginkgo/v2 v2.20.1 // test-only
 	github.com/onsi/gomega v1.34.1 // test-only
 )
 
