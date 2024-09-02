@@ -48,7 +48,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.2.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.20.1 // test-only
-	github.com/onsi/gomega v1.34.1 // test-only
+	github.com/onsi/gomega v1.34.2 // test-only
 )
 
 require (
@@ -62,7 +62,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-dap v0.10.0 // indirect
-	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
+	github.com/google/pprof v0.0.0-20240827171923-fa2c70bbbfe5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
