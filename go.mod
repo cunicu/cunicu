@@ -3,7 +3,9 @@
 
 module cunicu.li/cunicu
 
-go 1.22.5
+go 1.23.0
+
+toolchain go1.23.1
 
 require (
 	dario.cat/mergo v1.0.1
@@ -44,9 +46,9 @@ require (
 )
 
 require (
-	cunicu.li/gont/v2 v2.6.13 // test-only
+	cunicu.li/gont/v2 v2.6.17 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
-	github.com/gopacket/gopacket v1.2.0 // test-only
+	github.com/gopacket/gopacket v1.3.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.20.2 // test-only
 	github.com/onsi/gomega v1.34.2 // test-only
 )
@@ -85,9 +87,9 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
+	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e // indirect
 	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/term v0.24.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
