@@ -134,7 +134,7 @@ func (k Key) IPAddress(p net.IPNet) net.IPNet {
 	m := new(big.Int).SetBytes(n)
 	i := new(big.Int).SetBytes(b)
 
-	d.Rsh(d, uint(ones))
+	d.Rsh(d, uint(ones)) //nolint:gosec
 	i.And(i, m)
 	d.Or(d, i)
 
