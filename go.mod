@@ -3,7 +3,9 @@
 
 module cunicu.li/cunicu
 
-go 1.22.5
+go 1.23.0
+
+toolchain go1.23.1
 
 require (
 	dario.cat/mergo v1.0.1
@@ -46,7 +48,7 @@ require (
 require (
 	cunicu.li/gont/v2 v2.6.13 // test-only
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
-	github.com/gopacket/gopacket v1.2.0 // test-only
+	github.com/gopacket/gopacket v1.3.0 // test-only
 	github.com/onsi/ginkgo/v2 v2.20.2 // test-only
 	github.com/onsi/gomega v1.34.2 // test-only
 )
