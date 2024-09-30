@@ -29,7 +29,7 @@ require (
 	github.com/pion/ice/v4 v4.0.1
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
-	github.com/pion/stun/v2 v2.0.0
+	github.com/pion/stun/v3 v3.0.0
 	github.com/pion/stun/v3 v3.0.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
