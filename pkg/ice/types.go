@@ -6,7 +6,7 @@ package ice
 import (
 	"fmt"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 )
 
 func ParseCandidateType(s string) (ice.CandidateType, error) {

@@ -6,7 +6,7 @@ package net
 import (
 	"net"
 
-	"github.com/pion/stun/v2"
+	"github.com/pion/stun/v3"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/log"

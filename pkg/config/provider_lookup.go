@@ -16,7 +16,7 @@ import (
 	"github.com/knadh/koanf/maps"
 	"github.com/knadh/koanf/v2"
 	"github.com/miekg/dns"
-	"github.com/pion/stun/v2"
+	"github.com/pion/stun/v3"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 

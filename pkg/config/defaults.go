@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 
 	"cunicu.li/cunicu/pkg/log"
 	"cunicu.li/cunicu/pkg/wg"

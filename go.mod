@@ -25,11 +25,9 @@ require (
 	github.com/mdp/qrterminal/v3 v3.2.0
 	github.com/miekg/dns v1.1.62
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v3 v3.0.16
 	github.com/pion/ice/v4 v4.0.2
 	github.com/pion/logging v0.2.2
 	github.com/pion/randutil v0.1.0
-	github.com/pion/stun/v2 v2.0.0
 	github.com/pion/stun/v3 v3.0.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -77,11 +75,10 @@ require (
 	github.com/mdlayher/socket v0.5.0 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/pion/dtls/v2 v2.2.12 // indirect
+	github.com/pion/dtls/v3 v3.0.3 // indirect
 	github.com/pion/mdns/v2 v2.0.7 // indirect
-	github.com/pion/transport/v2 v2.2.4 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
-	github.com/pion/turn/v3 v3.0.3 // indirect
+	github.com/pion/turn/v4 v4.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.2 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect

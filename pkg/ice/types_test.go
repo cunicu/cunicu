@@ -4,7 +4,7 @@
 package ice_test
 
 import (
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 
 	icex "cunicu.li/cunicu/pkg/ice"
 

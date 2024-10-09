@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/knadh/koanf/providers/rawbytes"
-	"github.com/pion/stun/v2"
+	"github.com/pion/stun/v3"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

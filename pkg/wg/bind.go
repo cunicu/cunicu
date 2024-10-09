@@ -12,7 +12,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 	"go.uber.org/zap"
 	wgconn "golang.zx2c4.com/wireguard/conn"
 

@@ -9,7 +9,7 @@ import (
 	"net"
 	"path/filepath"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/config"
