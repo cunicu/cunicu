@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 
 	"cunicu.li/cunicu/pkg/proto"
 	"cunicu.li/cunicu/pkg/tty"
