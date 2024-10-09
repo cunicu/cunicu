@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/pion/ice/v3"
-	"github.com/pion/stun/v2"
+	"github.com/pion/ice/v4"
+	"github.com/pion/stun/v3"
 
 	icex "cunicu.li/cunicu/pkg/ice"
 )

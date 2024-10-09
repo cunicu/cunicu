@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/pion/ice/v3"
-	"github.com/pion/stun/v2"
+	"github.com/pion/ice/v4"
+	"github.com/pion/stun/v3"
 	"go.uber.org/zap"
 
 	"cunicu.li/cunicu/pkg/crypto"

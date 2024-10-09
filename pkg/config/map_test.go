@@ -6,7 +6,7 @@ package config_test
 import (
 	"time"
 
-	"github.com/pion/ice/v3"
+	"github.com/pion/ice/v4"
 
 	"cunicu.li/cunicu/pkg/config"
 
