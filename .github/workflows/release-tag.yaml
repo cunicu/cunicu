@@ -12,7 +12,7 @@ on:
 
 jobs:
   semver-tag:
-    uses: cunicu/.github/.github/workflows/release.yaml@v0.2.0
+    uses: cunicu/.github/.github/workflows/release.yaml@v0.3.0
     secrets:
       PAT: ${{ secrets.PAT }}
     permissions:
