@@ -13,4 +13,4 @@ on:
 
 jobs:
   reuse:
-    uses: cunicu/.github/.github/workflows/reuse.yaml@v0.2.0
+    uses: cunicu/.github/.github/workflows/reuse.yaml@v0.3.0

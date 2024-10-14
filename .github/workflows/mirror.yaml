@@ -9,6 +9,6 @@ on: [push, delete]
 
 jobs:
   mirror:
-    uses: cunicu/.github/.github/workflows/mirror.yaml@v0.2.0
+    uses: cunicu/.github/.github/workflows/mirror.yaml@v0.3.0
     secrets:
       CODEBERG_SSH_KEY: ${{ secrets.CODEBERG_SSH_KEY }}
