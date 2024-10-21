@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v64/github"
+	"github.com/google/go-github/v66/github"
 	"golang.org/x/mod/modfile"
 )
 
