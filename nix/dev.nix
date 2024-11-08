@@ -28,7 +28,7 @@ pkgs.mkShell {
       vendorHash = "sha256-6DznXSmQkb91GJZ2WMAIg558y+8a46KjRKfWRHsvus0=";
     })
 
-    # coturn
+    coturn
   ];
 
   inputsFrom = [ self'.packages.cunicu ];

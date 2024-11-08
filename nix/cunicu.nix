@@ -2,35 +2,65 @@
 # SPDX-License-Identifier: Apache-2.0
 {
   lib,
+  stdenv,
   src,
   buildGoModule,
+  installShellFiles,
+  protobuf,
+  protoc-gen-go,
+  protoc-gen-go-grpc,
 }:
 buildGoModule {
   pname = "cunicu";
-  version = "0.4.7";
+  version = "0.5.53";
   vendorHash = "sha256-XgBslgbTzvPYONRPmcNyzLVaJszmHyUHcLRI9fKxKbs=";
   inherit src;
+
+  nativeBuildInputs = [
+    installShellFiles
+    protobuf
+    protoc-gen-go
+    protoc-gen-go-grpc
+  ];
+
   CGO_ENABLED = 0;
+
+  vendorHash = "sha256-OiLVdEf6fcGHx0k0xC5sZwhnK0FiLgfdkz2zNgBbcgY=";
+
   # These packages contain networking dependent tests which fail in the sandbox
   excludedPackages = [
     "pkg/config"
     "pkg/selfupdate"
     "pkg/tty"
+    "scripts"
   ];
-  postBuild = ''
-    cunicu=$GOPATH/bin/cunicu
-    $cunicu docs --with-frontmatter
+
+  ldflags = [
+    "-X"
+    "cunicu.li/cunicu/pkg/buildinfo.Version=${version}"
+    "-X"
+    "cunicu.li/cunicu/pkg/buildinfo.BuiltBy=Nix"
+  ];
+
+  preBuild = ''
+    go generate ./...
   '';
-  postInstall = ''
-    install -d $out/usr/share/man/man1
-    install ./docs/usage/man/*.1 $out/usr/share/man/man1
-    install -D <($cunicu completion bash) $out/share/bash-completion/completions/cunicu
-    install -D <($cunicu completion fish) $out/share/fish/vendor_completions.d/cunicu.fish
-    install -D <($cunicu completion zsh) $out/share/zsh/vendor-completions/_cunicu
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    cunicu docs --with-frontmatter
+    installManpage ./docs/usage/man/*.1
+    installShellCompletion \
+      --bash <(cunicu completion bash) \
+      --zsh <(cunicu completion zsh) \
+      --fish <(cunicu completion fish)
   '';
-  meta = with lib; {
-    description = "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)";
+
+  meta = {
+    description = "Zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)";
     homepage = "https://cunicu.li";
-    license = licenses.asl20;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
+    maintainers = [ lib.maintainers.stv0g ];
+    mainProgram = "cunicu";
   };
 }
