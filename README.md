@@ -32,7 +32,7 @@ cunīcu's documentation can be found here: [cunicu.li/docs](https://cunicu.li/do
 
 ## Contact
 
-Please have a look at the contact page: https://cunicu.li/docs/contact
+Please have a look at the contact page: [cunicu.li/docs/contact](https://cunicu.li/docs/contact).
 
 ## License
 
