@@ -19,7 +19,7 @@ RUN go mod download
 COPY . .
 RUN make
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 COPY --from=builder /app/cunicu /
 
