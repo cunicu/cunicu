@@ -5,7 +5,7 @@ module cunicu.li/cunicu
 
 go 1.23.0
 
-toolchain go1.23.3
+toolchain go1.23.4
 
 require (
 	dario.cat/mergo v1.0.1
