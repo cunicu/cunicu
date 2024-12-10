@@ -10,11 +10,14 @@
   protoc-gen-go,
   protoc-gen-go-grpc,
 }:
+let
+  version = "0.5.53";
+in
 buildGoModule {
   pname = "cunicu";
-  version = "0.5.53";
+  inherit src version;
+
   vendorHash = "sha256-XgBslgbTzvPYONRPmcNyzLVaJszmHyUHcLRI9fKxKbs=";
-  inherit src;
 
   nativeBuildInputs = [
     installShellFiles
@@ -25,8 +28,6 @@ buildGoModule {
 
   CGO_ENABLED = 0;
 
-  vendorHash = "sha256-OiLVdEf6fcGHx0k0xC5sZwhnK0FiLgfdkz2zNgBbcgY=";
-
   # These packages contain networking dependent tests which fail in the sandbox
   excludedPackages = [
     "pkg/config"
@@ -36,10 +37,8 @@ buildGoModule {
   ];
 
   ldflags = [
-    "-X"
-    "cunicu.li/cunicu/pkg/buildinfo.Version=${version}"
-    "-X"
-    "cunicu.li/cunicu/pkg/buildinfo.BuiltBy=Nix"
+    "-X cunicu.li/cunicu/pkg/buildinfo.Version=${version}"
+    "-X cunicu.li/cunicu/pkg/buildinfo.BuiltBy=Nix"
   ];
 
   preBuild = ''
@@ -47,12 +46,12 @@ buildGoModule {
   '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    cunicu docs --with-frontmatter
-    installManpage ./docs/usage/man/*.1
-    installShellCompletion \
-      --bash <(cunicu completion bash) \
-      --zsh <(cunicu completion zsh) \
-      --fish <(cunicu completion fish)
+    $out/bin/cunicu docs --with-frontmatter
+    installManPage ./docs/usage/man/*.1
+    installShellCompletion --cmd cunicu \
+      --bash <($out/bin/cunicu completion bash) \
+      --zsh <($out/bin/cunicu completion zsh) \
+      --fish <($out/bin/cunicu completion fish)
   '';
 
   meta = {
