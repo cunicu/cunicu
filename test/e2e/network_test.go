@@ -32,7 +32,7 @@ type Network struct {
 
 	Name string
 
-	NetworkOptions            []g.NetworkOption
+	NetworkOptions            []g.Option
 	AgentOptions              []g.Option
 	WireGuardInterfaceOptions []g.Option
 

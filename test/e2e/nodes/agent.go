@@ -213,7 +213,7 @@ func (a *Agent) ConfigureWireGuardInterfaces() error {
 func (a *Agent) Shadowed(path string) string {
 	for _, ed := range a.EmptyDirs {
 		if strings.HasPrefix(path, ed) {
-			return filepath.Join(a.BasePath, "files", path)
+			return filepath.Join(a.VarPath, "files", path)
 		}
 	}
 

@@ -5,6 +5,7 @@ package e2e_test
 
 import (
 	"fmt"
+	"slices"
 
 	g "cunicu.li/gont/v2/pkg"
 	gopt "cunicu.li/gont/v2/pkg/options"
@@ -105,17 +106,17 @@ var _ = Context("simple: Simple local-area switched topology with variable numbe
 
 		n.AgentNodes, err = test.ParallelNew(NumAgents, func(i int) (*nodes.Agent, error) {
 			return nodes.NewAgent(nw, fmt.Sprintf("n%d", i),
-				gopt.Customize[g.Option](n.AgentOptions,
+				slices.Concat(n.AgentOptions, []g.Option{
 					g.NewInterface("eth0", sw1,
 						gopt.AddressIP("10.0.1.%d/16", i),
 						gopt.AddressIP("fc::1:%d/64", i),
 					),
 					wopt.Interface("wg0",
-						gopt.Customize[g.Option](n.WireGuardInterfaceOptions,
+						slices.Concat(n.WireGuardInterfaceOptions, []g.Option{
 							wopt.AddressIP("172.16.0.%d/16", i),
-						)...,
+						})...,
 					),
-				)...,
+				})...,
 			)
 		})
 		Expect(err).To(Succeed(), "Failed to create agent nodes: %s", err)

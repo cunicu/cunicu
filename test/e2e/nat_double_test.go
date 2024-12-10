@@ -5,6 +5,7 @@ package e2e_test
 
 import (
 	"fmt"
+	"slices"
 
 	g "cunicu.li/gont/v2/pkg"
 	gopt "cunicu.li/gont/v2/pkg/options"
@@ -90,7 +91,7 @@ var _ = Context("nat double: Carrier Grade NAT setup with two relays and a singl
 			)
 		}
 
-		opts := gopt.Customize[g.Option](n.AgentOptions,
+		opts := slices.Concat(n.AgentOptions, []g.Option{
 			g.NewInterface("eth0", ifOpts...),
 			wopt.Interface("wg0",
 				wopt.AddressIP("172.16.0.%d/16", i),
@@ -100,7 +101,7 @@ var _ = Context("nat double: Carrier Grade NAT setup with two relays and a singl
 			// Hence we limit ourself to IPv6 here.
 			// See: https://github.com/cunicu/cunicu/issues/224
 			opt.ConfigValue("ice.network_types", []string{"udp6", "tcp6"}),
-		)
+		})
 
 		switch {
 		case i <= 3: // lan1, lan2

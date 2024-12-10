@@ -60,7 +60,6 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-delve/delve v1.23.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
-	github.com/go-ping/ping v1.1.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -98,7 +97,6 @@ require (
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.73 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
