@@ -185,7 +185,7 @@ func (n *Network) Init() {
 	cwd, err := os.Getwd()
 	Expect(err).To(Succeed())
 
-	n.Name = fmt.Sprintf("cunicu-%d", rand.Uint32()) //nolint:gosec
+	n.Name = fmt.Sprintf("cunicu_%d", rand.Uint32()) //nolint:gosec
 	n.BasePath = filepath.Join(SpecName()...)
 	n.BasePath = filepath.Join(cwd, "logs", n.BasePath)
 
