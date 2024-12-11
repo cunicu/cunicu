@@ -17,7 +17,7 @@ permissions:
 jobs:
   goreleaser:
     environment: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
 
