@@ -30,7 +30,7 @@ func (bi *BuildInfo) ToString() string {
 		fmt.Sprintf("arch=%s", bi.Arch),
 	}
 
-	if bi.Commit != "" {
+	if len(bi.Commit) >= 8 {
 		attrs = append(attrs, fmt.Sprintf("commit=%s", bi.Commit[:8]))
 	}
 
