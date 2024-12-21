@@ -23,6 +23,8 @@ buildGoModule {
     protoc-gen-go-grpc
   ];
 
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   CGO_ENABLED = 0;
 
   vendorHash = "sha256-OiLVdEf6fcGHx0k0xC5sZwhnK0FiLgfdkz2zNgBbcgY=";
