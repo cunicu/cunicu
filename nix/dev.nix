@@ -14,6 +14,7 @@ pkgs.mkShell {
     golangci-lint
     protoc-gen-go
     protoc-gen-go-grpc
+    evans
 
     (buildGoModule {
       name = "gocov-merger";
