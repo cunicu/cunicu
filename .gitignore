@@ -15,3 +15,5 @@ ginkgo.report
 lcov.info
 test/e2e/logs/
 dist/
+result
+.nixos-test-history
