@@ -73,7 +73,7 @@ func (d *digest) BlockSize() int { return BlockSize }
 
 func (d *digest) Write(p []byte) (nn int, err error) {
 	nn = len(p)
-	d.t += uint8(nn)
+	d.t += uint8(nn) //nolint:gosec
 	if d.nx > 0 {
 		n := len(p)
 		if n > BlockSize-d.nx {
