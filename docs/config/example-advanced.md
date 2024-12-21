@@ -7,7 +7,7 @@ sidebar_position: 3
 # Advanced Example
 
 :::info
-Please also have a look at the [JSON Schema](./schema.md) for a full reference of available options/
+Please also have a look at the [JSON Schema](./schema.md) for a full reference of available options.
 :::
 
 The following file contains a full-featured set of cunīcu's options.
