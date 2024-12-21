@@ -12,7 +12,7 @@ import (
 	"math/big"
 	"net"
 
-	"github.com/dchest/siphash"
+	"cunicu.li/cunicu/pkg/crypto/siphash"
 	"golang.org/x/crypto/argon2"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
