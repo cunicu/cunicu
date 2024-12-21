@@ -12,6 +12,7 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"cunicu.li/cunicu/pkg/daemon"
 	"cunicu.li/cunicu/pkg/log"
@@ -43,6 +44,8 @@ func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 	s.waitGroup.Add(1)
 
 	s.grpc = grpc.NewServer(grpc.UnaryInterceptor(s.unaryInterceptor))
+
+	reflection.Register(s.grpc)
 
 	// Register services
 	s.daemon = NewDaemonServer(s, d)

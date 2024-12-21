@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 
 	"cunicu.li/cunicu/pkg/buildinfo"
 	"cunicu.li/cunicu/pkg/crypto"
@@ -45,6 +46,7 @@ func NewSignalingServer(opts ...grpc.ServerOption) *Server {
 		logger: logger,
 	}
 
+	reflection.Register(s)
 	signalingproto.RegisterSignalingServer(s, s)
 
 	return s
