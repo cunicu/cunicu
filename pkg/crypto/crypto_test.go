@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"cunicu.li/cunicu/pkg/crypto"
+	"cunicu.li/cunicu/pkg/tty"
 	"cunicu.li/cunicu/test"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -19,11 +20,20 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "Crypto Suite")
 }
 
-var _ = Describe("nonce", func() {
-	It("can generate a valid nonce", func() {
+var _ = Describe("generate", func() {
+	It("nonce", func() {
 		nonce, err := crypto.GetNonce(100)
 		Expect(err).To(Succeed())
 		Expect(nonce).To(HaveLen(100))
 		Expect([]byte(nonce)).To(test.BeRandom())
+	})
+
+	It("random string", func() {
+		for i := 0; i < 10000; i++ {
+			s, err := crypto.GetRandomString(10, tty.RunesAlpha)
+			Expect(err).To(Succeed())
+			Expect(s).To(HaveLen(10))
+			Expect(s).To(MatchRegexp(`^[a-zA-Z]+$`), "Generator returned unexpected character")
+		}
 	})
 })
