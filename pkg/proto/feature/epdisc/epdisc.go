@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/pion/ice/v4"
-	"github.com/pion/randutil"
 
+	"cunicu.li/cunicu/pkg/crypto"
 	"cunicu.li/cunicu/pkg/log"
 	"cunicu.li/cunicu/pkg/tty"
 )
@@ -43,12 +43,12 @@ func NewConnectionState(cs ice.ConnectionState) ConnectionState {
 }
 
 func NewCredentials() *Credentials {
-	ufrag, err := randutil.GenerateCryptoRandomString(lenUFrag, tty.RunesAlpha)
+	ufrag, err := crypto.GetRandomString(lenUFrag, tty.RunesAlpha)
 	if err != nil {
 		panic(err)
 	}
 
-	pwd, err := randutil.GenerateCryptoRandomString(lenPwd, tty.RunesAlpha)
+	pwd, err := crypto.GetRandomString(lenPwd, tty.RunesAlpha)
 	if err != nil {
 		panic(err)
 	}

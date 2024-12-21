@@ -27,7 +27,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v4 v4.0.3
 	github.com/pion/logging v0.2.2
-	github.com/pion/randutil v0.1.0
 	github.com/pion/stun/v3 v3.0.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -77,6 +76,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pion/dtls/v3 v3.0.4 // indirect
 	github.com/pion/mdns/v2 v2.0.7 // indirect
+	github.com/pion/randutil v0.1.0 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pion/turn/v4 v4.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
