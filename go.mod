@@ -11,7 +11,6 @@ require (
 	dario.cat/mergo v1.0.1
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cilium/ebpf v0.16.0
-	github.com/dchest/siphash v1.2.3
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.2.0
 	github.com/knadh/koanf/maps v0.1.1
