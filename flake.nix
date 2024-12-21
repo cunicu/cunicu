@@ -14,11 +14,23 @@
       flake-parts,
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      flake = {
+        nixosModules = rec {
+          default = cunicu;
+          cunicu = import ./nix/module.nix;
+        };
+
+        overlays = {
+          default = final: prev: { cunicu = import ./nix/default.nix { pkgs = final; }; };
+        };
+      };
+
       systems = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
+
       perSystem =
         {
           pkgs,
@@ -27,14 +39,19 @@
           ...
         }:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ self.overlays.default ];
+          };
         in
         {
           formatter = pkgs.nixfmt-rfc-style;
+
           devShells.default = import ./nix/dev.nix { inherit pkgs self'; };
+
           packages = {
             cunicu = import ./nix/default.nix { inherit pkgs; };
-            packages.default = self'.packages.cunicu;
+            default = self'.packages.cunicu;
           };
         };
     };
