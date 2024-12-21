@@ -13,6 +13,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"cunicu.li/cunicu/pkg/crypto"
@@ -117,6 +118,7 @@ func NewRelayAPIServer(relays []RelayInfo, opts ...grpc.ServerOption) (*RelayAPI
 		logger: log.Global.Named("grpc.relay"),
 	}
 
+	reflection.Register(s)
 	signalingproto.RegisterRelayRegistryServer(s, s)
 
 	return s, nil
