@@ -43,11 +43,11 @@ The command expects a list of STUN or TURN URLs according to RFC7065/RFC7064 wit
 - Static TURN credentials can be provided by the URIs user info
   - Example: turn:user1:pass1@server.com
 `,
-		Example: `relay turn:server.com?secret=rest-api-secret&ttl=1h`,
+		Example: `$ cunicu relay turn:server.com?secret=rest-api-secret&ttl=1h`,
 		Run: func(cmd *cobra.Command, args []string) {
 			relay(cmd, args, opts)
 		},
-		Args: cobra.NoArgs,
+		Args: cobra.MinimumNArgs(1),
 	}
 
 	pf := cmd.PersistentFlags()
