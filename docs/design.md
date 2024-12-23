@@ -1,6 +1,6 @@
 ---
 sidebar_position: 20
-# SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 ---
 
