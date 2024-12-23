@@ -104,7 +104,7 @@ $defs:
             description: |
               Path to a Unix socket for management and monitoring of the cunīcu daemon.
             type: string
-            default: /var/run/cunicu.sock
+            default: /run/cunicu.sock
 
           wait:
             description: |
