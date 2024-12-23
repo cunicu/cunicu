@@ -12,12 +12,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	"github.com/pion/ice/v4"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"cunicu.li/cunicu/pkg/backoff"
 	"cunicu.li/cunicu/pkg/crypto"
 	"cunicu.li/cunicu/pkg/daemon"
 	"cunicu.li/cunicu/pkg/log"
@@ -32,7 +32,6 @@ import (
 var (
 	errCreateNonClosedAgent             = errors.New("failed to create new agent if previous one is not closed")
 	errSwitchToIdle                     = errors.New("failed to switch to idle state")
-	errStillIdle                        = errors.New("not connected yet")
 	errClosing                          = errors.New("already closing")
 	errInvalidConnectionStateForRestart = errors.New("can not restart agent while in state")
 )
@@ -295,20 +294,19 @@ func (p *Peer) sendCandidate(c ice.Candidate) error {
 }
 
 func (p *Peer) createAgentWithBackoff() {
-	bo := backoff.NewExponentialBackOff()
-	bo.MaxInterval = 1 * time.Minute
+	bo := &backoff.ExponentialBackOff{
+		InitialInterval:     500 * time.Millisecond,
+		RandomizationFactor: 0.5,
+		Multiplier:          1.5,
+		MaxInterval:         1 * time.Minute,
+	}
 
-	if err := backoff.RetryNotify(
-		func() error {
-			return p.createAgent()
-		}, bo,
-		func(err error, d time.Duration) {
+	for _, d := range backoff.Retry(bo) {
+		if err := p.createAgent(); err != nil {
 			p.logger.Error("Failed to create agent",
 				zap.Error(err),
 				zap.Duration("after", d))
-		},
-	); err != nil {
-		p.logger.Error("Failed to create agent", zap.Error(err))
+		}
 	}
 }
 
@@ -376,41 +374,34 @@ func (p *Peer) createAgent() error {
 }
 
 func (p *Peer) sendCredentialsWhileIdleWithBackoff(need bool) {
-	bo := backoff.NewExponentialBackOff()
-	bo.MaxInterval = 1 * time.Minute
+	bo := &backoff.ExponentialBackOff{
+		InitialInterval:     500 * time.Millisecond,
+		RandomizationFactor: 0.5,
+		Multiplier:          1.5,
+		MaxInterval:         1 * time.Minute,
+	}
 
-	if err := backoff.RetryNotify(
-		func() error {
-			if p.connectionState.Load() != ConnectionStateIdle {
-				// We are not idling any more.
-				// No need to send credentials
-				return nil
-			}
+	for _, d := range backoff.Retry(bo) {
+		if p.connectionState.Load() != ConnectionStateIdle {
+			// We are not idling any more.
+			// No need to send credentials
+			break
+		}
 
-			if err := p.sendCredentials(need); err != nil {
-				if errors.Is(err, signaling.ErrClosed) {
-					// Do not retry when the signaling backend has been closed
-					return nil
-				}
-
-				return err
-			}
-
-			return errStillIdle
-		}, bo,
-		func(err error, d time.Duration) {
-			if errors.Is(err, errStillIdle) {
-				p.logger.Debug("Sending peer credentials while waiting for remote peer",
-					zap.Error(err),
-					zap.Duration("after", d))
+		if err := p.sendCredentials(need); err != nil {
+			if errors.Is(err, signaling.ErrClosed) {
+				// Do not retry when the signaling backend has been closed
+				break
 			} else if sts := status.Code(err); sts != codes.Canceled {
 				p.logger.Error("Failed to send peer credentials",
 					zap.Error(err),
 					zap.Duration("after", d))
+				continue
 			}
-		},
-	); err != nil {
-		p.logger.Error("Failed to send credentials", zap.Error(err))
+		}
+
+		p.logger.Debug("Sending peer credentials while waiting for remote peer",
+			zap.Duration("after", d))
 	}
 }
 
