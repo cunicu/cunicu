@@ -4,9 +4,9 @@ Upstream-Contact: Steffen Vogel <post@steffenvogel.de>
 Source: https://cunicu.li
 
 Files: website/static/CNAME pkg/selfupdate/keys/09BE3BAE8D55D4CD8579285A9675EAC34897E6E2.gpg
-Copyright: 2023 Steffen Vogel <post@steffenvogel.de>
+Copyright: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 License: CC0-1.0
 
 Files: go.sum scripts/go.sum website/package.json website/yarn.lock nix/flake.lock docs/usage/** .renovaterc.json *.drawio *.svg flake.lock
-Copyright: 2023 Steffen Vogel <post@steffenvogel.de>
+Copyright: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 License: Apache-2.0
