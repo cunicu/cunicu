@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+version = 1
+SPDX-PackageName = "cunicu"
+SPDX-PackageSupplier = "Steffen Vogel <post@steffenvogel.de>"
+SPDX-PackageDownloadLocation = "https://cunicu.li"
+
+[[annotations]]
+path = ["website/static/CNAME", "pkg/selfupdate/keys/09BE3BAE8D55D4CD8579285A9675EAC34897E6E2.gpg"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Steffen Vogel <post@steffenvogel.de>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["go.sum", "scripts/go.sum", "website/package.json", "website/yarn.lock", "nix/flake.lock", "docs/usage/**", ".renovaterc.json", "**.drawio", "**.svg", "flake.lock"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Steffen Vogel <post@steffenvogel.de>"
+SPDX-License-Identifier = "Apache-2.0"
