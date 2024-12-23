@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
 // Package rtsync synchronizes the kernel routing table with the AllowedIPs of each WireGuard peer

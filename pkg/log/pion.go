@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2023 Atsushi Watanabe <atsushi.w@ieee.org>
-// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: MIT
 
 package log

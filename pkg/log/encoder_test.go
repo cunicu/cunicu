@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-FileCopyrightText: 2019 Matthew Sykes
 // SPDX-FileCopyrightText: 2017 Jonathan Sternberg
 // SPDX-License-Identifier: MIT

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
 // Package watcher keeps track and monitors for new, removed and modified WireGuard interfaces and peers.

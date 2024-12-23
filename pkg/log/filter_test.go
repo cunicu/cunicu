@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-FileCopyrightText: 2020 Manfred Touron <https://manfred.life>
 // SPDX-License-Identifier: Apache-2.0
 
