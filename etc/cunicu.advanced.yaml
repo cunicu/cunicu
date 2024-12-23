@@ -21,7 +21,7 @@ backends:
 rpc:
   # Path to a Unix socket for management
   # and monitoring of the cunicu daemon.
-  socket: /var/run/cunicu.sock
+  socket: /run/cunicu.sock
 
   # Start of cunīcu daemon will block until
   # its unblocked via the control socket.

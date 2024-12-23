@@ -96,7 +96,7 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 func (a *Agent) Start(_, dir string, args ...any) (err error) {
 	cfgPath := fmt.Sprintf("%s/%s.yaml", dir, a.Name())
 	logPath := fmt.Sprintf("%s/%s.log", dir, a.Name())
-	rpcPath := fmt.Sprintf("/var/run/cunicu.%s.sock", a.Name())
+	rpcPath := fmt.Sprintf("/run/cunicu.%s.sock", a.Name())
 
 	// Create agent configuration
 	cfg := a.Config.Copy()

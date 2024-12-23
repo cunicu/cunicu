@@ -18,8 +18,6 @@ import (
 )
 
 const (
-	DefaultSocketPath = "/var/run/cunicu.sock"
-
 	// Ephemeral Port Range (RFC6056 Sect. 2.1)
 	EphemeralPortMin = (1 << 15) + (1 << 14)
 	EphemeralPortMax = (1 << 16) - 1

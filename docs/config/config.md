@@ -41,7 +41,7 @@ Please have a look at the [`cunicu config`](../usage/md/cunicu_config.md) comman
 
 Currently, not all settings are runtime tunable.
 
-Changed settings via the `cunicu config set` command are persisted in a runtime configuration file at `/var/lib/cunicu.runtime.yaml`.
+Changed settings via the `cunicu config set` command are persisted in a runtime configuration file at `/var/lib/cunicu/runtime.yaml`.
 So runtime changes will also be taken into account for subsequent starts of the daemon.
 
 ## DNS Auto-configuration
