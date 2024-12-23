@@ -10,6 +10,7 @@ toolchain go1.23.4
 require (
 	dario.cat/mergo v1.0.1
 	github.com/cenkalti/backoff/v4 v4.3.0
+	github.com/cenkalti/backoff/v5 v5.0.0
 	github.com/cilium/ebpf v0.17.1
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.2.0
