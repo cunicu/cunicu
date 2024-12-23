@@ -4,7 +4,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"net"
 	"os"
@@ -15,13 +14,11 @@ import (
 
 	"cunicu.li/cunicu/pkg/crypto"
 	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
-	"cunicu.li/cunicu/pkg/tty"
 	"cunicu.li/cunicu/pkg/wg"
 )
 
 type inviteOptions struct {
 	listenPort int
-	qrCode     bool
 }
 
 func init() { //nolint:gochecknoinits
@@ -41,7 +38,6 @@ func init() { //nolint:gochecknoinits
 	pf := cmd.PersistentFlags()
 
 	pf.IntVarP(&opts.listenPort, "listen-port", "L", wg.DefaultPort, "Listen port for generated config")
-	pf.BoolVarP(&opts.qrCode, "qr-code", "Q", false, "Show config as QR code in terminal")
 }
 
 func invite(_ *cobra.Command, args []string, opts *inviteOptions) {
@@ -84,17 +80,8 @@ func invite(_ *cobra.Command, args []string, opts *inviteOptions) {
 			cfg.PeerEndpoints = []string{addPeerResp.Invitation.Endpoint}
 		}
 
-		if opts.qrCode {
-			buf := &bytes.Buffer{}
-			if err := cfg.Dump(buf); err != nil {
-				logger.Fatal("Failed to dump config", zap.Error(err))
-			}
-
-			tty.QRCode(buf.String())
-		} else {
-			if err := cfg.Dump(os.Stdout); err != nil {
-				logger.Fatal("Failed to dump config", zap.Error(err))
-			}
+		if err := cfg.Dump(os.Stdout); err != nil {
+			logger.Fatal("Failed to dump config", zap.Error(err))
 		}
 	}
 }
