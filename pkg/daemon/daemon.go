@@ -89,7 +89,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	return d, nil
 }
 
-// Start starts the daemon and blocks until Stop() is called.
+// Start starts the daemon and blocks until Shutdown() is called.
 func (d *Daemon) Start() error {
 	if err := d.setState(StateInitializing); err != nil {
 		return fmt.Errorf("failed transition state: %w", err)
@@ -154,7 +154,7 @@ out:
 	return nil
 }
 
-// Stop stops the daemon
+// Shutdown stops the daemon.
 func (d *Daemon) Shutdown(restart bool) {
 	if d.stop == nil {
 		return
