@@ -24,6 +24,17 @@ var (
 	ErrFeatureDeactivated     = errors.New("feature deactivated")
 )
 
+type State string
+
+const (
+	StateStarted       = "started"
+	StateInitializing  = "initializing"
+	StateReady         = "ready"
+	StateReloading     = "reloading"
+	StateStopping      = "stoppping"
+	StateSynchronizing = "syncing"
+)
+
 type Daemon struct {
 	*Watcher
 
@@ -33,6 +44,7 @@ type Daemon struct {
 
 	devices []device.Device
 
+	state         State
 	stop          chan any
 	reexecOnClose bool
 
@@ -51,6 +63,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Config:  cfg,
 		devices: []device.Device{},
 		stop:    make(chan any),
+		state:   StateStarted,
 		logger:  log.Global.Named("daemon"),
 	}
 
@@ -76,6 +89,10 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 
 // Start starts the daemon and blocks until Stop() is called.
 func (d *Daemon) Start() error {
+	if err := d.setState(StateInitializing); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
 	if err := wg.CleanupUserSockets(); err != nil {
 		return fmt.Errorf("failed to cleanup stale user space sockets: %w", err)
 	}
@@ -91,6 +108,10 @@ func (d *Daemon) Start() error {
 	}
 
 	signals := osx.SetupSignals(osx.SigUpdate)
+
+	if err := d.setState(StateReady); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
 
 out:
 	for {
@@ -146,6 +167,10 @@ func (d *Daemon) Sync() error {
 }
 
 func (d *Daemon) Close() error {
+	if err := d.setState(StateStopping); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close watcher: %w", err)
 	}
@@ -222,6 +247,45 @@ func (d *Daemon) CreateDevices() error {
 		}
 
 		d.devices = append(d.devices, dev)
+	}
+
+	return nil
+}
+
+func (d *Daemon) setState(s State) error {
+	d.state = s
+
+	d.logger.DebugV(5, "Daemon state changed", zap.String("state", string(s)))
+
+	switch d.state {
+	case StateStarted:
+	case StateInitializing:
+	case StateSynchronizing:
+
+	case StateReady:
+		if err := d.notify(systemd.NotifyReady); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+
+	case StateReloading:
+		if err := d.notify(systemd.NotifyReloading); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+
+	case StateStopping:
+		if err := d.notify(systemd.NotifyStopping); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *Daemon) notify(notify string) error {
+	notifyMessages := []string{notify}
+
+	if _, err := systemd.Notify(false, strings.Join(notifyMessages, "\n")); err != nil {
+		return err
 	}
 
 	return nil
