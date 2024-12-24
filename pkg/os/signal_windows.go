@@ -11,4 +11,5 @@ import (
 
 const (
 	SigUpdate = syscall.Signal(-1) // not supported
+	SigReload = syscall.Signal(-2) // not supported
 )
