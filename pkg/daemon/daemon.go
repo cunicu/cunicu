@@ -15,6 +15,7 @@ import (
 	"cunicu.li/cunicu/pkg/device"
 	"cunicu.li/cunicu/pkg/log"
 	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/os/systemd"
 	"cunicu.li/cunicu/pkg/signaling"
 	"cunicu.li/cunicu/pkg/wg"
 )
@@ -109,6 +110,11 @@ func (d *Daemon) Start() error {
 
 	signals := osx.SetupSignals(osx.SigUpdate)
 
+	wdt, err := d.watchdogTicker()
+	if err != nil && !errors.Is(err, errNotSupported) {
+		return fmt.Errorf("failed to get watchdog interval: %w", err)
+	}
+
 	if err := d.setState(StateReady); err != nil {
 		return fmt.Errorf("failed transition state: %w", err)
 	}
@@ -126,6 +132,12 @@ out:
 			default:
 				break out
 			}
+
+		case <-wdt:
+			if err := d.notify(systemd.NotifyWatchdog); err != nil {
+				return fmt.Errorf("failed to notify systemd watchdog: %w", err)
+			}
+			d.logger.DebugV(20, "Watchdog tick")
 
 		case <-d.stop:
 			break out
@@ -250,6 +262,18 @@ func (d *Daemon) CreateDevices() error {
 	}
 
 	return nil
+}
+
+func (d *Daemon) watchdogTicker() (<-chan time.Time, error) {
+	wdInterval, err := systemd.WatchdogEnabled(true)
+	if err != nil {
+		return nil, err
+	} else if wdInterval == 0 {
+		d.logger.DebugV(5, "Not started via systemd. Disabling watchdog")
+		return nil, errNotSupported
+	}
+
+	return time.NewTicker(wdInterval / 2).C, nil
 }
 
 func (d *Daemon) setState(s State) error {
