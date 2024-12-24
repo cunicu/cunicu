@@ -11,4 +11,5 @@ import (
 
 const (
 	SigUpdate = unix.SIGUSR1
+	SigReload = unix.SIGHUP
 )

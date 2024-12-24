@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -108,7 +109,7 @@ func (d *Daemon) Start() error {
 		return fmt.Errorf("initial sync failed: %w", err)
 	}
 
-	signals := osx.SetupSignals(osx.SigUpdate)
+	signals := osx.SetupSignals(osx.SigUpdate, osx.SigReload)
 
 	wdt, err := d.watchdogTicker()
 	if err != nil && !errors.Is(err, errNotSupported) {
@@ -129,6 +130,12 @@ out:
 				if err := d.Sync(); err != nil {
 					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
 				}
+
+			case osx.SigReload:
+				if err := d.reload(); err != nil {
+					return err
+				}
+
 			default:
 				break out
 			}
@@ -275,6 +282,22 @@ func (d *Daemon) watchdogTicker() (<-chan time.Time, error) {
 	}
 }
 
+func (d *Daemon) reload() error {
+	if err := d.setState(StateReloading); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
+	if _, err := d.Config.ReloadAllSources(); err != nil {
+		d.logger.Error("Failed to reload config", zap.Error(err))
+	}
+
+	if err := d.setState(StateReady); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
+	return nil
+}
+
 func (d *Daemon) setState(s State) error {
 	d.state = s
 
@@ -306,6 +329,17 @@ func (d *Daemon) setState(s State) error {
 
 func (d *Daemon) notify(notify string) error {
 	notifyMessages := []string{notify}
+
+	if notify == systemd.NotifyReloading {
+		if now, err := osx.GetClockMonotonic(); err != nil {
+			return fmt.Errorf("failed to get monotonic clock: %w", err)
+		} else {
+			notifyMessages = append(notifyMessages,
+				fmt.Sprintf("MONOTONIC_USEC=%d", now.UnixMicro()))
+		}
+
+		d.logger.DebugV(5, "Notifying systemd", zap.Strings("message", notifyMessages))
+	}
 
 	if _, err := systemd.Notify(false, strings.Join(notifyMessages, "\n")); err != nil {
 		return err
