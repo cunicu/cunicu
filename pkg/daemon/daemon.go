@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"golang.zx2c4.com/wireguard/wgctrl"
@@ -15,6 +16,7 @@ import (
 	"cunicu.li/cunicu/pkg/device"
 	"cunicu.li/cunicu/pkg/log"
 	osx "cunicu.li/cunicu/pkg/os"
+	"cunicu.li/cunicu/pkg/os/systemd"
 	"cunicu.li/cunicu/pkg/signaling"
 	"cunicu.li/cunicu/pkg/wg"
 )
@@ -22,6 +24,17 @@ import (
 var (
 	errInsufficientPrivileges = errors.New("insufficient privileges. Please run cunicu with administrator privileges")
 	ErrFeatureDeactivated     = errors.New("feature deactivated")
+)
+
+type State string
+
+const (
+	StateStarted       = "started"
+	StateInitializing  = "initializing"
+	StateReady         = "ready"
+	StateReloading     = "reloading"
+	StateStopping      = "stoppping"
+	StateSynchronizing = "syncing"
 )
 
 type Daemon struct {
@@ -33,6 +46,7 @@ type Daemon struct {
 
 	devices []device.Device
 
+	state         State
 	stop          chan any
 	reexecOnClose bool
 
@@ -51,6 +65,7 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 		Config:  cfg,
 		devices: []device.Device{},
 		stop:    make(chan any),
+		state:   StateStarted,
 		logger:  log.Global.Named("daemon"),
 	}
 
@@ -74,8 +89,12 @@ func NewDaemon(cfg *config.Config) (*Daemon, error) {
 	return d, nil
 }
 
-// Start starts the daemon and blocks until Stop() is called.
+// Start starts the daemon and blocks until Shutdown() is called.
 func (d *Daemon) Start() error {
+	if err := d.setState(StateInitializing); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
 	if err := wg.CleanupUserSockets(); err != nil {
 		return fmt.Errorf("failed to cleanup stale user space sockets: %w", err)
 	}
@@ -90,7 +109,16 @@ func (d *Daemon) Start() error {
 		return fmt.Errorf("initial sync failed: %w", err)
 	}
 
-	signals := osx.SetupSignals(osx.SigUpdate)
+	signals := osx.SetupSignals(osx.SigUpdate, osx.SigReload)
+
+	wdt, err := d.watchdogTicker()
+	if err != nil && !errors.Is(err, errNotSupported) {
+		return fmt.Errorf("failed to get watchdog interval: %w", err)
+	}
+
+	if err := d.setState(StateReady); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
 
 out:
 	for {
@@ -102,9 +130,21 @@ out:
 				if err := d.Sync(); err != nil {
 					d.logger.Error("Failed to synchronize interfaces", zap.Error(err))
 				}
+
+			case osx.SigReload:
+				if err := d.reload(); err != nil {
+					return err
+				}
+
 			default:
 				break out
 			}
+
+		case <-wdt:
+			if err := d.notify(systemd.NotifyWatchdog); err != nil {
+				return fmt.Errorf("failed to notify systemd watchdog: %w", err)
+			}
+			d.logger.DebugV(20, "Watchdog tick")
 
 		case <-d.stop:
 			break out
@@ -114,7 +154,7 @@ out:
 	return nil
 }
 
-// Stop stops the daemon
+// Shutdown stops the daemon.
 func (d *Daemon) Shutdown(restart bool) {
 	if d.stop == nil {
 		return
@@ -146,6 +186,10 @@ func (d *Daemon) Sync() error {
 }
 
 func (d *Daemon) Close() error {
+	if err := d.setState(StateStopping); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
 	if err := d.Watcher.Close(); err != nil {
 		return fmt.Errorf("failed to close watcher: %w", err)
 	}
@@ -222,6 +266,83 @@ func (d *Daemon) CreateDevices() error {
 		}
 
 		d.devices = append(d.devices, dev)
+	}
+
+	return nil
+}
+
+func (d *Daemon) watchdogTicker() (<-chan time.Time, error) {
+	if wdInterval, err := systemd.WatchdogEnabled(true); err != nil {
+		return nil, err
+	} else if wdInterval == 0 {
+		d.logger.DebugV(5, "Not started via systemd. Disabling watchdog")
+		return nil, errNotSupported
+	} else {
+		return time.NewTicker(wdInterval / 2).C, nil
+	}
+}
+
+func (d *Daemon) reload() error {
+	if err := d.setState(StateReloading); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
+	if _, err := d.Config.ReloadAllSources(); err != nil {
+		d.logger.Error("Failed to reload config", zap.Error(err))
+	}
+
+	if err := d.setState(StateReady); err != nil {
+		return fmt.Errorf("failed transition state: %w", err)
+	}
+
+	return nil
+}
+
+func (d *Daemon) setState(s State) error {
+	d.state = s
+
+	d.logger.DebugV(5, "Daemon state changed", zap.String("state", string(s)))
+
+	switch d.state {
+	case StateStarted:
+	case StateInitializing:
+	case StateSynchronizing:
+
+	case StateReady:
+		if err := d.notify(systemd.NotifyReady); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+
+	case StateReloading:
+		if err := d.notify(systemd.NotifyReloading); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+
+	case StateStopping:
+		if err := d.notify(systemd.NotifyStopping); err != nil {
+			return fmt.Errorf("failed to notify systemd: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *Daemon) notify(notify string) error {
+	notifyMessages := []string{notify}
+
+	if notify == systemd.NotifyReloading {
+		if now, err := osx.GetClockMonotonic(); err != nil {
+			return fmt.Errorf("failed to get monotonic clock: %w", err)
+		} else {
+			notifyMessages = append(notifyMessages,
+				fmt.Sprintf("MONOTONIC_USEC=%d", now.UnixMicro()))
+		}
+
+		d.logger.DebugV(5, "Notifying systemd", zap.Strings("message", notifyMessages))
+	}
+
+	if _, err := systemd.Notify(false, strings.Join(notifyMessages, "\n")); err != nil {
+		return err
 	}
 
 	return nil

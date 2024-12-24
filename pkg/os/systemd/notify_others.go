@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
-package config
+//go:build !linux
 
-const DefaultSocketPath = "/run/cunicu.sock"
+package systemd
 
-var RuntimeConfigFile = "/var/lib/cunicu/runtime.yaml"
+func Notify(_ bool, _ string) (bool, error) {
+	return false, nil
+}
