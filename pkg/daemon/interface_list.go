@@ -7,7 +7,7 @@ import (
 	"cunicu.li/cunicu/pkg/crypto"
 )
 
-// InterfaceList stores all WireGuard interfaces indexed by their unique ifindex
+// InterfaceList stores all WireGuard interfaces indexed by their unique ifindex.
 type InterfaceList map[string]*Interface
 
 func (l *InterfaceList) ByIndex(index int) *Interface {

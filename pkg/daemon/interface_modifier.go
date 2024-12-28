@@ -32,7 +32,7 @@ var InterfaceModifiersStrings = []string{
 func (i InterfaceModifier) Strings() []string {
 	modifiers := []string{}
 
-	for j := 0; j < InterfaceModifierCount; j++ {
+	for j := range InterfaceModifierCount {
 		if i&(1<<j) != 0 {
 			modifiers = append(modifiers, InterfaceModifiersStrings[j])
 		}

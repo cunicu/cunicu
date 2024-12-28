@@ -17,6 +17,7 @@ import (
 
 func normalizeSocketName(name string) string {
 	name = filepath.Base(name)
+
 	return strings.TrimSuffix(name, ".sock")
 }
 

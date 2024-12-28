@@ -66,6 +66,7 @@ func NewRelayInfo(arg string) (RelayInfo, error) {
 
 func NewRelayInfos(args []string) ([]RelayInfo, error) {
 	relays := []RelayInfo{}
+
 	for _, arg := range args {
 		relay, err := NewRelayInfo(arg)
 		if err != nil {

@@ -67,33 +67,40 @@ func (f FilterFunc) Level() zapcore.Level {
 // ByNamespaces takes a list of patterns to filter out logs based on their namespaces.
 // Patterns are checked using path.Match.
 func ByNamespaces(input string) FilterFunc { //nolint:gocognit
+	var mutex sync.Mutex
+
 	if input == "" {
 		return AlwaysFalseFilter
 	}
+
 	patterns := strings.Split(input, ",")
 
 	// Edge case optimization (always true)
 	{
 		hasIncludeWildcard := false
 		hasExclude := false
+
 		for _, pattern := range patterns {
 			if pattern == "" {
 				continue
 			}
+
 			if pattern == "*" {
 				hasIncludeWildcard = true
 			}
+
 			if pattern[0] == '-' {
 				hasExclude = true
 			}
 		}
+
 		if hasIncludeWildcard && !hasExclude {
 			return AlwaysTrueFilter
 		}
 	}
 
-	var mutex sync.Mutex
 	matchMap := map[string]bool{}
+
 	return func(entry zapcore.Entry) bool {
 		mutex.Lock()
 		defer mutex.Unlock()
@@ -102,6 +109,7 @@ func ByNamespaces(input string) FilterFunc { //nolint:gocognit
 			matchMap[entry.LoggerName] = false
 			matchInclude := false
 			matchExclude := false
+
 			for _, pattern := range patterns {
 				switch {
 				case pattern[0] == '-' && !matchExclude:
@@ -114,8 +122,10 @@ func ByNamespaces(input string) FilterFunc { //nolint:gocognit
 					}
 				}
 			}
+
 			matchMap[entry.LoggerName] = matchInclude && !matchExclude
 		}
+
 		return matchMap[entry.LoggerName]
 	}
 }
@@ -127,10 +137,12 @@ func Any(filterFuncs ...FilterFunc) FilterFunc {
 			if filter == nil {
 				continue
 			}
+
 			if filter(entry) {
 				return true
 			}
 		}
+
 		return false
 	}
 }
@@ -146,15 +158,19 @@ func Reverse(filterFunc FilterFunc) FilterFunc {
 func All(filterFuncs ...FilterFunc) FilterFunc {
 	return func(entry zapcore.Entry) bool {
 		var atLeastOneSuccessful bool
+
 		for _, filter := range filterFuncs {
 			if filter == nil {
 				continue
 			}
+
 			if !filter(entry) {
 				return false
 			}
+
 			atLeastOneSuccessful = true
 		}
+
 		return atLeastOneSuccessful
 	}
 }
@@ -165,7 +181,7 @@ func All(filterFuncs ...FilterFunc) FilterFunc {
 //
 //	rules: slice of RULE
 func ParseRules(rules []string) (FilterFunc, error) {
-	var filterFuncs []FilterFunc
+	filterFuncs := make([]FilterFunc, 0, len(rules))
 
 	for _, rule := range rules {
 		rule = strings.TrimSpace(rule)
@@ -199,9 +215,11 @@ func ParseRules(rules []string) (FilterFunc, error) {
 //	 - *mat*ch*      // Should match
 //	 - -NAMESPACE    // Should not match
 func ParseRule(rule string) (FilterFunc, error) {
+	var left, right string
+
 	// Split rule into parts (separated by ':')
 	parts := strings.SplitN(rule, ":", 2)
-	var left, right string
+
 	switch len(parts) {
 	case 1:
 		left = parts[0] // If no separator, right matches everything
@@ -210,6 +228,7 @@ func ParseRule(rule string) (FilterFunc, error) {
 		if parts[0] == "" || parts[1] == "" {
 			return nil, ErrBadSyntax
 		}
+
 		left = parts[0]
 		right = parts[1]
 	default:
@@ -239,6 +258,7 @@ func ParseRule(rule string) (FilterFunc, error) {
 //	 - <SEVERITY for matching all levels with lower severity
 func ByLevels(pattern string) (FilterFunc, error) {
 	var enabled uint64
+
 	for _, part := range strings.Split(pattern, ",") {
 		if part == "" || part == "*" {
 			enabled |= math.MaxUint64

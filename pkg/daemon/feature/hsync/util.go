@@ -16,6 +16,7 @@ func isWritable(fn string) (bool, error) {
 		if errors.Is(err, os.ErrPermission) || errors.Is(err, os.ErrNotExist) {
 			return false, nil
 		}
+
 		return false, err
 	}
 

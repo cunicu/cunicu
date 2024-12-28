@@ -18,7 +18,7 @@ import (
 
 var _ BindConn = (*bindPacketConn)(nil)
 
-// bindPacketConn is a PacketConn
+// bindPacketConn is a PacketConn.
 type bindPacketConn struct {
 	net.PacketConn
 
@@ -102,6 +102,5 @@ func (c *bindPacketConn) BindClose() error {
 	// need to be recreated.
 	// Instead which just unblock the currently blocking receive
 	// functions by calling conn.SetReadDeadline()
-
 	return c.PacketConn.SetReadDeadline(time.Now())
 }

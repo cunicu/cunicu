@@ -48,10 +48,12 @@ func SelfUpdate(output string, logger *log.Logger) (*Release, error) {
 	fi, err := os.Lstat(output)
 	if err != nil {
 		dirname := filepath.Dir(output)
+
 		di, err := os.Lstat(dirname)
 		if err != nil {
 			return nil, fmt.Errorf("failed to stat: %w", err)
 		}
+
 		if !di.Mode().IsDir() {
 			return nil, errOutputIsNotDir
 		}
@@ -74,9 +76,11 @@ func SelfUpdate(output string, logger *log.Logger) (*Release, error) {
 	switch {
 	case rel.Version == curVersion:
 		logger.Info("Your cunicu version is up to date. Nothing to update.")
+
 		return rel, nil
 	case rel.Version < curVersion:
 		logger.Warn("You are running an unreleased version of cunicu. Nothing to update.")
+
 		return rel, nil
 	default:
 		logger.Info("Your cunicu version is outdated. Updating now!")
@@ -126,6 +130,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 	ext := filepath.Ext(filename)
 
 	var rd io.Reader = bytes.NewReader(buf)
+
 	switch ext {
 	case ".bz2":
 		rd = bzip2.NewReader(rd)
@@ -141,6 +146,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 	case ".tar":
 		trd := tar.NewReader(rd)
 		rd = nil
+
 		for {
 			if hdr, err := trd.Next(); err != nil {
 				if errors.Is(err, io.EOF) {
@@ -150,9 +156,11 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 				return -1, fmt.Errorf("failed to open tar archive: %w", err)
 			} else if hdr.Name == binaryFile {
 				rd = trd
+
 				break
 			}
 		}
+
 		if rd == nil {
 			return -1, fmt.Errorf("%w: %s", syscall.ENOENT, binaryFile)
 		}
@@ -192,6 +200,7 @@ func extractToFile(buf []byte, filename, target string) (int64, error) {
 	if err != nil {
 		_ = dest.Close()
 		_ = os.Remove(dest.Name())
+
 		return -1, fmt.Errorf("failed to copy: %w", err)
 	}
 

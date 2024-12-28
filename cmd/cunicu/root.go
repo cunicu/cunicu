@@ -153,6 +153,7 @@ func setupLogging(cfg *config.Config) error {
 	if cfg != nil && cfg.Log.Color != "" {
 		colorMode = cfg.Log.Color
 	}
+
 	switch colorMode {
 	case "auto":
 		color = tty.IsATTY(os.Stdout)
@@ -209,6 +210,7 @@ func setupLogging(cfg *config.Config) error {
 
 func main() {
 	var execute func() error
+
 	switch os.Args[0] {
 	case "wg":
 		execute = wgCmd.Execute

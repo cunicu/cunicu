@@ -21,6 +21,7 @@ func (pd *PeerDescription) Config() wgtypes.PeerConfig {
 	}
 
 	allowedIPs := []net.IPNet{}
+
 	for _, allowedIP := range pd.AllowedIps {
 		_, ipnet, err := net.ParseCIDR(allowedIP)
 		if err != nil {

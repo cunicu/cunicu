@@ -44,6 +44,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 
 	relAddr := ""
 	relPort := 0
+
 	if c.RelatedAddress != nil {
 		relAddr = c.RelatedAddress.Address
 		relPort = int(c.RelatedAddress.Port)
@@ -52,6 +53,7 @@ func (c *Candidate) ICECandidate() (ice.Candidate, error) {
 	nw := ice.NetworkType(c.NetworkType)
 
 	var ic ice.Candidate
+
 	switch c.Type {
 	case CandidateType_HOST:
 		ic, err = ice.NewCandidateHost(&ice.CandidateHostConfig{
@@ -181,6 +183,7 @@ func (cp *CandidatePair) ToString() string {
 
 func (c *Candidate) ToString() string {
 	var addr string
+
 	switch c.NetworkType {
 	case NetworkType_UDP6, NetworkType_TCP6:
 		addr = fmt.Sprintf("[%s]", c.Address)
@@ -204,6 +207,7 @@ func (c *Candidate) ToString() string {
 
 func (cs *CandidateStats) ToString() string {
 	var addr string
+
 	switch cs.NetworkType {
 	case NetworkType_UDP6, NetworkType_TCP6:
 		addr = fmt.Sprintf("[%s]", cs.Ip)

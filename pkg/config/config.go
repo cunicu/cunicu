@@ -120,8 +120,11 @@ func (c *Config) Init(args []string) (err error) {
 		return err
 	}
 
-	_, err = c.ReloadAllSources()
-	return err
+	if _, err = c.ReloadAllSources(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Config) AddProvider(provider koanf.Provider) error {
@@ -190,7 +193,7 @@ func (c *Config) InterfaceSettings(name string) (cfg *InterfaceSettings) {
 	return cfg
 }
 
-// InterfaceOrderByName returns a list of interface config sections which are used by a given interface
+// InterfaceOrderByName returns a list of interface config sections which are used by a given interface.
 func (c *Config) InterfaceOrderByName(name string) []string {
 	patterns := []string{}
 
@@ -214,12 +217,12 @@ func (c *Config) InterfaceFilter(name string) bool {
 	return false
 }
 
-// ReloadAllSources reloads all configuration sources
+// ReloadAllSources reloads all configuration sources.
 func (c *Config) ReloadAllSources() (map[string]types.Change, error) {
 	return c.reload(func(_ Source) bool { return true })
 }
 
-// ReloadSource reloads a specific configuration source or all of nil is passed
+// ReloadSource reloads a specific configuration source or all of nil is passed.
 func (c *Config) reload(filter func(s Source) bool) (map[string]types.Change, error) {
 	var err error
 
@@ -272,7 +275,7 @@ func (c *Config) reload(filter func(s Source) bool) (map[string]types.Change, er
 	return changes, nil
 }
 
-// DecoderConfig returns the mapstructure DecoderConfig which is used by cunicu
+// DecoderConfig returns the mapstructure DecoderConfig which is used by cunicu.
 func DecoderConfig(result any) *mapstructure.DecoderConfig {
 	return &mapstructure.DecoderConfig{
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(

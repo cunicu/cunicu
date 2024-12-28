@@ -142,6 +142,7 @@ func (i *Interface) ConfigureWireGuard() error {
 //	or the system default route, which is usually a sane choice.
 func (i *Interface) DetectMTU() (mtu int, err error) {
 	mtu = math.MaxInt
+
 	for _, p := range i.Peers {
 		if p.Endpoint != nil {
 			if pmtu, err := link.DetectMTU(p.Endpoint.IP, i.FirewallMark); err != nil {

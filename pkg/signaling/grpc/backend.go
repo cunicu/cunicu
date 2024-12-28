@@ -90,19 +90,21 @@ func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling
 		return false, err
 	} else if first {
 		pk := kp.Ours.PublicKey()
+
 		return first, b.subscribeFromServer(ctx, &pk)
 	}
 
 	return first, nil
 }
 
-// Unsubscribe from messages send by a specific peer
+// Unsubscribe from messages send by a specific peer.
 func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
 	last, err := b.SubscriptionsRegistry.Unsubscribe(kp, h)
 	if err != nil {
 		return false, err
 	} else if last {
 		pk := kp.Ours.PublicKey()
+
 		return last, b.unsubscribeFromServer(ctx, &pk)
 	}
 
@@ -179,6 +181,5 @@ func (b *Backend) subscribeFromServer(ctx context.Context, pk *crypto.Key) error
 
 func (b *Backend) unsubscribeFromServer(_ context.Context, _ *crypto.Key) error {
 	// TODO: Cancel subscription stream
-
 	return nil
 }

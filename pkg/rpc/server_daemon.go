@@ -92,6 +92,7 @@ func (s *DaemonServer) UnWait(_ context.Context, _ *proto.Empty) (*proto.Empty, 
 
 	s.waitOnce.Do(func() {
 		s.waitGroup.Done()
+
 		err = nil
 	})
 
@@ -117,8 +118,10 @@ func (s *DaemonServer) Sync(_ context.Context, _ *proto.Empty) (*proto.Empty, er
 }
 
 func (s *DaemonServer) GetStatus(_ context.Context, p *rpcproto.GetStatusParams) (*rpcproto.GetStatusResp, error) { //nolint:gocognit
-	var err error
-	var pk crypto.Key
+	var (
+		err error
+		pk  crypto.Key
+	)
 
 	if p.Peer != nil {
 		if pk, err = crypto.ParseKeyBytes(p.Peer); err != nil {
@@ -127,6 +130,7 @@ func (s *DaemonServer) GetStatus(_ context.Context, p *rpcproto.GetStatusParams)
 	}
 
 	qis := []*coreproto.Interface{}
+
 	if err := s.daemon.ForEachInterface(func(i *daemon.Interface) error {
 		epi := epdisc.Get(i)
 
@@ -217,8 +221,10 @@ func (s *DaemonServer) GetConfig(_ context.Context, p *rpcproto.GetConfigParams)
 }
 
 func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetCompletionParams) (*rpcproto.GetCompletionResp, error) {
-	var options []string
-	var flags cobra.ShellCompDirective
+	var (
+		options []string
+		flags   cobra.ShellCompDirective
+	)
 
 	switch {
 	case len(params.Cmd) < 2 || params.Cmd[0] != "cunicu":
@@ -238,6 +244,7 @@ func (s *DaemonServer) GetCompletion(_ context.Context, params *rpcproto.GetComp
 
 func (s *DaemonServer) getConfigCompletion(cmd string, args []string, toComplete string) []string {
 	var options []string
+
 	if isValueCompletion := len(args) > 0; isValueCompletion {
 		if cmd != "set" {
 			return nil
@@ -390,7 +397,7 @@ func settingToValue(val any) (*rpcproto.ConfigValue, error) {
 	if val == nil {
 		return cval, nil
 	} else if rval := reflect.ValueOf(val); rval.Kind() == reflect.Slice {
-		for i := 0; i < rval.Len(); i++ {
+		for i := range rval.Len() {
 			e := rval.Index(i)
 
 			s, err := serializeToString(e.Interface())

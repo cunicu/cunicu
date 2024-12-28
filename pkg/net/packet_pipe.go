@@ -61,11 +61,13 @@ func (p *PacketPipe) LocalAddr() net.Addr {
 
 func (p *PacketPipe) SetReadDeadline(t time.Time) error {
 	p.readDeadline = time.After(time.Until(t))
+
 	return nil
 }
 
 func (p *PacketPipe) SetWriteDeadline(t time.Time) error {
 	p.writeDeadline = time.After(time.Until(t))
+
 	return nil
 }
 

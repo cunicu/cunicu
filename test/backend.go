@@ -108,16 +108,19 @@ func (p *peer) publish(o *peer) error {
 }
 
 // TestBackend creates n peers with separate connections to the signaling backend u
-// and exchanges a test message between each pair of backends
+// and exchanges a test message between each pair of backends.
 func BackendTest(u *url.URL, n int) { //nolint:gocognit
-	var err error
-	var ps []*peer
+	var (
+		err error
+		ps  []*peer
+	)
 
 	ginkgo.BeforeEach(func() {
 		backendReady := &readyHandler{}
 
 		ps = []*peer{}
-		for i := 0; i < n; i++ {
+
+		for i := range n {
 			p := &peer{
 				id: i + 100,
 			}

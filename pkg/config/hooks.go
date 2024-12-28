@@ -30,11 +30,12 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 	}
 
 	var base BaseHookSetting
-	if err := mapstructure.Decode(data, &base); err != nil {
+	if err := mapstructure.Decode(data, &base); err != nil { //nolint:musttag
 		return nil, err
 	}
 
 	var hook HookSetting
+
 	switch base.Type {
 	case "web":
 		hook = &WebHookSetting{
@@ -56,7 +57,7 @@ func hookDecodeHook(f, t reflect.Type, data any) (any, error) {
 	return hook, decoder.Decode(data)
 }
 
-// stringsDecodeHook is a DecodeHookFunc that converts strings to various types
+// stringsDecodeHook is a DecodeHookFunc that converts strings to various types.
 func stringsDecodeHook(
 	_ reflect.Type,
 	t reflect.Type,
@@ -90,6 +91,7 @@ func stringsDecodeHook(
 
 	case reflect.TypeOf(net.IPAddr{}):
 		ip, err := net.ResolveIPAddr("ip", str)
+
 		return *ip, err
 
 	case reflect.TypeOf(net.IPNet{}):

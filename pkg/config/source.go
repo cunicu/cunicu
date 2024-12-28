@@ -47,8 +47,11 @@ func (s *source) Config() *koanf.Koanf {
 }
 
 func (s *source) Load() error {
-	var err error
-	var version any
+	var (
+		err     error
+		version any
+	)
+
 	if v, ok := s.Provider.(Versioned); ok {
 		version = v.Version()
 

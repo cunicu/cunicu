@@ -13,6 +13,7 @@ import (
 func (c *Config) environmentProvider() koanf.Provider {
 	// Load environment variables
 	envKeyMap := map[string]string{}
+
 	for _, k := range c.Meta.Keys() {
 		m := strings.ToUpper(k)
 		e := envPrefix + strings.ReplaceAll(m, ".", "_")

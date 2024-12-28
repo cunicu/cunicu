@@ -67,7 +67,7 @@ func (c *Config) findConfigFiles() []string {
 // - dns lookups
 // - configuration files
 // - environment variables
-// - command line flags
+// - command line flags.
 func (c *Config) getProviders() ([]koanf.Provider, error) {
 	providers := []koanf.Provider{
 		NewStructsProvider(&DefaultSettings, "koanf"),
@@ -93,6 +93,7 @@ func (c *Config) getProviders() ([]koanf.Provider, error) {
 		}
 
 		var p koanf.Provider
+
 		switch u.Scheme {
 		case "http", "https":
 			p = NewRemoteFileProvider(u)

@@ -26,7 +26,7 @@ const (
 //nolint:gochecknoglobals
 var (
 	// A cunīcu specific key for siphash to generate unique IPv6 addresses from the
-	// interfaces public key
+	// interfaces public key.
 	addrHashKey = [...]byte{0x67, 0x67, 0x2c, 0x05, 0xd1, 0x3e, 0x11, 0x94, 0xbb, 0x38, 0x91, 0xff, 0x4f, 0x80, 0xb3, 0x97}
 
 	argonSalt = [...]byte{0x77, 0x31, 0x63, 0x33, 0x63, 0x30, 0x6e, 0x6e, 0x33, 0x63, 0x74, 0x73, 0x33, 0x76, 0x65, 0x72, 0x79, 0x62, 0x30, 0x64, 0x79}
@@ -36,7 +36,7 @@ var (
 
 type (
 	Nonce []byte
-	Key   [KeyLength]byte
+	Key   [KeyLength]byte //nolint:recvcheck
 )
 
 func GenerateKeyFromPassword(pw string) Key {
@@ -97,6 +97,7 @@ func (k Key) MarshalText() ([]byte, error) {
 func (k *Key) UnmarshalText(text []byte) error {
 	var err error
 	*k, err = ParseKey(string(text))
+
 	return err
 }
 
@@ -126,6 +127,7 @@ func (k Key) IPAddress(p net.IPNet) net.IPNet {
 
 	n := p.Mask
 	b := p.IP
+
 	if c := p.IP.To4(); c != nil {
 		b = c
 	}
@@ -144,16 +146,17 @@ func (k Key) IPAddress(p net.IPNet) net.IPNet {
 	}
 }
 
-// Checks if the key is not zero
+// Checks if the key is not zero.
 func (k Key) IsSet() bool {
 	return k != Key{}
 }
 
-// A key which uses GenerateKeyFromPassword() for UnmarshalText()
+// A key which uses GenerateKeyFromPassword() for UnmarshalText().
 type KeyPassphrase Key
 
 func (k *KeyPassphrase) UnmarshalText(text []byte) error {
 	*k = KeyPassphrase(GenerateKeyFromPassword(string(text)))
+
 	return nil
 }
 

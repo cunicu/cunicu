@@ -25,7 +25,7 @@ var (
 	userDevicesLock sync.Mutex
 )
 
-// Compile-time assertions
+// Compile-time assertions.
 var _ Device = (*UserDevice)(nil)
 
 type UserDevice struct {
@@ -90,6 +90,7 @@ func NewUserDevice(name string) (*UserDevice, error) {
 	userDevicesLock.Lock()
 	userDevices[name] = dev
 	userDevicesLock.Unlock()
+
 	return dev, nil
 }
 
@@ -124,6 +125,7 @@ func (d *UserDevice) handleUserAPI() {
 			}
 
 			d.logger.Error("Failed to accept new user api connection", zap.Error(err))
+
 			continue
 		}
 

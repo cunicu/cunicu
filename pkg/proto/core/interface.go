@@ -100,7 +100,7 @@ func (i *Interface) Dump(wr io.Writer, level log.Level) error {
 	return nil
 }
 
-// Redact redacts any sensitive information from the interface status such as private keys
+// Redact redacts any sensitive information from the interface status such as private keys.
 func (i *Interface) Redact() *Interface {
 	i.PrivateKey = nil
 

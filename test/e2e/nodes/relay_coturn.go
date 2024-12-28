@@ -44,7 +44,7 @@ func NewCoturnNode(n *g.Network, name string, opts ...g.Option) (*CoturnNode, er
 		return nil, err
 	}
 
-	logPath := fmt.Sprintf("%s.log", name)
+	logPath := name + ".log"
 
 	t := &CoturnNode{
 		Host: h,
@@ -82,9 +82,9 @@ func (c *CoturnNode) Start(_, dir string, extraArgs ...any) error {
 	args = append(args, extraArgs...)
 
 	for key, value := range c.Config {
-		opt := fmt.Sprintf("--%s", key)
+		opt := "--" + key
 		if value != "" {
-			opt += fmt.Sprintf("=%s", value)
+			opt += "=" + value
 		}
 
 		args = append(args, opt)
@@ -171,7 +171,7 @@ func (c *CoturnNode) URLs() []url.URL {
 	}
 }
 
-// Options
+// Options.
 func (c *CoturnNode) Apply(i *g.Interface) {
 	i.Node = c.Host
 }

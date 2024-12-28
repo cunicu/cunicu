@@ -35,6 +35,7 @@ func New(i *daemon.Interface) (*Interface, error) {
 
 	if writable, err := isWritable(hostsPath); err != nil || !writable {
 		logger.Warn("Disabling /etc/hosts synchronization as it is not writable")
+
 		return nil, daemon.ErrFeatureDeactivated
 	}
 
@@ -111,6 +112,7 @@ func (i *Interface) Update(hosts []Host) error {
 	// Filter out lines not added by cunīcu
 	lines = slicesx.Filter(lines, func(line string) bool {
 		h, err := ParseHost(line)
+
 		return err != nil || !strings.HasPrefix(h.Comment, hostsCommentPrefix) || !strings.Contains(h.Comment, fmt.Sprintf("ifindex=%d", i.Index()))
 	})
 

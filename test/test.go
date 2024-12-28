@@ -60,7 +60,7 @@ func Entropy(data []byte) float64 {
 	length := float64(len(data))
 	entropy := 0.0
 
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		if p := float64(bytes.Count(data, []byte{byte(i)})) / length; p > 0 {
 			entropy += -p * math.Log2(p)
 		}

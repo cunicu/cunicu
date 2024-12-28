@@ -5,7 +5,6 @@
 package ice
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
@@ -35,7 +34,7 @@ func ParseURL(urlStr string) (*stun.URI, string, string, url.Values, error) {
 
 	q := u.Query()
 	if t := q.Get("transport"); t != "" {
-		u.RawQuery = fmt.Sprintf("transport=%s", t)
+		u.RawQuery = "transport=" + t
 	} else {
 		u.RawQuery = ""
 	}

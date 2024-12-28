@@ -16,7 +16,7 @@ import (
 	"cunicu.li/cunicu/pkg/wg"
 )
 
-// Compile-time assertions
+// Compile-time assertions.
 var (
 	_ Proxy             = (*KernelConnProxy)(nil)
 	_ wg.BindKernelConn = (*KernelConnProxy)(nil)
@@ -70,9 +70,10 @@ func NewKernelConnProxy(bind *wg.Bind, cp *ice.CandidatePair, conn *ice.Conn, li
 	return p, epAddr, nil
 }
 
-// Close releases all resources of the proxy
+// Close releases all resources of the proxy.
 func (p *KernelConnProxy) Close() error {
 	p.logger.Debug("Closing kernel connection")
+
 	if err := p.kernelConn.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 		return fmt.Errorf("failed to close connection: %w", err)
 	}

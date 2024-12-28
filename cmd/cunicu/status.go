@@ -52,6 +52,7 @@ func status(_ *cobra.Command, args []string, opts *statusOptions) {
 
 	if len(args) > 0 {
 		p.Interface = args[0]
+
 		if len(args) > 1 {
 			pk, err := crypto.ParseKey(args[1])
 			if err != nil {

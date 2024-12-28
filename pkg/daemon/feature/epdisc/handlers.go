@@ -25,6 +25,7 @@ func (i *Interface) OnPeerAdded(cp *daemon.Peer) {
 	p, err := NewPeer(cp, i)
 	if err != nil {
 		i.logger.Error("Failed to initialize ICE peer", zap.Error(err))
+
 		return
 	}
 

@@ -86,7 +86,7 @@ func SetupLogging(rule *Filter, paths []string, color bool) (logger *Logger, err
 	zlogger := zap.New(core,
 		zap.ErrorOutput(ws),
 		zap.WrapCore(func(c zapcore.Core) zapcore.Core {
-			return newFilteredCore(c, &filter)
+			return NewFilteredCore(c, &filter)
 		}))
 
 	zlogger.Level()

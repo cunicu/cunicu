@@ -56,7 +56,7 @@ func (p *flagOptionProvider) ReadBytes() ([]byte, error) {
 }
 
 func (c *Config) flagProvider() koanf.Provider {
-	// Map flags from the flags to to Koanf settings
+	// Map flags from the flags to Koanf settings
 	flagMap := map[string]string{
 		// Feature flags
 		"discover-peers":     "discover_peers",

@@ -27,6 +27,7 @@ func CmpPeerHandshakeTime(a, b wgtypes.Peer) int {
 	}
 
 	diff := a.LastHandshakeTime.UnixMilli() - b.LastHandshakeTime.UnixMilli()
+
 	switch {
 	case diff < 0:
 		return 1

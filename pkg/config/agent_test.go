@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -177,7 +178,7 @@ var _ = Describe("Agent config", func() {
 					user, pass, exp := turnRelay.GetCredentials(pk.String())
 
 					Expect(strings.Split(user, ":")).To(Equal([]string{
-						fmt.Sprint(exp.Unix()),
+						strconv.FormatInt(exp.Unix(), 10),
 						pk.String(),
 					}))
 					Expect(u.Password).To(Equal(pass))

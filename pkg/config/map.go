@@ -48,14 +48,15 @@ func _map(v reflect.Value, tagName string) any { //nolint:gocognit
 	case reflect.Struct:
 		d := map[string]any{}
 
-		for i := 0; i < v.NumField(); i++ {
+		for i := range v.NumField() {
 			fv := v.Field(i)
 			sf := t.Field(i)
 
 			if fv.IsValid() && !fv.IsZero() {
 				if tag, ok := sf.Tag.Lookup(tagName); ok {
-					name := strings.Split(tag, ",")[0]
 					n := _map(fv, tagName)
+
+					name := strings.Split(tag, ",")[0]
 					if name != "" {
 						d[name] = n
 					} else if m, ok := n.(map[string]any); ok {
@@ -85,7 +86,7 @@ func _map(v reflect.Value, tagName string) any { //nolint:gocognit
 	case reflect.Slice:
 		d := []any{}
 
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			d = append(d, _map(v.Index(i), tagName))
 		}
 

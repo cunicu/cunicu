@@ -34,9 +34,11 @@ func WatchdogEnabled(unsetEnv bool) (interval time.Duration, err error) {
 	if unsetEnv {
 		wUSecErr := os.Unsetenv("WATCHDOG_USEC")
 		wPIDErr := os.Unsetenv("WATCHDOG_PID")
+
 		if wUSecErr != nil {
 			return 0, wUSecErr
 		}
+
 		if wPIDErr != nil {
 			return 0, wPIDErr
 		}

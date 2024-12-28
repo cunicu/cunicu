@@ -51,6 +51,7 @@ func (h *monitorEventHandler) OnEvent(e *rpcproto.Event) {
 		if err != nil {
 			logger.Fatal("Failed to marshal", zap.Error(err))
 		}
+
 		buf = append(buf, '\n')
 
 		if _, err = stdout.Write(buf); err != nil {
@@ -77,6 +78,7 @@ func monitor(_ *cobra.Command, _ []string, opts *monitorOptions) {
 
 	for signal := range osx.SetupSignals() {
 		logger.Debug("Received signal", zap.Any("signal", signal))
+
 		break
 	}
 }

@@ -78,6 +78,7 @@ func NewPeer(cp *daemon.Peer, e *Interface) (*Peer, error) {
 		// TODO: Attempt retry?
 		return nil, fmt.Errorf("failed to subscribe to offers: %w", err)
 	}
+
 	p.logger.Info("Subscribed to messages from peer", zap.Any("kp", kp))
 
 	go p.createAgentWithBackoff()
@@ -92,7 +93,7 @@ func (p *Peer) ConnectionState() ConnectionState {
 	return p.connectionState.Load()
 }
 
-// Close destroys the peer as well as the ICE agent and proxies
+// Close destroys the peer as well as the ICE agent and proxies.
 func (p *Peer) Close() error {
 	p.Interface.Bind().RemoveOpenHandler(p)
 
@@ -122,7 +123,7 @@ func (p *Peer) Close() error {
 	return nil
 }
 
-// Marshal marshals a description of the peer into a Protobuf description
+// Marshal marshals a description of the peer into a Protobuf description.
 func (p *Peer) Marshal() *epdiscproto.Peer {
 	q := &epdiscproto.Peer{
 		Restarts: p.restarts.Load(),
@@ -230,7 +231,7 @@ func (p *Peer) Resubscribe(ctx context.Context, skOld crypto.Key) error {
 	return nil
 }
 
-// Restart the ICE agent by creating a new one
+// Restart the ICE agent by creating a new one.
 func (p *Peer) Restart() error {
 	if prev, ok := p.connectionState.SetIfNot(ConnectionStateRestarting, ConnectionStateClosed, ConnectionStateClosing, ConnectionStateRestarting); !ok {
 		return fmt.Errorf("%w: %s", errInvalidConnectionStateForRestart, strings.ToLower(prev.String()))
@@ -322,6 +323,7 @@ func (p *Peer) createAgent() error {
 
 	// Prepare ICE agent configuration
 	pk := p.Interface.PublicKey()
+
 	acfg, err := p.Interface.Settings.AgentConfig(context.TODO(), &pk)
 	if err != nil {
 		return fmt.Errorf("failed to generate ICE agent configuration: %w", err)
@@ -396,6 +398,7 @@ func (p *Peer) sendCredentialsWhileIdleWithBackoff(need bool) {
 				p.logger.Error("Failed to send peer credentials",
 					zap.Error(err),
 					zap.Duration("after", d))
+
 				continue
 			}
 		}
@@ -418,6 +421,7 @@ func (p *Peer) isSessionRestart(c *epdiscproto.Credentials) bool {
 
 func (p *Peer) connect(ufrag, pwd string) {
 	var connect func(context.Context, string, string) (*ice.Conn, error)
+
 	if p.IsControlling() {
 		p.logger.Debug("Dialing...")
 		connect = p.agent.Dial
@@ -434,9 +438,11 @@ func (p *Peer) connect(ufrag, pwd string) {
 }
 
 func (p *Peer) updateProxy(cp *ice.CandidatePair, conn *ice.Conn) error {
-	var err error
-	var oldProxy, newProxy Proxy
-	var newEndpoint *net.UDPAddr
+	var (
+		err                error
+		oldProxy, newProxy Proxy
+		newEndpoint        *net.UDPAddr
+	)
 
 	bind := p.Interface.Bind()
 
@@ -452,6 +458,7 @@ func (p *Peer) updateProxy(cp *ice.CandidatePair, conn *ice.Conn) error {
 		p.logger.Debug("Forwarding via kernel connection")
 		newProxy, newEndpoint, err = NewKernelConnProxy(bind, cp, conn, p.Interface.ListenPort, p.logger)
 	}
+
 	if err != nil {
 		return fmt.Errorf("failed to setup proxy: %w", err)
 	}

@@ -22,6 +22,7 @@ func NewANSIStripper(wr io.Writer) io.Writer {
 
 func (a *ansiStripper) Write(p []byte) (int, error) {
 	line := stripANSI.ReplaceAll(p, []byte{})
+
 	return a.Writer.Write(line)
 }
 
@@ -42,6 +43,7 @@ func NewANSIStripperSynced(wr WriteSyncer) WriteSyncer {
 
 func (a *ansiStripperSynced) Write(p []byte) (int, error) {
 	line := stripANSI.ReplaceAll(p, []byte{})
+
 	return a.WriteSyncer.Write(line)
 }
 

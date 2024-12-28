@@ -151,6 +151,7 @@ func (i *Interface) sendPeerDescription(chg pdiscproto.PeerDescriptionChange, pk
 
 	if name := i.Settings.HostName; name != "" {
 		daddrs := []*proto.IPAddress{}
+
 		for _, pfx := range i.Settings.Prefixes {
 			addr := pk.IPAddress(pfx)
 			daddrs = append(daddrs, proto.Address(addr.IP))

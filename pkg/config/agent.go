@@ -54,6 +54,7 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*s
 
 		case "grpc":
 			u := u
+
 			g.Go(func() error {
 				name, opts, err := grpcx.ParseURL(u.String())
 				if err != nil {
@@ -115,12 +116,14 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 
 	cfg.InterfaceFilter = func(name string) bool {
 		match, err := filepath.Match(c.ICE.InterfaceFilter, name)
+
 		return err == nil && match
 	}
 
 	// ICE URLs
 	if len(c.ICE.URLs) > 0 && len(c.ICE.CandidateTypes) > 0 {
 		needsURLs := false
+
 		for _, ct := range c.ICE.CandidateTypes {
 			if ct == ice.CandidateTypeRelay || ct == ice.CandidateTypeServerReflexive {
 				needsURLs = true

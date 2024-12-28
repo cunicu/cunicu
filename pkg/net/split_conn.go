@@ -26,7 +26,7 @@ type SplitConn struct {
 	send SendPacketConn
 }
 
-// Compile-time assertions
+// Compile-time assertions.
 var _ net.PacketConn = (*SplitConn)(nil)
 
 func NewSplitConn(recv ReceivePacketConn, send SendPacketConn) net.PacketConn {

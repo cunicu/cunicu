@@ -52,6 +52,7 @@ func (n *Network) Start() {
 		if a.PeerSelector != nil && a.PeerSelector(a, b) {
 			a.AddPeer(b)
 		}
+
 		return nil
 	})
 	Expect(err).To(Succeed(), "Failed to add WireGuard peers: %s", err)
@@ -91,6 +92,7 @@ func (n *Network) Start() {
 
 	err = n.AgentNodes.ForEachInterface(func(i *nodes.WireGuardInterface) error {
 		_, err := fmt.Fprintf(nf, "%s %s %s\n", i.Agent.Name(), i.Name, i.PrivateKey.PublicKey())
+
 		return err
 	})
 	Expect(err).To(Succeed())

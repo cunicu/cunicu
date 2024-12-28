@@ -64,6 +64,7 @@ type peerConfig struct {
 
 func parseCIDRs(nets []string, ip bool) ([]net.IPNet, error) {
 	pn := []net.IPNet{}
+
 	for _, ne := range nets {
 		i, n, err := net.ParseCIDR(ne)
 		if err != nil {
@@ -94,6 +95,7 @@ func parseCIDRs(nets []string, ip bool) ([]net.IPNet, error) {
 
 func parseIPs(ips []string) ([]net.IPAddr, error) {
 	pips := []net.IPAddr{}
+
 	for _, ip := range ips {
 		i, err := net.ResolveIPAddr("ip", ip)
 		if err != nil {
@@ -187,7 +189,7 @@ func (cfg *Config) Dump(wr io.Writer) error {
 	if cfg.PeerNames != nil {
 		if peerSections, err := iniFile.SectionsByName("Peer"); err == nil {
 			for i, peerSection := range peerSections {
-				peerSection.Comment = fmt.Sprintf("# %s", cfg.PeerNames[i])
+				peerSection.Comment = "# " + cfg.PeerNames[i]
 			}
 		}
 	}
@@ -248,6 +250,7 @@ func ParseConfig(data []byte) (*Config, error) {
 
 func (c *config) Config() (*Config, error) {
 	var err error
+
 	cfg := &Config{
 		Config: wgtypes.Config{
 			Peers:        []wgtypes.PeerConfig{},
@@ -335,6 +338,7 @@ func (p *peerConfig) Config() (*wgtypes.PeerConfig, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve endpoint %s: %w", *p.Endpoint, err)
 		}
+
 		cfg.Endpoint = addr
 	}
 
@@ -342,6 +346,7 @@ func (p *peerConfig) Config() (*wgtypes.PeerConfig, error) {
 		if cfg.AllowedIPs, err = parseCIDRs(p.AllowedIPs, false); err != nil {
 			return nil, fmt.Errorf("failed to parse allowed ips: %w", err)
 		}
+
 		cfg.ReplaceAllowedIPs = true
 	}
 

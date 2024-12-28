@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -130,6 +131,7 @@ func parseWgShowArgs(args []string) (string, string, string, error) {
 			default:
 				return "", "", "", fmt.Errorf("%w: %s", errUnknownField, args[1])
 			}
+
 			field = args[1]
 		} else {
 			field = "all"
@@ -171,6 +173,7 @@ func showInterfaceDetails(dev *wg.Interface, i int, mode, field string) error {
 		}
 	} else {
 		var value any
+
 		switch field {
 		case "public-key":
 			value = dev.PublicKey
@@ -181,7 +184,7 @@ func showInterfaceDetails(dev *wg.Interface, i int, mode, field string) error {
 		case "fwmark":
 			value = "off"
 			if dev.FirewallMark != 0 {
-				value = fmt.Sprint(dev.FirewallMark)
+				value = strconv.Itoa(dev.FirewallMark)
 			}
 		}
 
@@ -191,7 +194,7 @@ func showInterfaceDetails(dev *wg.Interface, i int, mode, field string) error {
 			if field == "dump" {
 				fwmark := "off"
 				if dev.FirewallMark != 0 {
-					fwmark = fmt.Sprint(dev.FirewallMark)
+					fwmark = strconv.Itoa(dev.FirewallMark)
 				}
 
 				fmt.Printf("%s%s\t%s\t%d\t%s\n",
@@ -229,6 +232,7 @@ func showPeerDetails(peer *wgtypes.Peer, field, prefix string) {
 		for _, aip := range peer.AllowedIPs {
 			aips = append(aips, aip.String())
 		}
+
 		value = strings.Join(aips, " ")
 	case "latest-handshakes":
 		value = peer.LastHandshakeTime.Unix()
@@ -247,9 +251,10 @@ func showPeerDetails(peer *wgtypes.Peer, field, prefix string) {
 		for _, aip := range peer.AllowedIPs {
 			as = append(as, aip.String())
 		}
-		aIPs := strings.Join(as, ",")
 
+		aIPs := strings.Join(as, ",")
 		zero := wgtypes.Key{}
+
 		psk := "(none)"
 		if peer.PresharedKey != zero {
 			psk = peer.PresharedKey.String()
@@ -262,7 +267,7 @@ func showPeerDetails(peer *wgtypes.Peer, field, prefix string) {
 
 		pka := "off"
 		if peer.PersistentKeepaliveInterval.Seconds() > 0 {
-			pka = fmt.Sprintf("%d", int(peer.PersistentKeepaliveInterval.Seconds()))
+			pka = strconv.Itoa(int(peer.PersistentKeepaliveInterval.Seconds()))
 		}
 
 		lhs := int64(0)

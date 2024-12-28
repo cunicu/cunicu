@@ -29,5 +29,6 @@ func sync(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return fmt.Errorf("failed RPC request: %w", err)
 	}
+
 	return nil
 }

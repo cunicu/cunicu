@@ -218,12 +218,15 @@ func DetectDefaultMTU(_ int) (int, error) {
 // by looking first at the per-route MTU attributes and secondly at
 // the default MTU of the link which is used by the route as next hop.
 func mtuFromRoutes(rts []netlink.Route) (int, error) {
+	var (
+		err error
+		mtu int
+	)
+
 	if len(rts) == 0 {
 		return -1, errNoRouteToDestination
 	}
 
-	var err error
-	var mtu int
 	links := map[int]netlink.Link{}
 	linkMTU := math.MaxInt
 	routeMTU := math.MaxInt
@@ -273,6 +276,7 @@ func Table(str string) (int, error) {
 
 			if fields[1] == str {
 				str = fields[0]
+
 				break
 			}
 		}

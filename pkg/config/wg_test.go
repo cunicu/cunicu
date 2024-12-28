@@ -80,6 +80,6 @@ PrivateKey = mBVQEpzmRVRRkba82CorTcbE2Zab4KhAtlNhDm4DYXo=
 		Expect(icfg2).NotTo(BeNil())
 
 		Expect(icfg2.PrivateKey.String()).To(Equal("mBVQEpzmRVRRkba82CorTcbE2Zab4KhAtlNhDm4DYXo="))
-		Expect(icfg2.Peers).To(HaveLen(0))
+		Expect(icfg2.Peers).To(BeEmpty())
 	})
 })

@@ -17,7 +17,7 @@ var _ = Context("DiffMapp", func() {
 		}
 
 		changes := types.DiffMap(c, c)
-		Expect(changes).To(HaveLen(0))
+		Expect(changes).To(BeEmpty())
 	})
 
 	It("can detect added keys", func() {

@@ -76,11 +76,13 @@ func (p *LookupProvider) Watch(cb func(event any, err error)) error {
 			serial, err := p.lookupSerial(context.Background())
 			if err != nil {
 				p.logger.Error("Failed to lookup zones SOA serial", zap.Error(err))
+
 				continue
 			}
 
 			if serial != p.lastSerial {
 				p.lastSerial = serial
+
 				cb(nil, nil)
 			}
 		}
@@ -125,8 +127,10 @@ func (p *LookupProvider) set(key string, value any) {
 }
 
 func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
-	var err error
-	var conn *dns.Conn
+	var (
+		err  error
+		conn *dns.Conn
+	)
 
 	cfg, err := dnsClientConfig()
 	if err != nil {
@@ -152,6 +156,7 @@ func (p *LookupProvider) lookupSerial(ctx context.Context) (int, error) {
 		}
 	} else {
 		client := dns.Client{}
+
 		conn, err = client.DialContext(ctx, addr)
 		if err != nil {
 			return -1, fmt.Errorf("failed to connect to %s: %w", addr, err)
@@ -194,6 +199,7 @@ func (p *LookupProvider) lookupTXT(_ context.Context) error {
 	p.logger.Debug("TXT records found", zap.Any("records", rr))
 
 	rrs := map[string][]string{}
+
 	for _, r := range rr {
 		if m := re.FindStringSubmatch(r); m != nil {
 			key := m[1]
@@ -248,11 +254,13 @@ func (p *LookupProvider) lookupSRV(_ context.Context) error {
 	g := errgroup.Group{}
 
 	reqs := 0
+
 	for svc, protos := range svcs {
 		for _, proto := range protos {
 			reqs++
 			s := svc
 			q := proto
+
 			g.Go(func() error {
 				us, err := lookupICEUrlSRV(p.domain, s, q)
 				if err != nil {
@@ -286,6 +294,7 @@ func lookupICEUrlSRV(name, svc, proto string) ([]string, error) {
 	}
 
 	urls := []string{}
+
 	for _, addr := range addrs {
 		url := stun.URI{
 			Scheme: stun.NewSchemeType(svc),

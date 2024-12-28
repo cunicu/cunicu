@@ -20,12 +20,14 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 
 	conns := make([]net.PacketConn, 0, len(ips))
 	muxes := make([]ice.UDPMux, 0, len(ips))
+
 	for _, ip := range ips {
 		conn, err := listen(ip)
 		if err != nil {
 			for _, conn := range conns {
 				conn.Close() //nolint:errcheck
 			}
+
 			for _, mux := range muxes {
 				mux.Close() //nolint:errcheck
 			}
@@ -47,12 +49,14 @@ func NewMultiUDPMuxWithListen(listen func(ip net.IP) (net.PacketConn, error), in
 
 func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bool, networkTypes []ice.NetworkType, includeLoopback bool) ([]net.IP, error) { //nolint:gocognit
 	ips := []net.IP{}
+
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return ips, err
 	}
 
 	var ipv4Requested, ipv6Requested bool
+
 	for _, typ := range networkTypes {
 		if typ.IsIPv4() {
 			ipv4Requested = true
@@ -89,6 +93,7 @@ func localInterfaces(interfaceFilter func(string) bool, ipFilter func(net.IP) bo
 			case *net.IPAddr:
 				ip = addr.IP
 			}
+
 			if ip == nil || (ip.IsLoopback() && !includeLoopback) {
 				continue
 			}
@@ -124,14 +129,16 @@ func isSupportedIPv6(ip net.IP) bool {
 		ip.IsLinkLocalMulticast() {
 		return false
 	}
+
 	return true
 }
 
 func isZeros(ip net.IP) bool {
-	for i := 0; i < len(ip); i++ {
+	for i := range ip {
 		if ip[i] != 0 {
 			return false
 		}
 	}
+
 	return true
 }

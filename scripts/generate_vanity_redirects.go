@@ -40,12 +40,14 @@ func generate(mod, repo, staticDir, prefix string) error {
 	}
 
 	subDir := strings.TrimPrefix(mod, prefix)
+
 	dir := filepath.Join(staticDir, subDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
 	fn := filepath.Join(dir, "index.html")
+
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
@@ -79,7 +81,7 @@ func getModsFromGitHub(ctx context.Context, owner string) (map[string]string, er
 		client = client.WithAuthToken(token)
 	}
 
-	repos, _, err := client.Repositories.List(context.Background(), owner, nil)
+	repos, _, err := client.Repositories.ListByUser(context.Background(), owner, nil) //nolint:contextcheck
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repos: %w", err)
 	}
@@ -90,6 +92,7 @@ func getModsFromGitHub(ctx context.Context, owner string) (map[string]string, er
 		file, _, err := client.Repositories.DownloadContents(ctx, owner, *repo.Name, "go.mod", nil)
 		if err != nil {
 			log.Printf("Failed to download %s/%s/go.mod: %v", owner, *repo.Name, err)
+
 			continue
 		}
 
@@ -117,6 +120,7 @@ func getModsFromGitHub(ctx context.Context, owner string) (map[string]string, er
 
 func getModBase(pkg string) string {
 	re := regexp.MustCompile(`\/v[0-9]`)
+
 	return re.ReplaceAllString(pkg, "")
 }
 

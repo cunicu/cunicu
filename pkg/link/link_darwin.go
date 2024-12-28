@@ -4,7 +4,6 @@
 package link
 
 import (
-	"fmt"
 	"net"
 
 	"go.uber.org/zap"
@@ -19,15 +18,18 @@ func (d *BSDLink) AddRoute(dst net.IPNet, gw net.IP, table int) error {
 		return errNotSupported
 	}
 
-	args := []string{"route", "add", fmt.Sprintf("-%s", addressFamily(dst)), "-net", dst.String()}
+	args := []string{"route", "add", "-" + addressFamily(dst), "-net", dst.String()}
 	if gw == nil {
 		args = append(args, "-interface", d.Name())
 	} else {
 		args = append(args, gw.String())
 	}
 
-	_, err := run(args...)
-	return err
+	if _, err := run(args...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *BSDLink) DeleteRoute(dst net.IPNet, table int) error {
@@ -38,6 +40,9 @@ func (d *BSDLink) DeleteRoute(dst net.IPNet, table int) error {
 		return errNotSupported
 	}
 
-	_, err := run("route", "delete", "-net", dst.String(), "-interface", d.Name())
-	return err
+	if _, err := run("route", "delete", "-net", dst.String(), "-interface", d.Name()); err != nil {
+		return err
+	}
+
+	return nil
 }

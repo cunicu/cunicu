@@ -128,8 +128,10 @@ out:
 }
 
 func (s *Server) Publish(_ context.Context, env *signaling.Envelope) (*proto.Empty, error) {
-	var err error
-	var pkRecipient, pkSender crypto.Key
+	var (
+		err                   error
+		pkRecipient, pkSender crypto.Key
+	)
 
 	if pkRecipient, err = crypto.ParseKeyBytes(env.Recipient); err != nil {
 		return &proto.Empty{}, fmt.Errorf("invalid recipient key: %w", err)

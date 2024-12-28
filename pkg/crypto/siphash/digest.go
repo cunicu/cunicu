@@ -33,6 +33,7 @@ func newDigest(size int, key []byte) *digest {
 	if size != Size64 && size != Size128 {
 		panic("size must be 8 or 16")
 	}
+
 	d := new(digest)
 	d.k0 = uint64(key[0]) | uint64(key[1])<<8 | uint64(key[2])<<16 | uint64(key[3])<<24 |
 		uint64(key[4])<<32 | uint64(key[5])<<40 | uint64(key[6])<<48 | uint64(key[7])<<56
@@ -40,6 +41,7 @@ func newDigest(size int, key []byte) *digest {
 		uint64(key[12])<<32 | uint64(key[13])<<40 | uint64(key[14])<<48 | uint64(key[15])<<56
 	d.size = size
 	d.Reset()
+
 	return d
 }
 
@@ -62,6 +64,7 @@ func (d *digest) Reset() {
 	d.v3 = d.k1 ^ 0x7465646279746573
 	d.t = 0
 	d.nx = 0
+
 	if d.size == Size128 {
 		d.v1 ^= 0xee
 	}
@@ -74,34 +77,43 @@ func (d *digest) BlockSize() int { return BlockSize }
 func (d *digest) Write(p []byte) (nn int, err error) {
 	nn = len(p)
 	d.t += uint8(nn) //nolint:gosec
+
 	if d.nx > 0 {
 		n := len(p)
 		if n > BlockSize-d.nx {
 			n = BlockSize - d.nx
 		}
+
 		d.nx += copy(d.x[d.nx:], p)
 		if d.nx == BlockSize {
 			once(d)
 			d.nx = 0
 		}
+
 		p = p[n:]
 	}
+
 	if len(p) >= BlockSize {
 		n := len(p) &^ (BlockSize - 1)
 		blocks(d, p[:n])
+
 		p = p[n:]
 	}
+
 	if len(p) > 0 {
 		d.nx = copy(d.x[:], p)
 	}
-	return
+
+	return nn, err
 }
 
 func (d *digest) sum64() uint64 {
 	for i := d.nx; i < BlockSize-1; i++ {
 		d.x[i] = 0
 	}
+
 	d.x[7] = d.t
+
 	return finalize(d)
 }
 
@@ -112,6 +124,7 @@ func (d *digest) sum128() (r0, r1 uint64) {
 	for i := d1.nx; i < BlockSize-1; i++ {
 		d1.x[i] = 0
 	}
+
 	d1.x[7] = d1.t
 	blocks(&d1, d1.x[:])
 
@@ -311,5 +324,6 @@ func (d *digest) Sum(in []byte) []byte {
 			byte(r1>>48),
 			byte(r1>>56))
 	}
+
 	return in
 }

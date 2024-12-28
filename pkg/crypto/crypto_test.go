@@ -29,7 +29,7 @@ var _ = Describe("generate", func() {
 	})
 
 	It("random string", func() {
-		for i := 0; i < 10000; i++ {
+		for range 10000 {
 			s, err := crypto.GetRandomString(10, tty.RunesAlpha)
 			Expect(err).To(Succeed())
 			Expect(s).To(HaveLen(10))

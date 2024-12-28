@@ -70,6 +70,7 @@ func (n *NAT) AddRule(r *nftables.Rule, comment string) (*NATRule, error) {
 		rid, ok := NftablesUserDataGetInt(nr.UserData, NftablesUserDataTypeRuleID)
 		if ok && rid == id {
 			r.Handle = nr.Handle
+
 			break
 		}
 	}
@@ -191,13 +192,16 @@ func (n *NAT) RedirectNonSTUN(origPort, newPort int) (*NATRule, error) {
 	}
 
 	comment := fmt.Sprintf("UDP destination port forwarding of non-STUN traffic from port %d to port %d", origPort, newPort)
+
 	return n.AddRule(r, comment)
 }
 
-// Perform SNAT to the source port of WireGuard UDP traffic to match port of our local ICE candidate
+// Perform SNAT to the source port of WireGuard UDP traffic to match port of our local ICE candidate.
 func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NATRule, error) {
-	var destIP []byte
-	var destIPOffset, destIPLength uint32
+	var (
+		destIP                     []byte
+		destIPOffset, destIPLength uint32
+	)
 
 	isIPv6 := dest.IP.To4() == nil
 	if isIPv6 {
@@ -283,5 +287,6 @@ func (n *NAT) MasqueradeSourcePort(fromPort, toPort int, dest *net.UDPAddr) (*NA
 	}
 
 	comment := fmt.Sprintf("UDP source port masquerade from port %d to %d for destination %s", fromPort, toPort, dest)
+
 	return n.AddRule(r, comment)
 }

@@ -46,7 +46,7 @@ type Asset struct {
 func (r Release) String() string {
 	return fmt.Sprintf("%v %v, %d assets",
 		r.TagName,
-		r.PublishedAt.Local().Format("2006-01-02 15:04:05"),
+		r.PublishedAt.Format("2006-01-02 15:04:05"),
 		len(r.Assets))
 }
 
@@ -54,7 +54,7 @@ const githubAPITimeout = 30 * time.Second
 
 // githubError is returned by the GitHub API, e.g. for rate-limiting.
 type githubError struct {
-	Message string
+	Message string `json:"message"`
 }
 
 // GitHubLatestRelease uses the GitHub API to get information about the latest
@@ -64,6 +64,7 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 	defer cancel()
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", githubUser, githubRepo)
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -92,12 +93,14 @@ func GitHubLatestRelease(ctx context.Context) (*Release, error) {
 		}
 
 		_ = res.Body.Close()
+
 		return nil, fmt.Errorf("%w %v (%v) returned", errUnexpectedResponse, res.StatusCode, res.Status)
 	}
 
 	buf, err := io.ReadAll(res.Body)
 	if err != nil {
 		_ = res.Body.Close()
+
 		return nil, err
 	}
 
@@ -144,6 +147,7 @@ func getGithubData(ctx context.Context, url string) ([]byte, error) {
 	buf, err := io.ReadAll(res.Body)
 	if err != nil {
 		_ = res.Body.Close()
+
 		return nil, err
 	}
 
@@ -156,10 +160,12 @@ func getGithubData(ctx context.Context, url string) ([]byte, error) {
 
 func getGithubDataFile(ctx context.Context, assets []Asset, suffix string) (filename string, data []byte, err error) {
 	var url string
+
 	for _, a := range assets {
 		if strings.HasSuffix(a.Name, suffix) {
 			url = a.URL
 			filename = a.Name
+
 			break
 		}
 	}

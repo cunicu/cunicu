@@ -15,7 +15,7 @@ func levelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(m.String())
 }
 
-type Level zapcore.Level
+type Level zapcore.Level //nolint:recvcheck
 
 const (
 	DebugLevel Level = iota - 1
@@ -40,9 +40,9 @@ func VerboseLevel(v int) Level {
 
 func (l *Level) UnmarshalText(text []byte) error {
 	if bytes.HasPrefix(text, []byte("debug")) {
-		vs := string(text[5:])
 		var v int
-		if len(vs) > 0 {
+
+		if vs := string(text[5:]); len(vs) > 0 {
 			v, _ = strconv.Atoi(vs)
 		}
 
@@ -57,6 +57,7 @@ func (l *Level) UnmarshalText(text []byte) error {
 	}
 
 	*l = Level(ll)
+
 	return nil
 }
 

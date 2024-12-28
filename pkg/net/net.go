@@ -14,12 +14,15 @@ func CmpUDPAddr(a, b *net.UDPAddr) int {
 	if a == nil && b == nil {
 		return 0
 	}
+
 	if (a != nil && b == nil) || (a == nil && b != nil) {
 		return 1
 	}
+
 	if !a.IP.Equal(b.IP) || a.Port != b.Port || a.Zone != b.Zone {
 		return 1
 	}
+
 	return 0
 }
 
@@ -35,6 +38,7 @@ func CmpNet(a, b net.IPNet) int {
 func ContainsNet(outer, inner *net.IPNet) bool {
 	outerOnes, _ := outer.Mask.Size()
 	innerOnes, _ := inner.Mask.Size()
+
 	return outerOnes <= innerOnes && outer.Contains(inner.IP)
 }
 

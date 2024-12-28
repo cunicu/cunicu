@@ -40,6 +40,7 @@ var (
 		New: func() any {
 			e := &encoder{}
 			e.reset()
+
 			return e
 		},
 	}
@@ -138,6 +139,7 @@ func newEncoder(cfg encoderConfig) *encoder {
 
 func (e *encoder) AddArray(key string, arr zapcore.ArrayMarshaler) error {
 	e.addKey(key)
+
 	return e.AppendArray(arr)
 }
 
@@ -202,11 +204,13 @@ func (e *encoder) AddInt64(key string, value int64) {
 
 func (e *encoder) AddObject(key string, obj zapcore.ObjectMarshaler) error {
 	e.addKey(key)
+
 	return e.AppendObject(obj)
 }
 
 func (e *encoder) AddReflected(key string, value any) error {
 	e.addKey(key)
+
 	return e.AppendReflected(value)
 }
 
@@ -263,7 +267,9 @@ func (e *encoder) AppendByteString(value []byte) {
 		if needsQuotes {
 			e.buf.AppendByte('"')
 		}
+
 		e.safeAppendByteString(value)
+
 		if needsQuotes {
 			e.buf.AppendByte('"')
 		}
@@ -287,9 +293,11 @@ func (e *encoder) AppendComplex128(value complex128) {
 
 func (e *encoder) AppendDuration(value time.Duration) {
 	cur := e.buf.Len()
+
 	if e.EncodeDuration != nil {
 		e.EncodeDuration(value, e)
 	}
+
 	if cur == e.buf.Len() {
 		e.AppendInt64(int64(value))
 	}
@@ -354,6 +362,7 @@ func (e *encoder) AppendArray(arr zapcore.ArrayMarshaler) (err error) {
 
 	e.addSeparator(e.arraySeparator, '[')
 	_, err = e.buf.Write(f.buf.Bytes())
+
 	return err
 }
 
@@ -371,6 +380,7 @@ func (e *encoder) AppendObject(obj zapcore.ObjectMarshaler) error {
 
 	e.addSeparator(e.arraySeparator, '[')
 	_, err := e.buf.Write(f.buf.Bytes())
+
 	return err
 }
 
@@ -477,6 +487,7 @@ func (e *encoder) appendReflection(value any) error {
 		return e.appendReflectedSlice(rvalue)
 	case reflect.Interface, reflect.Ptr:
 		value := rvalue.Elem().Interface()
+
 		return e.AppendReflected(value)
 	default:
 	}
@@ -488,9 +499,10 @@ func (e *encoder) appendReflectedStruct(rvalue reflect.Value) error {
 	rtype := rvalue.Type()
 
 	return e.AppendObject(zapcore.ObjectMarshalerFunc(func(oe zapcore.ObjectEncoder) error {
-		for i := 0; i < rtype.NumField(); i++ {
+		for i := range rtype.NumField() {
 			ftype := rtype.Field(i)
 			fvalue := rvalue.Field(i)
+
 			if !ftype.IsExported() {
 				continue
 			}
@@ -505,6 +517,7 @@ func (e *encoder) appendReflectedStruct(rvalue reflect.Value) error {
 				return err
 			}
 		}
+
 		return nil
 	}))
 }
@@ -515,22 +528,25 @@ func (e *encoder) appendReflectedMap(rvalue reflect.Value) error {
 		for iter.Next() {
 			key := iter.Key().Interface()
 			value := iter.Value().Interface()
+
 			if err := oe.AddReflected(fmt.Sprint(key), value); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	}))
 }
 
 func (e *encoder) appendReflectedSlice(rvalue reflect.Value) error {
 	return e.AppendArray(zapcore.ArrayMarshalerFunc(func(ae zapcore.ArrayEncoder) error {
-		for i := 0; i < rvalue.Len(); i++ {
+		for i := range rvalue.Len() {
 			value := rvalue.Index(i).Interface()
 			if err := ae.AppendReflected(value); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	}))
 }
@@ -553,9 +569,11 @@ func (e *encoder) AppendString(value string) {
 
 func (e *encoder) AppendTime(value time.Time) {
 	cur := e.buf.Len()
+
 	if e.EncodeTime != nil {
 		e.EncodeTime(value, e)
 	}
+
 	if cur == e.buf.Len() {
 		e.AppendInt64(value.UnixNano())
 	}
@@ -591,6 +609,7 @@ func (e *encoder) Clone() zapcore.Encoder {
 	c.buf.Write(e.buf.Bytes()) //nolint:errcheck
 	c.arraySeparator = e.arraySeparator
 	c.fieldSeparator = e.fieldSeparator
+
 	return c
 }
 
@@ -772,6 +791,7 @@ func (e *encoder) addKey(key string) {
 		e.safeAppendString(ns)
 		e.buf.AppendByte('.')
 	}
+
 	key = strings.Map(keyRuneFilter, key)
 	e.safeAppendString(key)
 	e.buf.AppendByte('=')
@@ -784,13 +804,17 @@ func (e *encoder) safeAppendString(s string) {
 	for i := 0; i < len(s); {
 		if e.tryAddRuneSelf(s[i]) {
 			i++
+
 			continue
 		}
+
 		r, size := utf8.DecodeRuneInString(s[i:])
 		if e.tryAddRuneError(r, size) {
 			i++
+
 			continue
 		}
+
 		e.buf.AppendString(s[i : i+size])
 		i += size
 	}
@@ -801,13 +825,17 @@ func (e *encoder) safeAppendByteString(s []byte) {
 	for i := 0; i < len(s); {
 		if e.tryAddRuneSelf(s[i]) {
 			i++
+
 			continue
 		}
+
 		r, size := utf8.DecodeRune(s[i:])
 		if e.tryAddRuneError(r, size) {
 			i++
+
 			continue
 		}
+
 		e.buf.Write(s[i : i+size]) //nolint:errcheck
 		i += size
 	}
@@ -818,10 +846,13 @@ func (e *encoder) tryAddRuneSelf(b byte) bool {
 	if b >= utf8.RuneSelf {
 		return false
 	}
+
 	if 0x20 <= b && b != '\\' && b != '"' {
 		e.buf.AppendByte(b)
+
 		return true
 	}
+
 	switch b {
 	case '\\', '"':
 		e.buf.AppendByte('\\')
@@ -841,14 +872,17 @@ func (e *encoder) tryAddRuneSelf(b byte) bool {
 		e.buf.AppendByte(_hex[b>>4])
 		e.buf.AppendByte(_hex[b&0xF])
 	}
+
 	return true
 }
 
 func (e *encoder) tryAddRuneError(r rune, size int) bool {
 	if r == utf8.RuneError && size == 1 {
 		e.buf.AppendString(`\ufffd`)
+
 		return true
 	}
+
 	return false
 }
 
@@ -869,6 +903,7 @@ func keyRuneFilter(r rune) rune {
 	if needsQuotedValueRune(r) {
 		return -1
 	}
+
 	return r
 }
 

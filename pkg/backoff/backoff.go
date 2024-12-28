@@ -4,7 +4,6 @@
 package backoff
 
 import (
-	"fmt"
 	"iter"
 	"time"
 )
@@ -22,7 +21,6 @@ func Retry(b *ExponentialBackOff) iter.Seq2[int, time.Duration] {
 			}
 
 			next := b.NextBackOff()
-			fmt.Println(next)
 			if next == stop {
 				break
 			}

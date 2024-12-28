@@ -6,7 +6,7 @@ package backoff
 import "time"
 
 type Clock interface {
-	Sleep(time.Duration)
+	Sleep(duration time.Duration)
 	Now() time.Time
 }
 
