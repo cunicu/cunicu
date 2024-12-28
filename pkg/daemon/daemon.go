@@ -141,7 +141,7 @@ out:
 			}
 
 		case <-wdt:
-			if err := d.notify(systemd.NotifyWatchdog); err != nil {
+			if _, err := systemd.Notify(false, systemd.NotifyWatchdog); err != nil {
 				return fmt.Errorf("failed to notify systemd watchdog: %w", err)
 			}
 			d.logger.DebugV(20, "Watchdog tick")
@@ -310,41 +310,26 @@ func (d *Daemon) setState(s State) error {
 	case StateSynchronizing:
 
 	case StateReady:
-		if err := d.notify(systemd.NotifyReady); err != nil {
+		if _, err := systemd.Notify(false, systemd.NotifyReady); err != nil {
 			return fmt.Errorf("failed to notify systemd: %w", err)
 		}
 
 	case StateReloading:
-		if err := d.notify(systemd.NotifyReloading); err != nil {
+		now, err := osx.GetClockMonotonic()
+		if err != nil {
+			return fmt.Errorf("failed to get monotonic time: %w", err)
+		}
+
+		msgMonotonicTime := fmt.Sprintf("MONOTONIC_USEC=%d", now.UnixMicro())
+
+		if _, err := systemd.Notify(false, systemd.NotifyReloading, msgMonotonicTime); err != nil {
 			return fmt.Errorf("failed to notify systemd: %w", err)
 		}
 
 	case StateStopping:
-		if err := d.notify(systemd.NotifyStopping); err != nil {
+		if _, err := systemd.Notify(false, systemd.NotifyStopping); err != nil {
 			return fmt.Errorf("failed to notify systemd: %w", err)
 		}
-	}
-
-	return nil
-}
-
-func (d *Daemon) notify(notify string) error {
-	notifyMessages := []string{notify}
-
-	if notify == systemd.NotifyReloading {
-		now, err := osx.GetClockMonotonic()
-		if err != nil {
-			return fmt.Errorf("failed to get monotonic clock: %w", err)
-		}
-
-		notifyMessages = append(notifyMessages,
-			fmt.Sprintf("MONOTONIC_USEC=%d", now.UnixMicro()))
-
-		d.logger.DebugV(5, "Notifying systemd", zap.Strings("message", notifyMessages))
-	}
-
-	if _, err := systemd.Notify(false, strings.Join(notifyMessages, "\n")); err != nil {
-		return err
 	}
 
 	return nil

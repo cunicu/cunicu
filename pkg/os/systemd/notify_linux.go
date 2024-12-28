@@ -8,6 +8,10 @@ package systemd
 import (
 	"net"
 	"os"
+	"strings"
+
+	"cunicu.li/cunicu/pkg/log"
+	"go.uber.org/zap"
 )
 
 // Notify sends a message to the init daemon. It is common to ignore the error.
@@ -18,7 +22,7 @@ import (
 // (false, nil) - notification not supported (i.e. NOTIFY_SOCKET is unset)
 // (false, err) - notification supported, but failure happened (e.g. error connecting to NOTIFY_SOCKET or while sending data)
 // (true, nil) - notification supported, data has been sent
-func Notify(unsetEnv bool, state string) (bool, error) {
+func Notify(unsetEnv bool, messages ...string) (bool, error) {
 	socketAddr := &net.UnixAddr{
 		Name: os.Getenv("NOTIFY_SOCKET"),
 		Net:  "unixgram",
@@ -39,6 +43,11 @@ func Notify(unsetEnv bool, state string) (bool, error) {
 		return false, err
 	}
 	defer conn.Close()
+
+	logger := log.Global.Named("systemd")
+	logger.DebugV(5, "Notifying", zap.Strings("message", messages))
+
+	state := strings.Join(messages, "\n")
 
 	if _, err = conn.Write([]byte(state)); err != nil {
 		return false, err
