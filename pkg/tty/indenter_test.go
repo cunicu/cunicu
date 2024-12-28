@@ -38,4 +38,18 @@ var _ = Context("Indenter", func() {
 		Expect(n).To(Equal(12))
 		Expect(b.String()).To(Equal("--Hello World\n--This is indented\n--Good night"))
 	})
+
+	It("returns the original writer if no indent is given", func() {
+		b := bytes.NewBuffer(nil)
+		i := tty.NewIndenter(b, "")
+
+		Expect(i).To(Equal(b))
+	})
+
+	It("can write zero bytes", func() {
+		i := tty.NewIndenter(nil, " ")
+		n, err := i.Write(nil)
+		Expect(err).To(Succeed())
+		Expect(n).To(Equal(0))
+	})
 })
