@@ -76,6 +76,7 @@ func (d *KernelDevice) Bind() *wg.Bind {
 func (d *KernelDevice) BindUpdate() error {
 	if d.ListenPort == 0 {
 		d.logger.Debug("Skip bind update as we no listen port yet")
+
 		return nil
 	}
 
@@ -113,15 +114,18 @@ func (d *KernelDevice) doReceive(rcvFn wgconn.ReceiveFunc) {
 			}
 
 			d.logger.Error("Failed to receive from bind", zap.Error(err))
+
 			continue
 		} else if n == 0 || sizes[0] == 0 {
 			continue
 		}
 
 		ep := eps[0].(*wg.BindEndpoint) //nolint:forcetypeassert
+
 		kc, ok := ep.Conn.(wg.BindKernelConn)
 		if !ok {
 			d.logger.Error("No kernel connection found", zap.String("ep", ep.DstToString()))
+
 			continue
 		}
 

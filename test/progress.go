@@ -35,10 +35,12 @@ func WithProgress(ctx context.Context, run func(started, completed chan string) 
 		if err := run(started, completed); err != nil {
 			errors <- err
 		}
+
 		close(done)
 	}()
 
 	handler.OnStart()
+
 	start := time.Now()
 
 	ticker := time.NewTicker(time.Second)
@@ -61,6 +63,7 @@ func WithProgress(ctx context.Context, run func(started, completed chan string) 
 
 		case id := <-completed:
 			cntCompleted++
+
 			delete(ids, id)
 
 		case <-done:
@@ -78,6 +81,7 @@ func WithProgress(ctx context.Context, run func(started, completed chan string) 
 
 		case err := <-errors:
 			cntFailed++
+
 			handler.OnError(err)
 		}
 	}

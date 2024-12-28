@@ -67,14 +67,18 @@ func (d *BSDLink) Name() string {
 func (d *BSDLink) Close() error {
 	d.logger.Debug("Deleting kernel device")
 
-	_, err := run("ifconfig", d.Name(), "destroy")
-	return err
+	if _, err := run("ifconfig", d.Name(), "destroy"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *BSDLink) AddAddress(ip net.IPNet) error {
 	d.logger.Debug("Add address", zap.String("addr", ip.String()))
 
 	args := []string{"ifconfig", d.Name(), addressFamily(ip), ip.String()}
+
 	if isV4 := ip.IP.To4() != nil; isV4 {
 		// Darwins utun interfaces are L3 point-to-point BSDLinks
 		// which require a destination address for IPv4
@@ -84,16 +88,21 @@ func (d *BSDLink) AddAddress(ip net.IPNet) error {
 	}
 
 	args = append(args, "alias")
+	if _, err := run(args...); err != nil {
+		return err
+	}
 
-	_, err := run(args...)
-	return err
+	return nil
 }
 
 func (d *BSDLink) DeleteAddress(ip net.IPNet) error {
 	d.logger.Debug("Delete address", zap.String("addr", ip.String()))
 
-	_, err := run("ifconfig", d.Name(), addressFamily(ip), ip.String(), "-alias")
-	return err
+	if _, err := run("ifconfig", d.Name(), addressFamily(ip), ip.String(), "-alias"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *BSDLink) Index() int {
@@ -137,8 +146,11 @@ func (d *BSDLink) MTU() int {
 func (d *BSDLink) SetMTU(mtu int) error {
 	d.logger.Debug("Set link MTU", zap.Int("mtu", mtu))
 
-	_, err := run("ifconfig", d.Name(), "mtu", fmt.Sprint(mtu))
-	return err
+	if _, err := run("ifconfig", d.Name(), "mtu", strconv.Itoa(mtu)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *BSDLink) SetUp() error {
@@ -149,8 +161,11 @@ func (d *BSDLink) SetUp() error {
 		return err
 	}
 
-	_, err = run("ifconfig", i.Name, "up")
-	return err
+	if _, err = run("ifconfig", i.Name, "up"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *BSDLink) SetDown() error {
@@ -161,8 +176,11 @@ func (d *BSDLink) SetDown() error {
 		return err
 	}
 
-	_, err = run("ifconfig", i.Name, "down")
-	return err
+	if _, err = run("ifconfig", i.Name, "down"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func Table(str string) (int, error) {
@@ -209,12 +227,11 @@ func run(args ...string) (string, error) {
 	cmd := exec.Command(args[0], args[1:]...) //nolint:gosec
 
 	out, err := cmd.CombinedOutput()
-	outStr := string(out)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s\n%s", errFailedToExecute, strings.Join(args, " "), outStr)
+		return "", fmt.Errorf("%w: %s\n%s", errFailedToExecute, strings.Join(args, " "), string(out))
 	}
 
-	return outStr, nil
+	return string(out), nil
 }
 
 func addressFamily(ip net.IPNet) string {

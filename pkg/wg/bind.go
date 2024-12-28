@@ -32,18 +32,18 @@ type BindConn interface {
 	BindClose() error
 }
 
-// BindKernelConn is a BindConn which is consumed by a Kernel WireGuard interface
+// BindKernelConn is a BindConn which is consumed by a Kernel WireGuard interface.
 type BindKernelConn interface {
 	BindConn
 
-	WriteKernel([]byte) (int, error)
+	WriteKernel(buf []byte) (int, error)
 }
 
 type BindHandler interface {
 	OnBindOpen(b *Bind, port uint16)
 }
 
-// Compile-time assertion
+// Compile-time assertion.
 var _ (wgconn.Bind) = (*Bind)(nil)
 
 type Bind struct {
@@ -81,6 +81,7 @@ func (b *Bind) Open(port uint16) ([]wgconn.ReceiveFunc, uint16, error) { //nolin
 	}
 
 	rcvFns := []wgconn.ReceiveFunc{}
+
 	for _, conn := range b.Conns {
 		rcvFn := func(packets [][]byte, sizes []int, eps []wgconn.Endpoint) (int, error) {
 			if len(packets) != 1 {
@@ -188,6 +189,7 @@ func (b *Bind) Send(packets [][]byte, cep wgconn.Endpoint) error {
 		zap.Binary("data", buf))
 
 	_, err := ep.Conn.Send(buf, ep)
+
 	return err
 }
 
@@ -201,17 +203,18 @@ func (b *Bind) Endpoint(ap netip.AddrPort) *BindEndpoint {
 }
 
 // ParseEndpoint creates a new endpoint from a string.
-// Implements wgconn.Bind
+// Implements wgconn.Bind.
 func (b *Bind) ParseEndpoint(s string) (ep wgconn.Endpoint, err error) {
 	b.logger.Debug("Parse endpoint", zap.String("ep", s))
 
 	e, err := netip.ParseAddrPort(s)
+
 	return b.Endpoint(e), err
 }
 
 // BatchSize is the number of buffers expected to be passed to
 // the ReceiveFuncs, and the maximum expected to be passed to SendBatch.
-// Implements wgconn.Bind
+// Implements wgconn.Bind.
 func (b *Bind) BatchSize() int {
 	return 1
 }

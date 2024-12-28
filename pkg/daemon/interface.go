@@ -87,6 +87,7 @@ func (i *Interface) Close() error {
 
 func (i *Interface) IsUserspace() bool {
 	_, ok := i.Device.(*device.UserDevice)
+
 	return ok
 }
 
@@ -98,12 +99,12 @@ func (i *Interface) Name() string {
 	return i.Device.Name()
 }
 
-// PublicKey returns the Curve25519 public key of the WireGuard interface
+// PublicKey returns the Curve25519 public key of the WireGuard interface.
 func (i *Interface) PublicKey() crypto.Key {
 	return crypto.Key(i.Interface.PublicKey)
 }
 
-// PublicKey returns the Curve25519 private key of the WireGuard interface
+// PublicKey returns the Curve25519 private key of the WireGuard interface.
 func (i *Interface) PrivateKey() crypto.Key {
 	return crypto.Key(i.Interface.PrivateKey)
 }
@@ -126,6 +127,7 @@ func (i *Interface) DumpConfig(wr io.Writer) error {
 	cfg := wg.Config{
 		Config: *i.WireGuardConfig(),
 	}
+
 	return cfg.Dump(wr)
 }
 
@@ -294,6 +296,7 @@ func (i *Interface) syncInterface(newIntf *wgtypes.Device) {
 		p, ok := i.Peers[pk]
 		if !ok {
 			i.logger.Warn("Failed to find matching peer", zap.Any("peer", wgp.PublicKey))
+
 			continue
 		}
 
@@ -338,6 +341,7 @@ func (i *Interface) syncInterface(newIntf *wgtypes.Device) {
 		p, ok := i.Peers[crypto.Key(wgp.PublicKey)]
 		if !ok {
 			i.logger.Warn("Failed to find matching peer", zap.Any("peer", wgp.PublicKey))
+
 			continue
 		}
 
@@ -350,6 +354,7 @@ func (i *Interface) SyncFeatures() error {
 		if s, ok := fi.(SyncableFeatureInterface); ok {
 			return s.Sync()
 		}
+
 		return nil
 	})
 }

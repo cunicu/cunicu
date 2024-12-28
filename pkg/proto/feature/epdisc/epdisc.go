@@ -103,6 +103,7 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 
 		if level.Verbosity() > 5 && len(p.CandidatePairStats) > 0 {
 			cmap := map[string]int{}
+
 			var cpsNom *CandidatePairStats
 
 			if len(p.CandidatePairStats) > 0 {
@@ -130,9 +131,11 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 				for i, cs := range p.LocalCandidateStats {
 					cmap[cs.Id] = i
 					v = fmt.Sprintf("l%d", i)
+
 					if isNominated := cs.Id == cpsNom.LocalCandidateId; isNominated {
 						v = tty.Mods(v, tty.FgRed)
 					}
+
 					if _, err := tty.FprintKV(wri, v, cs.ToString()); err != nil {
 						return err
 					}
@@ -149,9 +152,11 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 				for i, cs := range p.RemoteCandidateStats {
 					cmap[cs.Id] = i
 					v = fmt.Sprintf("r%d", i)
+
 					if isNominated := cs.Id == cpsNom.RemoteCandidateId; isNominated {
 						v = tty.Mods(v, tty.FgRed)
 					}
+
 					if _, err := tty.FprintKV(wri, v, cs.ToString()); err != nil {
 						return err
 					}

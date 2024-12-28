@@ -27,6 +27,7 @@ func (i *Interface) OnInterfaceModified(ci *daemon.Interface, old *wg.Interface,
 	// There are currently no other attributes which would need to be re-announced
 	if m.Is(daemon.InterfaceModifiedPrivateKey) {
 		var pkOld *crypto.Key
+
 		if skOld := crypto.Key(old.PrivateKey); skOld.IsSet() {
 			pk := skOld.PublicKey()
 			pkOld = &pk
@@ -48,11 +49,13 @@ func (i *Interface) OnSignalingMessage(kp *crypto.PublicKeyPair, msg *signaling.
 		pk, err := crypto.ParseKeyBytes(d.PublicKey)
 		if err != nil {
 			i.logger.Error("Failed to parse public key", zap.Error(err))
+
 			return
 		}
 
 		if pk != kp.Theirs {
 			i.logger.Error("Received a peer description for from a wrong peer")
+
 			return
 		}
 
@@ -72,6 +75,7 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 
 	if !i.isAccepted(pk) {
 		i.logger.Warn("Ignoring non-whitelisted peer", zap.Any("peer", pk))
+
 		return nil
 	}
 
@@ -81,18 +85,21 @@ func (i *Interface) OnPeerDescription(d *pdiscproto.PeerDescription) error { //n
 	case pdiscproto.PeerDescriptionChange_ADD:
 		if cp != nil {
 			i.logger.Warn("Peer already exists. Updating it instead")
+
 			d.Change = pdiscproto.PeerDescriptionChange_UPDATE
 		}
 
 	case pdiscproto.PeerDescriptionChange_UPDATE:
 		if cp == nil {
 			i.logger.Warn("Peer does not exist exists yet. Adding it instead")
+
 			d.Change = pdiscproto.PeerDescriptionChange_ADD
 		}
 
 	default:
 		if cp == nil {
 			i.logger.Warn("Ignoring non-existing peer")
+
 			return nil
 		}
 	}

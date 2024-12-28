@@ -42,7 +42,7 @@ import (
  *        ┌──┴─┐  ┌──┴─┐     ┌─┴──┐
  *        │ n1 │  │ n2 │ ... │ nY │
  *        └────┘  └────┘     └────┘
- *               cunicu Agents
+ *               cunicu Agents.
  */
 var _ = Context("simple: Simple local-area switched topology with variable number of agents", Serial, func() {
 	var (

@@ -44,6 +44,7 @@ func (s *runtimeSource) Load() error {
 			return nil
 		} else if errors.Is(err, os.ErrPermission) {
 			log.Global.Warn("Failed to load runtime configuration", zap.Error(err))
+
 			return nil
 		}
 
@@ -56,13 +57,14 @@ func (s *runtimeSource) Load() error {
 func (s *runtimeSource) Watch(cb func(event any, err error)) error {
 	if !hasRuntimeConfig() {
 		s.watchCallback = cb
+
 		return nil
 	}
 
 	return s.LocalFileProvider.Watch(cb)
 }
 
-// SaveRuntime saves the current runtime configuration to disk
+// SaveRuntime saves the current runtime configuration to disk.
 func (s *runtimeSource) Save() error {
 	f, err := os.OpenFile(RuntimeConfigFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
@@ -114,5 +116,6 @@ func (s *runtimeSource) Update(sets map[string]any) error {
 
 func hasRuntimeConfig() bool {
 	fi, err := os.Stat(RuntimeConfigFile)
+
 	return err == nil && !fi.IsDir()
 }

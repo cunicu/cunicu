@@ -95,7 +95,7 @@ func docsMarkdown(_ *cobra.Command, _ []string, opts *docsOptions) error {
 		}{
 			Title:            strings.Join(parts, " "),
 			SidebarClassName: "command-name",
-			Slug:             fmt.Sprintf("/usage/man/%s", strings.Join(parts[1:], "/")),
+			Slug:             "/usage/man/" + strings.Join(parts[1:], "/"),
 			HideTitle:        true,
 			Keywords:         []string{"manpage"},
 		}

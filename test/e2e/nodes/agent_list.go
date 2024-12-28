@@ -39,6 +39,7 @@ func (al AgentList) ForEachAgent(cb func(a *Agent) error) error {
 			if err := cb(a); err != nil {
 				return fmt.Errorf("%w (node %s)", err, a.Name())
 			}
+
 			return nil
 		})
 	}
@@ -127,7 +128,9 @@ func (al AgentList) WaitConnectionsReady(ctx context.Context) error {
 			id := fmt.Sprintf("%s <-> %s", a, b)
 
 			started <- id
+
 			err := a.WaitConnectionEstablished(ctx, b)
+
 			completed <- id
 
 			return err
@@ -145,7 +148,9 @@ func (al AgentList) PingPeers(ctx context.Context) error {
 			id := fmt.Sprintf("%s <-> %s", a, b)
 
 			started <- id
+
 			err := a.PingPeer(ctx, b)
+
 			completed <- id
 
 			return err

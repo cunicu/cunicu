@@ -60,12 +60,15 @@ func GetRandomValueFromInterval[V ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uin
 func GetRandomString(n int, runes string) (string, error) {
 	letters := []rune(runes)
 	b := make([]rune, n)
+
 	for i := range b {
 		v, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
 		if err != nil {
 			return "", err
 		}
+
 		b[i] = letters[v.Int64()]
 	}
+
 	return string(b), nil
 }

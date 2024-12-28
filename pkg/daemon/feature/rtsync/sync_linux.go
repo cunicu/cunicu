@@ -31,6 +31,7 @@ func (i *Interface) removeKernel(p *daemon.Peer) error {
 
 	// Get all IPv4 and IPv6 rts on link
 	rts := []netlink.Route{}
+
 	for _, af := range []int{unix.AF_INET, unix.AF_INET6} {
 		rtsAf, err := netlink.RouteList(link, af)
 		if err != nil {
@@ -52,6 +53,7 @@ func (i *Interface) removeKernel(p *daemon.Peer) error {
 		}
 
 		ours := false
+
 		for _, q := range i.Settings.Prefixes {
 			gw := pk.IPAddress(q)
 
@@ -139,16 +141,19 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	if ru.Table != i.Settings.RoutingTable {
 		i.logger.DebugV(10, "Ignore route from another table")
+
 		return nil
 	}
 
 	if ru.Protocol == link.RouteProtocol {
 		i.logger.DebugV(10, "Ignoring route which was installed by ourself")
+
 		return nil
 	}
 
 	if ru.Gw == nil {
 		i.logger.DebugV(10, "Ignoring route with missing gateway")
+
 		return nil
 	}
 
@@ -160,6 +165,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 	p, ok := i.gwMap[gw]
 	if !ok {
 		i.logger.DebugV(10, "Ignoring unknown gateway", zap.Any("gw", ru.Gw))
+
 		return nil
 	}
 
@@ -167,6 +173,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 
 	if ru.LinkIndex != p.Interface.Device.Index() {
 		logger.DebugV(10, "Ignoring gateway due to interface mismatch", zap.Any("gw", ru.Gw))
+
 		return nil
 	}
 
@@ -175,6 +182,7 @@ func (i *Interface) handleRouteUpdate(ru *netlink.RouteUpdate) error {
 			logger.DebugV(10, "Ignoring route as it is already covered by the current AllowedIPs",
 				zap.Any("allowed_ip", aip),
 				zap.Any("dst", ru.Dst))
+
 			return nil
 		}
 	}

@@ -85,6 +85,7 @@ func NewAgent(m *g.Network, name string, opts ...g.Option) (*Agent, error) {
 	// Get wgctrl handle in host netns
 	if err := a.RunFunc(func() error {
 		a.WireGuardClient, err = wgctrl.New()
+
 		return err
 	}); err != nil {
 		return nil, fmt.Errorf("failed to create WireGuard client: %w", err)
@@ -103,6 +104,7 @@ func (a *Agent) Start(_, dir string, args ...any) (err error) {
 	cfg.Set("rpc.socket", rpcPath) //nolint:errcheck
 
 	extraArgs := []any{}
+
 	for _, arg := range args {
 		if aopt, ok := arg.(AgentConfigOption); ok {
 			aopt.Apply(cfg)
@@ -150,7 +152,7 @@ func (a *Agent) Start(_, dir string, args ...any) (err error) {
 	}
 
 	if a.Client, err = rpc.Connect(rpcPath); err != nil {
-		return fmt.Errorf("failed to connect to to control socket: %w", err)
+		return fmt.Errorf("failed to connect to control socket: %w", err)
 	}
 
 	a.Client.AddEventHandler(a)

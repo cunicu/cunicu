@@ -98,7 +98,7 @@ func (i *WireGuardInterface) Create() error {
 func (i *WireGuardInterface) WriteConfig() error {
 	wgcpath := i.Agent.Shadowed(wg.ConfigPath)
 
-	fn := filepath.Join(wgcpath, fmt.Sprintf("%s.conf", i.Name))
+	fn := filepath.Join(wgcpath, i.Name+".conf")
 
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o600)
 	if err != nil {
@@ -147,6 +147,7 @@ func (i *WireGuardInterface) SetupKernel() error {
 
 func (i *WireGuardInterface) AddPeer(peer *WireGuardInterface) {
 	aIPs := []net.IPNet{}
+
 	for _, addr := range peer.Addresses {
 		var mask net.IPMask
 		if addr.IP.To4() == nil { // is IPv6

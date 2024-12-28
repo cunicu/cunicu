@@ -14,7 +14,7 @@ import (
 
 type PeerState = coreproto.PeerState
 
-// Prettier aliases for the protobuf constants
+// Prettier aliases for the protobuf constants.
 const (
 	PeerStateNew        = coreproto.PeerState_NEW
 	PeerStateConnecting = coreproto.PeerState_CONNECTING
@@ -50,7 +50,7 @@ func (p *Peer) SetStateIfNot(newState PeerState, prevStates ...PeerState) (PeerS
 	return prevState, ok
 }
 
-// onStateChanged emits a log message about the changed state and call registered handlers
+// onStateChanged emits a log message about the changed state and call registered handlers.
 func (p *Peer) onStateChanged(newState, prevState PeerState) {
 	p.LastStateChangeTime = time.Now()
 

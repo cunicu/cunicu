@@ -12,6 +12,7 @@ import (
 func getFieldName(field reflect.StructField) (string, bool) {
 	if value := getFirstTagValue(field.Tag, "json", "toml", "mapstructure", "koanf"); value != "" {
 		parts := strings.Split(value, ",")
+
 		return parts[0], slices.Contains(parts, "omitempty")
 	}
 

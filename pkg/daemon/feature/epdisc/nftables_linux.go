@@ -61,6 +61,7 @@ func NftablesUserDataGetInt(udata []byte, typ NftablesUserDataType) (uint32, boo
 
 func NftablesUserDataPutString(udata []byte, typ NftablesUserDataType, str string) []byte {
 	data := append([]byte(str), 0)
+
 	return NftablesUserDataPut(udata, typ, data)
 }
 

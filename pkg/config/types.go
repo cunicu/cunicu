@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type OutputFormat string
+type OutputFormat string //nolint:recvcheck
 
 const (
 	OutputFormatJSON   OutputFormat = "json"

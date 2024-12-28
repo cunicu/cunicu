@@ -34,6 +34,7 @@ func DiffFunc[T any](oldSlice, newSlice []T, cmp func(a, b T) int) (added, remov
 	i, j := 0, 0
 	for i < len(oldSlice) && j < len(newSlice) {
 		c := cmp(oldSlice[i], newSlice[j])
+
 		switch {
 		case c < 0: // removed
 			removed = append(removed, oldSlice[i])

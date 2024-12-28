@@ -22,6 +22,7 @@ func NewDevice(name string, user bool) (kernelDev Device, err error) {
 	} else {
 		kernelDev, err = NewKernelDevice(name)
 	}
+
 	if err != nil {
 		return nil, err
 	}

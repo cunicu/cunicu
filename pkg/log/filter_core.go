@@ -21,7 +21,7 @@ var (
 
 // NewFilteredCore returns a core middleware that uses the given filter function to
 // determine whether to actually call Write on the next core in the chain.
-func newFilteredCore(next zapcore.Core, rule *atomic.Pointer[Filter]) zapcore.Core {
+func NewFilteredCore(next zapcore.Core, rule *atomic.Pointer[Filter]) zapcore.Core {
 	return &filteringCore{next, rule}
 }
 
@@ -37,6 +37,7 @@ func (core *filteringCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) 
 	if r := core.filter.Load(); r == nil || r.FilterFunc(entry) {
 		ce = ce.AddCore(entry, core)
 	}
+
 	return ce
 }
 
@@ -64,6 +65,7 @@ func (core *filteringCore) Level() zapcore.Level {
 	if r := core.filter.Load(); r != nil {
 		return zapcore.Level(r.Level)
 	}
+
 	return zapcore.InvalidLevel
 }
 

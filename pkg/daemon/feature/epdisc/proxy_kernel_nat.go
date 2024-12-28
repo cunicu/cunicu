@@ -26,7 +26,7 @@ func CandidatePairCanBeNATted(cp *ice.CandidatePair) bool {
 	return cp.Local.Type() == ice.CandidateTypeHost || cp.Local.Type() == ice.CandidateTypeServerReflexive
 }
 
-// Compile-time assertions
+// Compile-time assertions.
 var (
 	_ Proxy = (*KernelNATProxy)(nil)
 )

@@ -221,7 +221,7 @@ var _ = Describe("Siphash", func() {
 			k[i] = byte(i)
 		}
 
-		for i := 0; i < 64; i++ {
+		for i := range 64 {
 			in[i] = byte(i)
 			h := siphash.New64(k[:])
 			h.Write(in[:i])
@@ -238,7 +238,7 @@ var _ = Describe("Siphash", func() {
 		}
 
 		for a := 1; a < align; a++ {
-			for i := 0; i < 64; i++ {
+			for i := range 64 {
 				in[a+i] = byte(i)
 				h := siphash.New64(k[:])
 				h.Write(in[a : a+i])
@@ -254,7 +254,7 @@ var _ = Describe("Siphash", func() {
 			k[i] = byte(i)
 		}
 
-		for i := 0; i < 64; i++ {
+		for i := range 64 {
 			in[i] = byte(i)
 			h := siphash.New128(k[:])
 			h.Write(in[:i])

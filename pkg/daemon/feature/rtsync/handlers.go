@@ -20,6 +20,7 @@ func (i *Interface) OnPeerAdded(p *daemon.Peer) {
 
 	for _, q := range i.Settings.Prefixes {
 		gwn := pk.IPAddress(q)
+
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
 			panic("failed to get address from slice")
@@ -41,6 +42,7 @@ func (i *Interface) OnPeerRemoved(p *daemon.Peer) {
 
 	for _, q := range i.Settings.Prefixes {
 		gwn := pk.IPAddress(q)
+
 		gw, ok := netip.AddrFromSlice(gwn.IP)
 		if !ok {
 			panic("failed to get address from slice")
@@ -63,9 +65,11 @@ func (i *Interface) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, _ daemon.Pee
 
 	// Determine peer gateway address by using the first IPv4 and IPv6 prefix
 	var gwV4, gwV6 net.IP
+
 	for _, q := range i.Settings.Prefixes {
 		isV6 := q.IP.To4() == nil
 		n := pk.IPAddress(q)
+
 		if isV6 && gwV6 == nil {
 			gwV6 = n.IP
 		}
@@ -90,6 +94,7 @@ func (i *Interface) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, _ daemon.Pee
 
 		if err := p.Interface.Device.AddRoute(dst, gw, i.Settings.RoutingTable); err != nil {
 			i.logger.Error("Failed to add route", zap.Error(err))
+
 			continue
 		}
 
@@ -103,6 +108,7 @@ func (i *Interface) OnPeerModified(p *daemon.Peer, _ *wgtypes.Peer, _ daemon.Pee
 	for _, dst := range ipsRemoved {
 		if err := p.Interface.Device.DeleteRoute(dst, i.Settings.RoutingTable); err != nil && !errors.Is(err, syscall.ESRCH) {
 			i.logger.Error("Failed to delete route", zap.Error(err))
+
 			continue
 		}
 

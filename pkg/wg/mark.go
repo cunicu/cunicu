@@ -33,6 +33,7 @@ func SetMark(conn net.PacketConn, mark uint32) error {
 	}); err == nil {
 		err = operr
 	}
+
 	if err != nil {
 		return err
 	}

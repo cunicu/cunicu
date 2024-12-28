@@ -47,7 +47,11 @@ func (e *Envelope) Decrypt(kp *crypto.KeyPair) (*Message, error) {
 	}
 
 	msg := &Message{}
-	return msg, e.Contents.Unmarshal(msg, kp)
+	if err := e.Contents.Unmarshal(msg, kp); err != nil {
+		return nil, err
+	}
+
+	return msg, nil
 }
 
 func (e *Message) Encrypt(kp *crypto.KeyPair) (*Envelope, error) {
@@ -81,6 +85,7 @@ func (s *EncryptedMessage) Marshal(msg proto.Message, kp *crypto.KeyPair) error 
 	}
 
 	s.Body = box.Seal([]byte{}, body, (*[24]byte)(s.Nonce), (*[32]byte)(&kp.Theirs), (*[32]byte)(&kp.Ours))
+
 	if err != nil {
 		return fmt.Errorf("failed to seal: %w", err)
 	}

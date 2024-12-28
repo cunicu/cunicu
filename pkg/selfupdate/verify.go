@@ -34,6 +34,7 @@ func loadKeyRing() (pgp.EntityList, error) {
 
 	for _, de := range des {
 		fn := filepath.Join("keys", de.Name())
+
 		f, err := keys.Open(fn)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file: %w", err)
@@ -41,8 +42,7 @@ func loadKeyRing() (pgp.EntityList, error) {
 
 		e, err := pgp.ReadKeyRing(f)
 		if err != nil {
-			fmt.Printf("reading keyring failed")
-			return nil, err
+			return nil, fmt.Errorf("reading keyring failed: %w", err)
 		}
 
 		el = append(el, e...)

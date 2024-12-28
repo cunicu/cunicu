@@ -26,6 +26,7 @@ type Meta struct {
 
 func Metadata() *Meta {
 	settingsType := reflect.TypeOf(Settings{})
+
 	return metadata(settingsType)
 }
 
@@ -41,12 +42,12 @@ func metadata(typ reflect.Type) *Meta {
 	if typ.Kind() == reflect.Struct {
 		m.Fields = map[string]*Meta{}
 
-		for i := 0; i < typ.NumField(); i++ {
+		for i := range typ.NumField() {
 			field := typ.Field(i)
 			if tag, ok := field.Tag.Lookup("koanf"); ok {
-				name := strings.Split(tag, ",")[0]
 				n := metadata(field.Type)
-				if name != "" {
+
+				if name := strings.Split(tag, ",")[0]; name != "" {
 					n.Parent = m
 					m.Fields[name] = n
 				} else {
@@ -79,6 +80,7 @@ func (m *Meta) Keys() []string {
 
 func (m *Meta) Lookup(key string) *Meta {
 	parts := strings.Split(key, delim)
+
 	return m.lookup(parts)
 }
 

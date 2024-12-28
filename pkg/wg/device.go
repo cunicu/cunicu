@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -74,7 +75,7 @@ func (d *Interface) Dump(wr io.Writer, hideKeys bool) error { //nolint:gocognit
 	}
 
 	if d.FirewallMark > 0 {
-		if _, err := tty.FprintKV(wri, "fwmark", fmt.Sprintf("%d", d.FirewallMark)); err != nil {
+		if _, err := tty.FprintKV(wri, "fwmark", strconv.Itoa(d.FirewallMark)); err != nil {
 			return err
 		}
 	}

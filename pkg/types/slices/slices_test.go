@@ -50,7 +50,7 @@ var _ = Context("slice", func() {
 
 		BeforeEach(func() {
 			a = make([]int, 100)
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				a[i] = i
 			}
 		})

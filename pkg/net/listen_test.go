@@ -89,7 +89,7 @@ var _ = Describe("find bindable port in range", func() {
 			})
 
 			It("can create conns", func() {
-				for i := 0; i < cnt; i++ {
+				for range cnt {
 					port, err := netx.FindRandomPortToListen("udp", 12000, 12000+cnt)
 					Expect(err).To(Succeed())
 

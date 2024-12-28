@@ -68,10 +68,12 @@ func Every(d time.Duration) string {
 // PrettyBytes pretty prints a byte count
 // See: https://github.com/WireGuard/wireguard-tools/blob/71799a8f6d1450b63071a21cad6ed434b348d3d5/src/show.c#L184
 func PrettyBytes(b int64) string {
-	suffices := []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
-	var f float32
-	var i int
+	var (
+		f float32
+		i int
+	)
 
+	suffices := []rune{'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'}
 	for i, f = 0, float32(b); i < len(suffices) && f >= 1024; i, f = i+1, f/1024 { //nolint:revive
 	}
 

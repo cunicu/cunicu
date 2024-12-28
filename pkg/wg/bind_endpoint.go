@@ -10,7 +10,7 @@ import (
 	"golang.zx2c4.com/wireguard/conn"
 )
 
-// Compile-time assertion
+// Compile-time assertion.
 var _ conn.Endpoint = (*BindEndpoint)(nil)
 
 type BindEndpoint struct {
@@ -27,6 +27,7 @@ func (ep BindEndpoint) DstIP() netip.Addr {
 
 func (ep BindEndpoint) DstToBytes() []byte {
 	b, _ := ep.AddrPort.MarshalBinary()
+
 	return b
 }
 

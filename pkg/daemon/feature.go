@@ -44,6 +44,7 @@ func RegisterFeature[I FeatureInterface](ctor func(i *Interface) (I, error), ord
 				q = p
 			}
 		}
+
 		return
 	}
 }

@@ -82,6 +82,7 @@ func SpecName() []string {
 	}
 
 	sn := []string{}
+
 	for _, txt := range sr.ContainerHierarchyTexts {
 		if n, ok := normalize(txt); ok {
 			sn = append(sn, n...)

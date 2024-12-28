@@ -13,6 +13,8 @@ import (
 	"cunicu.li/cunicu/pkg/daemon"
 )
 
+var errTimeOut = errors.New("timed-out")
+
 func BeRandom() types.GomegaMatcher {
 	return HaveEntropy(4)
 }
@@ -30,7 +32,7 @@ type entropyMatcher struct {
 func (matcher *entropyMatcher) Match(actual any) (success bool, err error) {
 	buff, ok := actual.([]byte)
 	if !ok {
-		return false, fmt.Errorf("HaveEntropy matcher expects a byte slice")
+		return false, errors.New("HaveEntropy matcher expects a byte slice")
 	}
 
 	return Entropy(buff) > matcher.minEntropy, nil
@@ -63,7 +65,7 @@ func (matcher *eventMatcher[E]) Match(actual any) (success bool, err error) {
 	to := time.NewTimer(time.Second)
 	select {
 	case <-to.C:
-		return false, fmt.Errorf("timed-out")
+		return false, errTimeOut
 	case evt := <-events:
 		if *matcher.event, ok = evt.(E); !ok {
 			return false, fmt.Errorf("received wrong type of event: %#+v", evt)

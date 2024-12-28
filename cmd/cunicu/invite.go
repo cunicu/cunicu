@@ -48,7 +48,7 @@ func invite(_ *cobra.Command, args []string, opts *inviteOptions) {
 
 	intf := args[0]
 
-	// First add a new new peer to the running daemon via runtime configuration RPCs
+	// First add a new peer to the running daemon via runtime configuration RPCs
 	addPeerResp, err := rpcClient.AddPeer(context.Background(), &rpcproto.AddPeerParams{
 		Interface: intf,
 		PublicKey: sk.PublicKey().Bytes(),

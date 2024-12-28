@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -137,8 +138,8 @@ func (h *ExecHook) OnPeerModified(p *daemon.Peer, old *wgtypes.Peer, m daemon.Pe
 	}
 
 	if m.Is(daemon.PeerModifiedHandshakeTime) {
-		newTime := fmt.Sprint(p.LastHandshakeTime.UnixMilli())
-		oldTime := fmt.Sprint(old.LastHandshakeTime.UnixMilli())
+		newTime := strconv.FormatInt(p.LastHandshakeTime.UnixMilli(), 10)
+		oldTime := strconv.FormatInt(old.LastHandshakeTime.UnixMilli(), 10)
 
 		go h.run(pm, "modified", "peer", p.Interface.Name(), p.PublicKey(), "last-handshake", newTime, oldTime)
 	}

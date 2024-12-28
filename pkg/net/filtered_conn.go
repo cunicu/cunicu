@@ -14,12 +14,12 @@ import (
 
 var ErrFiltered = errors.New("packet has been filtered")
 
-// PacketHandler is a handler interface
+// PacketHandler is a handler interface.
 type PacketHandler interface {
-	OnPacketRead([]byte, net.Addr) (bool, error)
+	OnPacketRead(buf []byte, addr net.Addr) (bool, error)
 }
 
-// FilteredConn wraps a net.PacketConn
+// FilteredConn wraps a net.PacketConn.
 type FilteredConn struct {
 	net.PacketConn
 
@@ -79,7 +79,7 @@ func (c *FilteredConn) AddPacketReadHandlerConn(h PacketHandler) net.PacketConn 
 }
 
 // PacketHandlerConn implements a PacketHandler which forwards
-// filtered reads to a pipe connection
+// filtered reads to a pipe connection.
 type PacketHandlerConn struct {
 	PacketHandler
 

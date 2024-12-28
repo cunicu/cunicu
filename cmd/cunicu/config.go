@@ -119,6 +119,7 @@ func handleError(lvl zapcore.Level, msg string, err error) {
 
 	if sts, ok := statusx.FromError(err); ok {
 		errs := []string{}
+
 		for _, detail := range sts.Details() {
 			if err, ok := detail.(*proto.Error); ok {
 				errs = append(errs, err.Message)

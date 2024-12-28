@@ -58,7 +58,7 @@ func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 	}
 
 	req := &http.Request{
-		Method: "GET",
+		Method: http.MethodGet,
 		URL:    p.url,
 		Header: http.Header{},
 	}
@@ -85,7 +85,7 @@ func (p *RemoteFileProvider) ReadBytes() ([]byte, error) {
 
 	p.etag = resp.Header.Get("Etag")
 
-	if lm := resp.Header.Get("Last-modified"); lm != "" {
+	if lm := resp.Header.Get("Last-Modified"); lm != "" {
 		p.lastModified, err = time.Parse(http.TimeFormat, lm)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Last-Modified header: %w", err)
@@ -121,7 +121,7 @@ func (p *RemoteFileProvider) hasChanged() (bool, error) {
 	}
 
 	req := &http.Request{
-		Method: "HEAD",
+		Method: http.MethodHead,
 		URL:    p.url,
 		Header: http.Header{},
 	}
@@ -144,7 +144,7 @@ func (p *RemoteFileProvider) hasChanged() (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode == 200, nil
+	return resp.StatusCode == http.StatusOK, nil
 }
 
 type LocalFileProvider struct {

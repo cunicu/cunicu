@@ -49,6 +49,7 @@ func (w *indenter) Write(buf []byte) (int, error) {
 		}
 
 		n += m
+
 		return nil
 	}
 

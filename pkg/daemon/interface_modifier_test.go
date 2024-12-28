@@ -14,7 +14,7 @@ import (
 
 var _ = Context("interface modifier", func() {
 	It("can string", func() {
-		for i := 0; i < len(daemon.InterfaceModifiersStrings); i++ {
+		for i := range len(daemon.InterfaceModifiersStrings) {
 			mod := daemon.InterfaceModifier(1 << i)
 
 			Expect(mod.String()).To(Equal(daemon.InterfaceModifiersStrings[i]))
@@ -23,7 +23,7 @@ var _ = Context("interface modifier", func() {
 
 	It("can strings", func() {
 		mod := daemon.InterfaceModifier(math.MaxInt)
-		for i := 0; i < len(daemon.InterfaceModifiersStrings); i++ {
+		for range len(daemon.InterfaceModifiersStrings) {
 			Expect(mod.Strings()).To(Equal(daemon.InterfaceModifiersStrings))
 		}
 	})

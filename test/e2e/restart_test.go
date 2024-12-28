@@ -42,7 +42,7 @@ import (
  *    ┌──┴─┐       ┌─┴──┐
  *    │ n1 │       │ n2 │
  *    └────┘       └────┘
- *         cunicu Agents
+ *         cunicu Agents.
  */
 var _ = Context("restart: Restart ICE agents", Label("restart"), func() {
 	var (

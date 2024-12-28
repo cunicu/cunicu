@@ -16,7 +16,7 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	// set via ldflags -X / goreleaser or from debug.ReadBuildInfo()
+	// Set via ldflags -X / goreleaser or from debug.ReadBuildInfo().
 	Version = "dev"
 	Commit  = "none"
 	Tag     = ""
@@ -32,6 +32,7 @@ func init() { //nolint:gochecknoinits
 		_, Commit, Dirty, Date = ReadVCSInfos()
 	} else {
 		Dirty = strings.Contains(Version, "-dirty")
+
 		if bd, err := time.Parse(time.RFC3339, DateStr); err == nil && !bd.IsZero() {
 			Date = &bd
 		}
@@ -63,9 +64,10 @@ func UserAgent() string {
 
 func ReadVCSInfos() (bool, string, bool, *time.Time) {
 	if info, ok := debug.ReadBuildInfo(); ok {
+		var btime *time.Time
+
 		commit := ""
 		dirty := false
-		var btime *time.Time
 
 		for _, v := range info.Settings {
 			switch v.Key {

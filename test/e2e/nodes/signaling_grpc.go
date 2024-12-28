@@ -138,7 +138,7 @@ func (s *GrpcSignalingNode) WaitReady() error {
 	return nil
 }
 
-// Options
+// Options.
 func (s *GrpcSignalingNode) Apply(i *g.Interface) {
 	i.Node = s.Host
 }

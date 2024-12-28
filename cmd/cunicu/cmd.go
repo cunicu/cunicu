@@ -5,7 +5,7 @@
 package main
 
 import (
-	// Daemon features
+	// Daemon features.
 	_ "cunicu.li/cunicu/pkg/daemon/feature/autocfg"
 	_ "cunicu.li/cunicu/pkg/daemon/feature/cfgsync"
 	_ "cunicu.li/cunicu/pkg/daemon/feature/epdisc"
@@ -14,7 +14,7 @@ import (
 	_ "cunicu.li/cunicu/pkg/daemon/feature/pdisc"
 	_ "cunicu.li/cunicu/pkg/daemon/feature/rtsync"
 
-	// Signaling backends
+	// Signaling backends.
 	_ "cunicu.li/cunicu/pkg/signaling/grpc"
 	_ "cunicu.li/cunicu/pkg/signaling/inprocess"
 )

@@ -15,9 +15,9 @@ type (
 )
 
 type MessageHandler interface {
-	OnSignalingMessage(*crypto.PublicKeyPair, *Message)
+	OnSignalingMessage(kp *crypto.PublicKeyPair, msg *Message)
 }
 
 type EnvelopeHandler interface {
-	OnSignalingEnvelope(*Envelope)
+	OnSignalingEnvelope(env *Envelope)
 }

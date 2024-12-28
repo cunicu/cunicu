@@ -54,6 +54,7 @@ func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, 
 	}
 
 	suffix := fmt.Sprintf("%s_%s.%s", runtime.GOOS, runtime.GOARCH, ext)
+
 	downloadFilename, buf, err := getGithubDataFile(ctx, rel.Assets, suffix)
 	if err != nil {
 		return err
@@ -74,6 +75,7 @@ func DownloadAndVerifyRelease(ctx context.Context, rel *Release, target string, 
 	logger.Info("Checksum verification succeeded")
 
 	var n int64
+
 	if n, err = extractToFile(buf, downloadFilename, target); err != nil {
 		return fmt.Errorf("failed to extract file: %w", err)
 	}

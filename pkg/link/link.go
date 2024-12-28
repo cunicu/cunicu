@@ -18,7 +18,7 @@ const (
 
 var errNotSupported = errors.New("not supported") //nolint:unused
 
-type Link interface {
+type Link interface { //nolint:interfacebloat
 	Close() error
 
 	// Getter

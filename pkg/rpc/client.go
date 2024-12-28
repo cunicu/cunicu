@@ -30,7 +30,7 @@ import (
 var errTimeout = errors.New("timed out")
 
 type EventHandler interface {
-	OnEvent(*rpcproto.Event)
+	OnEvent(evt *rpcproto.Event)
 }
 
 type Client struct {
@@ -51,6 +51,7 @@ type Client struct {
 
 func DaemonRunning(path string) bool {
 	conn, err := net.Dial("unix", path)
+
 	return err == nil && conn.Close() == nil
 }
 
@@ -71,7 +72,7 @@ func Connect(path string) (*Client, error) {
 		return nil, fmt.Errorf("failed to wait for socket: %s: %w", path, err)
 	}
 
-	tgt := fmt.Sprintf("unix://%s", path)
+	tgt := "unix://" + path
 	//nolint:staticcheck
 	conn, err := grpc.Dial(tgt,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -113,6 +114,7 @@ func (c *Client) streamEvents() {
 	stream, err := c.StreamEvents(context.Background(), &proto.Empty{})
 	if err != nil {
 		c.logger.Error("Failed to stream events", zap.Error(err))
+
 		return
 	}
 
@@ -242,6 +244,7 @@ func (c *Client) OnEvent(e *rpcproto.Event) {
 			pk, err := crypto.ParseKeyBytes(e.Peer)
 			if err != nil {
 				c.logger.Error("Invalid key", zap.Error(err))
+
 				return
 			}
 

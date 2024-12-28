@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2018 CoreOS, Inc.
 // SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,11 +17,14 @@ import (
 func TestSuite(t *testing.T) {
 	test.SetupLogging()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Watcher Suite")
+	RunSpecs(t, "Daemon Suite")
 }
 
 var _ = BeforeSuite(func() {
 	if !osx.HasAdminPrivileges() {
 		Skip("Insufficient privileges")
 	}
+})
+
+var _ = Describe("Daemon", func() {
 })

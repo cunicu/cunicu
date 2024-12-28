@@ -26,24 +26,24 @@ func (t *Timestamp) Time() time.Time {
 
 func (bi *BuildInfo) ToString() string {
 	attrs := []string{
-		fmt.Sprintf("os=%s", bi.Os),
-		fmt.Sprintf("arch=%s", bi.Arch),
+		"os=" + bi.Os,
+		"arch=" + bi.Arch,
 	}
 
 	if len(bi.Commit) >= 8 {
-		attrs = append(attrs, fmt.Sprintf("commit=%s", bi.Commit[:8]))
+		attrs = append(attrs, "commit="+bi.Commit[:8])
 	}
 
 	if bi.Branch != "" {
-		attrs = append(attrs, fmt.Sprintf("branch=%s", bi.Branch))
+		attrs = append(attrs, "branch="+bi.Branch)
 	}
 
 	if bi.Date != nil {
-		attrs = append(attrs, fmt.Sprintf("built-at=%s", bi.Date.Time().Format(time.RFC3339)))
+		attrs = append(attrs, "built-at="+bi.Date.Time().Format(time.RFC3339))
 	}
 
 	if bi.BuiltBy != "" {
-		attrs = append(attrs, fmt.Sprintf("built-by=%s", bi.BuiltBy))
+		attrs = append(attrs, "built-by="+bi.BuiltBy)
 	}
 
 	return fmt.Sprintf("%s (%s)", bi.Version, strings.Join(attrs, ", "))

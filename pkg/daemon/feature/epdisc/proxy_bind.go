@@ -19,7 +19,7 @@ import (
 	"cunicu.li/cunicu/pkg/wg"
 )
 
-// Compile-time assertions
+// Compile-time assertions.
 var (
 	_ Proxy       = (*BindProxy)(nil)
 	_ wg.BindConn = (*BindProxy)(nil)

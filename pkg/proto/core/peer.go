@@ -19,6 +19,7 @@ import (
 
 func (p *Peer) Peer() wgtypes.Peer {
 	allowedIPs := []net.IPNet{}
+
 	for _, allowedIP := range p.AllowedIps {
 		_, ipnet, err := net.ParseCIDR(allowedIP)
 		if err != nil {
@@ -146,7 +147,7 @@ func (p *Peer) Dump(wr io.Writer, level log.Level) error { //nolint:gocognit
 	return nil
 }
 
-// Redact redacts any sensitive information from the peer status such as the preshared key
+// Redact redacts any sensitive information from the peer status such as the preshared key.
 func (p *Peer) Redact() *Peer {
 	p.PresharedKey = nil
 

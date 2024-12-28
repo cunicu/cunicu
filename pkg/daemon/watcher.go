@@ -52,7 +52,7 @@ func (e InterfaceEvent) String() string {
 	return fmt.Sprintf("%s %s", e.Name, e.Op)
 }
 
-// Watcher monitors both userspace and kernel for changes to WireGuard interfaces
+// Watcher monitors both userspace and kernel for changes to WireGuard interfaces.
 type Watcher struct {
 	interfaces InterfaceList
 	devices    []*wgtypes.Device
@@ -108,11 +108,13 @@ func (w *Watcher) Watch() {
 	if err := w.watchUserInterfaces(); err != nil {
 		w.logger.Fatal("Failed to watch userspace interfaces", zap.Error(err))
 	}
+
 	w.logger.Debug("Started watching for changes of WireGuard userspace interfaces")
 
 	if err := w.watchKernelInterfaces(); err != nil && !errors.Is(err, errNotSupported) {
 		w.logger.Fatal("Failed to watch kernel interfaces", zap.Error(err))
 	}
+
 	w.logger.Debug("Started watching for changes of WireGuard kernel interfaces")
 
 	// TODO: Watch for kernel routing tables, assigned addresses, MTUs ...
@@ -164,14 +166,18 @@ func (w *Watcher) Sync() error {
 }
 
 func (w *Watcher) syncInterfaces() error {
-	var err error
-	var newDevs []*wgtypes.Device
+	var (
+		err     error
+		newDevs []*wgtypes.Device
+	)
+
 	oldDevs := w.devices
 
 	w.mu.Lock()
 
 	if newDevs, err = w.client.Devices(); err != nil {
 		w.mu.Unlock()
+
 		return fmt.Errorf("failed to list WireGuard interfaces: %w", err)
 	}
 
@@ -190,6 +196,7 @@ func (w *Watcher) syncInterfaces() error {
 		i, ok := w.interfaces[wgd.Name]
 		if !ok {
 			w.logger.Warn("Failed to find matching interface", zap.Any("intf", wgd.Name))
+
 			continue
 		}
 
@@ -230,6 +237,7 @@ func (w *Watcher) syncInterfaces() error {
 		i, ok := w.interfaces[wgd.Name]
 		if !ok {
 			w.logger.Warn("Failed to find matching interface", zap.Any("intf", wgd.Name))
+
 			continue
 		}
 

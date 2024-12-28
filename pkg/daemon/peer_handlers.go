@@ -14,7 +14,7 @@ type PeerModifiedHandler interface {
 	OnPeerModified(p *Peer, old *wgtypes.Peer, m PeerModifier, ipsAdded, ipsRemoved []net.IPNet)
 }
 
-// AddModifiedHandler registers a new handler which is called whenever the peer has been modified
+// AddModifiedHandler registers a new handler which is called whenever the peer has been modified.
 func (p *Peer) AddModifiedHandler(h PeerModifiedHandler) {
 	if !slices.Contains(p.onModified, h) {
 		p.onModified = append(p.onModified, h)

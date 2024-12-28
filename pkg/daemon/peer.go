@@ -41,7 +41,7 @@ type Peer struct {
 	logger *log.Logger
 }
 
-// NewPeer creates a peer and initiates a new ICE agent
+// NewPeer creates a peer and initiates a new ICE agent.
 func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 	p := &Peer{
 		Interface: i,
@@ -64,7 +64,7 @@ func NewPeer(wgp *wgtypes.Peer, i *Interface) (*Peer, error) {
 
 // Getters
 
-// String returns the peers public key as a base64-encoded string
+// String returns the peers public key as a base64-encoded string.
 func (p *Peer) String() string {
 	if p.Name != "" {
 		return fmt.Sprintf("[%s]%s", p.Name, p.PublicKey())
@@ -73,17 +73,17 @@ func (p *Peer) String() string {
 	return p.PublicKey().String()
 }
 
-// PublicKey returns the Curve25199 public key of the WireGuard peer
+// PublicKey returns the Curve25199 public key of the WireGuard peer.
 func (p *Peer) PublicKey() crypto.Key {
 	return crypto.Key(p.Peer.PublicKey)
 }
 
-// PresharedKey returns the Curve25199 preshared key of the WireGuard peer
+// PresharedKey returns the Curve25199 preshared key of the WireGuard peer.
 func (p *Peer) PresharedKey() crypto.Key {
 	return crypto.Key(p.Peer.PresharedKey)
 }
 
-// PublicKeyPair returns both the public key of the local (our) and remote peer (theirs)
+// PublicKeyPair returns both the public key of the local (our) and remote peer (theirs).
 func (p *Peer) PublicKeyPair() *crypto.PublicKeyPair {
 	return &crypto.PublicKeyPair{
 		Ours:   p.Interface.PublicKey(),
@@ -91,7 +91,7 @@ func (p *Peer) PublicKeyPair() *crypto.PublicKeyPair {
 	}
 }
 
-// PublicPrivateKeyPair returns both the public key of the local (our) and remote peer (theirs)
+// PublicPrivateKeyPair returns both the public key of the local (our) and remote peer (theirs).
 func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
 	return &crypto.KeyPair{
 		Ours:   p.Interface.PrivateKey(),
@@ -100,16 +100,17 @@ func (p *Peer) PublicPrivateKeyPair() *crypto.KeyPair {
 }
 
 // IsControlling determines if the peer is controlling the ICE session
-// by selecting the peer which has the smaller public key
+// by selecting the peer which has the smaller public key.
 func (p *Peer) IsControlling() bool {
 	var pkOur, pkTheir big.Int
+
 	pkOur.SetBytes(p.Interface.Interface.PublicKey[:])
 	pkTheir.SetBytes(p.Peer.PublicKey[:])
 
 	return pkOur.Cmp(&pkTheir) == -1
 }
 
-// WireGuardConfig return the WireGuard peer configuration
+// WireGuardConfig return the WireGuard peer configuration.
 func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	cfg := &wgtypes.PeerConfig{
 		PublicKey:  p.Peer.PublicKey,
@@ -128,7 +129,7 @@ func (p *Peer) WireGuardConfig() *wgtypes.PeerConfig {
 	return cfg
 }
 
-// SetEndpoint sets a new endpoint for the WireGuard peer
+// SetEndpoint sets a new endpoint for the WireGuard peer.
 func (p *Peer) SetEndpoint(addr *net.UDPAddr) error {
 	// Check if update is required
 	if netx.CmpUDPAddr(addr, p.Endpoint) == 0 {
@@ -155,7 +156,7 @@ func (p *Peer) SetEndpoint(addr *net.UDPAddr) error {
 	return nil
 }
 
-// SetPresharedKey sets a new preshared key for the WireGuard peer
+// SetPresharedKey sets a new preshared key for the WireGuard peer.
 func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 	// Check if update is required
 	if *psk == p.PresharedKey() {
@@ -181,7 +182,7 @@ func (p *Peer) SetPresharedKey(psk *crypto.Key) error {
 	return nil
 }
 
-// AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer
+// AddAllowedIP adds a new IP network to the allowed ip list of the WireGuard peer.
 func (p *Peer) AddAllowedIP(a net.IPNet) error {
 	// Check if AllowedIP is already configured
 	if slicesx.Contains(p.AllowedIPs, func(n net.IPNet) bool {
@@ -205,7 +206,7 @@ func (p *Peer) AddAllowedIP(a net.IPNet) error {
 	return p.client.ConfigureDevice(p.Interface.Name(), cfg)
 }
 
-// RemoveAllowedIP removes a new IP network from the allowed ip list of the WireGuard peer
+// RemoveAllowedIP removes a new IP network from the allowed ip list of the WireGuard peer.
 func (p *Peer) RemoveAllowedIP(a net.IPNet) error {
 	ips := slicesx.Filter(p.Peer.AllowedIPs, func(b net.IPNet) bool {
 		return netx.CmpNet(a, b) != 0
@@ -242,23 +243,29 @@ func (p *Peer) Sync(newPeer *wgtypes.Peer) (PeerModifier, []net.IPNet, []net.IPN
 	if newPeer.PresharedKey != oldPeer.PresharedKey {
 		mod |= PeerModifiedPresharedKey
 	}
+
 	if netx.CmpUDPAddr(newPeer.Endpoint, oldPeer.Endpoint) != 0 {
 		mod |= PeerModifiedEndpoint
 	}
+
 	if newPeer.PersistentKeepaliveInterval != oldPeer.PersistentKeepaliveInterval {
 		mod |= PeerModifiedKeepaliveInterval
 	}
+
 	if newPeer.LastHandshakeTime != oldPeer.LastHandshakeTime {
 		mod |= PeerModifiedHandshakeTime
 	}
+
 	if newPeer.ReceiveBytes != oldPeer.ReceiveBytes {
 		mod |= PeerModifiedReceiveBytes
 		p.LastReceiveTime = now
 	}
+
 	if newPeer.TransmitBytes != oldPeer.TransmitBytes {
 		mod |= PeerModifiedTransmitBytes
 		p.LastTransmitTime = now
 	}
+
 	if newPeer.ProtocolVersion != oldPeer.ProtocolVersion {
 		mod |= PeerModifiedProtocolVersion
 	}
@@ -329,6 +336,7 @@ func (p *Peer) Reachability() coreproto.ReachabilityType {
 	}
 
 	now := time.Now()
+
 	lastActivity := p.LastReceiveTime
 	if p.LastTransmitTime.After(lastActivity) {
 		lastActivity = p.LastTransmitTime

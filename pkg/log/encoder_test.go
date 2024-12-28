@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: 2017 Jonathan Sternberg
 // SPDX-License-Identifier: MIT
 
-package log
+package log //nolint:testpackage
 
 import (
 	"errors"
@@ -151,7 +151,7 @@ var _ = Context("encoder", func() {
 			Entry("string with backslash", `k=\\back\\`, func(enc zapcore.Encoder) { enc.AddString("k", `\back\`) }),
 			Entry("string with newline", `k="new\nline"`, func(enc zapcore.Encoder) { enc.AddString("k", "new\nline") }),
 			Entry("string with cr", `k="carriage\rreturn"`, func(enc zapcore.Encoder) { enc.AddString("k", "carriage\rreturn") }),
-			Entry("string with tab", `k="tab\ttab"`, func(enc zapcore.Encoder) { enc.AddString("k", "tab\ttab") }),
+			Entry("string with tab", `k="tab\ttab"`, func(enc zapcore.Encoder) { enc.AddString("k", "tab\ttab") }), //nolint:dupword
 			Entry("string with control char", `k="control\u0000char"`, func(enc zapcore.Encoder) { enc.AddString("k", "control\u0000char") }),
 			Entry("string with rune", `k=☺`, func(enc zapcore.Encoder) { enc.AddString("k", "☺") }),
 			Entry("string with decode error", `k="\ufffd"`, func(enc zapcore.Encoder) { enc.AddString("k", string([]byte{0xe2})) }),
@@ -226,6 +226,7 @@ var _ = Context("encoder", func() {
 
 					err := enc.AddArray("x", zapcore.ArrayMarshalerFunc(func(enc zapcore.ArrayEncoder) error {
 						f(enc)
+
 						return nil
 					}))
 					Expect(err).To(Succeed())
@@ -233,6 +234,7 @@ var _ = Context("encoder", func() {
 					err = enc.AddArray("y", zapcore.ArrayMarshalerFunc(func(enc zapcore.ArrayEncoder) error {
 						f(enc)
 						f(enc)
+
 						return nil
 					}))
 					Expect(err).To(Succeed())
@@ -286,20 +288,23 @@ var _ = Context("encoder", func() {
 							return err
 						}
 						enc.AppendInt(7)
+
 						return nil
 					},
 				),
 				Entry("array of objects",
 					"[{a=0},{b=1},{c=2}]",
 					func(enc zapcore.ArrayEncoder) error {
-						for i := 0; i < 3; i++ {
+						for i := range 3 {
 							if err := enc.AppendObject(zapcore.ObjectMarshalerFunc(func(oe zapcore.ObjectEncoder) error {
 								oe.AddInt(string(rune('a'+i)), i)
+
 								return nil
 							})); err != nil {
 								return err
 							}
 						}
+
 						return nil
 					},
 				),
@@ -328,6 +333,7 @@ var _ = Context("encoder", func() {
 
 					err := enc.AddObject("x", zapcore.ObjectMarshalerFunc(func(enc zapcore.ObjectEncoder) error {
 						f(enc)
+
 						return nil
 					}))
 					Expect(err).To(Succeed())
@@ -390,25 +396,29 @@ var _ = Context("encoder", func() {
 						if err := enc.AddArray("a", marshalIntArray(1, 3)); err != nil {
 							return fmt.Errorf("failed to add array: %w", err)
 						}
+
 						if err := enc.AddArray("b", marshalIntArray(4, 5)); err != nil {
 							return fmt.Errorf("failed to add array: %w", err)
 						}
+
 						return nil
 					},
 				),
 				Entry("objects with objects ",
 					`{0={a=1 b=2 c=3} 1={d=4 e=5 f=6} 2={g=7 h=8 i=9}}`,
 					func(enc zapcore.ObjectEncoder) error {
-						for i := 0; i < 3; i++ {
+						for i := range 3 {
 							if err := enc.AddObject(strconv.Itoa(i), zapcore.ObjectMarshalerFunc(func(oe zapcore.ObjectEncoder) error {
-								for j := 0; j < 3; j++ {
+								for j := range 3 {
 									oe.AddInt(string(rune('a'+i*3+j)), i*3+j+1)
 								}
+
 								return nil
 							})); err != nil {
 								return err
 							}
 						}
+
 						return nil
 					},
 				),
@@ -631,6 +641,7 @@ func marshalIntArray(start, end int) zapcore.ArrayMarshalerFunc {
 		for i := start; i <= end; i++ {
 			enc.AppendInt(i)
 		}
+
 		return nil
 	}
 }

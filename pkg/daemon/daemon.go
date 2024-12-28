@@ -277,6 +277,7 @@ func (d *Daemon) watchdogTicker() (<-chan time.Time, error) {
 		return nil, err
 	} else if wdInterval == 0 {
 		d.logger.DebugV(5, "Not started via systemd. Disabling watchdog")
+
 		return nil, errNotSupported
 	}
 

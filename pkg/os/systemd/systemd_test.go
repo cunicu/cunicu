@@ -7,11 +7,14 @@ package systemd_test
 import (
 	"testing"
 
+	"cunicu.li/cunicu/test"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 func TestSuite(t *testing.T) {
+	test.SetupLogging()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "SystemD Suite")
 }

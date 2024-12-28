@@ -40,6 +40,7 @@ func BuildBinary(name string) (string, []any, error) {
 	binaryOnce.Do(func() {
 		binaryPath, binaryRunArgs, binaryError = buildBinary("../../cmd/cunicu")
 	})
+
 	if binaryError != nil {
 		return "", nil, binaryError
 	}
@@ -100,8 +101,10 @@ func buildBinary(packagePath string) (string, []string, error) {
 
 	logger := log.Global.Named("builder")
 
-	var cmdArgs []string
-	var test bool
+	var (
+		cmdArgs []string
+		test    bool
+	)
 
 	// Build a test binary if profiling is requested
 	if test = len(profileArgs) > 0; test {

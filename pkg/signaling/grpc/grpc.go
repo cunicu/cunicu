@@ -32,6 +32,7 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	q := u.Query()
 
 	insecure := false
+
 	if q.Has("insecure") {
 		var err error
 		if insecure, err = strconv.ParseBool(q.Get("insecure")); err != nil {
@@ -40,6 +41,7 @@ func ParseURL(urlStr string) (string, []grpc.DialOption, error) {
 	}
 
 	skipVerify := false
+
 	if q.Has("skip_verify") {
 		var err error
 		if skipVerify, err = strconv.ParseBool(q.Get("skip_verify")); err != nil {

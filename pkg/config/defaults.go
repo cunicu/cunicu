@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	// Ephemeral Port Range (RFC6056 Sect. 2.1)
+	// Ephemeral Port Range (RFC6056 Sect. 2.1).
 	EphemeralPortMin = (1 << 15) + (1 << 14)
 	EphemeralPortMax = (1 << 16) - 1
 )
@@ -106,6 +106,7 @@ func InitDefaults() error {
 	// Check if WireGuard interface can be created by the kernel
 	if !s.UserSpace && !wg.KernelModuleExists() {
 		logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
+
 		s.UserSpace = true
 	}
 

@@ -21,6 +21,7 @@ func FindRandomPortToListen(network string, mini, maxi int) (int, error) {
 	if maxi < mini {
 		return -1, errInvalidPortRange
 	}
+
 	if !strings.HasPrefix(network, "udp") {
 		return -1, fmt.Errorf("%w: %s", errInvalidNetwork, network)
 	}
@@ -39,6 +40,7 @@ func FindNextPortToListen(network string, start, end int) (int, error) {
 	if end < start {
 		return -1, errInvalidPortRange
 	}
+
 	if !strings.HasPrefix(network, "udp") {
 		return -1, fmt.Errorf("%w: %s", errInvalidNetwork, network)
 	}
