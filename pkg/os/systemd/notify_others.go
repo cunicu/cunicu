@@ -5,6 +5,6 @@
 
 package systemd
 
-func Notify(_ bool, _ string) (bool, error) {
+func Notify(_ bool, _ ...string) (bool, error) {
 	return false, nil
 }
