@@ -6,7 +6,7 @@ module cunicu.li/cunicu/scripts
 go 1.22.2
 
 require (
-	github.com/google/go-github/v67 v67.0.0
+	github.com/google/go-github/v68 v68.0.0
 	golang.org/x/mod v0.22.0
 )
 
