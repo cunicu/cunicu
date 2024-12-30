@@ -35,7 +35,7 @@ require (
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/grpc v1.69.2
-	google.golang.org/protobuf v1.36.0
+	google.golang.org/protobuf v1.36.1
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 	kernel.org/pub/linux/libs/security/libcap/cap v1.2.73
@@ -46,7 +46,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.1.0 // test-only
 	github.com/gopacket/gopacket v1.3.1 // test-only
 	github.com/onsi/ginkgo/v2 v2.22.1 // test-only
-	github.com/onsi/gomega v1.36.1 // test-only
+	github.com/onsi/gomega v1.36.2 // test-only
 )
 
 require (
