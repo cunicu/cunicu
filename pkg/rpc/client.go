@@ -72,9 +72,7 @@ func Connect(path string) (*Client, error) {
 		return nil, fmt.Errorf("failed to wait for socket: %s: %w", path, err)
 	}
 
-	tgt := "unix://" + path
-	//nolint:staticcheck
-	conn, err := grpc.Dial(tgt,
+	conn, err := grpc.NewClient("unix://"+path,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(buildinfo.UserAgent()),
 	)
