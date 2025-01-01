@@ -14,6 +14,7 @@ import (
 	"github.com/pion/ice/v4"
 
 	"cunicu.li/cunicu/pkg/log"
+	"cunicu.li/cunicu/pkg/os/systemd"
 	"cunicu.li/cunicu/pkg/wg"
 )
 
@@ -101,29 +102,35 @@ var (
 func InitDefaults() error {
 	logger := log.Global.Named("config")
 
-	s := &DefaultSettings.DefaultInterfaceSettings
+	s := &DefaultSettings
+	si := &s.DefaultInterfaceSettings
+
+	// The daemon has been started by systemd
+	if systemd.NumFiles() > 0 {
+		s.RPC.Socket = "systemd"
+	}
 
 	// Check if WireGuard interface can be created by the kernel
-	if !s.UserSpace && !wg.KernelModuleExists() {
+	if !si.UserSpace && !wg.KernelModuleExists() {
 		logger.Warn("The system does not have kernel support for WireGuard. Falling back to user-space implementation.")
 
-		s.UserSpace = true
+		si.UserSpace = true
 	}
 
 	// Set default hostname
-	if s.HostName == "" {
+	if si.HostName == "" {
 		hn, err := os.Hostname()
 		if err != nil {
 			return fmt.Errorf("failed to get hostname: %w", err)
 		}
 
 		// Do not use FQDN, but just the hostname part
-		s.HostName = strings.Split(hn, ".")[0]
+		si.HostName = strings.Split(hn, ".")[0]
 	}
 
 	for _, pfxStr := range DefaultPrefixes {
 		_, pfx, _ := net.ParseCIDR(pfxStr)
-		s.Prefixes = append(s.Prefixes, *pfx)
+		si.Prefixes = append(si.Prefixes, *pfx)
 	}
 
 	return nil
