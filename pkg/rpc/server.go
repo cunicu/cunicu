@@ -6,8 +6,6 @@ package rpc
 import (
 	"context"
 	"fmt"
-	"net"
-	"os"
 	"sync"
 
 	"go.uber.org/zap"
@@ -16,6 +14,7 @@ import (
 
 	"cunicu.li/cunicu/pkg/daemon"
 	"cunicu.li/cunicu/pkg/log"
+	xnet "cunicu.li/cunicu/pkg/net"
 	rpcproto "cunicu.li/cunicu/pkg/proto/rpc"
 	"cunicu.li/cunicu/pkg/types"
 )
@@ -52,12 +51,7 @@ func NewServer(d *daemon.Daemon, socket string) (*Server, error) {
 	s.signaling = NewSignalingServer(s, d.Backend)
 	s.epdisc = NewEndpointDiscoveryServer(s)
 
-	// Remove old unix sockets
-	if err := os.RemoveAll(socket); err != nil {
-		return nil, fmt.Errorf("failed to remove old socket: %w", err)
-	}
-
-	l, err := net.Listen("unix", socket)
+	l, err := xnet.Listen(socket)
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen at %s: %w", socket, err)
 	}
