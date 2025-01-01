@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 # yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
 ---
@@ -104,7 +104,7 @@ $defs:
             description: |
               Path to a Unix socket for management and monitoring of the cunīcu daemon.
             type: string
-            default: /var/run/cunicu.sock
+            default: /run/cunicu.sock
 
           wait:
             description: |
