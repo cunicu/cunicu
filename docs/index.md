@@ -2,7 +2,7 @@
 title: Welcome
 sidebar_position: 1
 hide_title: true
-# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 ---
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
 // SPDX-FileCopyrightText: 2012-2014 Dmitry Chestnykh
 // SPDX-License-Identifier: Apache-2.0
 

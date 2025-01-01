@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2014 Docker, Inc.
 // SPDX-FileCopyrightText: 2015-2018 CoreOS, Inc.
-// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
 package systemd

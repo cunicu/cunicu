@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 // SPDX-License-Identifier: Apache-2.0
 
 package main
@@ -62,7 +62,7 @@ func generate(mod, repo, staticDir, prefix string) error {
 
 	if _, err := f.WriteString(`
 <!--
-  SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+  SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
   SPDX-License-Identifier: Apache-2.0
 -->
   `); err != nil {
