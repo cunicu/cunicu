@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 )
 
 func TestSuite(t *testing.T) {
@@ -18,3 +19,7 @@ func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "SystemD Suite")
 }
+
+var _ = AfterSuite(func() {
+	CleanupBuildArtifacts()
+})
