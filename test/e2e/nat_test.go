@@ -21,7 +21,7 @@ import (
  *
  * Hosts:
  *  - 1x Relay node         [r1] (Coturn STUN/TURN server)
- *  - 1x Signaling node     [s1] (GRPC server)
+ *  - 1x Signaling node     [s1] (gRPC server)
  *  - 2x NAT routers        [nat?]
  *  - 1x WAN switch         [wan?]
  *  - 2x LAN switches       [lan?]

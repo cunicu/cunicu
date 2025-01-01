@@ -26,7 +26,7 @@ import (
 /* Simple local-area switched topology with variable number of agents
  *
  *  - 1x Relay node         [r1] (Coturn STUN/TURN server)
- *  - 1x Signaling node     [s1] (GRPC server)
+ *  - 1x Signaling node     [s1] (gRPC server)
  *  - 1x Switch             [sw1]
  *  - Yx cunicu Agent nodes [n?]
  *

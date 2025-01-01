@@ -15,7 +15,7 @@ sidebar_position: 20
 -   Encrypt all signaling messages
 
 -   Plug-able signaling backends:
-    -   GRPC
+    -   gRPC
     -   Kubernetes API-server
     -   WebSocket
 
