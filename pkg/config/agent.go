@@ -61,7 +61,7 @@ func (c *InterfaceSettings) AgentURLs(ctx context.Context, pk *crypto.Key) ([]*s
 					return err
 				}
 
-				conn, err := grpc.DialContext(ctx, name, opts...) //nolint:staticcheck
+				conn, err := grpc.NewClient(name, opts...)
 				if err != nil {
 					return fmt.Errorf("failed to connect to gRPC server: %w", err)
 				}

@@ -51,9 +51,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 		return nil, fmt.Errorf("failed to parse backend configuration: %w", err)
 	}
 
-	// TODO: Use DialWithContext
-	//nolint:staticcheck
-	if b.conn, err = grpc.Dial(b.config.Target, b.config.Options...); err != nil {
+	if b.conn, err = grpc.NewClient(b.config.Target, b.config.Options...); err != nil {
 		return nil, fmt.Errorf("failed to connect to gRPC server: %w", err)
 	}
 
