@@ -1,15 +1,52 @@
-# SPDX-FileCopyrightText: 2023-2024 Steffen Vogel <post@steffenvogel.de>
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 
 [Unit]
-Description=WireGuard Interactive Connectivity Establishment
+Description=cunīcu mesh network daemon
 
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=simple
-ExecStart=cunicu daemon
+Type=notify-reload
+ExecStart=cunicu daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml
+Environment="CUNICU_EXPERIMENTAL=1"
+Environment="CUNICU_CONFIG_ALLOW_INSECURE=1"
+
+DynamicUser=yes
+NotifyAccess=main
+WatchdogSec=10
+
+RuntimeDirectory=cunicu
+StateDirectory=cunicu
+ConfigurationDirectory=cunicu
+
+# Hardening
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_SYS_MODULE
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_SYS_MODULE
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateUsers=yes
+PrivateMounts=yes
+PrivateTmp=yes
+ProcSubset=pid
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelTunables=yes
+ProtectProc=invisible
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target
