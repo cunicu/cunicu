@@ -67,9 +67,7 @@ cunīcu can support multiple backends for signaling session information such as 
 ### Available backends
 
 -   gRPC
--   Kubernetes API server
 
-For the use within a Kubernetes cluster also a dedicated backend using the Kubernetes api-server is available.
 Checkout the [`Backend`](https://github.com/cunicu/cunicu/blob/main/pkg/signaling/backend.go) interface for implementing your own backend.
 
 ### Semantics
