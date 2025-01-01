@@ -16,8 +16,6 @@ sidebar_position: 20
 
 -   Plug-able signaling backends:
     -   gRPC
-    -   Kubernetes API-server
-    -   WebSocket
 
 -   Support [Trickle ICE][rfc8838]
 
