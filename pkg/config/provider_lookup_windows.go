@@ -29,22 +29,27 @@ func dnsClientConfig() (*dns.ClientConfig, error) {
 	}
 
 	resolvers := map[string]bool{}
+
 	for _, addr := range addresses {
 		for next := addr.FirstUnicastAddress; next != nil; next = next.Next {
 			if addr.OperStatus != windows.IfOperStatusUp {
 				continue
 			}
+
 			if next.Address.IP() != nil {
 				for dnsServer := addr.FirstDnsServerAddress; dnsServer != nil; dnsServer = dnsServer.Next {
 					ip := dnsServer.Address.IP()
 					if ip.IsMulticast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsUnspecified() {
 						continue
 					}
+
 					if ip.To16() != nil && strings.HasPrefix(ip.To16().String(), "fec0:") {
 						continue
 					}
+
 					resolvers[ip.String()] = true
 				}
+
 				break
 			}
 		}
