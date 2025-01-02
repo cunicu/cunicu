@@ -61,7 +61,7 @@ func (i *Interface) setupUDPMux() error {
 		// TODO: Check why we cant use Daemon.InterfaceByName()
 		if lnk, err := link.FindLink(name); err != nil {
 			return false
-		} else if lnk.Type() == "wireguard" {
+		} else if lnk.Type() == link.TypeWireGuard {
 			return false
 		}
 
