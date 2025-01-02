@@ -17,7 +17,10 @@ DynamicUser=yes
 NotifyAccess=main
 WatchdogSec=10
 
-RuntimeDirectory=cunicu
+BindPaths=-/var/run/wireguard -/dev/net/tun
+DeviceAllow=/dev/net/tun rw
+
+RuntimeDirectory=cunicu wireguard
 StateDirectory=cunicu
 ConfigurationDirectory=cunicu
 
@@ -28,7 +31,7 @@ LockPersonality=yes
 MemoryDenyWriteExecute=yes
 NoNewPrivileges=yes
 PrivateDevices=yes
-PrivateUsers=yes
+PrivateUsers=self
 PrivateMounts=yes
 PrivateTmp=yes
 ProcSubset=pid
