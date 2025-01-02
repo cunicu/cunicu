@@ -57,23 +57,25 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 
 	b.client = signalingproto.NewSignalingClient(b.conn)
 
-	bi, err := b.client.GetBuildInfo(context.Background(), &proto.Empty{}, grpc.WaitForReady(true))
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to GRPC signaling server: %w", err)
-	}
+	go func() {
+		bi, err := b.client.GetBuildInfo(context.Background(), &proto.Empty{}, grpc.WaitForReady(true))
+		if err != nil {
+			b.logger.Error("Failed to get build info from the gRPC signaling server", zap.Error(err))
+		}
 
-	b.logger.Debug("Connected to GRPC signaling server",
-		zap.String("server_arch", bi.Arch),
-		zap.String("server_version", bi.Version),
-		zap.String("server_commit", bi.Commit),
-		zap.String("server_tag", bi.Tag),
-		zap.String("server_branch", bi.Branch),
-		zap.String("server_os", bi.Os),
-	)
+		b.logger.Debug("Connected to GRPC signaling server",
+			zap.String("server_arch", bi.Arch),
+			zap.String("server_version", bi.Version),
+			zap.String("server_commit", bi.Commit),
+			zap.String("server_tag", bi.Tag),
+			zap.String("server_branch", bi.Branch),
+			zap.String("server_os", bi.Os),
+		)
 
-	for _, h := range cfg.OnReady {
-		h.OnSignalingBackendReady(b)
-	}
+		for _, h := range cfg.OnReady {
+			h.OnSignalingBackendReady(b)
+		}
+	}()
 
 	return b, nil
 }
