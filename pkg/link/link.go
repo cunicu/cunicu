@@ -10,9 +10,7 @@ import (
 
 const (
 	EthernetMTU = 1500
-)
 
-const (
 	TypeWireGuard = "wireguard"
 )
 
