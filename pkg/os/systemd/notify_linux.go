@@ -46,7 +46,7 @@ func Notify(unsetEnv bool, messages ...string) (bool, error) {
 	defer conn.Close()
 
 	logger := log.Global.Named("systemd")
-	logger.DebugV(5, "Notifying", zap.Strings("message", messages))
+	logger.DebugV(10, "Notifying", zap.Strings("message", messages))
 
 	state := strings.Join(messages, "\n")
 
