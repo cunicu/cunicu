@@ -16,6 +16,10 @@ pkgs.mkShell {
     protoc-gen-go-grpc
     evans
 
+    nix-update
+    goreleaser
+    svu
+
     (buildGoModule {
       name = "gocov-merger";
 
