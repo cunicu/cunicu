@@ -47,7 +47,10 @@
         {
           formatter = pkgs.nixfmt-rfc-style;
 
-          devShells.default = import ./nix/dev.nix { inherit pkgs self'; };
+          devShells = {
+            default = import ./nix/shell.nix { inherit pkgs self'; };
+            ci = import ./nix/shell-ci.nix { inherit pkgs; };
+          };
 
           packages = {
             cunicu = import ./nix/default.nix { inherit pkgs; };

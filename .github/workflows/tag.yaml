@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Tag
+
+on:
+  push:
+    branches:
+    - main
+
+permissions:
+  contents: write
+
+jobs:
+  nix-update:
+    environment: release
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}
+
+    - name: Check Nix flake inputs
+      uses: DeterminateSystems/flake-checker-action@v9
+
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@v16
+
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@v8
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'Steffen Vogel'
+        git config --global user.email 'post@steffenvogel.de'
+
+    - name: Get current and next tag
+      id: tags
+      run: |
+        nix develop .#ci --command sh <<'EOF' | tee "$GITHUB_OUTPUT"
+          echo next=$(svu next)
+          echo current=$(svu current)
+        EOF
+
+    - name: Update version and vendor hashes in Nix derivation
+      id: nix-update-hashes
+      run: |
+        nix develop .#ci --command nix-update --flake --version ${{ steps.tags.outputs.next || steps.tags.outputs.current }} default
+        git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+    - name: Commit changes
+      id: git-commit
+      if: steps.nix-update-hashes.outputs.changed == 'true'
+      run: |
+        git commit --all --signoff --message "fix(nix): Update version and hashes"
+        git push
+
+    - name: Tag new release
+      id: git-tag
+      if: steps.tags.outputs.current != steps.tags.outputs.next
+      run: |
+        git tag ${{ steps.tags.outputs.next }}
+        git push origin tag ${{ steps.tags.outputs.next }}
