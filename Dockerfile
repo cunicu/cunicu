@@ -1,26 +1,17 @@
 # SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.23-alpine AS builder
+FROM nixos/nix:2.24.11 AS builder
 
-RUN apk add \
-    git \
-    make \
-    protoc
-
-COPY Makefile .
-RUN make install-deps
-
-WORKDIR /app
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
+WORKDIR /src
 
 COPY . .
-RUN make
+RUN nix \
+    --extra-experimental-features "nix-command flakes" \
+    build
 
 FROM alpine:3.21
 
-COPY --from=builder /app/cunicu /
+COPY --from=builder /src/result/bin/cunicu /
 
 ENTRYPOINT ["/cunicu"]
