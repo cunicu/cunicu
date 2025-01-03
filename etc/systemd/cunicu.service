@@ -7,6 +7,9 @@ Description=cunīcu mesh network daemon
 Wants=network-online.target
 After=network-online.target
 
+Requires=cunicu.socket
+After=cunicu.socket
+
 [Service]
 Type=notify-reload
 ExecStart=cunicu daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml
