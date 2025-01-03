@@ -19,7 +19,7 @@ defaults:
 jobs:
   test-website:
     name: Test build of website
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
             protobuf-compiler
             make
             libpcap-dev
-  
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
