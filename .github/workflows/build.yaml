@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
-    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.runner || 'ubuntu-24.04' }}
 
     strategy:
       fail-fast: false
@@ -24,20 +24,20 @@ jobs:
           target_arch: amd64
           host_os: linux
           host_arch: amd64
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
 
         - target_os: linux
           target_arch: arm64
           host_os: linux
           host_arch: amd64
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
 
         - target_os: linux
           target_arch: arm
           host_os: linux
           host_arch: amd64
           arm: "7"
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
 
         # TODO: FreeBSD builds require cgo and FreeBSD
         #       system headers.
@@ -46,20 +46,20 @@ jobs:
         #   target_arch: amd64
         #   host_os: linux
         #   host_arch: amd64
-        #   runner: ubuntu-latest
+        #   runner: ubuntu-24.04
 
         # - target_os: freebsd
         #   target_arch: arm64
         #   host_os: linux
         #   host_arch: amd64
-        #   runner: ubuntu-latest
+        #   runner: ubuntu-24.04
 
         # - target_os: freebsd
         #   target_arch: arm
         #   host_os: linux
         #   host_arch: amd64
         #   arm: "7"
-        #   runner: ubuntu-latest
+        #   runner: ubuntu-24.04
 
         - target_os: darwin
           target_arch: arm64
@@ -90,14 +90,14 @@ jobs:
           host_os: linux
           host_arch: amd64
           mips: softfloat
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
 
         - target_os: linux
           target_arch: mips
           host_os: linux
           host_arch: amd64
           mips: hardfloat
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
 
     env:
       GOOS: ${{ matrix.target_os }}
@@ -133,7 +133,7 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
-    
+
     - name: Install build and test dependencies
       env:
         GOOS: ${{ matrix.host_os }}
@@ -142,7 +142,7 @@ jobs:
 
     - name: Run cunīcu build
       run: make cunicu
-      
+
     - name: Lint
       if: ${{ matrix.host_os != 'windows' }}
       run: make lint LINT_OPTS=--timeout=15m

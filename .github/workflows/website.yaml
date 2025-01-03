@@ -19,7 +19,7 @@ defaults:
 jobs:
   deploy:
     name: Build and deploy website
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: release
     steps:
     - name: Checkout

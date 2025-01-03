@@ -17,7 +17,7 @@ permissions:
 jobs:
   goreleaser:
     environment: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
 
@@ -49,7 +49,7 @@ jobs:
 
     - name: Install build dependencies
       run: make install-deps
-    
+
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v6
       with:
