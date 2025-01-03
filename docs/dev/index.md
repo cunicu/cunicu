@@ -35,7 +35,7 @@ This allows us to test cunīcu in both simple and complex network topologies inc
 We provide a [Nix](https://nixos.org/) [flake](https://nixos.wiki/wiki/Flakes) for cunīcu and most related Git repositories to quickly jump into a reproducable development shell by running:
 
 ```shell
-nix develop ./nix
+nix develop
 ```
 
 In this shell all required build-time dependencies and tools for cunīcu are available.
@@ -43,7 +43,7 @@ In this shell all required build-time dependencies and tools for cunīcu are ava
 I also recommend to setup [direnv](https://direnv.net/) to automatically enter a development shell whenever you are residing inside the repos directory structure:
 
 ```shell
-echo "use flake ./nix --impure" > .envrc
+echo "use flake" > .envrc
 ```
 
 ## Website
