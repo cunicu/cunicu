@@ -5,6 +5,8 @@ PKG = $(shell grep module go.mod | cut -f2 -d" ")
 
 export CGO_ENABLED = 0
 
+LINT_OPTS ?= --timeout=15m
+
 LDFLAGS = -X cunicu.li/cunicu/pkg/buildinfo.Version=$(shell git describe --tags --dirty || echo unknown) \
           -X cunicu.li/cunicu/pkg/buildinfo.Tag=$(shell git describe --tags) \
           -X cunicu.li/cunicu/pkg/buildinfo.Commit=$(shell git rev-parse HEAD) \

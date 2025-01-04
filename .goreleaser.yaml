@@ -10,7 +10,7 @@ project_name: cunicu
 
 before:
   hooks:
-  - make prepare LINT_OPTS=--timeout=15m
+  - make prepare
 
 checksum:
   name_template: "checksums.txt"
