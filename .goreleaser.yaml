@@ -31,7 +31,7 @@ builds:
 
   main: ./cmd/cunicu
   binary: cunicu
-  
+
   env:
   - CGO_ENABLED=0
 
@@ -54,8 +54,8 @@ builds:
   - "386"
   - arm
   - mips
-  - mipsle 
-  
+  - mipsle
+
   goarm:
   - "7"
 
@@ -80,12 +80,12 @@ builds:
 
 archives:
 - id: cunicu
-  
+
   builds:
   - cunicu
 
   format: tar.gz
-  
+
   files:
   - LICENSE
   - README.md
@@ -270,7 +270,7 @@ brews:
     etc.install "etc/cunicu.yaml", "etc/cunicu.advanced.yaml"
     bash_completion.install "completions/cunicu.bash" => "cunicu"
     zsh_completion.install "completions/cunicu.zsh" => "_cunicu"
-    fish_completion.install "completions/cunicu.fish"    
+    fish_completion.install "completions/cunicu.fish"
     man1.install Dir["man/*.1"]
 
 aurs:
@@ -280,13 +280,13 @@ aurs:
   homepage: "https://cunicu.li"
   description: "A zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)"
   license: "Apache-2.0"
-  
+
   maintainers:
   - 'Steffen Vogel <post@steffenvogel.de>'
 
   private_key: '{{ .Env.AUR_KEY }}'
   git_url: 'ssh://aur@aur.archlinux.org/cunicu-bin.git'
-  
+
   skip_upload: auto
 
   optdepends:
@@ -307,7 +307,7 @@ aurs:
     # manpages
     install -d "${pkgdir}/usr/share/man/man1"
     install -Dm644 ./man/*.1 "${pkgdir}/usr/share/man/man1"
-    
+
     # completions
     mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
     mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
