@@ -12,7 +12,6 @@ ginkgo.report
 *.out
 *.test
 *.out.*
-lcov.info
 test/e2e/logs/
 dist/
 result
