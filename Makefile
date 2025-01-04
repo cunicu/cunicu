@@ -68,20 +68,6 @@ install-deps:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/onsi/ginkgo/v2/ginkgo
 
-website: docs-website redirects
-	cd website && \
-	yarn build
-
-docs: cunicu
-	./cunicu docs --with-frontmatter
-
-docs-website: docs
-	find ./docs/usage/md -name "*.md" -exec sed -r -i -e 's!<!\\<!g' -e 's!\$\{!\\\$\{!g' {} \;
-
-redirects:
-	cd scripts && \
-	go run ./vanity_redirects -static-dir ../website/static
-
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 
 completions-dir:
@@ -92,10 +78,8 @@ completions/cunicu.%: completions-dir
 
 prepare: clean tidy generate lint docs completions
 
-ci: install-deps lint tests
-
 clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf cunicu test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean lint install-deps ci completions docs redirects prepare generate website
+.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions docs prepare generate
