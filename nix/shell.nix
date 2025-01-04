@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Philipp Jungkamp <p.jungkamp@gmx.net>
+# SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 { self', pkgs, ... }:
 pkgs.mkShell {

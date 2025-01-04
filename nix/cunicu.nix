@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023 Philipp Jungkamp <p.jungkamp@gmx.net>
+# SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 {
   lib,
   stdenv,
-  src,
   buildGoModule,
   installShellFiles,
   versionCheckHook,
@@ -14,15 +14,17 @@
 }:
 let
   version = "0.10.0";
+  src = ./..;
 in
 buildGoModule {
   pname = "cunicu";
-  inherit src version;
+  inherit version src;
 
   vendorHash = "sha256-yFpkYI6ue5LXwRCj4EqWDBaO3TYzZ3Ov/39PRQWMWzk=";
 
   nativeBuildInputs = [
     installShellFiles
+
     protobuf
     protoc-gen-go
     protoc-gen-go-grpc
