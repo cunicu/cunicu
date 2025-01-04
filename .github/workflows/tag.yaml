@@ -52,7 +52,7 @@ jobs:
             export LC_CTYPE=C.UTF-8
             VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
 
-            nix-update --flake$ gocov-merger
+            nix-update --flake gocov-merger
             nix-update --flake --version ${VERSION} cunicu
             nix-update --flake --version ${VERSION} scripts
             nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
