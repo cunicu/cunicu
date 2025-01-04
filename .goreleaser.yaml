@@ -229,7 +229,7 @@ docker_manifests:
   - "ghcr.io/cunicu/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 publishers:
 - name: Gemfury
