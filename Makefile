@@ -76,10 +76,10 @@ completions-dir:
 completions/cunicu.%: completions-dir
 	go run ./cmd/cunicu/ completion $* > $@
 
-prepare: clean tidy generate lint docs completions
+prepare: clean tidy generate lint completions
 
 clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf cunicu test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions docs prepare generate
+.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions prepare generate
