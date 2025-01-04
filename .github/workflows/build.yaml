@@ -182,7 +182,7 @@ jobs:
         GOARCH: ${{ matrix.host_arch }}
       run: make install-deps
 
-    - name: Run cunīcu build
+    - name: Build cunīcu
       run: |
         make cunicu
 
@@ -286,19 +286,25 @@ jobs:
     - name: Setup Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@v8
 
-    - name: Run cunīcu build
+    - name: Build cunīcu
       run: |
         nix build --print-build-logs .#cunicu
 
     - name: Run tests
       if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
-      run: sudo --preserve-env env "PATH=$PATH" make tests
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            sudo --preserve-env env "PATH=$PATH" make tests
+        EOF
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
 
-    - name: Run end-to-end tests
+    - name: Run e2e tests
       if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
-      run: sudo --preserve-env env "PATH=$PATH" make tests-e2e
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            sudo --preserve-env env "PATH=$PATH" make tests-e2e
+        EOF
 
     - name: Upload logs an packet captures as artifacts
       if: always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
@@ -310,7 +316,9 @@ jobs:
     - name: Create merged coverage profile
       if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
       run: |
-        make coverprofile_merged.out
+        nix develop .#ci --command sh <<'EOF'
+            make coverprofile_merged.out
+        EOF
 
     - name: Report test coverage to Codecov
       if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
