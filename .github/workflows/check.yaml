@@ -17,11 +17,14 @@ concurrency:
 
 jobs:
   reuse:
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
     uses: cunicu/.github/.github/workflows/reuse.yaml@v0.3.0
 
   flake:
     name: Check flake.lock
     runs-on: ubuntu-24.04
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4

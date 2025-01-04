@@ -21,6 +21,7 @@ permissions:
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
     runs-on: ${{ matrix.runner || 'ubuntu-24.04' }}
 
     strategy:
@@ -212,8 +213,8 @@ jobs:
 
     - name: Setup Git
       run: |
-        git config --global user.name 'Steffen Vogel'
-        git config --global user.email 'post@steffenvogel.de'
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
     - name: Get current and next tag
       id: tags
