@@ -3,6 +3,7 @@
 {
   mkShell,
 
+  coturn,
   ginkgo,
   golangci-lint,
   gocov-merger,
@@ -12,6 +13,7 @@
 }:
 mkShell {
   packages = [
+    coturn
     ginkgo
     gocov-merger
     golangci-lint
