@@ -87,9 +87,64 @@ jobs:
         fi
 
   build:
-    name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
-    if: needs.nix-update.outputs.changed != 'true' # Skip build if we just pushed. We wait for the workflow to be retriggered.
-    runs-on: ${{ matrix.runner || 'ubuntu-24.04' }}
+    name: Build for Windows
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
+    runs-on: windows-latest
+    needs:
+    - nix-update
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - target_arch: arm64
+          host_arch: amd64
+        - target_arch: amd64
+          host_arch: amd64
+
+    env:
+      GOOS: ${{ matrix.target_os }}
+      GOARCH: ${{ matrix.target_arch }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: choco install
+            protoc
+            make
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        check-latest: true
+
+    - name: Install build and test dependencies
+      env:
+        GOOS: ${{ matrix.host_os }}
+        GOARCH: ${{ matrix.host_arch }}
+      run: make install-deps
+
+    - name: Run cunīcu build
+      run: |
+        make cunicu
+
+    - name: Lint
+      run: make lint
+
+    - name: Run tests for Windows # which has no sudo
+      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
+      run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
+
+
+  build-nix:
+    name: Build with Nix for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
+    runs-on: ${{ matrix.runner }}
     needs:
     - nix-update
 
@@ -114,6 +169,20 @@ jobs:
           host_os: linux
           host_arch: amd64
           arm: "7"
+          runner: ubuntu-24.04
+
+        - target_os: linux
+          target_arch: mips
+          host_os: linux
+          host_arch: amd64
+          mips: softfloat
+          runner: ubuntu-24.04
+
+        - target_os: linux
+          target_arch: mips
+          host_os: linux
+          host_arch: amd64
+          mips: hardfloat
           runner: ubuntu-24.04
 
         # TODO: FreeBSD builds require cgo and FreeBSD
@@ -150,32 +219,6 @@ jobs:
           host_arch: arm64
           runner: macos-latest
 
-        - target_os: windows
-          target_arch: arm64
-          host_os: windows
-          host_arch: amd64
-          runner: windows-latest
-
-        - target_os: windows
-          target_arch: amd64
-          host_os: windows
-          host_arch: amd64
-          runner: windows-latest
-
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          mips: softfloat
-          runner: ubuntu-24.04
-
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          mips: hardfloat
-          runner: ubuntu-24.04
-
     env:
       GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
@@ -185,75 +228,43 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install dependencies
-      if: ${{ matrix.host_os == 'linux' }}
-      run: sudo apt-get install -y
-            coturn
-            protobuf-compiler
-            make
-            libpcap-dev
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@v16
 
-    - name: Install dependencies
-      if: ${{ matrix.host_os == 'darwin' }}
-      run: brew install
-            protobuf
-            make
-            libpcap
-
-    - name: Install dependencies
-      if: ${{ matrix.host_os == 'windows' }}
-      run: choco install
-            protoc
-            make
-
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
-        check-latest: true
-
-    - name: Install build and test dependencies
-      env:
-        GOOS: ${{ matrix.host_os }}
-        GOARCH: ${{ matrix.host_arch }}
-      run: make install-deps
-
-    - name: Run cunīcu build
-      run: make cunicu
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@v8
 
     - name: Lint
-      if: ${{ matrix.host_os != 'windows' }}
       run: make lint
 
+    - name: Run cunīcu build
+      run: |
+        nix build --print-build-logs .#cunicu
+
     - name: Run tests
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os != 'windows' }}
+      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
       run: sudo --preserve-env env "PATH=$PATH" make tests
       env:
-        # Pass token via environment variable to avoid GitHub API rate-limit
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Run tests for Windows # which has no sudo
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'windows' }}
-      run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
 
     - name: Run end-to-end tests
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
+      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
       run: sudo --preserve-env env "PATH=$PATH" make tests-e2e
 
     - name: Upload logs an packet captures as artifacts
-      if: ${{ always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
+      if: always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
       uses: actions/upload-artifact@v4
       with:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
         path: test/e2e/logs/
 
     - name: Create merged coverage profile
-      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
+      if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
       run: |
         make coverprofile_merged.out
 
     - name: Report test coverage to Codecov
-      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
+      if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -267,14 +278,13 @@ jobs:
 
   tag:
     name: Tag
-    needs:
-    - nix-update
-    - build
-    - website
-
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.nix-update.outputs.tag-next != needs.nix-update.outputs.tag-current
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: release
     runs-on: ubuntu-24.04
+
+    needs:
+    - build
+    - build-nix
 
     steps:
     - name: Checkout
