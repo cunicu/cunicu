@@ -76,9 +76,12 @@ completions-dir:
 	mkdir completions
 
 completions/cunicu.%: completions-dir
-	go run ./cmd/cunicu/ completion $* > $@
+	go run ./cmd/cunicu completion $* > $@
 
-prepare: clean tidy generate lint completions
+docs:
+	go run ./cmd/cunicu docs --with-frontmatter --output-dir docs/usage
+
+prepare: clean tidy generate lint completions docs
 
 ci:
 	CLICOLOR_FORCE=1 \
@@ -91,4 +94,4 @@ clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf cunicu test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions prepare generate ci
+.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions prepare generate ci tidy docs
