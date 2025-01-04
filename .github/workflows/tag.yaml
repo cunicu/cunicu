@@ -50,7 +50,9 @@ jobs:
     - name: Update version and vendor hashes in Nix derivation
       id: nix-update-hashes
       run: |
-        alias nix-update="nix develop .#ci --command nix-update --flake --version ${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
+        function nix-update() {
+            nix develop .#ci --command nix-update --flake --version ${{ steps.tags.outputs.next || steps.tags.outputs.current }} "$@"
+        }
 
         nix-update gocov-merger
         nix-update cunicu
