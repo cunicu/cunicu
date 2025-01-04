@@ -80,7 +80,7 @@ docs-website: docs
 
 redirects:
 	cd scripts && \
-	go run ./generate_vanity_redirects.go -static-dir ../website/static
+	go run ./vanity_redirects -static-dir ../website/static
 
 completions: completions/cunicu.bash completions/cunicu.zsh completions/cunicu.fish
 

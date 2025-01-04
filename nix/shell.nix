@@ -19,6 +19,8 @@
   reuse,
   svu,
 
+  cunicu-scripts,
+
   ...
 }:
 mkShell {
@@ -35,6 +37,8 @@ mkShell {
     nix-update
     reuse
     svu
+
+    cunicu-scripts
   ];
 
   inputsFrom = [

@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
@@ -81,7 +82,7 @@ func getModsFromGitHub(ctx context.Context, owner string) (map[string]string, er
 		client = client.WithAuthToken(token)
 	}
 
-	repos, _, err := client.Repositories.ListByUser(context.Background(), owner, nil) //nolint:contextcheck
+	repos, _, err := client.Repositories.ListByUser(ctx, owner, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repos: %w", err)
 	}
@@ -127,33 +128,65 @@ func getModBase(pkg string) string {
 func main() {
 	prefix := flag.String("prefix", "cunicu.li", "Prefix")
 	owner := flag.String("owner", "cunicu", "GitHub user/org")
-	staticDir := flag.String("static-dir", "./website/static", "Directory in which the generated files should be placed")
+	modsFile := flag.String("modules-file", "", "JSON file containing a map of modules")
+	modsFetch := flag.Bool("modules-fetch", false, "Only fetch modules from GitHub")
+	staticDir := flag.String("static-dir", "", "Directory in which the generated files should be placed")
 	flag.Parse()
 
 	ctx := context.Background()
 
-	mods, err := getModsFromGitHub(ctx, *owner)
-	if err != nil {
-		log.Fatalf("Failed to list packages: %v", err)
+	var mods map[string]string
+
+	if *modsFile == "" || *modsFetch {
+		var err error
+		if mods, err = getModsFromGitHub(ctx, *owner); err != nil {
+			log.Fatalf("Failed to list packages: %v", err)
+		}
 	}
 
-	for mod, repo := range mods {
-		modBase := getModBase(mod)
-
-		if !strings.HasPrefix(mod, *prefix) {
-			continue
+	if *modsFetch {
+		if *modsFile == "" {
+			log.Fatal("-modules-fetch requires -modules-file")
 		}
 
-		if err := generate(mod, repo, *staticDir, *prefix); err != nil {
-			log.Fatalf("Failed to generate HTML file: %v", err)
+		modsJSON, err := json.MarshalIndent(mods, "", "  ")
+		if err != nil {
+			log.Fatalf("Failed to encode modules: %s", err)
 		}
 
-		if mod == modBase {
-			continue
+		if err := os.WriteFile(*modsFile, modsJSON, 0o755); err != nil { //nolint:gosec
+			log.Fatalf("Failed to write modules to file: %s", err)
+		}
+	} else if *modsFile != "" {
+		modsJSON, err := os.ReadFile(*modsFile)
+		if err != nil {
+			log.Fatalf("Failed to read modules from file: %s", err)
 		}
 
-		if err := generate(modBase, repo, *staticDir, *prefix); err != nil {
-			log.Fatalf("Failed to generate HTML file: %v", err)
+		if err := json.Unmarshal(modsJSON, &mods); err != nil {
+			log.Fatalf("Failed to decode modules: %s", err)
+		}
+	}
+
+	if *staticDir != "" {
+		for mod, repo := range mods {
+			modBase := getModBase(mod)
+
+			if !strings.HasPrefix(mod, *prefix) {
+				continue
+			}
+
+			if err := generate(mod, repo, *staticDir, *prefix); err != nil {
+				log.Fatalf("Failed to generate HTML file: %v", err)
+			}
+
+			if mod == modBase {
+				continue
+			}
+
+			if err := generate(modBase, repo, *staticDir, *prefix); err != nil {
+				log.Fatalf("Failed to generate HTML file: %v", err)
+			}
 		}
 	}
 }

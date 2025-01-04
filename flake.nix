@@ -26,6 +26,7 @@
         overlays = {
           default = final: prev: {
             cunicu = final.callPackage ./nix/cunicu.nix { };
+            cunicu-scripts = final.callPackage ./nix/scripts.nix { };
             gocov-merger = final.callPackage ./nix/gocov-merger.nix { };
           };
         };
@@ -66,6 +67,7 @@
             inherit (pkgs) cunicu gocov-merger;
 
             default = pkgs.cunicu;
+            scripts = pkgs.cunicu-scripts;
           };
         };
     };
