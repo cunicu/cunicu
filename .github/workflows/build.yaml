@@ -194,10 +194,16 @@ jobs:
 
 
   build-nix:
-    name: Build (nix, ${{ matrix.target_os }}, ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format(', {0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format(', {0}', matrix.mips) || ''}})
+    name: Build (nix, ${{ matrix.system }})
     runs-on: ${{ matrix.runner }}
     needs:
     - lint
+
+    env:
+      GOOS: ${{ matrix.target_os }}
+      GOARCH: ${{ matrix.target_arch }}
+      GOARM: ${{ matrix.arm || '' }}
+      GOMIPS: ${{ matrix.mips || '' }}
 
     strategy:
       fail-fast: false
@@ -207,18 +213,21 @@ jobs:
           target_arch: amd64
           host_os: linux
           host_arch: amd64
+          system: x86_64-linux
           runner: ubuntu-24.04
 
         - target_os: linux
           target_arch: arm64
           host_os: linux
           host_arch: amd64
+          system: aarch64-linux
           runner: ubuntu-24.04
 
         - target_os: linux
           target_arch: arm
           host_os: linux
           host_arch: amd64
+          system: armv7l-linux
           arm: "7"
           runner: ubuntu-24.04
 
@@ -226,6 +235,7 @@ jobs:
           target_arch: mips
           host_os: linux
           host_arch: amd64
+          system: mips-linux
           mips: softfloat
           runner: ubuntu-24.04
 
@@ -262,19 +272,15 @@ jobs:
           target_arch: arm64
           host_os: darwin
           host_arch: arm64
+          system: aarch64-darwin
           runner: macos-13
 
         - target_os: darwin
           target_arch: amd64
           host_os: darwin
           host_arch: arm64
+          system: x86_64-darwin
           runner: macos-13
-
-    env:
-      GOOS: ${{ matrix.target_os }}
-      GOARCH: ${{ matrix.target_arch }}
-      GOARM: ${{ matrix.arm || '' }}
-      GOMIPS: ${{ matrix.mips || '' }}
 
     steps:
     - name: Checkout
@@ -288,7 +294,7 @@ jobs:
 
     - name: Build cunīcu
       run: |
-        nix build --print-build-logs .#cunicu
+        nix build --print-build-logs .#packages.${{ matrix.system }}.cunicu
 
     - name: Run tests
       if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
