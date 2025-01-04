@@ -15,6 +15,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
@@ -185,3 +188,65 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: coverprofile_merged.out
+
+  tag:
+    name: Tag
+    needs:
+    - build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: release
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@v16
+
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@v8
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'Steffen Vogel'
+        git config --global user.email 'post@steffenvogel.de'
+
+    - name: Get current and next tag
+      id: tags
+      run: |
+        nix develop .#ci --command sh <<'EOF' | tee "$GITHUB_OUTPUT"
+          echo next=$(svu next)
+          echo current=$(svu current)
+        EOF
+
+    - name: Update version and vendor hashes in Nix derivation
+      id: nix-update-hashes
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
+
+            nix-update --flake gocov-merger
+            nix-update --flake --version ${VERSION} cunicu
+            nix-update --flake --version ${VERSION} scripts
+            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
+        EOF
+
+        git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+    - name: Commit changes
+      id: git-commit
+      if: steps.nix-update-hashes.outputs.changed == 'true'
+      run: |
+        git commit --all --signoff --message "fix(nix): Update version and hashes"
+        git push
+
+    - name: Tag new release
+      id: git-tag
+      if: steps.tags.outputs.current != steps.tags.outputs.next
+      run: |
+        git tag ${{ steps.tags.outputs.next }}
+        git push origin tag ${{ steps.tags.outputs.next }}
