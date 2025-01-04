@@ -7,14 +7,10 @@ name: Build and deploy website
 
 on:
   workflow_dispatch:
+  pull_request:
   push:
     tags:
     - 'v*'
-
-defaults:
-  run:
-    shell: bash
-    working-directory: website
 
 jobs:
   deploy:
@@ -25,61 +21,26 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: sudo apt-get install -y
-            coturn
-            protobuf-compiler
-            make
-            libpcap-dev
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@v16
 
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
-        check-latest: true
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@v8
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.5
-
-    - name: Setup yarn
+    - name: Update Go modules
       run: |
-        corepack enable
-        corepack prepare yarn@4.1.0 --activate
-        yarn set version 4.1.0
-
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Restore yarn cache
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: yarn-cache-folder-${{ hashFiles('**/yarn.lock', '.yarnrc.yml') }}
-        restore-keys: |
-          yarn-cache-folder-
-
-    - name: Install Go dependencies
-      run: make install-deps
-      working-directory: ./
-
-    - name: Install Yarn dependencies
-      run: yarn install
-
-    - name: Build docs
-      run: make docs-website redirects
-      working-directory: ./
+        nix run .#scripts -- -modules-fetch -modules-file nix/modules.json
+        git add nix/modules.json
 
     - name: Build website
-      run: yarn build
+      run: |
+        nix build --print-build-logs .#website
 
     - name: Deploy to GitHub Pages
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./website/build
+        publish_dir: ./result/
         user_name: github-actions[bot]
         user_email: 41898282+github-actions[bot]@users.noreply.github.com
