@@ -89,7 +89,7 @@ jobs:
   build:
     name: Build for Windows
     if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs:
     - nix-update
 
@@ -211,13 +211,13 @@ jobs:
           target_arch: arm64
           host_os: darwin
           host_arch: arm64
-          runner: macos-latest
+          runner: macos-13
 
         - target_os: darwin
           target_arch: amd64
           host_os: darwin
           host_arch: arm64
-          runner: macos-latest
+          runner: macos-13
 
     env:
       GOOS: ${{ matrix.target_os }}
