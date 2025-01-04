@@ -54,8 +54,8 @@ jobs:
 
             nix-update --flake$ gocov-merger
             nix-update --flake --version ${VERSION} cunicu
-            nix-update --flake --version ${VERSION} cunicu-scripts
-            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache cunicu-website
+            nix-update --flake --version ${VERSION} scripts
+            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
         EOF
 
         git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
