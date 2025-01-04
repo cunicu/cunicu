@@ -45,10 +45,7 @@ tests-e2e:
 coverprofile_merged.out: $(shell find . -type f -name "*.out" -and -not -name "*_merged.out")
 	gocov-merger -o $@ $^
 
-lcov.info: coverprofile_merged.out
-	gcov2lcov > $@ < $^ 
-
-coverage: lcov.info
+coverage: coverprofile_merged.out
 
 tests-watch:
 	( while inotifywait -qqe close_write --include "\.out$$" .; do $(MAKE) -sB coverage; done & )
@@ -67,7 +64,6 @@ install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go install github.com/amobe/gocov-merger@latest
-	go install github.com/jandelgado/gcov2lcov@latest
 	go install github.com/goreleaser/goreleaser@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/onsi/ginkgo/v2/ginkgo
@@ -100,6 +96,6 @@ ci: install-deps lint tests
 
 clean:
 	find . -name "*.out" -exec rm {} \;
-	rm -rf cunicu lcov.info test/logs/ completions/
+	rm -rf cunicu test/logs/ completions/
 
 .PHONY: all cunicu tests tests-watch coverage clean lint install-deps ci completions docs redirects prepare generate website

@@ -9,7 +9,6 @@ pkgs.mkShell {
     libpcap
     reuse
     ginkgo
-    gcov2lcov
     goreleaser
     golangci-lint
     protoc-gen-go
