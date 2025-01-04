@@ -86,12 +86,67 @@ jobs:
           git push
         fi
 
-  build:
-    name: Build for Windows
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
     if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
-    runs-on: windows-2022
     needs:
     - nix-update
+
+    env:
+      GOOS: ${{ matrix.target_os }}
+      GOARCH: ${{ matrix.target_arch }}
+      GOARM: ${{ matrix.arm || '' }}
+      GOMIPS: ${{ matrix.mips || '' }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        - target_os: linux
+          target_arch: amd64
+
+        - target_os: linux
+          target_arch: arm64
+
+        - target_os: linux
+          target_arch: arm
+          arm: "7"
+
+        - target_os: linux
+          target_arch: mips
+
+        - target_os: linux
+          target_arch: mips
+
+        - target_os: windows
+          target_arch: amd64
+
+        - target_os: windows
+          target_arch: arm64
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Nix
+      uses: DeterminateSystems/nix-installer-action@v16
+
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@v8
+
+    - name: Run golangci-lint
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+          make lint
+        EOF
+
+
+  build:
+    name: Build for Windows
+    runs-on: windows-2022
+    needs:
+    - lint
 
     strategy:
       fail-fast: false
@@ -131,9 +186,6 @@ jobs:
       run: |
         make cunicu
 
-    - name: Lint
-      run: make lint
-
     - name: Run tests for Windows # which has no sudo
       if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
       run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
@@ -143,10 +195,9 @@ jobs:
 
   build-nix:
     name: Build with Nix for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
-    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
     runs-on: ${{ matrix.runner }}
     needs:
-    - nix-update
+    - lint
 
     strategy:
       fail-fast: false
@@ -235,9 +286,6 @@ jobs:
     - name: Setup Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@v8
 
-    - name: Lint
-      run: make lint
-
     - name: Run cunīcu build
       run: |
         nix build --print-build-logs .#cunicu
@@ -276,6 +324,7 @@ jobs:
     needs:
     - build
     uses: ./.github/workflows/website.yaml
+
 
   tag:
     name: Tag

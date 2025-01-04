@@ -3,14 +3,16 @@
 {
   mkShell,
 
-  nix-update,
+  golangci-lint,
   goreleaser,
+  nix-update,
   svu,
 }:
 mkShell {
   packages = [
-    nix-update
+    golangci-lint
     goreleaser
+    nix-update
     svu
   ];
 }
