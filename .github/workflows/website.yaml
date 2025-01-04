@@ -41,7 +41,7 @@ jobs:
         nix build --print-build-logs .#website
 
     - name: Deploy to GitHub Pages
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
