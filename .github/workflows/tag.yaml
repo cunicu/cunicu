@@ -25,9 +25,6 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.PAT }}
 
-    - name: Check Nix flake inputs
-      uses: DeterminateSystems/flake-checker-action@v9
-
     - name: Setup Nix
       uses: DeterminateSystems/nix-installer-action@v16
 

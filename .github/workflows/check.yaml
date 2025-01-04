@@ -14,3 +14,10 @@ on:
 jobs:
   reuse:
     uses: cunicu/.github/.github/workflows/reuse.yaml@v0.3.0
+
+  flake:
+    name: Check flake.lock
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Check Nix flake inputs
+      uses: DeterminateSystems/flake-checker-action@v9
