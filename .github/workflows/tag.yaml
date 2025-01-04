@@ -54,6 +54,7 @@ jobs:
 
         nix-update gocov-merger
         nix-update cunicu
+        nix-update cunicu-scripts
 
         git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
 
