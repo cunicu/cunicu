@@ -4,9 +4,10 @@
 {
   mkShell,
 
+  act,
   coturn,
-  cunicu,
   cunicu-website,
+  cunicu,
   evans,
   ginkgo,
   gnumake,
@@ -25,6 +26,7 @@
 }:
 mkShell {
   packages = [
+    act
     coturn
     evans
     ginkgo

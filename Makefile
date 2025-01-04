@@ -80,8 +80,15 @@ completions/cunicu.%: completions-dir
 
 prepare: clean tidy generate lint completions
 
+ci:
+	CLICOLOR_FORCE=1 \
+	act push $(ACT_OPTS) \
+		--remote-name $(shell git config branch.main.remote) \
+		--platform ubuntu-24.04=catthehacker/ubuntu:act-latest \
+	| grep -v '::' # Suppress debug output
+
 clean:
 	find . -name "*.out" -exec rm {} \;
 	rm -rf cunicu test/logs/ completions/
 
-.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions prepare generate
+.PHONY: all cunicu tests tests-watch coverage clean lint install-deps completions prepare generate ci
