@@ -1,0 +1,14 @@
+{
+  "cunicu.li/cunicu": "https://github.com/cunicu/cunicu.git",
+  "cunicu.li/go-babel": "https://github.com/cunicu/go-babel.git",
+  "cunicu.li/go-iso7816": "https://github.com/cunicu/go-iso7816.git",
+  "cunicu.li/go-openpgp-card": "https://github.com/cunicu/go-openpgp-card.git",
+  "cunicu.li/go-piv": "https://github.com/cunicu/go-piv.git",
+  "cunicu.li/go-pmtud": "https://github.com/cunicu/go-pmtud.git",
+  "cunicu.li/go-rosenpass": "https://github.com/cunicu/go-rosenpass.git",
+  "cunicu.li/go-ykoath/v2": "https://github.com/cunicu/go-ykoath.git",
+  "cunicu.li/gont/v2": "https://github.com/cunicu/gont.git",
+  "cunicu.li/hawkes": "https://github.com/cunicu/hawkes.git",
+  "cunicu.li/skeleton": "https://github.com/cunicu/skeleton.git",
+  "github.com/cloudflare/circl": "https://github.com/cunicu/circl.git"
+}
