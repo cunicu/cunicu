@@ -14,7 +14,8 @@ permissions:
   contents: write
 
 jobs:
-  nix-update:
+  tag:
+    name: Tag
     environment: release
     runs-on: ubuntu-24.04
 
@@ -47,14 +48,15 @@ jobs:
     - name: Update version and vendor hashes in Nix derivation
       id: nix-update-hashes
       run: |
-        function nix-update() {
-            nix develop .#ci --command nix-update --flake --version ${{ steps.tags.outputs.next || steps.tags.outputs.current }} "$@"
-        }
+        nix develop .#ci --command sh <<'EOF'
+            export LC_CTYPE=C.UTF-8
+            VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
 
-        nix-update gocov-merger
-        nix-update cunicu
-        nix-update cunicu-scripts
-        nix-update --subpackage yarnOfflineCache cunicu-website
+            nix-update --flake$ gocov-merger
+            nix-update --flake --version ${VERSION} cunicu
+            nix-update --flake --version ${VERSION} cunicu-scripts
+            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache cunicu-website
+        EOF
 
         git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
 
