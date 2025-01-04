@@ -143,7 +143,7 @@ jobs:
 
 
   build:
-    name: Build for Windows
+    name: Build (windows, ${{ matrix.host_arch }}->${{ matrix.target_arch }})
     runs-on: windows-2022
     needs:
     - lint
@@ -186,7 +186,7 @@ jobs:
       run: |
         make cunicu
 
-    - name: Run tests for Windows # which has no sudo
+    - name: Run tests
       if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
       run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
       env:
@@ -194,7 +194,7 @@ jobs:
 
 
   build-nix:
-    name: Build with Nix for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
+    name: Build (nix, ${{ matrix.target_os }}, ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format(', {0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format(', {0}', matrix.mips) || ''}})
     runs-on: ${{ matrix.runner }}
     needs:
     - lint
