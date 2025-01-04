@@ -55,6 +55,7 @@ jobs:
         nix-update gocov-merger
         nix-update cunicu
         nix-update cunicu-scripts
+        nix-update --subpackage yarnOfflineCache cunicu-website
 
         git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
 

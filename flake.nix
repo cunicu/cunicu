@@ -18,14 +18,15 @@
     inputs@{ self, ... }:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       flake = {
-        nixosModules = rec {
-          default = cunicu;
+        nixosModules = {
+          default = self.nixosModules.cunicu;
           cunicu = import ./nix/module.nix;
         };
 
         overlays = {
           default = final: prev: {
             cunicu = final.callPackage ./nix/cunicu.nix { };
+            cunicu-website = final.callPackage ./nix/website.nix { };
             cunicu-scripts = final.callPackage ./nix/scripts.nix { };
             gocov-merger = final.callPackage ./nix/gocov-merger.nix { };
           };
@@ -67,6 +68,7 @@
             inherit (pkgs) cunicu gocov-merger;
 
             default = pkgs.cunicu;
+            website = pkgs.cunicu-website;
             scripts = pkgs.cunicu-scripts;
           };
         };
