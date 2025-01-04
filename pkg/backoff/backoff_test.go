@@ -39,7 +39,7 @@ var _ = Context("Backoff", func() {
 			RandomizationFactor: 0.1,
 			Multiplier:          3,
 			MaxInterval:         10 * time.Second,
-			MaxElapsedTime:      25 * time.Second,
+			MaxElapsedTime:      35 * time.Second,
 
 			Clock: &mockClock{},
 		}
@@ -73,11 +73,33 @@ var _ = Context("Backoff", func() {
 		}
 	})
 
-	It("is a Go 1.23 iterator", func() {
-		for i := range backoff.Retry(b) {
-			expected := expectedResults[i]
+	Context("Go function interator", func() {
+		It("stops", func() {
+			var i int
+			for i = range backoff.Retry(b) {
+				expected := expectedResults[i]
 
-			Expect(b.CurrentInterval).To(BeNumerically("==", expected))
-		}
+				Expect(b.CurrentInterval).To(BeNumerically("==", expected))
+			}
+
+			Expect(i).To(Equal(7))
+		})
+
+		It("can break out early", func() {
+			j := 0
+			for i := range backoff.Retry(b) {
+				expected := expectedResults[i]
+
+				Expect(b.CurrentInterval).To(BeNumerically("==", expected))
+
+				if j >= 6 {
+					break
+				}
+
+				j++
+			}
+
+			Expect(j).To(Equal(6))
+		})
 	})
 })
