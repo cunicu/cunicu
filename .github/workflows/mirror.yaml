@@ -5,7 +5,9 @@
 ---
 name: Mirror to Codeberg
 
-on: [push, delete]
+on:
+ push:
+ delete:
 
 jobs:
   mirror:

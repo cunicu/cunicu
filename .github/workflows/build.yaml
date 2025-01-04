@@ -11,6 +11,10 @@ on:
     - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
