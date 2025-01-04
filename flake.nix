@@ -21,7 +21,7 @@
         };
 
         overlays = {
-          default = final: prev: { cunicu = import ./nix/default.nix { pkgs = final; }; };
+          default = final: prev: { cunicu = final.callPackage ./nix/cunicu.nix { }; };
         };
       };
 
@@ -53,8 +53,9 @@
           };
 
           packages = {
-            cunicu = import ./nix/default.nix { inherit pkgs; };
-            default = self'.packages.cunicu;
+            inherit (pkgs) cunicu;
+
+            default = pkgs.cunicu;
           };
         };
     };
