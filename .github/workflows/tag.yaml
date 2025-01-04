@@ -49,7 +49,6 @@ jobs:
       id: nix-update-hashes
       run: |
         nix develop .#ci --command sh <<'EOF'
-            export LC_CTYPE=C.UTF-8
             VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
 
             nix-update --flake gocov-merger

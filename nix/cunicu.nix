@@ -66,7 +66,7 @@ buildGoModule {
   '';
 
   meta = {
-    description = "Zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)";
+    description = "Zeroconf peer-to-peer mesh VPN using Wireguard and Interactive Connectivity Establishment (ICE)";
     homepage = "https://cunicu.li";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
