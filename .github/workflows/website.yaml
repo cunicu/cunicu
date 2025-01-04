@@ -3,7 +3,7 @@
 
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: Build and deploy website
+name: Build website
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and deploy website
+    name: Build website
     runs-on: ubuntu-24.04
     environment: release
     steps:
