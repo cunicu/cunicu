@@ -13,14 +13,14 @@
   nix-update-script,
 }:
 let
-  version = "0.12.0";
+  version = "0.12.1";
   src = ./..;
 in
 buildGoModule {
   pname = "cunicu";
   inherit version src;
 
-  vendorHash = "sha256-yFpkYI6ue5LXwRCj4EqWDBaO3TYzZ3Ov/39PRQWMWzk=";
+  vendorHash = "sha256-nCVcZISA5jXk4trUwz0oDuxfQpcPsNfKzCFbfUyJ1dw=";
 
   nativeBuildInputs = [
     installShellFiles
