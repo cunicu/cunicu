@@ -79,13 +79,12 @@ jobs:
         RENOVATE_AUTHOR="29139614+renovate[bot]@users.noreply.github.com"
 
         if [ "${LAST_AUTHOR}" = "${RENOVATE_AUTHOR}" ]; then
-          COMMIT_FLAGS="--amend --no-edit"
+          git commit --all --amend --no-edit
+          git push --force
         else
-          COMMIT_FLAGS='--signoff --message "fix(nix): Update version and hashes"'
+          git commit --all --signoff --message "fix(nix): Update version and hashes"
+          git push
         fi
-        
-        git commit ${COMMIT_FLAGS} --all
-        git push
 
   build:
     name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
