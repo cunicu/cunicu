@@ -260,11 +260,18 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: coverprofile_merged.out
 
+
+  website:
+    needs:
+    - build
+    uses: ./.github/workflows/website.yaml
+
   tag:
     name: Tag
     needs:
-    - build
     - nix-update
+    - build
+    - website
 
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.nix-update.outputs.tag-next != needs.nix-update.outputs.tag-current
     environment: release
@@ -288,4 +295,3 @@ jobs:
       run: |
         git tag ${{ needs.nix-update.outputs.tag-next }}
         git push origin tag ${{ needs.nix-update.outputs.tag-next }}
-
