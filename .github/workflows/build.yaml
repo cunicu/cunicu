@@ -81,7 +81,7 @@ jobs:
         if [ "${LAST_AUTHOR}" = "${RENOVATE_AUTHOR}" ]; then
           COMMIT_FLAGS="--amend --no-edit"
         else
-          COMMIT_FLAGS="--signoff --message "fix(nix): Update version and hashes""
+          COMMIT_FLAGS='--signoff --message "fix(nix): Update version and hashes"'
         fi
         
         git commit ${COMMIT_FLAGS} --all
