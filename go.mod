@@ -22,8 +22,8 @@ require (
 	github.com/knadh/koanf/v2 v2.1.2
 	github.com/miekg/dns v1.1.63
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pion/ice/v4 v4.0.5
-	github.com/pion/logging v0.2.2
+	github.com/pion/ice/v4 v4.0.6
+	github.com/pion/logging v0.2.3
 	github.com/pion/stun/v3 v3.0.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
