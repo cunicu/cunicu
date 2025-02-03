@@ -9,7 +9,7 @@ toolchain go1.23.5
 
 require (
 	dario.cat/mergo v1.0.1
-	github.com/cilium/ebpf v0.17.1
+	github.com/cilium/ebpf v0.17.2
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.2.0
 	github.com/knadh/koanf/maps v0.1.1
