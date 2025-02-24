@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 
-FROM nixos/nix:2.25.4 AS builder
+FROM nixos/nix:2.26.2 AS builder
 
 WORKDIR /src
 
