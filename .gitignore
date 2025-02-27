@@ -16,3 +16,5 @@ test/e2e/logs/
 dist/
 result
 .nixos-test-history
+.envrc
+.direnv
