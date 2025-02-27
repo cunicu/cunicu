@@ -82,6 +82,8 @@ in
       source = settingsFormat.generate "cunicu.yaml" cfg.daemon.settings;
     };
 
+    environment.systemPackages = [ cfg.package ];
+
     systemd = {
       services = {
         cunicu = lib.mkIf cfg.daemon.enable {
@@ -187,6 +189,18 @@ in
             ExecStart =
               "${lib.getExe cfg.package} signal "
               + lib.cli.toGNUCommandLineShell { } { inherit (cfg.signal) secure listen; };
+
+            # Hardening
+            AmbientCapabilities = [
+              "CAP_NET_ADMIN"
+              "CAP_NET_BIND_SERVICE"
+              "CAP_SYS_MODULE"
+            ];
+            CapabilityBoundingSet = [
+              "CAP_NET_ADMIN"
+              "CAP_NET_BIND_SERVICE"
+              "CAP_SYS_MODULE"
+            ];
           };
         };
 
@@ -212,7 +226,7 @@ in
       };
 
       sockets = {
-        cunicu = {
+        cunicu = lib.mkIf cfg.daemon.enable {
           description = "cunīcu mesh network daemon control socket";
 
           partOf = [ "cunicu.service" ];
