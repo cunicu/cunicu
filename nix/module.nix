@@ -210,22 +210,22 @@ in
           };
         };
       };
-    };
 
-    sockets = {
-      cunicu = {
-        description = "cunīcu mesh network daemon control socket";
+      sockets = {
+        cunicu = {
+          description = "cunīcu mesh network daemon control socket";
 
-        partOf = [ "cunicu.service" ];
-        wantedBy = [ "sockets.target" ];
+          partOf = [ "cunicu.service" ];
+          wantedBy = [ "sockets.target" ];
 
-        socketConfig = {
-          FileDescriptorName = "control";
-          ListenStream = "%t/cunicu.sock";
-          SocketUser = "root";
-          SocketGroup = "root";
-          SocketMode = "0660";
-          RemoveOnStop = true;
+          socketConfig = {
+            FileDescriptorName = "control";
+            ListenStream = "%t/cunicu.sock";
+            SocketUser = "root";
+            SocketGroup = "root";
+            SocketMode = "0660";
+            RemoveOnStop = true;
+          };
         };
       };
     };
