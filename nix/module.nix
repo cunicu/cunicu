@@ -101,7 +101,7 @@ in
           serviceConfig = {
             Type = "notify-reload";
 
-            ExecStart = "${lib.getExe cfg.package} daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml";
+            ExecStart = "${lib.getExe cfg.package} daemon --config /etc/cunicu/cunicu.yaml";
 
             DynamicUser = true;
             NotifyAccess = "main";
