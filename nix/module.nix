@@ -78,7 +78,7 @@ in
       groups.cunicu = { };
     };
 
-    environment.etc."cunicu.yaml" = {
+    environment.etc."cunicu/cunicu.yaml" = {
       source = settingsFormat.generate "cunicu.yaml" cfg.daemon.settings;
     };
 
@@ -101,7 +101,7 @@ in
           serviceConfig = {
             Type = "notify-reload";
 
-            ExecStart = "${lib.getExe cfg.package} daemon --log-level 10";
+            ExecStart = "${lib.getExe cfg.package} daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml";
 
             DynamicUser = true;
             NotifyAccess = "main";
@@ -236,7 +236,7 @@ in
             FileDescriptorName = "control";
             ListenStream = "%t/cunicu.sock";
             SocketUser = "root";
-            SocketGroup = "root";
+            SocketGroup = "cunicu";
             SocketMode = "0660";
             RemoveOnStop = true;
           };
