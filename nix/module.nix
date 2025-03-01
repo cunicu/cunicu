@@ -154,6 +154,9 @@ in
             ProtectKernelTunables = true;
             ProtectProc = "invisible";
             ProtectSystem = "strict";
+            ReadWritePaths = [
+              "-/etc/hosts"
+            ];
             RestrictAddressFamilies = [
               "AF_UNIX"
               "AF_INET"
