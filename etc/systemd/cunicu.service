@@ -12,7 +12,7 @@ After=cunicu.socket
 
 [Service]
 Type=notify-reload
-ExecStart=cunicu daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml
+ExecStart=cunicu daemon --config /etc/cunicu/cunicu.yaml
 Environment="CUNICU_EXPERIMENTAL=1"
 Environment="CUNICU_CONFIG_ALLOW_INSECURE=1"
 
