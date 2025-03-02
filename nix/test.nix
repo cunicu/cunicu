@@ -1,19 +1,3 @@
-
-      for node in nodes:
-          node.start()
-
-      for node in nodes:
-          node.wait_for_unit("cunicu.service")
-
-      import time
-      time.sleep(10)
-
-      print(alice.succeed("${lib.getExe config.nodes.alice.services.cunicu.package} --log-level debug5 --rpc-socket /run/cunicu/cunicu.sock status"))
-
-      time.sleep(3600)
-    '';
-  }
-)
 {
   self,
   pkgs,
@@ -170,9 +154,8 @@ pkgs.testers.runNixOSTest (
       import time
       time.sleep(10)
 
-      print(alice.succeed("${lib.getExe config.nodes.alice.services.cunicu.package} --log-level debug5 --rpc-socket /run/cunicu/cunicu.sock status"))
+      print(alice.succeed("${lib.getExe config.nodes.alice.services.cunicu.package} --log-level debug5 --rpc-socket /run/cunicu.sock status"))
 
-      time.sleep(3600)
     '';
   }
 )
