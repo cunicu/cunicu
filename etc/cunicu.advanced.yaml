@@ -21,6 +21,7 @@ backends:
 rpc:
   # Path to a Unix socket for management
   # and monitoring of the cunicu daemon.
+  # Leave empty or set to "systemd" to use systemd socket.
   socket: /run/cunicu.sock
 
   # Start of cunīcu daemon will block until
