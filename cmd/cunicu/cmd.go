@@ -17,4 +17,5 @@ import (
 	// Signaling backends.
 	_ "cunicu.li/cunicu/pkg/signaling/grpc"
 	_ "cunicu.li/cunicu/pkg/signaling/inprocess"
+	_ "cunicu.li/cunicu/pkg/signaling/mcast"
 )
