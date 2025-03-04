@@ -16,6 +16,7 @@ enum BackendType {
     MULTI = 0;
     GRPC = 1;
     INPROCESS = 2;
+    MCAST = 3;
 }
 
 message Envelope {

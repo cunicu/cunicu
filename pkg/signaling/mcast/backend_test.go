@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2025 Adam Rizkalla <ajarizzo@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
+package mcast_test
+
+import (
+	"net/url"
+	"testing"
+
+	_ "cunicu.li/cunicu/pkg/signaling/mcast"
+	"cunicu.li/cunicu/test"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+)
+
+func TestSuite(t *testing.T) {
+	test.SetupLogging()
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Multicast Backend Suite")
+}
+
+var _ = Describe("Multicast backend", func() {
+	u := url.URL{
+		Scheme: "multicast",
+	}
+
+	test.BackendTest(&u, 10)
+})

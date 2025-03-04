@@ -67,6 +67,7 @@ cunīcu can support multiple backends for signaling session information such as 
 ### Available backends
 
 -   gRPC
+-   Multicast
 
 Checkout the [`Backend`](https://github.com/cunicu/cunicu/blob/main/pkg/signaling/backend.go) interface for implementing your own backend.
 
