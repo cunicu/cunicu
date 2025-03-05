@@ -44,7 +44,7 @@ let
       runHook postBuild
     '';
 
-    outputHash = "sha256-akMIrajGv6mZJecQaLgu1IjxvYpfA51SqryRxa5m58U";
+    outputHash = "sha256-0+km0FIvC08noQOVOlrqf79Ocuq8p5DyURZFPGEaLWs=";
     outputHashMode = "recursive";
   };
 in
