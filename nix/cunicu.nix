@@ -4,7 +4,7 @@
 {
   lib,
   stdenv,
-  buildGoModule,
+  buildGo124Module,
   installShellFiles,
   versionCheckHook,
   protobuf,
@@ -16,7 +16,7 @@ let
   version = "0.12.1";
   src = ./..;
 in
-buildGoModule {
+buildGo124Module {
   pname = "cunicu";
   inherit version src;
 
