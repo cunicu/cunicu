@@ -98,11 +98,12 @@ func Listen(socket string) (l net.Listener, err error) {
 			return nil, fmt.Errorf("failed to get listeners from systemd: %w", err)
 		}
 
-		if ls, ok := sdListeners[address]; !ok || len(ls) == 0 {
+		ls, ok := sdListeners[address]
+		if !ok || len(ls) == 0 {
 			return nil, fmt.Errorf("%w: with name %s", errNoSystemdListeners, address)
-		} else {
-			l = ls[0]
 		}
+
+		l = ls[0]
 
 	case network == "unix":
 		if err := os.RemoveAll(address); err != nil {
