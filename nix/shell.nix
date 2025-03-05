@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 {
+  lib,
+  stdenv,
   mkShell,
 
   act,
@@ -25,23 +27,26 @@
   ...
 }:
 mkShell {
-  packages = [
-    act
-    coturn
-    evans
-    ginkgo
-    gnumake
-    gocov-merger
-    golangci-lint
-    goreleaser
-    inotify-tools
-    libpcap
-    nix-update
-    reuse
-    svu
+  packages =
+    [
+      act
+      evans
+      ginkgo
+      gnumake
+      gocov-merger
+      golangci-lint
+      goreleaser
+      libpcap
+      nix-update
+      reuse
+      svu
 
-    cunicu-scripts
-  ];
+      cunicu-scripts
+    ]
+    ++ lib.optional stdenv.isLinux [
+      coturn
+      inotify-tools
+    ];
 
   inputsFrom = [
     cunicu
