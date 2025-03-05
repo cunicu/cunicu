@@ -9,7 +9,7 @@ toolchain go1.23.6
 
 require (
 	dario.cat/mergo v1.0.1
-	github.com/cilium/ebpf v0.17.2
+	github.com/cilium/ebpf v0.17.3
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.2.0
 	github.com/knadh/koanf/maps v0.1.1
@@ -31,7 +31,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.32.0
 	golang.org/x/sync v0.10.0
-	golang.org/x/sys v0.29.0
+	golang.org/x/sys v0.30.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
 	google.golang.org/grpc v1.69.2
