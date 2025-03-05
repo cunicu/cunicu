@@ -3,7 +3,7 @@
 
 module cunicu.li/cunicu/scripts
 
-go 1.22.2
+go 1.24.0
 
 require (
 	github.com/google/go-github/v68 v68.0.0
