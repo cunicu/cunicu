@@ -51,6 +51,7 @@
             inherit system;
             overlays = [ self.overlays.default ];
           };
+          lib = inputs.nixpkgs.lib;
         in
         {
           formatter = pkgs.nixfmt-rfc-style;
@@ -70,6 +71,7 @@
             default = pkgs.cunicu;
             website = pkgs.cunicu-website;
             scripts = pkgs.cunicu-scripts;
+            nixosTest = import ./nix/test.nix { inherit self pkgs lib; };
           };
         };
     };

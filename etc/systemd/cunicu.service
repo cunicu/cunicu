@@ -12,7 +12,7 @@ After=cunicu.socket
 
 [Service]
 Type=notify-reload
-ExecStart=cunicu daemon --log-level debug10 --config /etc/cunicu/cunicu.yaml
+ExecStart=cunicu daemon --config /etc/cunicu/cunicu.yaml
 Environment="CUNICU_EXPERIMENTAL=1"
 Environment="CUNICU_CONFIG_ALLOW_INSECURE=1"
 
@@ -46,6 +46,7 @@ ProtectKernelLogs=yes
 ProtectKernelTunables=yes
 ProtectProc=invisible
 ProtectSystem=strict
+ReadWritePaths=-/etc/hosts
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 RestrictNamespaces=yes
 RestrictRealtime=yes
