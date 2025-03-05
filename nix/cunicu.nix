@@ -20,7 +20,7 @@ buildGo124Module {
   pname = "cunicu";
   inherit version src;
 
-  vendorHash = "sha256-EQ7+cGwWTFoxOxTAJjq75F02Iqm+c5BTROat7KGKTK0=";
+  vendorHash = "sha256-fFMn7HgVmG/KL30xSIuECIu15YEYv0AfIBz85wQi8o8=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -32,7 +32,7 @@ buildGo124Module {
 
   nativeInstallCheckInputs = [ versionCheckHook ];
 
-  CGO_ENABLED = 0;
+  env.CGO_ENABLED = 0;
 
   # These packages contain networking dependent tests which fail in the sandbox
   excludedPackages = [
