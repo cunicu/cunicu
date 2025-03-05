@@ -69,7 +69,7 @@ buildGo124Module {
     description = "Zeroconf peer-to-peer mesh VPN using Wireguard and Interactive Connectivity Establishment (ICE)";
     homepage = "https://cunicu.li";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ lib.maintainers.stv0g ];
     mainProgram = "cunicu";
   };
