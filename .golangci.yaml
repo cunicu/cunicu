@@ -61,7 +61,6 @@ linters:
   - cyclop
   - depguard
   - exhaustruct
-  - exportloopref
   - funlen
   - gocyclo
   - godox
@@ -74,5 +73,6 @@ linters:
   - paralleltest
   - protogetter
   - tagalign
+  - tenv
   - varnamelen
   - wrapcheck
