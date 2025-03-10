@@ -22,7 +22,9 @@ func TestSuite(t *testing.T) {
 
 var _ = Describe("Multicast backend", func() {
 	u := url.URL{
-		Scheme: "multicast",
+		Scheme:   "multicast",
+		Host:     "239.0.0.1:9999",
+		RawQuery: "interface=lo&loopback=true",
 	}
 
 	test.BackendTest(&u, 10)
