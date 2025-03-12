@@ -49,7 +49,9 @@ func (i *Interface) setupUDPMux() error {
 	ifFilter := func(name string) bool {
 		if match, err := filepath.Match(i.Settings.ICE.InterfaceFilter, name); err != nil {
 			return false
-		} else if !match {
+		} else if ignore, err := filepath.Match(i.Settings.ICE.IgnoreInterfaces, name); err != nil {
+			return false
+		} else if !match || ignore {
 			return false
 		}
 
