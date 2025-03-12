@@ -38,7 +38,8 @@ type ICESettings struct {
 	MaxBindingRequests int  `koanf:"max_binding_requests,omitempty"`
 	InsecureSkipVerify bool `koanf:"insecure_skip_verify,omitempty"`
 
-	InterfaceFilter string `koanf:"interface_filter,omitempty"`
+	InterfaceFilter  string `koanf:"interface_filter,omitempty"`
+	IgnoreInterfaces string `koanf:"ignore_interfaces,omitempty"`
 
 	DisconnectedTimeout time.Duration `koanf:"disconnected_timeout,omitempty"`
 	FailedTimeout       time.Duration `koanf:"failed_timeout,omitempty"`

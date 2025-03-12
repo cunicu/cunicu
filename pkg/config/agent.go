@@ -116,8 +116,16 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 
 	cfg.InterfaceFilter = func(name string) bool {
 		match, err := filepath.Match(c.ICE.InterfaceFilter, name)
+		if err != nil {
+			return false
+		}
 
-		return err == nil && match
+		ignore, err := filepath.Match(c.ICE.IgnoreInterfaces, name)
+		if err != nil {
+			return false
+		}
+
+		return match && !ignore
 	}
 
 	// ICE URLs
