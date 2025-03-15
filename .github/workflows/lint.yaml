@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Lint
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
+
+    env:
+      GOOS: ${{ matrix.target_os }}
+      GOARCH: ${{ matrix.target_arch }}
+      GOARM: ${{ matrix.arm || '' }}
+      GOMIPS: ${{ matrix.mips || '' }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        - target_os: linux
+          target_arch: amd64
+
+        - target_os: linux
+          target_arch: arm64
+
+        - target_os: linux
+          target_arch: arm
+          arm: "7"
+
+        - target_os: windows
+          target_arch: amd64
+
+        - target_os: windows
+          target_arch: arm64
+
+        - target_os: darwin
+          target_arch: amd64
+
+        - target_os: darwin
+          target_arch: arm64
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Nix
+      uses: cachix/install-nix-action@v31
+
+    - name: Setup Nix cache
+      uses: cachix/cachix-action@v16
+      with:
+        name: cunicu
+        authToken: '${{ secrets.CACHIX_TOKEN }}'
+
+    - name: Run golangci-lint
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+          make lint
+        EOF

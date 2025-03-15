@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Tag
+        
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  nix-update:
+    name: Update Nix hashes
+    runs-on: ubuntu-24.04
+
+    outputs:
+      tag-current: ${{ steps.tags.outputs.current }}
+      tag-next: ${{ steps.tags.outputs.next }}
+      changed: ${{ steps.nix-update-hashes.outputs.changed }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Nix
+      uses: cachix/install-nix-action@v31
+
+    - name: Setup Nix cache
+      uses: cachix/cachix-action@v16
+      with:
+        name: cunicu
+        authToken: '${{ secrets.CACHIX_TOKEN }}'
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+    - name: Get current and next tag
+      id: tags
+      run: |
+        nix develop .#ci --command sh <<'EOF' | tee "$GITHUB_OUTPUT"
+          # We always increment the patch version to ensure hashes of Nix derivations are updated
+          # by our GitHub actions tag workflow which runs nix-update
+          echo next=$(svu next)
+          echo current=$(svu current)
+        EOF
+
+    - name: Update version and vendor hashes in Nix derivation
+      id: nix-update-hashes
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
+
+            nix-update --flake gocov-merger
+            nix-update --flake --version ${VERSION} cunicu
+            nix-update --flake --version ${VERSION} scripts
+            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
+        EOF
+
+        git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+    - name: Commit changes
+      id: git-commit
+      if: steps.nix-update-hashes.outputs.changed == 'true'
+      run: |
+        LAST_AUTHOR=$(git log -1 --pretty=format:"%ae")
+        RENOVATE_AUTHOR="29139614+renovate[bot]@users.noreply.github.com"
+
+        if [ "${LAST_AUTHOR}" = "${RENOVATE_AUTHOR}" ]; then
+          git commit --all --amend --no-edit
+          git push --force
+        else
+          git commit --all --signoff --message "fix(nix): Update version and hashes"
+          git push
+        fi

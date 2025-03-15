@@ -46,27 +46,15 @@ builds:
   goarch:
   - amd64
   - arm64
-  - mips64
-  - mips64le
   - riscv64
-  - ppc64le
-  - s390x
-  - "386"
   - arm
-  - mips
-  - mipsle
 
   goarm:
   - "7"
 
-  gomips:
-  - softfloat
-
   ignore:
   - goos: windows
     goarch: arm
-  - goos: windows
-    goarch: "386"
 
   ldflags:
   - -s
@@ -328,5 +316,4 @@ release:
     owner: cunicu
     name: cunicu
 
-  draft:  true
   prerelease: auto

@@ -3,14 +3,22 @@
 {
   mkShell,
 
-  nix-update,
+  coturn,
+  ginkgo,
+  golangci-lint,
+  gocov-merger,
   goreleaser,
+  nix-update,
   svu,
 }:
 mkShell {
   packages = [
-    nix-update
+    coturn
+    ginkgo
+    gocov-merger
+    golangci-lint
     goreleaser
+    nix-update
     svu
   ];
 }

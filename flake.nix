@@ -65,14 +65,37 @@
               ci = pkgs.callPackage ./nix/shell-ci.nix { inherit nix-update; };
             };
 
-          packages = {
-            inherit (pkgs) cunicu gocov-merger;
+          packages =
+            let
+              cunicuCross =
+                crossSystem:
+                let
+                  pkgs = import inputs.nixpkgs {
+                    inherit system crossSystem;
+                    overlays = [ self.overlays.default ];
+                  };
+                in
+                pkgs.cunicu;
+            in
+            {
+              inherit (pkgs) cunicu gocov-merger;
 
-            default = pkgs.cunicu;
-            website = pkgs.cunicu-website;
-            scripts = pkgs.cunicu-scripts;
-            nixosTest = import ./nix/test.nix { inherit self pkgs lib; };
-          };
+              cunicu-cross-aarch64-linux = cunicuCross { config = "aarch64-unknown-linux-gnu"; };
+              cunicu-cross-x86_64-linux = cunicuCross { config = "x86_64-unknown-linux-gnu"; };
+              cunicu-cross-riscv64-linux = cunicuCross { config = "riscv64-unknown-linux-gnu"; };
+              cunicu-cross-armv7l-linux = cunicuCross { config = "armv7l-unknown-linux-gnueabihf"; };
+              cunicu-cross-x86_64-freebsd = cunicuCross { config = "x86_64-unknown-freebsd-gnu"; };
+              cunicu-cross-x86_64-darwin = cunicuCross {
+                config = "x86_64-apple-darwin";
+                xcodePlatform = "MacOSX";
+                platform = { };
+              };
+
+              default = pkgs.cunicu;
+              website = pkgs.cunicu-website;
+              scripts = pkgs.cunicu-scripts;
+              nixosTest = import ./nix/test.nix { inherit self pkgs lib; };
+            };
         };
     };
 }

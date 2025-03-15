@@ -20,188 +20,38 @@ permissions:
 
 jobs:
   nix-update:
-    name: Update Nix hashes
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/nix-update.yaml
+    secrets: inherit
 
-    outputs:
-      tag-current: ${{ steps.tags.outputs.current }}
-      tag-next: ${{ steps.tags.outputs.next }}
-      changed: ${{ steps.nix-update-hashes.outputs.changed }}
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.ref }}
-        fetch-depth: 0
-        token: ${{ secrets.PAT }}
-
-    - name: Setup Nix
-      uses: DeterminateSystems/nix-installer-action@v16
-
-    - name: Setup Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@v8
-
-    - name: Setup Git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-    - name: Get current and next tag
-      id: tags
-      run: |
-        nix develop .#ci --command sh <<'EOF' | tee "$GITHUB_OUTPUT"
-          # We always increment the patch version to ensure hashes of Nix derivations are updated
-          # by our GitHub actions tag workflow which runs nix-update
-          echo next=$(svu next)
-          echo current=$(svu current)
-        EOF
-
-    - name: Update version and vendor hashes in Nix derivation
-      id: nix-update-hashes
-      run: |
-        nix develop .#ci --command sh <<'EOF'
-            VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
-
-            nix-update --flake gocov-merger
-            nix-update --flake --version ${VERSION} cunicu
-            nix-update --flake --version ${VERSION} scripts
-            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
-        EOF
-
-        git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
-
-    - name: Commit changes
-      id: git-commit
-      if: steps.nix-update-hashes.outputs.changed == 'true'
-      run: |
-        LAST_AUTHOR=$(git log -1 --pretty=format:"%ae")
-        RENOVATE_AUTHOR="29139614+renovate[bot]@users.noreply.github.com"
-
-        if [ "${LAST_AUTHOR}" = "${RENOVATE_AUTHOR}" ]; then
-          git commit --all --amend --no-edit
-          git push --force
-        else
-          git commit --all --signoff --message "fix(nix): Update version and hashes"
-          git push
-        fi
-
-  build:
-    name: Build for ${{ matrix.target_os }} on ${{ matrix.target_arch }}${{ matrix.target_arch == 'arm' && format('-v{0}', matrix.arm) || ''}}${{ matrix.target_arch == 'mips' && format('-{0}', matrix.mips) || ''}}
-    if: needs.nix-update.outputs.changed != 'true' # Skip build if we just pushed. We wait for the workflow to be retriggered.
-    runs-on: ${{ matrix.runner || 'ubuntu-24.04' }}
+  lint:
+    uses: ./.github/workflows/lint.yaml
+    secrets: inherit
     needs:
     - nix-update
+
+  build:
+    name: Build (windows, ${{ matrix.target_arch }})
+    runs-on: windows-2022
+    needs:
+    - lint
 
     strategy:
       fail-fast: false
       matrix:
         include:
-        - target_os: linux
-          target_arch: amd64
-          host_os: linux
-          host_arch: amd64
-          runner: ubuntu-24.04
-
-        - target_os: linux
-          target_arch: arm64
-          host_os: linux
-          host_arch: amd64
-          runner: ubuntu-24.04
-
-        - target_os: linux
-          target_arch: arm
-          host_os: linux
-          host_arch: amd64
-          arm: "7"
-          runner: ubuntu-24.04
-
-        # TODO: FreeBSD builds require cgo and FreeBSD
-        #       system headers.
-
-        # - target_os: freebsd
-        #   target_arch: amd64
-        #   host_os: linux
-        #   host_arch: amd64
-        #   runner: ubuntu-24.04
-
-        # - target_os: freebsd
-        #   target_arch: arm64
-        #   host_os: linux
-        #   host_arch: amd64
-        #   runner: ubuntu-24.04
-
-        # - target_os: freebsd
-        #   target_arch: arm
-        #   host_os: linux
-        #   host_arch: amd64
-        #   arm: "7"
-        #   runner: ubuntu-24.04
-
-        - target_os: darwin
-          target_arch: arm64
-          host_os: darwin
-          host_arch: arm64
-          runner: macos-latest
-
-        - target_os: darwin
-          target_arch: amd64
-          host_os: darwin
-          host_arch: arm64
-          runner: macos-latest
-
-        - target_os: windows
-          target_arch: arm64
-          host_os: windows
-          host_arch: amd64
-          runner: windows-latest
-
-        - target_os: windows
-          target_arch: amd64
-          host_os: windows
-          host_arch: amd64
-          runner: windows-latest
-
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          mips: softfloat
-          runner: ubuntu-24.04
-
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          mips: hardfloat
-          runner: ubuntu-24.04
+        - target_arch: arm64
+          do_tests: false
+        - target_arch: amd64
+          do_tests: true
 
     env:
-      GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
-      GOARM: ${{ matrix.arm || '' }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Install dependencies
-      if: ${{ matrix.host_os == 'linux' }}
-      run: sudo apt-get install -y
-            coturn
-            protobuf-compiler
-            make
-            libpcap-dev
-
-    - name: Install dependencies
-      if: ${{ matrix.host_os == 'darwin' }}
-      run: brew install
-            protobuf
-            make
-            libpcap
-
-    - name: Install dependencies
-      if: ${{ matrix.host_os == 'windows' }}
       run: choco install
             protoc
             make
@@ -213,47 +63,106 @@ jobs:
         check-latest: true
 
     - name: Install build and test dependencies
-      env:
-        GOOS: ${{ matrix.host_os }}
-        GOARCH: ${{ matrix.host_arch }}
       run: make install-deps
 
-    - name: Run cunīcu build
-      run: make cunicu
-
-    - name: Lint
-      if: ${{ matrix.host_os != 'windows' }}
-      run: make lint
+    - name: Build cunīcu
+      run: |
+        make cunicu
 
     - name: Run tests
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os != 'windows' }}
-      run: sudo --preserve-env env "PATH=$PATH" make tests
-      env:
-        # Pass token via environment variable to avoid GitHub API rate-limit
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Run tests for Windows # which has no sudo
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'windows' }}
+      if: matrix.do_tests
       run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
 
-    - name: Run end-to-end tests
-      if: ${{ matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
-      run: sudo --preserve-env env "PATH=$PATH" make tests-e2e
+
+  build-nix:
+    name: Build (nix, ${{ matrix.attribute }})
+    runs-on: ${{ matrix.runner }}
+    needs:
+    - lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - attribute: cunicu
+          runner: ubuntu-24.04
+          do_tests: true
+
+        - attribute: cunicu
+          runner: macos-15
+          do_tests: false
+
+        - attribute: cunicu-cross-aarch64-linux
+          runner: ubuntu-24.04
+          do_tests: false
+
+        - attribute: cunicu-cross-armv7l-linux
+          runner: ubuntu-24.04
+          do_tests: false
+
+        - attribute: cunicu-cross-x86_64-freebsd
+          runner: ubuntu-24.04
+          do_tests: false
+
+        - attribute: cunicu-cross-riscv64-linux
+          runner: ubuntu-24.04
+          do_tests: false
+
+        - attribute: cunicu-cross-x86_64-darwin
+          runner: macos-15
+          do_tests: false
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Nix
+      uses: cachix/install-nix-action@v31
+
+    - name: Setup Nix cache
+      uses: cachix/cachix-action@v16
+      with:
+        name: cunicu
+        authToken: '${{ secrets.CACHIX_TOKEN }}'
+
+    - name: Build cunīcu
+      run: |
+        nix build --print-build-logs .#${{ matrix.attribute }}
+
+    - name: Run tests
+      if: matrix.do_tests
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            sudo --preserve-env env "PATH=$PATH" make tests
+        EOF
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
+
+    - name: Run e2e tests
+      if: matrix.do_tests
+      run: |
+        nix develop .#ci --command sh <<'EOF'
+            sudo --preserve-env env "PATH=$PATH" make tests-e2e
+        EOF
 
     - name: Upload logs an packet captures as artifacts
-      if: ${{ always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux' }}
+      if: always() && matrix.do_tests
       uses: actions/upload-artifact@v4
       with:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
         path: test/e2e/logs/
 
     - name: Create merged coverage profile
-      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
+      if: matrix.do_tests
       run: |
-        make coverprofile_merged.out
+        nix develop .#ci --command sh <<'EOF'
+            make coverprofile_merged.out
+        EOF
 
     - name: Report test coverage to Codecov
-      if: ${{ matrix.target_os == 'linux' && matrix.target_arch == 'amd64' }}
+      if: matrix.do_tests
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -261,36 +170,14 @@ jobs:
 
 
   website:
+    uses: ./.github/workflows/website.yaml
     needs:
     - build
-    uses: ./.github/workflows/website.yaml
+
 
   tag:
-    name: Tag
+    uses: ./.github/workflows/tag.yaml
+    secrets: inherit
     needs:
-    - nix-update
     - build
-    - website
-
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.nix-update.outputs.tag-next != needs.nix-update.outputs.tag-current
-    environment: release
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.PAT }}
-
-    - name: Setup Git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-    - name: Tag new release
-      id: git-tag
-      if: steps.tags.outputs.current != steps.tags.outputs.next
-      run: |
-        git tag ${{ needs.nix-update.outputs.tag-next }}
-        git push origin tag ${{ needs.nix-update.outputs.tag-next }}
+    - build-nix
