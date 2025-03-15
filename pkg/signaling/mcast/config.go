@@ -1,21 +1,25 @@
-// SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
+// SPDX-FileCopyrightText: 2025 Adam Rizkalla <ajarizzo@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
-package grpc
+package mcast
 
 import (
 	"fmt"
-
-	"google.golang.org/grpc"
+	"net"
 
 	"cunicu.li/cunicu/pkg/signaling"
 )
+
+type BackendOptions struct {
+	Interface *net.Interface
+	Loopback  bool
+}
 
 type BackendConfig struct {
 	signaling.BackendConfig
 
 	Target  string
-	Options []grpc.DialOption
+	Options BackendOptions
 }
 
 func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) (err error) {
@@ -23,7 +27,7 @@ func (c *BackendConfig) Parse(cfg *signaling.BackendConfig) (err error) {
 
 	c.Target, c.Options, err = ParseURL(c.BackendConfig.URI.String())
 	if err != nil {
-		return fmt.Errorf("failed to parse gRPC URL: %w", err)
+		return fmt.Errorf("failed to parse multicast URL: %w", err)
 	}
 
 	return nil

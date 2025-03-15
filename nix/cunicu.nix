@@ -38,6 +38,7 @@ buildGo124Module {
   excludedPackages = [
     "pkg/config"
     "pkg/selfupdate"
+    "pkg/signaling/mcast"
     "pkg/tty"
     "scripts"
   ];
