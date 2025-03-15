@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2023-2025 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+---
+name: Tag
+    
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Tag
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: release
+    runs-on: ubuntu-24.04
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}
+    
+    - name: Setup Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+    
+    - name: Tag new release
+      id: git-tag
+      if: steps.tags.outputs.current != steps.tags.outputs.next
+      run: |
+        git tag ${{ needs.nix-update.outputs.tag-next }}
+        git push origin tag ${{ needs.nix-update.outputs.tag-next }}

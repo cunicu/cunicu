@@ -328,5 +328,4 @@ release:
     owner: cunicu
     name: cunicu
 
-  draft:  true
   prerelease: auto
