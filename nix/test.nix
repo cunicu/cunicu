@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
+# SPDX-License-Identifier: Apache-2.0
 {
   self,
   pkgs,
@@ -5,7 +7,12 @@
 }:
 let
   common =
-    { pkgs, config, lib, ... }:
+    {
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
     {
       imports = [ self.nixosModules.cunicu ];
 
@@ -34,7 +41,7 @@ let
         ];
 
         environment.systemPackages = [
-            pkgs.evans
+          pkgs.evans
         ];
 
         system.stateVersion = "24.11";
