@@ -20,131 +20,14 @@ permissions:
 
 jobs:
   nix-update:
-    name: Update Nix hashes
-    runs-on: ubuntu-24.04
-
-    outputs:
-      tag-current: ${{ steps.tags.outputs.current }}
-      tag-next: ${{ steps.tags.outputs.next }}
-      changed: ${{ steps.nix-update-hashes.outputs.changed }}
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.ref }}
-        fetch-depth: 0
-        token: ${{ secrets.PAT }}
-
-    - name: Setup Nix
-      uses: cachix/install-nix-action@v31
-
-    - name: Setup Nix cache
-      uses: cachix/cachix-action@v16
-      with:
-        name: cunicu
-
-    - name: Setup Git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-    - name: Get current and next tag
-      id: tags
-      run: |
-        nix develop .#ci --command sh <<'EOF' | tee "$GITHUB_OUTPUT"
-          # We always increment the patch version to ensure hashes of Nix derivations are updated
-          # by our GitHub actions tag workflow which runs nix-update
-          echo next=$(svu next)
-          echo current=$(svu current)
-        EOF
-
-    - name: Update version and vendor hashes in Nix derivation
-      id: nix-update-hashes
-      run: |
-        nix develop .#ci --command sh <<'EOF'
-            VERSION="${{ steps.tags.outputs.next || steps.tags.outputs.current }}"
-
-            nix-update --flake gocov-merger
-            nix-update --flake --version ${VERSION} cunicu
-            nix-update --flake --version ${VERSION} scripts
-            nix-update --flake --version ${VERSION} --subpackage yarnOfflineCache website
-        EOF
-
-        git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
-
-    - name: Commit changes
-      id: git-commit
-      if: steps.nix-update-hashes.outputs.changed == 'true'
-      run: |
-        LAST_AUTHOR=$(git log -1 --pretty=format:"%ae")
-        RENOVATE_AUTHOR="29139614+renovate[bot]@users.noreply.github.com"
-
-        if [ "${LAST_AUTHOR}" = "${RENOVATE_AUTHOR}" ]; then
-          git commit --all --amend --no-edit
-          git push --force
-        else
-          git commit --all --signoff --message "fix(nix): Update version and hashes"
-          git push
-        fi
+    uses: ./.github/workflows/nix-update.yaml
+    secrets: inherit
 
   lint:
-    name: Lint
-    runs-on: ubuntu-24.04
-    if: github.event.head_commit.committer.name != 'github-actions[bot]' # Skip builds triggered by GitHub Actions, e.g. the tagging job below
+    uses: ./.github/workflows/lint.yaml
+    secrets: inherit
     needs:
     - nix-update
-
-    env:
-      GOOS: ${{ matrix.target_os }}
-      GOARCH: ${{ matrix.target_arch }}
-      GOARM: ${{ matrix.arm || '' }}
-      GOMIPS: ${{ matrix.mips || '' }}
-
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-        - target_os: linux
-          target_arch: amd64
-
-        - target_os: linux
-          target_arch: arm64
-
-        - target_os: linux
-          target_arch: arm
-          arm: "7"
-
-        - target_os: linux
-          target_arch: mips
-
-        - target_os: linux
-          target_arch: mips
-
-        - target_os: windows
-          target_arch: amd64
-
-        - target_os: windows
-          target_arch: arm64
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup Nix
-      uses: cachix/install-nix-action@v31
-
-    - name: Setup Nix cache
-      uses: cachix/cachix-action@v16
-      with:
-        name: cunicu
-
-    - name: Run golangci-lint
-      run: |
-        nix develop .#ci --command sh <<'EOF'
-          make lint
-        EOF
-
 
   build:
     name: Build (windows, ${{ matrix.host_arch }}->${{ matrix.target_arch }})
@@ -341,36 +224,14 @@ jobs:
 
 
   website:
+    uses: ./.github/workflows/website.yaml
     needs:
     - build
-    uses: ./.github/workflows/website.yaml
 
 
   tag:
-    name: Tag
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: release
-    runs-on: ubuntu-24.04
-
+    uses: ./.github/workflows/tag.yaml
+    secrets: inherit
     needs:
     - build
     - build-nix
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.PAT }}
-
-    - name: Setup Git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-    - name: Tag new release
-      id: git-tag
-      if: steps.tags.outputs.current != steps.tags.outputs.next
-      run: |
-        git tag ${{ needs.nix-update.outputs.tag-next }}
-        git push origin tag ${{ needs.nix-update.outputs.tag-next }}
