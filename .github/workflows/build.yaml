@@ -180,6 +180,7 @@ jobs:
       uses: cachix/cachix-action@v16
       with:
         name: cunicu
+        authToken: '${{ secrets.CACHIX_TOKEN }}'
 
     - name: Build cunīcu
       run: |

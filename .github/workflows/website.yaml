@@ -28,6 +28,7 @@ jobs:
       uses: cachix/cachix-action@v16
       with:
         name: cunicu
+        authToken: '${{ secrets.CACHIX_TOKEN }}'
 
     - name: Update Go modules
       run: |
