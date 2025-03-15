@@ -30,7 +30,7 @@ jobs:
     - nix-update
 
   build:
-    name: Build (windows, ${{ matrix.host_arch }}->${{ matrix.target_arch }})
+    name: Build (windows, ${{ matrix.target_arch }})
     runs-on: windows-2022
     needs:
     - lint
@@ -40,12 +40,11 @@ jobs:
       matrix:
         include:
         - target_arch: arm64
-          host_arch: amd64
+          do_tests: false
         - target_arch: amd64
-          host_arch: amd64
+          do_tests: true
 
     env:
-      GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
 
     steps:
@@ -64,9 +63,6 @@ jobs:
         check-latest: true
 
     - name: Install build and test dependencies
-      env:
-        GOOS: ${{ matrix.host_os }}
-        GOARCH: ${{ matrix.host_arch }}
       run: make install-deps
 
     - name: Build cunīcu
@@ -74,100 +70,49 @@ jobs:
         make cunicu
 
     - name: Run tests
-      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
+      if: matrix.do_tests
       run: make tests GINKGO_OPTS="--label-filter=!broken-on-windows"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
 
 
   build-nix:
-    name: Build (nix, ${{ matrix.system }})
+    name: Build (nix, ${{ matrix.attribute }})
     runs-on: ${{ matrix.runner }}
     needs:
     - lint
-
-    env:
-      GOOS: ${{ matrix.target_os }}
-      GOARCH: ${{ matrix.target_arch }}
-      GOARM: ${{ matrix.arm || '' }}
-      GOMIPS: ${{ matrix.mips || '' }}
 
     strategy:
       fail-fast: false
       matrix:
         include:
-        - target_os: linux
-          target_arch: amd64
-          host_os: linux
-          host_arch: amd64
-          system: x86_64-linux
+        - attribute: cunicu
           runner: ubuntu-24.04
+          do_tests: true
 
-        - target_os: linux
-          target_arch: arm64
-          host_os: linux
-          host_arch: amd64
-          system: aarch64-linux
+        - attribute: cunicu
+          runner: macos-15
+          do_tests: false
+
+        - attribute: cunicu-cross-aarch64-linux
           runner: ubuntu-24.04
+          do_tests: false
 
-        - target_os: linux
-          target_arch: arm
-          host_os: linux
-          host_arch: amd64
-          system: armv7l-linux
-          arm: "7"
+        - attribute: cunicu-cross-armv7l-linux
           runner: ubuntu-24.04
+          do_tests: false
 
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          system: mips-linux
-          mips: softfloat
+        - attribute: cunicu-cross-x86_64-freebsd
           runner: ubuntu-24.04
+          do_tests: false
 
-        - target_os: linux
-          target_arch: mips
-          host_os: linux
-          host_arch: amd64
-          mips: hardfloat
+        - attribute: cunicu-cross-riscv64-linux
           runner: ubuntu-24.04
+          do_tests: false
 
-        # TODO: FreeBSD builds require cgo and FreeBSD
-        #       system headers.
-
-        # - target_os: freebsd
-        #   target_arch: amd64
-        #   host_os: linux
-        #   host_arch: amd64
-        #   runner: ubuntu-24.04
-
-        # - target_os: freebsd
-        #   target_arch: arm64
-        #   host_os: linux
-        #   host_arch: amd64
-        #   runner: ubuntu-24.04
-
-        # - target_os: freebsd
-        #   target_arch: arm
-        #   host_os: linux
-        #   host_arch: amd64
-        #   arm: "7"
-        #   runner: ubuntu-24.04
-
-        - target_os: darwin
-          target_arch: arm64
-          host_os: darwin
-          host_arch: arm64
-          system: aarch64-darwin
-          runner: macos-13
-
-        - target_os: darwin
-          target_arch: amd64
-          host_os: darwin
-          host_arch: arm64
-          system: x86_64-darwin
-          runner: macos-13
+        - attribute: cunicu-cross-x86_64-darwin
+          runner: macos-15
+          do_tests: false
 
     steps:
     - name: Checkout
@@ -184,10 +129,10 @@ jobs:
 
     - name: Build cunīcu
       run: |
-        nix build --print-build-logs .#packages.${{ matrix.system }}.cunicu
+        nix build --print-build-logs .#${{ matrix.attribute }}
 
     - name: Run tests
-      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os
+      if: matrix.do_tests
       run: |
         nix develop .#ci --command sh <<'EOF'
             sudo --preserve-env env "PATH=$PATH" make tests
@@ -196,28 +141,28 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Pass token via environment variable to avoid GitHub API rate-limit
 
     - name: Run e2e tests
-      if: matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
+      if: matrix.do_tests
       run: |
         nix develop .#ci --command sh <<'EOF'
             sudo --preserve-env env "PATH=$PATH" make tests-e2e
         EOF
 
     - name: Upload logs an packet captures as artifacts
-      if: always() && matrix.target_arch == matrix.host_arch && matrix.target_os == matrix.host_os && matrix.host_os == 'linux'
+      if: always() && matrix.do_tests
       uses: actions/upload-artifact@v4
       with:
         name: test-logs-${{ matrix.target_os }}-${{ matrix.target_arch }}
         path: test/e2e/logs/
 
     - name: Create merged coverage profile
-      if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
+      if: matrix.do_tests
       run: |
         nix develop .#ci --command sh <<'EOF'
             make coverprofile_merged.out
         EOF
 
     - name: Report test coverage to Codecov
-      if: matrix.target_os == 'linux' && matrix.target_arch == 'amd64'
+      if: matrix.do_tests
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

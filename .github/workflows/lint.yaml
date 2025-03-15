@@ -34,16 +34,16 @@ jobs:
           target_arch: arm
           arm: "7"
 
-        - target_os: linux
-          target_arch: mips
-
-        - target_os: linux
-          target_arch: mips
-
         - target_os: windows
           target_arch: amd64
 
         - target_os: windows
+          target_arch: arm64
+
+        - target_os: darwin
+          target_arch: amd64
+
+        - target_os: darwin
           target_arch: arm64
 
     steps:
