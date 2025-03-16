@@ -5,7 +5,6 @@ package mcast
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"syscall"
@@ -14,7 +13,6 @@ import (
 	"cunicu.li/cunicu/pkg/log"
 	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
 	"cunicu.li/cunicu/pkg/signaling"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -63,34 +61,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 		syscall.SetsockoptInt(int(fd.Fd()), syscall.IPPROTO_IP, syscall.IP_MULTICAST_LOOP, 1)
 	}
 
-	go func() {
-		buf := make([]byte, 4096)
-		for {
-			n, err := b.conn.Read(buf)
-			if err != nil {
-				if err == net.ErrClosed {
-					break
-				}
-				b.logger.Error("Error reading from UDPConn", zap.Error(err))
-				continue
-			}
-
-			var env signalingproto.Envelope
-			if err = proto.Unmarshal(buf[:n], &env); err != nil {
-				b.logger.Error("Error unmarshaling protobuf", zap.Error(err))
-				continue
-			}
-
-			if err := b.SubscriptionsRegistry.NewMessage(&env); err != nil {
-				if errors.Is(err, signaling.ErrNotSubscribed) {
-					// Message wasn't for us but we will get everything over multicast, just ignore it.
-				} else {
-					b.logger.Error("Failed to decrypt message", zap.Error(err))
-				}
-				continue
-			}
-		}
-	}()
+	go b.run()
 
 	for _, h := range cfg.OnReady {
 		h.OnSignalingBackendReady(b)
