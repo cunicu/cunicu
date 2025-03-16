@@ -46,18 +46,18 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 		return nil, fmt.Errorf("failed to parse backend configuration: %w", err)
 	}
 
-	// Parse multicast group address
+	// Parse multicast group address.
 	if b.mcast_addr, err = net.ResolveUDPAddr("udp", b.config.Target); err != nil {
 		return nil, fmt.Errorf("Error parsing multicast address: %w", err)
 	}
 
-	// Add listener for multicast group
+	// Add listener for multicast group.
 	if b.conn, err = net.ListenMulticastUDP("udp", b.config.Options.Interface, b.mcast_addr); err != nil {
 		return nil, fmt.Errorf("Error adding multicast listener: %w", err)
 	}
 
 	if b.config.Options.Loopback {
-		// Enable multicast loopback
+		// Enable multicast loopback.
 		fd, _ := b.conn.File()
 		syscall.SetsockoptInt(int(fd.Fd()), syscall.IPPROTO_IP, syscall.IP_MULTICAST_LOOP, 1)
 	}
@@ -83,7 +83,7 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 
 			if err := b.SubscriptionsRegistry.NewMessage(&env); err != nil {
 				if err == signaling.ErrNotSubscribed {
-					// Message wasn't for us but we will get everything over multicast, just ignore it
+					// Message wasn't for us but we will get everything over multicast, just ignore it.
 				} else {
 					b.logger.Error("Failed to decrypt message", zap.Error(err))
 				}
@@ -131,8 +131,8 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 
 func (b *Backend) Close() error {
 	// NOTE: Do not close the connection; on certain OS (like Linux),
-	// The UDPConn.Read() will continue to block even if the connection
-	// is closed
+	// the UDPConn.Read() will continue to block even if the connection
+	// is closed.
 	//if err := b.conn.Close(); err != nil {
 	//	return fmt.Errorf("failed to close multicast connection: %w", err)
 	//}
