@@ -27,9 +27,9 @@ func init() { //nolint:gochecknoinits
 type Backend struct {
 	signaling.SubscriptionsRegistry
 
-	conn       *net.UDPConn
-	mcast_addr *net.UDPAddr
-	config     BackendConfig
+	conn      *net.UDPConn
+	mcastAddr *net.UDPAddr
+	config    BackendConfig
 
 	logger *log.Logger
 }
@@ -47,12 +47,12 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 	}
 
 	// Parse multicast group address.
-	if b.mcast_addr, err = net.ResolveUDPAddr("udp", b.config.Target); err != nil {
+	if b.mcastAddr, err = net.ResolveUDPAddr("udp", b.config.Target); err != nil {
 		return nil, fmt.Errorf("Error parsing multicast address: %w", err)
 	}
 
 	// Add listener for multicast group.
-	if b.conn, err = net.ListenMulticastUDP("udp", b.config.Options.Interface, b.mcast_addr); err != nil {
+	if b.conn, err = net.ListenMulticastUDP("udp", b.config.Options.Interface, b.mcastAddr); err != nil {
 		return nil, fmt.Errorf("Error adding multicast listener: %w", err)
 	}
 
@@ -122,7 +122,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 		return fmt.Errorf("Error marshaling protobuf: %w", err)
 	}
 
-	if _, err = b.conn.WriteTo(data, b.mcast_addr); err != nil {
+	if _, err = b.conn.WriteTo(data, b.mcastAddr); err != nil {
 		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
