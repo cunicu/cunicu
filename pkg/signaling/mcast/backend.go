@@ -5,6 +5,7 @@ package mcast
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"syscall"
@@ -75,14 +76,13 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 			}
 
 			var env signalingproto.Envelope
-			err = proto.Unmarshal(buf[:n], &env)
-			if err != nil {
+			if err = proto.Unmarshal(buf[:n], &env); err != nil {
 				b.logger.Error("Error unmarshaling protobuf", zap.Error(err))
 				continue
 			}
 
 			if err := b.SubscriptionsRegistry.NewMessage(&env); err != nil {
-				if err == signaling.ErrNotSubscribed {
+				if errors.Is(err, signaling.ErrNotSubscribed) {
 					// Message wasn't for us but we will get everything over multicast, just ignore it.
 				} else {
 					b.logger.Error("Failed to decrypt message", zap.Error(err))
