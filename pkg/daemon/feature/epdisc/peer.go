@@ -307,6 +307,8 @@ func (p *Peer) createAgentWithBackoff() {
 			p.logger.Error("Failed to create agent",
 				zap.Error(err),
 				zap.Duration("after", d))
+		} else {
+			break
 		}
 	}
 }
