@@ -7,6 +7,7 @@ go 1.24.0
 
 require (
 	github.com/google/go-github/v68 v68.0.0
+	github.com/google/go-github/v69 v69.2.0
 	golang.org/x/mod v0.24.0
 )
 
