@@ -68,8 +68,8 @@ var (
 				DisconnectedTimeout: 5 * time.Second,
 				FailedTimeout:       25 * time.Second,
 				RestartTimeout:      10 * time.Second,
-				InterfaceFilter:     "*",
-				IgnoreInterfaces:    "",
+				InterfacesInclude:   "*",
+				InterfacesExclude:   "",
 				KeepaliveInterval:   2 * time.Second,
 				MaxBindingRequests:  7,
 				PortRange: PortRangeSettings{
