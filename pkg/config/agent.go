@@ -115,12 +115,12 @@ func (c *InterfaceSettings) AgentConfig(ctx context.Context, peer *crypto.Key) (
 	}
 
 	cfg.InterfaceFilter = func(name string) bool {
-		match, err := filepath.Match(c.ICE.InterfaceFilter, name)
+		match, err := filepath.Match(c.ICE.InterfacesInclude, name)
 		if err != nil {
 			return false
 		}
 
-		ignore, err := filepath.Match(c.ICE.IgnoreInterfaces, name)
+		ignore, err := filepath.Match(c.ICE.InterfacesExclude, name)
 		if err != nil {
 			return false
 		}
