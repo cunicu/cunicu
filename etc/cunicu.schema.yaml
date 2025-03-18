@@ -463,10 +463,20 @@ $defs:
           type: string
           enum: [host, srflx, prflx, relay]
 
-      interface_filter:
-        title: Interface Filter
+      interfaces_include:
+        title: Include Interface Filter
         description: |
           A [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) pattern to match interfaces against which are used to gather ICE candidates (e.g. `eth[0-9]`).
+        type: string
+        default: "*"
+        examples:
+        - eth*
+        - wlan0
+
+      interfaces_exclude:
+        title: Exclude Interface Filter
+        description: |
+          A [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) pattern to match interfaces against which are not used to gather ICE candidates (e.g. `eth[0-9]`).
         type: string
         default: "*"
         examples:
