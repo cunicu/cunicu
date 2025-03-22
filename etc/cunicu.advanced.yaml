@@ -312,7 +312,7 @@ ice:
   # candidate_types: [host, srflx, prflx, relay]
 
   # A glob(7) pattern to match interfaces against which are used to gather ICE candidates (e.g. \"eth[0-9]\").
-  interface_include: "*"
+  interfaces_include: "*"
 
   # A glob(7) pattern to match interfaces against which are ignored when gathering ICE candidates (e.g. \"tun[0-9]\").
   interfaces_exclude: ""
