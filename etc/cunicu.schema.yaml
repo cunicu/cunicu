@@ -478,7 +478,7 @@ $defs:
         description: |
           A [glob(7)](https://manpages.debian.org/bookworm/manpages/glob.7.en.html) pattern to match interfaces against which are not used to gather ICE candidates (e.g. `eth[0-9]`).
         type: string
-        default: "*"
+        default: ""
         examples:
         - eth*
         - wlan0
