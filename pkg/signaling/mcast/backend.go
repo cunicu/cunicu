@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 Adam Rizkalla <ajarizzo@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build linux
+
 package mcast
 
 import (
