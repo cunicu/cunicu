@@ -9,11 +9,12 @@ import (
 	"net"
 	"syscall"
 
+	"google.golang.org/protobuf/proto"
+
 	"cunicu.li/cunicu/pkg/crypto"
 	"cunicu.li/cunicu/pkg/log"
 	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
 	"cunicu.li/cunicu/pkg/signaling"
-	"google.golang.org/protobuf/proto"
 )
 
 func init() { //nolint:gochecknoinits
@@ -47,18 +48,20 @@ func NewBackend(cfg *signaling.BackendConfig, logger *log.Logger) (signaling.Bac
 
 	// Parse multicast group address.
 	if b.mcastAddr, err = net.ResolveUDPAddr("udp", b.config.Target); err != nil {
-		return nil, fmt.Errorf("Error parsing multicast address: %w", err)
+		return nil, fmt.Errorf("failed to parse multicast address: %w", err)
 	}
 
 	// Add listener for multicast group.
 	if b.conn, err = net.ListenMulticastUDP("udp", b.config.Options.Interface, b.mcastAddr); err != nil {
-		return nil, fmt.Errorf("Error adding multicast listener: %w", err)
+		return nil, fmt.Errorf("fail to add multicast listener: %w", err)
 	}
 
 	if b.config.Options.Loopback {
 		// Enable multicast loopback.
 		fd, _ := b.conn.File()
-		syscall.SetsockoptInt(int(fd.Fd()), syscall.IPPROTO_IP, syscall.IP_MULTICAST_LOOP, 1)
+		if err := syscall.SetsockoptInt(int(fd.Fd()), syscall.IPPROTO_IP, syscall.IP_MULTICAST_LOOP, 1); err != nil {
+			return nil, fmt.Errorf("failed to enable multicast loopback: %w", err)
+		}
 	}
 
 	go b.run()
@@ -74,15 +77,15 @@ func (b *Backend) Type() signalingproto.BackendType {
 	return signalingproto.BackendType_MCAST
 }
 
-func (b *Backend) Subscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+func (b *Backend) Subscribe(_ context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
 	return b.SubscriptionsRegistry.Subscribe(kp, h)
 }
 
-func (b *Backend) Unsubscribe(ctx context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
+func (b *Backend) Unsubscribe(_ context.Context, kp *crypto.KeyPair, h signaling.MessageHandler) (bool, error) {
 	return b.SubscriptionsRegistry.Unsubscribe(kp, h)
 }
 
-func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {
+func (b *Backend) Publish(_ context.Context, kp *crypto.KeyPair, msg *signaling.Message) error {
 	env, err := msg.Encrypt(kp)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt message: %w", err)
@@ -90,7 +93,7 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 
 	data, err := proto.Marshal(env)
 	if err != nil {
-		return fmt.Errorf("Error marshaling protobuf: %w", err)
+		return fmt.Errorf("failed to marshal protobuf: %w", err)
 	}
 
 	if _, err = b.conn.WriteTo(data, b.mcastAddr); err != nil {
@@ -100,13 +103,13 @@ func (b *Backend) Publish(ctx context.Context, kp *crypto.KeyPair, msg *signalin
 	return nil
 }
 
+// NOTE: Do not close the connection; on certain OS (like Linux),
+// the UDPConn.Read() will continue to block even if the connection
+// is closed.
+//
+//	if err := b.conn.Close(); err != nil {
+//		return fmt.Errorf("failed to close multicast connection: %w", err)
+//	}
 func (b *Backend) Close() error {
-	// NOTE: Do not close the connection; on certain OS (like Linux),
-	// the UDPConn.Read() will continue to block even if the connection
-	// is closed.
-	//if err := b.conn.Close(); err != nil {
-	//	return fmt.Errorf("failed to close multicast connection: %w", err)
-	//}
-
 	return nil
 }
