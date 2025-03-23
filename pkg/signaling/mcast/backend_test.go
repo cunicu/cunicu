@@ -7,8 +7,9 @@ import (
 	"net/url"
 	"testing"
 
-	_ "cunicu.li/cunicu/pkg/signaling/mcast"
 	"cunicu.li/cunicu/test"
+
+	_ "cunicu.li/cunicu/pkg/signaling/mcast"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

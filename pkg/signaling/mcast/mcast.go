@@ -11,16 +11,16 @@ import (
 	"net/url"
 	"strconv"
 
-	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
-	"cunicu.li/cunicu/pkg/signaling"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+
+	signalingproto "cunicu.li/cunicu/pkg/proto/signaling"
+	"cunicu.li/cunicu/pkg/signaling"
 )
 
 var errInvalidAddress = errors.New("missing multicast address")
 
 func ParseURL(urlStr string) (string, BackendOptions, error) {
-
 	o := BackendOptions{
 		Interface: nil,
 		Loopback:  false,
@@ -55,28 +55,31 @@ func ParseURL(urlStr string) (string, BackendOptions, error) {
 
 func (b *Backend) run() {
 	buf := make([]byte, 4096)
+
 	for {
 		n, err := b.conn.Read(buf)
 		if err != nil {
-			if err == net.ErrClosed {
+			if errors.Is(err, net.ErrClosed) {
 				break
 			}
+
 			b.logger.Error("Error reading from UDPConn", zap.Error(err))
+
 			continue
 		}
 
 		var env signalingproto.Envelope
 		if err = proto.Unmarshal(buf[:n], &env); err != nil {
 			b.logger.Error("Error unmarshaling protobuf", zap.Error(err))
+
 			continue
 		}
 
 		if err := b.SubscriptionsRegistry.NewMessage(&env); err != nil {
-			if errors.Is(err, signaling.ErrNotSubscribed) {
-				// Message wasn't for us but we will get everything over multicast, just ignore it.
-			} else {
+			if !errors.Is(err, signaling.ErrNotSubscribed) {
 				b.logger.Error("Failed to decrypt message", zap.Error(err))
 			}
+
 			continue
 		}
 	}
