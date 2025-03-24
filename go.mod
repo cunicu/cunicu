@@ -18,7 +18,7 @@ require (
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.1.2
-	github.com/miekg/dns v1.1.63
+	github.com/miekg/dns v1.1.64
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pion/ice/v4 v4.0.7
 	github.com/pion/logging v0.2.3
