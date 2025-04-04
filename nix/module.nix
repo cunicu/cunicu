@@ -45,7 +45,7 @@ in
         default = false;
       };
 
-      loglevel = lib.mkOption {
+      logLevel = lib.mkOption {
         description = "Log level";
         type = lib.types.str;
         default = "info";
@@ -198,7 +198,7 @@ in
             User = "cunicu";
             Group = "cunicu";
             ExecStart =
-              "${lib.getExe cfg.package} signal --log-level ${cfg.signal.loglevel} "
+              "${lib.getExe cfg.package} signal --log-level ${cfg.signal.logLevel} "
               + lib.cli.toGNUCommandLineShell { } { inherit (cfg.signal) secure listen; };
 
             # Hardening
