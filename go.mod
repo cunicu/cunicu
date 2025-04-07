@@ -10,7 +10,7 @@ require (
 	github.com/cilium/ebpf v0.17.3
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.3.0
-	github.com/knadh/koanf/maps v0.1.1
+	github.com/knadh/koanf/maps v0.1.2
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/providers/confmap v0.1.0
 	github.com/knadh/koanf/providers/env v1.0.0
