@@ -7,7 +7,7 @@ go 1.24.0
 
 require (
 	dario.cat/mergo v1.0.1
-	github.com/cilium/ebpf v0.17.3
+	github.com/cilium/ebpf v0.18.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/nftables v0.3.0
 	github.com/knadh/koanf/maps v0.1.2

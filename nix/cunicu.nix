@@ -20,7 +20,7 @@ buildGo124Module {
   pname = "cunicu";
   inherit version src;
 
-  vendorHash = "sha256-7xOgsqyuFtQIAj3j1jsJM6aahvZB8zDn46lO77dZoyE=";
+  vendorHash = "sha256-TWSCF07lNXDpz1QxC5YncmNVksAu0DqLBXK848B5eaY=";
 
   nativeBuildInputs = [
     installShellFiles
