@@ -6,7 +6,7 @@ module cunicu.li/cunicu
 go 1.24.0
 
 require (
-	dario.cat/mergo v1.0.1
+	dario.cat/mergo v1.0.2
 	github.com/cilium/ebpf v0.18.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/nftables v0.3.0
