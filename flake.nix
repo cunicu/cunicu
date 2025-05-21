@@ -41,8 +41,6 @@
 
       perSystem =
         {
-          pkgs,
-          self',
           system,
           ...
         }:
