@@ -2,6 +2,9 @@
 # SPDX-FileCopyrightText: 2025 Steffen Vogel <post@steffenvogel.de>
 # SPDX-License-Identifier: Apache-2.0
 {
+  src ? ./..,
+  version ? "0.13.0",
+
   lib,
   stdenv,
   buildGo124Module,
@@ -12,10 +15,6 @@
   protoc-gen-go-grpc,
   nix-update-script,
 }:
-let
-  version = "0.13.0";
-  src = ./..;
-in
 buildGo124Module {
   pname = "cunicu";
   inherit version src;
