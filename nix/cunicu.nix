@@ -14,7 +14,7 @@
 }:
 let
   version = "0.13.0";
-  src = ./..;
+  src = builtins.path { path = ./..; name = "source"; };
 in
 buildGo124Module {
   pname = "cunicu";
