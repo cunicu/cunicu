@@ -25,7 +25,7 @@
 
         overlays = {
           default = final: prev: {
-            cunicu = final.callPackage ./nix/cunicu.nix { };
+            cunicu = final.callPackage ./nix/cunicu.nix { src = self; };
             cunicu-website = final.callPackage ./nix/website.nix { };
             cunicu-scripts = final.callPackage ./nix/scripts.nix { };
             gocov-merger = final.callPackage ./nix/gocov-merger.nix { };
