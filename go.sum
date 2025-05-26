@@ -581,6 +581,8 @@ golang.zx2c4.com/wireguard v0.0.0-20250505131008-436f7fdc1670 h1:lvCs+t4iJfAyIbk
 golang.zx2c4.com/wireguard v0.0.0-20250505131008-436f7fdc1670/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
 golang.zx2c4.com/wireguard v0.0.0-20250520220936-264889f0bbdf h1:UwuleiCXANx2ILMtrpXgqaqIgX5XkHaMd58lbtLu1U4=
 golang.zx2c4.com/wireguard v0.0.0-20250520220936-264889f0bbdf/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
+golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb h1:whnFRlWMcXI9d+ZbWg+4sHnLp52d5yiIPUxMBSt4X9A=
+golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
 golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10 h1:3GDAcqdIg1ozBNLgPy4SLT84nfcBjr6rhGtXYtrkWLU=
 golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10/go.mod h1:T97yPqesLiNrOYxkwmhMI0ZIlJDm+p0PMR8eRVeR5tQ=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
