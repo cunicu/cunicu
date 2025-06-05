@@ -10,7 +10,7 @@ RUN nix \
     --extra-experimental-features "nix-command flakes" \
     build
 
-FROM alpine:3.21
+FROM alpine:3.22
 
 COPY --from=builder /src/result/bin/cunicu /
 
