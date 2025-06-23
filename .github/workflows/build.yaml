@@ -42,7 +42,7 @@ jobs:
         nix_path: nixpkgs=channel:nixos-unstable
 
     - name: Setup Nix cache
-      uses: cachix/cachix-action@v15
+      uses: cachix/cachix-action@v16
       with:
         name: cunicu
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
