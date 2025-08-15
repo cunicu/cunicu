@@ -18,7 +18,8 @@
 }:
 let
   yarnOfflineCache = stdenvNoCC.mkDerivation {
-    name = "yarn-deps";
+    pname = "yarn-deps";
+
     inherit (cunicu) version src;
 
     nativeBuildInputs = [ yarn-berry ];
@@ -49,7 +50,7 @@ let
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "cunicu-docs";
+  pname = "cunicu-docs";
   inherit (cunicu) version src;
   inherit yarnOfflineCache;
 
