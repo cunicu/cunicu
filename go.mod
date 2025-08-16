@@ -24,7 +24,7 @@ require (
 	github.com/pion/logging v0.2.4
 	github.com/pion/stun/v3 v3.0.0
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/pflag v1.0.7
 	github.com/vishvananda/netlink v1.3.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.41.0
