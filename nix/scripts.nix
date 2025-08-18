@@ -9,7 +9,7 @@ buildGo124Module {
 
   subPackages = [ "vanity_redirects" ];
 
-  vendorHash = "sha256-68AEDEsOSWy/VrfPpcfZ35MQiFkUgrlkgD6B8EIdFSU=";
+  vendorHash = "sha256-g/guqq0XXjuQjmET7LFbNL+p/kbMPmziZK2nsdNOWzU=";
 
   meta = {
     mainProgram = "vanity_redirects";
